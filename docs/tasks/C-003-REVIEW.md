@@ -1,6 +1,6 @@
 # C-003-REVIEW — independent review after quota recovery
 
-Status: prepared, not dispatched yet. Dependency: C-003 quota stop and Codex takeover. This task is **review only**. English communication, actual `claude-opus-5-5` with Extra (`xhigh`), same `E:\Apple Store` project. Do not implement, self-approve your earlier code, publish, alter criteria/tests or read private `.local` logs/configuration.
+Status: actually dispatched on 2026-10-01 at 18:20 Asia/Shanghai; failed before review because the CLI still returned session limit, with a reported reset at 20:20. Exit 1, `is_error:true`, synthetic quota response, no actual reviewer opinion and no model-success gate. A Desktop usage counter (72% of session limit) prompted this single availability check but did not prove CLI recovery. Retry at the reported reset, through the existing 20:25 heartbeat. Dependency: C-003 quota stop and Codex takeover. This task is **review only**. English communication, actual `claude-opus-5-5` with Extra (`xhigh`), same `E:\Apple Store` project. Do not implement, self-approve your earlier code, publish, alter criteria/tests or read private `.local` logs/configuration.
 
 Read the complete project baseline, requirements, `docs/status.md`, `docs/reviews/C-003-codex-takeover.md`, `docs/reviews/C-003.md`, the source manifest and actual source/test changes. Your prior C-003 implementation stopped on a session limit; Codex then repaired the actual defects listed in the takeover report, under the user's explicit exception. You must now independently examine those repairs and their interactions with the code you wrote.
 
@@ -10,7 +10,7 @@ Run only approved plain Node commands from the already configured project direct
 
 Return an English evidence-based review with: reviewed source manifest, actual checks and outcomes, concrete findings with file locations/reproduction/acceptance conditions, missing coverage, and a clear agreement or disagreement with Codex's **offline-only candidate** assessment. Real SKU/checkout/slot mechanisms and user purchase configuration remain unverified; no real readiness agreement is possible from fake tests. Do not rubber-stamp or pretend quota failure is approval. If no material issue remains, explicitly state that the Codex takeover changes are acceptable for this bounded offline milestone, with unresolved real-adapter limitations retained.
 
-Invocation after confirmed reset, only if no other Claude invocation is active:
+Invocation after a changed availability signal or the reported reset, only if no other Claude invocation is active:
 
 ```powershell
 python tools/delegation/invoke_claude.py C-003-REVIEW --profile review --resume 11941a88-4609-4e7f-a2f8-78c5b5837285 --turns 45 --timeout 1200 --budget 6 --allow-command 'node --test *' --allow-command 'node src/cli.ts bench *'
