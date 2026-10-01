@@ -1,6 +1,6 @@
 # 需求与验证对应表
 
-C-002 已独立验收；C-003 仍是待 Claude 交叉审查的离线候选。测试范围均为虚构页面/端口，不证明 Apple 接口。
+C-002 已独立验收；C-003/C-004 均待 Claude 对 Codex 接手改动的交叉审查。购买测试使用虚构页面/端口；C-004 单元测试使用公开页面结构用例和网络替身，另有实际公开入口 GET/浏览器观察证据。这些证据均不证明 Apple 结账接口或自提时段机制。
 
 | 标准 | 验证位置与内容 |
 | --- | --- |
@@ -18,5 +18,8 @@ C-002 已独立验收；C-003 仍是待 Claude 交叉审查的离线候选。测
 | A13 / R10 | `test/journal-restart.test.ts`、`review/journal-integrity.test.ts`、`review/crash-boundary.test.ts`、`test/app-process.test.ts`：持久 intent/send/outcome 边界恢复、哈希链、计划绑定、脱敏、缺失/损坏证据关闭 |
 | A14 | `test/bench.test.ts`、`review/benchmark-boundary.test.ts`：接受与终点时间边界；独立种子 1、预热 20、每策略 200 次，决策/状态字符串生成/模拟远端分别计时；不声称人工或真实官网优势 |
 | R05 / R06 | `src/app/view.ts`、`web/render.js` 与 `review/app-handoff.test.ts`：步骤/理由/候选/最后有效观察/不明状态、重启历史标记、运行绑定目标不受未来编辑计划影响 |
+| R02 局部 / A04 / A10 / A11 / A13 | `review/public-entry.test.ts`：13 项公开入口识别、未加载/过期/未知/读取失败分离、固定 GET 范围与重定向/认证/拒绝/限流停止、来源声明、额外敏感字段拒绝、原演练网络拦截保留；CLI 导入测试用独立进程的禁网预加载器；实际只读入口证据见 `docs/reviews/C-004.md`。真实计划/会话/商品门店绑定与 U02–U06 未验证 |
 
 运行 `npm.cmd test` 覆盖实现和独立评审测试。`node src/cli.ts rehearse --all --quiet` 覆盖 27 个声明场景。浏览器操作证据由 Codex 的 Computer Use 工具实际生成，保存在本地；它不是 Node 测试命令的一部分。Windows 已实测，其他系统未实机验收。没有 TypeScript 静态类型检查；Node 原生类型擦除与运行测试不能替代静态检查。
+
+当前完整回归：124 项通过、0 失败/跳过/取消；其中 C-004 的 13 项由 Codex 在接手期间编写和执行，不能替代待完成的实际 Claude 独立审查。C-003 原 44 个源码哈希保持一致，合并测试源码清单为 48 个文件。
