@@ -1,0 +1,148 @@
+{
+  "label": "离线决策级基准（FAKE 模拟门店，mock contract v0）——不是苹果官网性能，也不是人工操作速度",
+  "seed": 1,
+  "warmup": 20,
+  "measured": 200,
+  "environment": {
+    "os": "win32 x64 10.0.26300",
+    "cpu": "AMD Ryzen 7 9800X3D 8-Core Processor           ",
+    "logicalCpus": 16,
+    "node": "v24.16.0",
+    "powerMode": "未读取（无权限查询）",
+    "commit": "未测量（本任务未读取 Git 元数据）"
+  },
+  "boundaries": {
+    "local": "performance.now() 包围 engine.handle() 与发送前 engine.authorize()，含分类后决策与命令生成，不含端口模拟耗时",
+    "acceptance": "simulatedMsToAccept 止于接受选择的回复到达（虚拟时钟）；之后的推进与终点观察单独计入 simulatedMsToRunEnd",
+    "remote": "模拟值：SimStorePort 种子随机延迟 60–240ms（虚拟时钟，不真实等待，不代表苹果网络）",
+    "rendering": "N/A（进程内模拟，无页面渲染；DOM 模拟在 C-003）",
+    "journal": "内存日志，不含 fsync 落盘耗时（CLI 演练使用落盘日志）",
+    "refresh": "最小刷新间隔 2000ms 计入模拟时间（虚拟时钟）"
+  },
+  "workload": {
+    "pCompete": 0.12,
+    "pFreshList": 0.5,
+    "latencyMs": [
+      60,
+      240
+    ],
+    "capMax": 2,
+    "slotsPerList": 72,
+    "authorizedShare": "32/72（其余为未授权门店/日期，必须被过滤）",
+    "refs": "稳定（每个时段引用不变，避免对基线不公平的过期引用惩罚）"
+  },
+  "policies": [
+    {
+      "policy": "fresh-list",
+      "runs": 200,
+      "outcomes": {
+        "REHEARSAL_ENDPOINT:reached-mock-pre-payment": 200
+      },
+      "failures": 0,
+      "accepted": 200,
+      "attemptsToAccept": {
+        "n": 200,
+        "p50": 1,
+        "p95": 2,
+        "max": 3
+      },
+      "simulatedMsToAccept": {
+        "n": 200,
+        "p50": 302,
+        "p95": 451,
+        "max": 2439
+      },
+      "simulatedMsToRunEnd": {
+        "n": 200,
+        "p50": 605,
+        "p95": 821,
+        "max": 2701
+      },
+      "t1LocalMs": {
+        "n": 200,
+        "p50": 0.040300000000002,
+        "p95": 0.0700999999999965,
+        "max": 0.1922999999999888
+      },
+      "t2LocalMs": {
+        "n": 14,
+        "p50": 0.06349999999999056,
+        "p95": 0.14919999999999334,
+        "max": 0.14919999999999334
+      },
+      "t2SimulatedRemoteMs": {
+        "n": 14,
+        "p50": 0,
+        "p95": 211,
+        "max": 211
+      },
+      "t3LocalMs": {
+        "n": 200,
+        "p50": 0.02940000000000964,
+        "p95": 0.047000000000025466,
+        "max": 0.18870000000001141
+      },
+      "staleRefActions": 0,
+      "maxConcurrentMutations": 1
+    },
+    {
+      "policy": "naive-remembered",
+      "runs": 200,
+      "outcomes": {
+        "REHEARSAL_ENDPOINT:reached-mock-pre-payment": 200
+      },
+      "failures": 0,
+      "accepted": 200,
+      "attemptsToAccept": {
+        "n": 200,
+        "p50": 1,
+        "p95": 2,
+        "max": 3
+      },
+      "simulatedMsToAccept": {
+        "n": 200,
+        "p50": 302,
+        "p95": 451,
+        "max": 633
+      },
+      "simulatedMsToRunEnd": {
+        "n": 200,
+        "p50": 605,
+        "p95": 801,
+        "max": 948
+      },
+      "t1LocalMs": {
+        "n": 200,
+        "p50": 0.038100000000014234,
+        "p95": 0.05500000000000682,
+        "max": 0.15239999999997167
+      },
+      "t2LocalMs": {
+        "n": 16,
+        "p50": 0.039500000000003865,
+        "p95": 0.19990000000001373,
+        "max": 0.19990000000001373
+      },
+      "t2SimulatedRemoteMs": {
+        "n": 16,
+        "p50": 0,
+        "p95": 0,
+        "max": 0
+      },
+      "t3LocalMs": {
+        "n": 200,
+        "p50": 0.02780000000001337,
+        "p95": 0.03840000000002419,
+        "max": 0.1571999999999889
+      },
+      "staleRefActions": 0,
+      "maxConcurrentMutations": 1
+    }
+  ],
+  "independent_provenance": {
+    "reviewer": "Codex",
+    "command": "node src/cli.ts bench --runs 200 --warmup 20 --seed 1",
+    "source_manifest_sha256": "30f0d4dd76cfda53592e936801c3c115bb792902eb95b3805595aaac8650ad28",
+    "scope": "offline decision-level simulation; no Apple or human performance claim"
+  }
+}

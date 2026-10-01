@@ -30,7 +30,7 @@ def now() -> str:
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("task")
-    parser.add_argument("--profile", choices=["probe", "proposal", "implementation", "review"], default="proposal")
+    parser.add_argument("--profile", choices=["probe", "proposal", "implementation", "documentation", "review"], default="proposal")
     parser.add_argument("--resume")
     parser.add_argument("--turns", type=int, default=18)
     parser.add_argument("--timeout", type=int, default=720)
@@ -67,6 +67,10 @@ def main() -> int:
         if args.profile == "implementation":
             tool_names += ["Write", "Edit", "Bash"]
             allows += ["Write", "Edit"]
+        if args.profile == "documentation":
+            tool_names += ["Write", "Edit"]
+            allows += ["Write(./README.md)", "Edit(./README.md)",
+                       "Write(./docs/claude/C-002-report.md)", "Edit(./docs/claude/C-002-report.md)"]
         if args.profile == "review" and args.allow_command:
             tool_names += ["Bash"]
         allows += [f"Bash({item})" for item in args.allow_command]
