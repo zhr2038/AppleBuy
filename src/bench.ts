@@ -2,7 +2,8 @@
 //   fresh-list        = this project's policy (newest list, refusal memory, bounded refresh)
 //   naive-remembered  = matched baseline B1 (remember the first list, walk it in plan order, reload only when exhausted)
 // Local time = performance.now() around engine.handle(). Remote time = SIMULATED virtual latency, not Apple.
-// Rendering = N/A (in-process, no page). Journal = in-memory (fsync excluded from the measured boundary).
+// Rendering = the browser UI's own status renderer (web/render.js) run in Node after each decision, timed
+// separately; it is HTML-string generation only (no browser layout/paint). Journal = in-memory (no fsync).
 import { cpus, platform, arch, release } from "node:os";
 import { Engine } from "./engine.ts";
 import type { Policy } from "./engine.ts";
@@ -11,6 +12,9 @@ import type { Plan } from "./plan.ts";
 import { planHash } from "./plan.ts";
 import { VirtualClock, runEngine } from "./runner.ts";
 import { DEFAULT_SIM, SimStorePort } from "./mock/fake-port.ts";
+import { engineView } from "./app/view.ts";
+// @ts-ignore -- plain ES module shared with the browser UI (no type declarations)
+import { renderEngine } from "../web/render.js";
 
 export type Dist = { n: number; p50: number; p95: number; max: number };
 export type PolicyReport = {
@@ -28,6 +32,11 @@ export type PolicyReport = {
   t2LocalMs: Dist;
   t2SimulatedRemoteMs: Dist;
   t3LocalMs: Dist;
+  t3SimulatedRemoteMs: Dist;
+  /** Status-view generation time per metric window (Node HTML string, no browser layout/paint), separate from local decision time. */
+  t1RenderMs: Dist;
+  t2RenderMs: Dist;
+  t3RenderMs: Dist;
   staleRefActions: number;
   maxConcurrentMutations: number;
 };
@@ -54,7 +63,13 @@ async function oneRun(plan: Plan, seed: number, policy: Policy) {
   const ph = planHash(plan);
   const engine = new Engine({ plan, planHash: ph, runId: "run-bench", journal: new MemoryJournal(), ledger: new MemoryLedger(), now: clock.now, portKind: "mock", policy });
   const port = new SimStorePort(seed, plan);
-  const res = await runEngine(engine, port, clock, { maxSteps: 400 });
+  let html = "";
+  const target = `${plan.products.map((p) => `${p.model} ${p.capacity} ${p.color}`).join(" / ")} @ ${plan.stores.map((x) => x.label).join(" / ")}`;
+  const render = () => {
+    html = renderEngine(engineView(engine.snapshot()), target);
+  };
+  const res = await runEngine(engine, port, clock, { maxSteps: 400, render });
+  if (!html) throw new Error("render not exercised");
   const chooses = res.dispatched.filter((d) => d.kind === "chooseSlot").length;
   return { res, port, accepted: res.simulatedMsToAccept !== null, chooses };
 }
@@ -72,6 +87,8 @@ export async function runBench(plan: Plan, o: { runs: number; warmup: number; se
     const t2: number[] = [];
     const t2r: number[] = [];
     const t3: number[] = [];
+    const t3r: number[] = [];
+    const rd: Record<"T1" | "T2" | "T3", number[]> = { T1: [], T2: [], T3: [] };
     let failures = 0;
     let accepted = 0;
     let stale = 0;
@@ -93,7 +110,11 @@ export async function runBench(plan: Plan, o: { runs: number; warmup: number; se
           t2.push(t.localMs);
           t2r.push(t.simulatedRemoteMs);
         }
-        if (t.metric === "T3") t3.push(t.localMs);
+        if (t.metric === "T3") {
+          t3.push(t.localMs);
+          t3r.push(t.simulatedRemoteMs);
+        }
+        if (t.renderMs !== null) rd[t.metric].push(t.renderMs);
       }
       stale += port.staleRefActions;
       maxConc = Math.max(maxConc, port.maxConcurrent);
@@ -101,7 +122,8 @@ export async function runBench(plan: Plan, o: { runs: number; warmup: number; se
     reports.push({
       policy, runs: o.runs, outcomes, failures, accepted,
       attemptsToAccept: dist(attempts), simulatedMsToAccept: dist(simMs), simulatedMsToRunEnd: dist(simEnd),
-      t1LocalMs: dist(t1), t2LocalMs: dist(t2), t2SimulatedRemoteMs: dist(t2r), t3LocalMs: dist(t3),
+      t1LocalMs: dist(t1), t2LocalMs: dist(t2), t2SimulatedRemoteMs: dist(t2r), t3LocalMs: dist(t3), t3SimulatedRemoteMs: dist(t3r),
+      t1RenderMs: dist(rd.T1), t2RenderMs: dist(rd.T2), t3RenderMs: dist(rd.T3),
       staleRefActions: stale, maxConcurrentMutations: maxConc,
     });
   }
@@ -116,14 +138,14 @@ export async function runBench(plan: Plan, o: { runs: number; warmup: number; se
       cpu: c[0]?.model ?? "unknown",
       logicalCpus: c.length,
       node: process.version,
-      powerMode: "未读取（无权限查询）",
+      powerMode: "未读取（基准程序没有查询电源设置）",
       commit: "未测量（本任务未读取 Git 元数据）",
     },
     boundaries: {
       local: "performance.now() 包围 engine.handle() 与发送前 engine.authorize()，含分类后决策与命令生成，不含端口模拟耗时",
       acceptance: "simulatedMsToAccept 止于接受选择的回复到达（虚拟时钟）；之后的推进与终点观察单独计入 simulatedMsToRunEnd",
       remote: "模拟值：SimStorePort 种子随机延迟 60–240ms（虚拟时钟，不真实等待，不代表苹果网络）",
-      rendering: "N/A（进程内模拟，无页面渲染；DOM 模拟在 C-003）",
+      rendering: "单独计时：每次决策后用浏览器界面同一渲染函数 web/render.js 在 Node 中生成状态卡片 HTML 字符串；不含浏览器排版/绘制，不计入本地决策时间，也不是真实浏览器渲染时间",
       journal: "内存日志，不含 fsync 落盘耗时（CLI 演练使用落盘日志）",
       refresh: "最小刷新间隔 2000ms 计入模拟时间（虚拟时钟）",
     },

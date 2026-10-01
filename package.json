@@ -1,13 +1,14 @@
 {
   "name": "apple-store-pickup-assistant",
-  "version": "0.2.0",
+  "version": "0.3.0-alpha.1",
   "private": true,
-  "description": "Apple 直营店自提购买助手 — C-002 离线演练纵向切片（仅模拟，不访问苹果官网）",
+  "description": "Apple 直营店自提购买助手 — 本机离线自动演练候选（仅模拟，真实购买尚未实现）",
   "type": "module",
   "engines": {
     "node": ">=24.16.0"
   },
   "scripts": {
+    "app": "node src/cli.ts app",
     "rehearse": "node src/cli.ts rehearse --scenario refuse-then-accept",
     "scenarios": "node src/cli.ts scenarios",
     "bench": "node src/cli.ts bench --runs 200 --warmup 20 --seed 1",

@@ -118,15 +118,33 @@ test("A11: host classification and argument normalization", () => {
 });
 
 test("A11: no source file other than the guard touches network modules or fetch", () => {
+  // C-003 narrow adaptation: exactly two files may import exactly one module each — the loopback UI server
+  // (node:http, inbound only) and the task ownership lock (node:net, local IPC pipe only). Their safety intent is
+  // pinned structurally below; every other file, and every other network module, fetch, child_process and
+  // worker_threads, stays forbidden everywhere in src.
+  const ALLOWED: Record<string, string> = { [join("app", "server.ts")]: "http", [join("app", "owner-lock.ts")]: "net" };
   const files = readdirSync(SRC, { recursive: true }).map(String).filter((f) => f.endsWith(".ts"));
   assert.ok(files.length >= 10);
   for (const f of files) {
     const text = readFileSync(join(SRC, f), "utf8");
-    const netImport = /from "node:(http|https|http2|net|tls|dgram|dns|child_process|worker_threads)"/.test(text);
-    const fetchCall = /\bfetch\s*\(/.test(text);
     if (f === "netguard.ts") continue;
-    assert.ok(!netImport && !fetchCall, `${f} must not use network APIs`);
+    const mods = [...text.matchAll(/from "node:(http|https|http2|net|tls|dgram|dns|child_process|worker_threads)"/g)].map((m) => m[1]);
+    const fetchCall = /\bfetch\s*\(/.test(text);
+    assert.ok(!fetchCall, `${f} must not call fetch`);
+    assert.deepEqual(mods, ALLOWED[f] ? [ALLOWED[f]] : [], `${f} must not use network APIs beyond its narrow allowance`);
   }
+  const server = readFileSync(join(SRC, "app", "server.ts"), "utf8");
+  assert.match(server, /export const BIND_HOST = "127\.0\.0\.1";/);
+  assert.equal([...server.matchAll(/\.listen\(/g)].length, 1);
+  assert.match(server, /\.listen\(\{ host: BIND_HOST, port: /, "the UI server listens on the IPv4 loopback literal only");
+  assert.ok(!/0\.0\.0\.0|"::"|"localhost"|http\.(request|get|Agent)\b|https?:\/\/(?!(127\.0\.0\.1|localhost)[:"/])/.test(server), "no wildcard bind, no outbound HTTP, no non-loopback URL");
+  const lock = readFileSync(join(SRC, "app", "owner-lock.ts"), "utf8");
+  for (const m of lock.matchAll(/net\.(\w+)\(([^)]*)/g)) {
+    assert.ok(["connect", "createServer"].includes(m[1]), `owner-lock uses net.${m[1]}`);
+    if (m[1] === "connect") assert.match(m[2], /^\{ path: /, "the lock only connects to its local IPC path");
+  }
+  assert.match(lock, /\.listen\(\{ path: addr, exclusive: true \}/, "the lock only listens on its local IPC path");
+  assert.ok(!/\bhost\s*:|\bport\s*:/.test(lock), "the lock never uses TCP host/port");
   const cli = readFileSync(join(SRC, "cli.ts"), "utf8");
   assert.ok(!cli.includes("real-blocked"), "the CLI never wires the blocked real adapter");
 });

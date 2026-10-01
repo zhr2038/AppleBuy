@@ -7,3 +7,7 @@ Normal unauthenticated HTTPS GET returned 200, 399602 response characters. SHA25
 The body contains iPhone Duo, preorder October 16 at 20:00, release October 23 and the approval condition. This corroborates C-001's public-entry finding using direct content rather than Claude WebFetch summarization. No timezone is explicitly specified in that sentence. The check did not use account data, read cookies, submit forms, add a bag, reserve a time or create an order. Raw body and response headers were not retained.
 
 This does not establish configured SKU, store identifiers, pickup availability, checkout acceptance/refusal signals, hold duration or order/payment confirmation. U02-U06 remain unverified; a marketing page is insufficient for live automation acceptance.
+
+## Later bounded read-only recheck
+
+At 2026-10-01 17:28 Asia/Shanghai, Codex again opened the public [Duo catalog](https://www.apple.com.cn/shop/buy-iphone/iphone-duo) and followed its displayed 512GB night-sky link to [the official variant URL](https://www.apple.com.cn/shop/buy-iphone/iphone-duo/mk2q4ch/a). The returned title identifies that variant; the observed path identifier is `mk2q4ch/a`. This is current public catalog URL evidence, **not** verification of a checkout SKU field, availability, store mapping, pickup slots or order effects. The variant was inspected as an example, not chosen as the user's configuration. No bag/order/reservation/payment action occurred. U02-U06 remain unverified.

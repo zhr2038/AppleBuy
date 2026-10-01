@@ -8,6 +8,11 @@ import { formatRecord, PHASE_ZH, reasonZh, statusPanel } from "./messages.ts";
 import { installNetworkGuard } from "./netguard.ts";
 import { SCENARIOS, checkExpectation, runScenario } from "./mock/scenarios.ts";
 import type { ScenarioRun } from "./mock/scenarios.ts";
+import { TaskApp, isInsideTestRuns } from "./app/task-app.ts";
+import type { CrashPoint } from "./app/task-app.ts";
+import { startServer } from "./app/server.ts";
+import { readOwnerStatus } from "./app/owner-lock.ts";
+import type { SiteMethod, SiteScenario } from "./mock/live-site.ts";
 
 const BANNER = "【演练模式｜FAKE 虚构数据｜离线模拟，不访问苹果官网，不产生真实订单/付款/时段占用】";
 const DEFAULT_PLAN = "examples/plan.fake.json";
@@ -35,7 +40,76 @@ function help(): void {
   node src/cli.ts rehearse --all       运行全部场景并逐一核对预期
   node src/cli.ts scenarios            列出全部场景
   node src/cli.ts check-plan [--plan <文件>]   开始前检查（计划完整性、模式、证据状态）
-  node src/cli.ts bench [--runs 200] [--warmup 20] [--seed 1]   决策级基准（模拟）`);
+  node src/cli.ts bench [--runs 200] [--warmup 20] [--seed 1]   决策级基准（模拟）
+  node src/cli.ts app [--task-dir .local/task] [--port 0] [--latency-ms 500] [--plan <文件>] [--recover] [--auto-start <场景>]
+      启动本机浏览器演练界面（只监听 127.0.0.1；同一任务目录只允许一个执行进程）
+  node src/cli.ts app-status [--task-dir .local/task] [--timeout-ms 800]   只读查询任务执行进程是否存活`);
+}
+
+function appFixtures(): { hold: SiteMethod[]; crashAfter: CrashPoint | null; statusDelayMs?: number } {
+  // Test fixtures only. TaskApp ignores crash/status fixtures unless the task directory is inside .local/test-runs.
+  const hold = (process.env.APPLEBUY_TEST_HOLD ?? "").split(",").filter(Boolean) as SiteMethod[];
+  const c = process.env.APPLEBUY_TEST_CRASH_AFTER;
+  const [type, kind] = c ? c.split(":") : [];
+  const d = Number(process.env.APPLEBUY_TEST_STATUS_DELAY_MS ?? "");
+  return { hold, crashAfter: type ? { type, kind } : null, statusDelayMs: Number.isFinite(d) && d > 0 ? d : undefined };
+}
+
+async function appCmd(opts: Record<string, string | true>): Promise<number> {
+  const taskDir = resolve(typeof opts["task-dir"] === "string" ? opts["task-dir"] : join(".local", "task"));
+  const port = Number(opts.port ?? 0);
+  const latencyMs = Number(opts["latency-ms"] ?? 500);
+  if (!Number.isInteger(port) || port < 0 || port > 65535 || !Number.isInteger(latencyMs) || latencyMs < 0) {
+    console.error("参数无效：--port 0..65535，--latency-ms 为非负整数");
+    return 2;
+  }
+  const planPath = typeof opts.plan === "string" ? opts.plan : DEFAULT_PLAN;
+  const { plan, problems } = loadPlanFile(planPath);
+  if (!plan) {
+    console.error(`计划无法使用（${planPath}）：\n- ${problems.join("\n- ")}`);
+    return 2;
+  }
+  const guard = installNetworkGuard(); // stays installed for the whole process: no non-loopback traffic
+  const fx = appFixtures();
+  const isTestDir = isInsideTestRuns(taskDir);
+  const opened = await TaskApp.open({ taskDir, initialPlan: plan, latencyMs, hold: isTestDir ? fx.hold : [], crashAfter: fx.crashAfter, statusDelayMs: fx.statusDelayMs });
+  if (!opened.ok) {
+    console.log(`APP-REFUSED ${JSON.stringify({ reason: opened.reason, status: opened.status?.kind ?? null })}`);
+    console.error(`✘ 无法成为该任务的执行进程：${opened.detail}`);
+    if (opened.status) console.error(opened.status.kind === "timeout" ? "  现有执行进程仍持有任务锁，但状态查询超时：仍视为存活，不抢占。" : opened.status.kind === "replied" ? `  现有执行进程状态：${JSON.stringify(opened.status.data)}` : `  状态查询：${opened.status.kind}`);
+    guard.uninstall();
+    return opened.reason === "held" ? 3 : 4;
+  }
+  const app = opened.app;
+  const server = await startServer(app, { port });
+  console.log(BANNER);
+  console.log(`APP-READY ${JSON.stringify({ port: server.port, pid: process.pid, taskId: app.doc().taskId, previous: app.previousOwner.kind })}`);
+  console.log(`请在本机浏览器打开：${server.url}  （只监听 127.0.0.1；按 Ctrl+C 退出）`);
+  console.log(`任务目录：${taskDir}`);
+  if (app.previousOwner.kind === "crashed") console.log("提示：上一个执行进程异常退出；如有未完成运行，请在界面点击“恢复运行”。");
+  if (opts.recover) console.log(`恢复：${JSON.stringify(app.recover())}`);
+  if (typeof opts["auto-start"] === "string") console.log(`自动开始：${JSON.stringify(app.start(opts["auto-start"] as SiteScenario))}`);
+  await new Promise<void>((done) => {
+    const stop = () => done();
+    process.once("SIGINT", stop);
+    process.once("SIGTERM", stop);
+  });
+  await app.close();
+  await server.close();
+  guard.uninstall();
+  console.log("已退出（运行状态已保存在日志中，可再次启动并恢复）。");
+  return guard.attempts.length ? 1 : 0;
+}
+
+async function appStatus(opts: Record<string, string | true>): Promise<number> {
+  const taskDir = resolve(typeof opts["task-dir"] === "string" ? opts["task-dir"] : join(".local", "task"));
+  const s = await readOwnerStatus(taskDir, Number(opts["timeout-ms"] ?? 800));
+  console.log(`APP-STATUS ${JSON.stringify({ kind: s.kind })}`);
+  if (s.kind === "replied") console.log(`执行进程存活：${JSON.stringify(s.data)}`);
+  else if (s.kind === "timeout") console.log("执行进程仍持有任务锁，但状态读取超时：视为存活（超时不等于退出）");
+  else if (s.kind === "gone") console.log("没有执行进程持有该任务（已真正退出或从未启动）");
+  else console.log(`状态读取失败：${s.code}（失败即关闭：不视为已退出）`);
+  return 0;
 }
 
 function flagshipChecks(run: ScenarioRun): { ok: boolean; text: string }[] {
@@ -176,8 +250,9 @@ async function bench(opts: Record<string, string | true>): Promise<number> {
     console.log(`  到运行结束的模拟时间(ms，另含继续结账与终点观察) ${fmt(p.simulatedMsToRunEnd, 0)}`);
     console.log(`  T1 列表→有效选择 本地决策(ms) ${fmt(p.t1LocalMs)}`);
     console.log(`  T2 拒绝→下一次有效选择 本地决策(ms) ${fmt(p.t2LocalMs)}；其中模拟远端(ms) ${fmt(p.t2SimulatedRemoteMs, 0)}`);
-    console.log(`  T3 接受→下一必要动作 本地决策(ms) ${fmt(p.t3LocalMs)}`);
-    console.log(`  渲染时间：N/A｜过期引用操作 ${p.staleRefActions}｜最大并发在途操作 ${p.maxConcurrentMutations}`);
+    console.log(`  T3 接受→下一必要动作 本地决策(ms) ${fmt(p.t3LocalMs)}；其中模拟远端(ms) ${fmt(p.t3SimulatedRemoteMs, 0)}`);
+    console.log(`  状态卡片生成(ms，Node 字符串，非浏览器绘制) T1 ${fmt(p.t1RenderMs)}｜T2 ${fmt(p.t2RenderMs)}｜T3 ${fmt(p.t3RenderMs)}`);
+    console.log(`  过期引用操作 ${p.staleRefActions}｜最大并发在途操作 ${p.maxConcurrentMutations}`);
   }
   console.log(`\n报告已写入：${out}`);
   console.log("提示：以上为模拟数据，不能当作苹果官网性能、真实成功率或人工速度。");
@@ -197,6 +272,10 @@ async function main(): Promise<number> {
       return checkPlan(opts);
     case "bench":
       return bench(opts);
+    case "app":
+      return appCmd(opts);
+    case "app-status":
+      return appStatus(opts);
     case "help":
     case "--help":
       help();
