@@ -14,6 +14,8 @@ Return an English evidence-based review with: reviewed source manifest, actual c
 
 State separate evidence-based conclusions for C-003's offline application and C-004's read-only public-entry preflight. C-004 has actual unauthenticated public GET/browser observation evidence, but it still does not implement automatic browser/checkout operations or a real purchase port. Review is read-only: do not make live website requests or use private reviewer files; sanitized public checks are summarized in the report, and approved Node tests use stubs/network-denying preloads.
 
+Additional current-site evidence is summarized in `docs/reviews/iphone-18-pro-dalian-probe-20261001.md`. A newly user-authorized generic Pro preparation probe reached a quantity-one Dalian pickup bag and a guest-checkout informed-consent gate. After the user handled that gate, Codex inspected the same fulfillment page: October 2 was already selected and 46 enabled 15-minute times were offered, with the placeholder still selected. No time was selected or order/payment submitted. This changed management evidence only, not the 48-file product/test source manifest. Review the factual scope and remaining unknowns; do not infer backend acceptance, hold timing, Duo slot behavior, real readiness or authorization to operate this private session. Do not make live calls for this read-only review.
+
 Invocation after a changed availability signal or the reported reset, only if no other Claude invocation is active:
 
 ```powershell
