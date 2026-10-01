@@ -3,7 +3,7 @@
 // runner must call authorize() immediately before the port call; authorize() re-validates control state, plan,
 // page context and list freshness, writes a durable "sent" record (write-ahead), or cancels the prepared op.
 import type { Bounds, CheckoutContext, Plan, SlotFields } from "./plan.ts";
-import { compareRank, contextViolations, planHash, rankTuple, shortHash, slotPlanViolation } from "./plan.ts";
+import { compareRank, contextViolations, planHash, preferredSlotOffers, rankTuple, shortHash, slotPlanViolation, validatePlan } from "./plan.ts";
 import type { ListObservation, MutationOutcome, Observation, ObservedSlot, StepObservation } from "./observe.ts";
 import type { Fields, JournalRecord, JournalSink, LedgerLike } from "./journal.ts";
 
@@ -128,6 +128,11 @@ export class Engine {
     // Later mutation of the caller-owned plan object can neither widen nor change this run's authorization.
     const bound = deepFreeze(structuredClone(o.plan));
     if (planHash(bound) !== o.planHash) throw new Error("PlanBindingMismatch: plan content does not match the reviewed planHash");
+    if ("slotSelection" in bound) {
+      if (!validatePlan(bound).plan) throw new Error("InvalidSlotSelectionPlan");
+      // The stale-reference benchmark intentionally violates fresh-list semantics; never use it for this plan.
+      if (o.policy === "naive-remembered") throw new Error("LastSlotPolicyRequiresFreshList");
+    }
     this.#plan = bound;
     this.#o = o;
     this.#b = bound.bounds;
@@ -219,7 +224,7 @@ export class Engine {
         // The click must target the newest applicable list: a redraw or newer list since preparation supersedes it.
         const L = this.#latest;
         const s = L?.slots.find((x) => x.ref === cmd.ref && x.key === p.slotKey);
-        if (!L || !s || !s.selectable || this.#suppressed(s.key, L.gen)) {
+        if (!L || !s || !s.selectable || this.#suppressed(s.key, L.gen) || !preferredSlotOffers(this.#plan, L.slots).some((offer) => offer.key === s.key)) {
           this.#cancel(p, "superseded-by-newer-list");
           this.#setPhase("AWAIT_LIST", "re-decide-newest-list");
           return no(this.#afterListReady());
@@ -471,7 +476,7 @@ export class Engine {
   }
   #eligibleSorted(L: GenList): ObservedSlot[] {
     const plan = this.#plan;
-    return L.slots
+    return preferredSlotOffers(plan, L.slots)
       .filter((s) => this.#withinPlanAndCaps(s) && !this.#suppressed(s.key, L.gen))
       .sort((a, b) => compareRank(rankTuple(plan, a), rankTuple(plan, b)));
   }

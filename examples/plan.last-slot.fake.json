@@ -1,0 +1,34 @@
+{
+  "schema": "pickup-plan/v1",
+  "fake": true,
+  "label": "FAKE 每天末档三日演练（全部虚构；不绑定真实日期）",
+  "timezone": "Asia/Shanghai",
+  "fulfillment": "pickup",
+  "quantity": 1,
+  "maxTotalCny": 9999,
+  "products": [
+    { "id": "FAKE-P1", "model": "FAKE 演示手机", "capacity": "FAKE-容量A", "color": "FAKE-颜色甲" },
+    { "id": "FAKE-P2", "model": "FAKE 演示手机", "capacity": "FAKE-容量A", "color": "FAKE-颜色乙" }
+  ],
+  "stores": [
+    { "label": "FAKE 门店甲", "role": "primary" },
+    { "label": "FAKE 门店乙", "role": "backup" }
+  ],
+  "dates": ["2099-01-01", "2099-01-02", "2099-01-03"],
+  "windows": [
+    { "start": "08:00", "end": "12:00" },
+    { "start": "14:00", "end": "18:00" }
+  ],
+  "arrival": { "earliest": "09:30", "latest": "18:00" },
+  "priority": ["date", "store", "window"],
+  "slotSelection": "last-offered-per-store-date",
+  "bounds": {
+    "maxRefusals": 8,
+    "maxRefreshes": 5,
+    "maxAttemptsPerSlot": 2,
+    "minRefreshIntervalMs": 2000,
+    "maxQueryFailures": 3,
+    "maxReconcileAttempts": 2
+  },
+  "paymentMethodLabel": "FAKE-付款方式标签"
+}

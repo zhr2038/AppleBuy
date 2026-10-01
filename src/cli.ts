@@ -155,7 +155,8 @@ async function rehearse(opts: Record<string, string | true>): Promise<number> {
         console.error(`未知场景：${id}。可用：${SCENARIOS.map((s) => s.id).join(", ")}`);
         return 2;
       }
-      const run = await runScenario(def, { plan, dir });
+      // A scenario's explicit FAKE policy applies only when the user did not supply a plan.
+      const run = await runScenario(def, { plan: typeof opts.plan === "string" ? plan : def.plan ?? plan, dir });
       const bad = checkExpectation(run);
       const checks = def.id === "refuse-then-accept" ? flagshipChecks(run) : [];
       const ok = bad.length === 0 && checks.every((c) => c.ok);
@@ -169,12 +170,12 @@ async function rehearse(opts: Record<string, string | true>): Promise<number> {
       }
       console.log(`\n${BANNER}`);
       console.log(`场景：${def.id} — ${def.title}`);
-      console.log(`覆盖：${def.covers.join(", ")}｜计划：${plan.label}（${plan.fake ? "FAKE" : "用户计划"}，哈希 ${run.planHash}）｜端口：${run.port.label}`);
+      console.log(`覆盖：${def.covers.join(", ")}｜计划：${run.plan.label}（${run.plan.fake ? "FAKE" : "用户计划"}，哈希 ${run.planHash}）｜端口：${run.port.label}`);
       if (!opts.quiet) for (const rec of run.journal.records()) {
         const line = formatRecord(rec);
         if (line) console.log(line);
       }
-      if (!opts.quiet) for (const line of statusPanel(run.engine.snapshot(), `${plan.products.map((p) => p.id).join("/")} @ ${plan.stores.map((s) => s.label).join("/")}`)) console.log(line);
+      if (!opts.quiet) for (const line of statusPanel(run.engine.snapshot(), `${run.plan.products.map((p) => p.id).join("/")} @ ${run.plan.stores.map((s) => s.label).join("/")}`)) console.log(line);
       for (const c of checks) console.log(`${c.ok ? "✔" : "✘"} ${c.text}`);
       console.log(`${ok ? "✔ 符合预期" : "✘ 不符合预期"}：终态 ${PHASE_ZH[run.result.phase as keyof typeof PHASE_ZH] ?? run.result.phase}${run.result.reason ? `（${reasonZh(run.result.reason)}）` : ""}`);
       for (const b of bad) console.log(`  ✘ ${b}`);

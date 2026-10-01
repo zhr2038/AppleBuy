@@ -1,0 +1,183 @@
+{
+  "schema": "independent-check-receipt/v1",
+  "scope": "Codex quota-takeover offline candidate; actual Claude review pending",
+  "sourceManifestSha256": "b0e5696aeeb4218bbf809b89905ee25b3fc8340efda7a216ecb802b75ad00b0d",
+  "sourceFiles": 58,
+  "protectedReviewerFilesUnchanged": 17,
+  "checks": {
+    "red": {
+      "command": [
+        "node",
+        "--test",
+        "review/last-slot-policy.test.ts"
+      ],
+      "startedAtUtc": "2026-10-01T14:44:12.699272+00:00",
+      "endedAtUtc": "2026-10-01T14:44:12.832392+00:00",
+      "exitCode": 1,
+      "protectedFilesUnchanged": 17,
+      "sourceBefore": {
+        "src/plan.ts": "1151f49093d36f66a7a1ed3223cdbfad272e2a2b86485a1797214987ee5890da",
+        "src/engine.ts": "7c5bb521e71ecf235fbb62437cbd8db45cade794275982b67e73286594741541",
+        "src/mock/scenarios.ts": "514b31e2b856e38036f7845cbc730cd2772d3a6806fb80d5c794b27a472a3274"
+      },
+      "sourceAfter": {
+        "src/plan.ts": "1151f49093d36f66a7a1ed3223cdbfad272e2a2b86485a1797214987ee5890da",
+        "src/engine.ts": "7c5bb521e71ecf235fbb62437cbd8db45cade794275982b67e73286594741541",
+        "src/mock/scenarios.ts": "514b31e2b856e38036f7845cbc730cd2772d3a6806fb80d5c794b27a472a3274"
+      },
+      "tests": 12,
+      "pass": 4,
+      "fail": 8,
+      "cancelled": 0,
+      "skipped": 0,
+      "todo": 0
+    },
+    "targeted": {
+      "command": [
+        "node",
+        "--test",
+        "review/last-slot-policy.test.ts"
+      ],
+      "startedAtUtc": "2026-10-01T14:56:12.328208+00:00",
+      "endedAtUtc": "2026-10-01T14:56:12.472850+00:00",
+      "exitCode": 0,
+      "protectedFilesUnchanged": 17,
+      "sourceBefore": {
+        "src/plan.ts": "98549b1ffb5b34692963bc3e3692ffb0944fd882f62eb715e890e7e6f059fa6a",
+        "src/engine.ts": "63e35f9039610ff7e0841c636122f2c4e8f7d602b40a9dac8a086a952e8e6dba",
+        "src/mock/scenarios.ts": "aa8559841e23cb5933787a6dba81ca0af3bd9d457c9084c8f63527022643bc27"
+      },
+      "sourceAfter": {
+        "src/plan.ts": "98549b1ffb5b34692963bc3e3692ffb0944fd882f62eb715e890e7e6f059fa6a",
+        "src/engine.ts": "63e35f9039610ff7e0841c636122f2c4e8f7d602b40a9dac8a086a952e8e6dba",
+        "src/mock/scenarios.ts": "aa8559841e23cb5933787a6dba81ca0af3bd9d457c9084c8f63527022643bc27"
+      },
+      "tests": 12,
+      "pass": 12,
+      "fail": 0,
+      "cancelled": 0,
+      "skipped": 0,
+      "todo": 0
+    },
+    "full": {
+      "command": [
+        "node",
+        "--test",
+        "test/*.test.ts",
+        "review/*.test.ts"
+      ],
+      "startedAtUtc": "2026-10-01T14:56:50.817001+00:00",
+      "endedAtUtc": "2026-10-01T14:56:56.605868+00:00",
+      "exitCode": 0,
+      "protectedFilesUnchanged": 17,
+      "sourceBefore": {
+        "src/plan.ts": "98549b1ffb5b34692963bc3e3692ffb0944fd882f62eb715e890e7e6f059fa6a",
+        "src/engine.ts": "63e35f9039610ff7e0841c636122f2c4e8f7d602b40a9dac8a086a952e8e6dba",
+        "src/mock/scenarios.ts": "aa8559841e23cb5933787a6dba81ca0af3bd9d457c9084c8f63527022643bc27"
+      },
+      "sourceAfter": {
+        "src/plan.ts": "98549b1ffb5b34692963bc3e3692ffb0944fd882f62eb715e890e7e6f059fa6a",
+        "src/engine.ts": "63e35f9039610ff7e0841c636122f2c4e8f7d602b40a9dac8a086a952e8e6dba",
+        "src/mock/scenarios.ts": "aa8559841e23cb5933787a6dba81ca0af3bd9d457c9084c8f63527022643bc27"
+      },
+      "tests": 167,
+      "pass": 167,
+      "fail": 0,
+      "cancelled": 0,
+      "skipped": 0,
+      "todo": 0
+    },
+    "cli": {
+      "command": [
+        "node",
+        "src/cli.ts",
+        "rehearse",
+        "--all",
+        "--quiet"
+      ],
+      "startedAtUtc": "2026-10-01T14:56:51.183607+00:00",
+      "endedAtUtc": "2026-10-01T14:56:54.225265+00:00",
+      "exitCode": 0,
+      "protectedFilesUnchanged": 17,
+      "sourceBefore": {
+        "src/plan.ts": "98549b1ffb5b34692963bc3e3692ffb0944fd882f62eb715e890e7e6f059fa6a",
+        "src/engine.ts": "63e35f9039610ff7e0841c636122f2c4e8f7d602b40a9dac8a086a952e8e6dba",
+        "src/mock/scenarios.ts": "aa8559841e23cb5933787a6dba81ca0af3bd9d457c9084c8f63527022643bc27"
+      },
+      "sourceAfter": {
+        "src/plan.ts": "98549b1ffb5b34692963bc3e3692ffb0944fd882f62eb715e890e7e6f059fa6a",
+        "src/engine.ts": "63e35f9039610ff7e0841c636122f2c4e8f7d602b40a9dac8a086a952e8e6dba",
+        "src/mock/scenarios.ts": "aa8559841e23cb5933787a6dba81ca0af3bd9d457c9084c8f63527022643bc27"
+      }
+    },
+    "vertical": {
+      "command": [
+        "node",
+        "src/cli.ts",
+        "rehearse",
+        "--scenario",
+        "last-slot-three-dates",
+        "--plan",
+        "examples/plan.last-slot.fake.json",
+        "--json"
+      ],
+      "startedAtUtc": "2026-10-01T14:57:38.140785+00:00",
+      "endedAtUtc": "2026-10-01T14:57:38.368786+00:00",
+      "exitCode": 0,
+      "protectedFilesUnchanged": 17,
+      "sourceBefore": {
+        "src/plan.ts": "98549b1ffb5b34692963bc3e3692ffb0944fd882f62eb715e890e7e6f059fa6a",
+        "src/engine.ts": "63e35f9039610ff7e0841c636122f2c4e8f7d602b40a9dac8a086a952e8e6dba",
+        "src/mock/scenarios.ts": "aa8559841e23cb5933787a6dba81ca0af3bd9d457c9084c8f63527022643bc27"
+      },
+      "sourceAfter": {
+        "src/plan.ts": "98549b1ffb5b34692963bc3e3692ffb0944fd882f62eb715e890e7e6f059fa6a",
+        "src/engine.ts": "63e35f9039610ff7e0841c636122f2c4e8f7d602b40a9dac8a086a952e8e6dba",
+        "src/mock/scenarios.ts": "aa8559841e23cb5933787a6dba81ca0af3bd9d457c9084c8f63527022643bc27"
+      }
+    }
+  },
+  "cliScenarios": {
+    "total": 28,
+    "expected": 28,
+    "unexpected": 0,
+    "externalAccesses": 0
+  },
+  "fakeVertical": {
+    "planHash": "168564db538b3285",
+    "choices": [
+      {
+        "opId": "op-0-1",
+        "kind": "chooseSlot",
+        "ref": "r1-4",
+        "slotKey": "FAKE 门店甲|2099-01-01|17:30-18:00"
+      },
+      {
+        "opId": "op-0-2",
+        "kind": "chooseSlot",
+        "ref": "r2-2",
+        "slotKey": "FAKE 门店甲|2099-01-02|17:00-17:30"
+      },
+      {
+        "opId": "op-0-3",
+        "kind": "chooseSlot",
+        "ref": "r3-0",
+        "slotKey": "FAKE 门店甲|2099-01-03|16:30-17:00"
+      }
+    ],
+    "freshListSequences": [
+      1,
+      2,
+      3
+    ],
+    "explicitRefusals": 2,
+    "endpoint": "REHEARSAL_ENDPOINT",
+    "submitCalls": 0,
+    "mismatches": [],
+    "runnerChecks": "Scenario checks also require zero stale refs, at most one in-flight operation, and no runner abort."
+  },
+  "realDateBindingVerified": false,
+  "realPurchaseImplemented": false,
+  "mutualAgreement": false,
+  "browserPreview": "Existing process 38708 still serves the historical R3 candidate; no C005 browser demonstration claimed."
+}

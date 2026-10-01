@@ -10,6 +10,10 @@ Buy one personal-use iPhone Duo from an official Apple mainland China retail sto
 
 All unspecified capacity, color, alternatives, store IDs, dates, time windows, maximum tax-inclusive total, and payment method are user configuration. Clearly labelled fake values may support rehearsal. Missing values block real operation. Smaller local competition is an unverified hypothesis and not a scheduling rule. Never promise a purchase or equate mock success to Apple success.
 
+## Direct user steering after the baseline
+
+The pickup preference now selects the last offered slot on the first actual offered pickup date, then the last on the second, then the third, subject to all existing conditions. This describes relative offered dates, not calendar today and not a guarantee that Apple offers three dates. Do not silently substitute an earlier same-day slot. Private customer configuration remains local and is not reproduced here. C-005 tests terminal-offer selection over an already bound concrete allowed-date set; automatic verified real relative-date binding is still outstanding. Bind the initial authorized set before running and preserve it across refresh/restart instead of rolling it forward to a fourth date.
+
 ## Functional requirements
 
 | ID | Required behavior |

@@ -20,10 +20,12 @@ C-002 已独立验收；C-004 有限只读范围已获实际 Claude 同意；C-0
 | R05 / R06 | `src/app/view.ts`、`web/render.js` 与 `review/app-handoff.test.ts`：步骤/理由/候选/最后有效观察/不明状态、重启历史标记、运行绑定目标不受未来编辑计划影响 |
 | R02 局部 / A04 / A10 / A11 / A13 | `review/public-entry.test.ts`：13 项公开入口识别、未加载/过期/未知/读取失败分离、固定 GET 范围与重定向/认证/拒绝/限流停止、来源声明、额外敏感字段拒绝、原演练网络拦截保留；CLI 导入测试用独立进程的禁网预加载器；实际只读入口证据见 `docs/reviews/C-004.md`。真实计划/会话/商品门店绑定与 U02–U06 未验证 |
 
-运行 `npm.cmd test` 覆盖实现和独立评审测试。`node src/cli.ts rehearse --all --quiet` 覆盖 27 个声明场景。浏览器操作证据由 Codex 的 Computer Use 工具实际生成，保存在本地；它不是 Node 测试命令的一部分。Windows 已实测，其他系统未实机验收。没有 TypeScript 静态类型检查；Node 原生类型擦除与运行测试不能替代静态检查。
+运行 `npm.cmd test` 覆盖实现和独立评审测试。`node src/cli.ts rehearse --all --quiet` 覆盖 28 个声明场景。浏览器操作证据由 Codex 的 Computer Use 工具实际生成，保存在本地；它不是 Node 测试命令的一部分。Windows 已实测，其他系统未实机验收。没有 TypeScript 静态类型检查；Node 原生类型擦除与运行测试不能替代静态检查。
 
 新增独立复现：`review/rollback-evidence.test.ts` 验证部分回滚不产生第二单、提示准确；`review/public-entry-cross-review.test.ts` 验证隐藏内容、类型及源码隔离；`review/journal-io-cross-review.test.ts` 用真实目录读取错误验证新旧日志的状态／启动／恢复／授权、重开释放、未来计划提示。四个 I/O／提示用例修复前 0/4，修复后 4/4，16 个受保护文件未改。
 
 `test/app-evidence.test.ts` 覆盖孤儿证据、发送前异常和物理路径门禁；`test/public-entry-hidden.test.ts` 补充隐藏结构；新 `test/journal-io-boundaries.test.ts` 有六个额度接手实现用例，验证发送前读错、初始化／重放异常、未知证据、所有权历史／退出写入错误的锁释放。这六项是 Codex 实现检查，仍待 Claude 独立审查。
 
-当前完整回归：**154 项通过、0 失败/跳过/取消**，27 场景预期全部一致、外部访问 0。源码身份为 R3 的 56 文件清单；R2 53 文件／144 测试和此前 48／44 文件仅为历史收据。通过测试不能代替双方一致，详见 `docs/reviews/C-003-R3-codex-takeover.md`。
+当前完整回归：**167 项通过、0 失败/跳过/取消**，28 场景预期全部一致、外部访问 0。源码身份为 C-005 的 58 文件清单；R3 56 文件／154 测试、R2 53 文件／144 测试和此前 48／44 文件保留为历史收据。通过测试不能代替双方一致，详见 `docs/reviews/C-005-codex-takeover.md`。
+
+`review/last-slot-policy.test.ts` 是改动前冻结的 12 项标准，原版 4 通过／8 失败，补齐规则后 12 项通过；验证完整列表末档、不可选／拒绝／到店范围不回退到当天早档、发送前新增晚档、非法策略、日期范围、哈希冻结、超时和重启核实。原 16 个保护文件及新标准文件共 17 个未改。`last-slot-three-dates` 实际 CLI 从虚构 JSON 计划跑到两次明确拒绝、两次最新列表重选、第三天末档接受及零提交终点；真实相对日期绑定仍未验证，当前没有 C-005 浏览器验收声称。

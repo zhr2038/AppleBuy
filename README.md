@@ -2,7 +2,7 @@
 
 > **重要：购买程序当前只有离线演练。** 演练中的商品、门店、日期、价格、时段均为 **FAKE 虚构数据**；界面里的“模拟官网”及其 `mock-v0` 契约是本项目**自行虚构**的，**不是** Apple 的页面或接口。离线程序不访问苹果官网。另有单独、明确执行才联网的**公开入口只读预检**（C-004），仅识别目录与预检阻断；它不是库存监控或真实购买适配器。两者均不能产生真实订单、付款或时段占用。真实结账与时段契约**尚未验证**。**真实正式模式不可用。**
 
-C-002 已独立验收。Claude 恢复额度后已实际审查接手代码，认可 C-004 的有限只读范围，并返回 C-003 的回滚和日志读取问题。第二轮修复再次实际耗尽额度后，Codex 按授权补齐修复，**154 项测试、27 个场景通过，但新接手代码仍待实际 Claude 复审，C-003 尚未最终验收**。本地购买偏好仅为私有开发草稿，不启用真实模式。当前证据与精确恢复点见 [docs/status.md](docs/status.md)。
+C-002 已独立验收。Claude 恢复额度后已实际审查接手代码，认可 C-004 的有限只读范围，并返回 C-003 的回滚和日志读取问题。第二轮修复再次实际耗尽额度后，Codex 按授权补齐修复和每天末档规则，**167 项测试、28 个场景通过，但新接手代码仍待实际 Claude 复审，C-003／C-005 尚未最终验收**。本地购买偏好仅为私有开发草稿，不启用真实模式。当前证据与精确恢复点见 [docs/status.md](docs/status.md)。
 
 ## 它演示了什么
 
@@ -63,7 +63,8 @@ node src/cli.ts app-status --task-dir .local/task
 | 目的 | 命令 |
 | --- | --- |
 | 旗舰演练（命令行版） | `node src/cli.ts rehearse` |
-| 运行全部 27 个场景并核对预期 | `node src/cli.ts rehearse --all` （加 `--quiet` 只看结论） |
+| 运行全部 28 个场景并核对预期 | `node src/cli.ts rehearse --all` （加 `--quiet` 只看结论） |
+| 三天末档重选演练（全部虚构） | `node src/cli.ts rehearse --scenario last-slot-three-dates --plan examples/plan.last-slot.fake.json` |
 | 列出场景 | `node src/cli.ts scenarios` |
 | 开始前检查计划 | `node src/cli.ts check-plan --plan examples/plan.fake.json` |
 | 决策级基准（模拟） | `node src/cli.ts bench --runs 200 --warmup 20 --seed 1` |
@@ -103,6 +104,7 @@ JSON 中 `purchaseReady` 与 `realMutationsAvailable` 恒为 `false`。退出码
 | `products` | 授权的商品规格（型号/容量/颜色），可多个备选 |
 | `stores` | 授权门店，`primary` 首选 / `backup` 备选 |
 | `dates` | 授权日期（`YYYY-MM-DD`） |
+| `slotSelection` | 可选 `last-offered-per-store-date`：每个授权门店／日期只考虑完整最新列表的最后一档；日期递增、`priority` 首项必须为 `date`。末档不可选、被拒或超出到店范围时不自动改选当天较早时段。省略保留原有较早时段策略 |
 | `windows` | 授权时间窗；整个时段必须落在某个窗口内 |
 | `arrival` | 可到店时间范围；整个时段必须落在该范围内 |
 | `priority` | 排序优先级，例如 `["date","store","window"]`；不按页面显示顺序 |

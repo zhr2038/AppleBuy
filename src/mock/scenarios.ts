@@ -39,6 +39,21 @@ export const FAKE_PLAN: Plan = {
   paymentMethodLabel: "FAKE-付款方式标签",
 };
 
+export const LAST_SLOT_FAKE_PLAN: Plan = {
+  ...FAKE_PLAN,
+  label: "FAKE 每天末档三日演练（全部虚构；不绑定真实日期）",
+  dates: ["2099-01-01", "2099-01-02", "2099-01-03"],
+  slotSelection: "last-offered-per-store-date",
+};
+const LAST_DAY_SLOTS = {
+  firstEarly: ["FAKE 门店甲", "2099-01-01", "10:00", "10:30"],
+  firstLast: ["FAKE 门店甲", "2099-01-01", "17:30", "18:00"],
+  secondEarly: ["FAKE 门店甲", "2099-01-02", "10:00", "10:30"],
+  secondLast: ["FAKE 门店甲", "2099-01-02", "17:00", "17:30"],
+  thirdEarly: ["FAKE 门店甲", "2099-01-03", "10:00", "10:30"],
+  thirdLast: ["FAKE 门店甲", "2099-01-03", "16:30", "17:00"],
+} satisfies Record<string, SlotTuple>;
+
 export const S = {
   A1: ["FAKE 门店甲", "2099-01-01", "10:00", "10:30"],
   A2: ["FAKE 门店甲", "2099-01-01", "10:30", "11:00"],
@@ -63,12 +78,38 @@ export type ScenarioDef = {
   title: string;
   covers: string[];
   bounds?: Partial<Bounds>;
+  plan?: Plan;
   capability?: "valid" | "expired";
   steps: () => Step[];
   expect: { phase: Phase; reason?: string; chosen?: string[]; chooseCalls?: number; submits?: number };
 };
 
 export const SCENARIOS: ScenarioDef[] = [
+  {
+    id: "last-slot-three-dates",
+    title: "每天末档：第一天末档拒绝 → 新列表第二天末档拒绝 → 新列表第三天末档接受 → 演练终点",
+    covers: ["C005", "A01", "A02", "A05", "A06", "A11"],
+    plan: LAST_SLOT_FAKE_PLAN,
+    steps: () => {
+      const s = LAST_DAY_SLOTS;
+      const offers = (first: boolean, second: boolean): [SlotTuple, boolean][] => [
+        [s.thirdLast, true], [s.firstEarly, true], [s.secondLast, second],
+        [s.thirdEarly, true], [s.firstLast, first], [s.secondEarly, true],
+      ];
+      return [
+        obs(() => r(page(1, offers(true, true)))),
+        choose((c) => r(res(c.opId, "rejected", { code: "slot-full", slotRefused: true, freshList: page(2, offers(false, true)) }))),
+        choose((c) => r(res(c.opId, "rejected", { code: "slot-full", slotRefused: true, freshList: page(3, offers(false, false)) }))),
+        choose(accept),
+        ...endSteps(s.thirdLast, 4),
+      ];
+    },
+    expect: {
+      phase: "REHEARSAL_ENDPOINT",
+      chosen: [key(LAST_DAY_SLOTS.firstLast), key(LAST_DAY_SLOTS.secondLast), key(LAST_DAY_SLOTS.thirdLast)],
+      chooseCalls: 3, submits: 0,
+    },
+  },
   {
     id: "refuse-then-accept",
     title: "首选时段被明确拒绝 → 有限刷新得到新列表/新引用 → 选另一个授权时段被接受 → 自动继续到模拟付款前终点",
@@ -371,8 +412,9 @@ export type ScenarioRun = {
   journalPath: string | null;
 };
 
-export function scenarioPlan(def: ScenarioDef, base: Plan = FAKE_PLAN): Plan {
-  return def.bounds ? { ...base, bounds: { ...base.bounds, ...def.bounds } } : base;
+export function scenarioPlan(def: ScenarioDef, base?: Plan): Plan {
+  const chosen = base ?? def.plan ?? FAKE_PLAN;
+  return def.bounds ? { ...chosen, bounds: { ...chosen.bounds, ...def.bounds } } : chosen;
 }
 
 export async function runScenario(def: ScenarioDef, o: { plan?: Plan; dir?: string; ledger?: LedgerLike; policy?: Policy } = {}): Promise<ScenarioRun> {

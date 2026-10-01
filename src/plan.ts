@@ -29,6 +29,8 @@ export type Plan = {
   windows: TimeWindow[];
   arrival: { earliest: string; latest: string };
   priority: PriorityField[];
+  // Omitted preserves the original earliest-slot ranking. This policy never widens dates/windows.
+  slotSelection?: "last-offered-per-store-date";
   bounds: Bounds;
   paymentMethodLabel: string;
 };
@@ -121,6 +123,13 @@ export function validatePlan(raw: unknown): { plan: Plan | null; problems: strin
   if (!r.arrival || !isTime(r.arrival.earliest) || !isTime(r.arrival.latest) || r.arrival.earliest >= r.arrival.latest) p.push("arrival.earliest/latest 必须为 HH:MM 且 earliest < latest");
   const pr = r.priority;
   if (!Array.isArray(pr) || pr.length !== 3 || new Set(pr).size !== 3 || !pr.every((f: any) => f === "date" || f === "store" || f === "window")) p.push("priority 必须是 date/store/window 的排列");
+  if ("slotSelection" in r) {
+    if (r.slotSelection !== "last-offered-per-store-date") p.push("slotSelection 无效，仅支持 last-offered-per-store-date（每天末档）");
+    else {
+      if (!Array.isArray(pr) || pr[0] !== "date") p.push("每天末档策略必须先按日期排序（priority 首项为 date）");
+      if (Array.isArray(r.dates) && r.dates.every(isDate) && r.dates.some((date: string, i: number) => i > 0 && date <= r.dates[i - 1])) p.push("每天末档策略的 dates 必须按实际日期递增，不能滚动扩展日期范围");
+    }
+  }
   if (!r.bounds || typeof r.bounds !== "object") p.push("缺少 bounds 重试上限");
   else {
     for (const k of Object.keys(HARD_CAPS) as (keyof Bounds)[]) {
@@ -159,6 +168,27 @@ export function slotPlanViolation(plan: Plan, s: SlotFields): string | null {
   // Conservative: the whole slot must lie inside the user's arrival range.
   if (s.start < plan.arrival.earliest || s.end > plan.arrival.latest) return "arrival-out-of-range";
   return null;
+}
+
+/**
+ * Apply the optional terminal-offer rule to a complete recognized latest list, BEFORE eligibility.
+ * A disabled/refused/out-of-arrival terminal offer excludes earlier siblings; it does not authorize them.
+ * Store/date groups stay separate. The caller still enforces every static plan condition and retry bound.
+ */
+export function preferredSlotOffers<T extends SlotFields>(plan: Plan, offers: readonly T[]): readonly T[] {
+  if (plan.slotSelection === undefined) return offers;
+  if (plan.slotSelection !== "last-offered-per-store-date") throw new Error("InvalidSlotSelectionPlan");
+  const group = (s: SlotFields): string => JSON.stringify([s.store, s.date]);
+  const terminal = new Map<string, T>();
+  for (const s of offers) {
+    const k = group(s);
+    const prior = terminal.get(k);
+    if (!prior || s.start > prior.start || (s.start === prior.start && s.end > prior.end)) terminal.set(k, s);
+  }
+  return offers.filter((s) => {
+    const last = terminal.get(group(s))!;
+    return s.start === last.start && s.end === last.end;
+  });
 }
 
 /** Context deviations; any entry blocks every action (A06). */
