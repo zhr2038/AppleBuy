@@ -95,12 +95,29 @@ export class FileJournal implements JournalSink {
   }
 }
 
-export type JournalReadError = "missing" | "empty" | "truncated" | "corrupt-json" | "hash-chain" | "not-allowlisted" | "missing-run-start" | "missing-plan-binding" | "plan-mismatch";
+export type JournalReadError = "missing" | "unreadable" | "empty" | "truncated" | "corrupt-json" | "hash-chain" | "not-allowlisted" | "missing-run-start" | "missing-plan-binding" | "plan-mismatch";
+/** `code` is the filesystem error code of an "unreadable" journal; OS messages (which carry local paths) are never kept. */
+export type JournalReadFailure = { ok: false; error: JournalReadError; line: number; code?: string };
 
-/** Verifies the whole chain. Truncated, corrupted or foreign-plan journals are refused, never partially trusted. */
-export function readJournal(path: string, expectedPlanHash: string): { ok: true; records: JournalRecord[] } | { ok: false; error: JournalReadError; line: number } {
-  if (!existsSync(path)) return { ok: false, error: "missing", line: 0 };
-  const text = readFileSync(path, "utf8");
+/** Error code only, never the message: messages can carry local paths. */
+export function errorCode(e: unknown): string {
+  const code = (e as { code?: unknown } | null)?.code;
+  if (typeof code === "string" && /^E[A-Z0-9_]{1,40}$/.test(code)) return code;
+  const name = e instanceof Error ? e.name : "";
+  return /^[A-Za-z]{1,40}$/.test(name) ? name : "unknown";
+}
+
+/** Verifies the whole chain. Truncated, corrupted, unreadable or foreign-plan journals are refused, never partially trusted. */
+export function readJournal(path: string, expectedPlanHash: string): { ok: true; records: JournalRecord[] } | JournalReadFailure {
+  // A single read with no prior existence check: a journal that disappears or becomes unreadable between a check
+  // and the read cannot escape as an exception. A failed read is refused as a whole and is never retried here.
+  let text: string;
+  try {
+    text = readFileSync(path, "utf8");
+  } catch (e) {
+    const code = errorCode(e);
+    return code === "ENOENT" ? { ok: false, error: "missing", line: 0 } : { ok: false, error: "unreadable", line: 0, code };
+  }
   if (text.length === 0) return { ok: false, error: "empty", line: 0 };
   if (!text.endsWith("\n")) return { ok: false, error: "truncated", line: text.split("\n").length };
   const lines = text.slice(0, -1).split("\n");

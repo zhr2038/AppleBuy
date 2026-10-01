@@ -1,0 +1,65 @@
+{
+  "scope": "Independent Codex measurement, contained fake application history, 30 samples per size, no final submissions",
+  "observations": [
+    {
+      "fake": true,
+      "scope": "local durable-history reads; not Apple or T1/T2 remote timing",
+      "node": "v24.16.0",
+      "platform": "win32",
+      "historyRuns": 0,
+      "ledgerEntries": {
+        "samples": 30,
+        "p50Ms": 0.48989999999999156,
+        "p95Ms": 0.7317000000000036,
+        "maxMs": 0.7928999999999888
+      },
+      "appState": {
+        "samples": 30,
+        "p50Ms": 0.9067000000000007,
+        "p95Ms": 1.2126999999999981,
+        "maxMs": 1.318799999999996
+      },
+      "fakeSubmitCalls": 0
+    },
+    {
+      "fake": true,
+      "scope": "local durable-history reads; not Apple or T1/T2 remote timing",
+      "node": "v24.16.0",
+      "platform": "win32",
+      "historyRuns": 10,
+      "ledgerEntries": {
+        "samples": 30,
+        "p50Ms": 5.376599999999598,
+        "p95Ms": 5.98720000000003,
+        "maxMs": 6.0552000000000135
+      },
+      "appState": {
+        "samples": 30,
+        "p50Ms": 5.6927999999998065,
+        "p95Ms": 6.433800000000247,
+        "maxMs": 6.690599999999904
+      },
+      "fakeSubmitCalls": 0
+    },
+    {
+      "fake": true,
+      "scope": "local durable-history reads; not Apple or T1/T2 remote timing",
+      "node": "v24.16.0",
+      "platform": "win32",
+      "historyRuns": 50,
+      "ledgerEntries": {
+        "samples": 30,
+        "p50Ms": 25.682699999999386,
+        "p95Ms": 29.87510000000111,
+        "maxMs": 31.90859999999884
+      },
+      "appState": {
+        "samples": 30,
+        "p50Ms": 26.812700000000405,
+        "p95Ms": 32.79899999999907,
+        "maxMs": 33.87910000000011
+      },
+      "fakeSubmitCalls": 0
+    }
+  ]
+}

@@ -66,14 +66,64 @@ function publicTitle(value: unknown): string | null {
   return /^购买 iPhone Duo(?: (?:256GB|512GB|1TB|2TB) (?:夜空色|星光白色))? - Apple \(中国大陆\)$/.test(text) ? text : null;
 }
 
+const VOID_ELEMENTS = new Set(["area", "base", "br", "col", "embed", "hr", "img", "input", "link", "meta", "param", "source", "track", "wbr"]);
+
+/** Markup that is explicitly not displayed: inert template/noscript, the `hidden` attribute, aria-hidden, inline hiding. */
+function explicitlyHidden(name: string, attrs: string): boolean {
+  if (name === "template" || name === "noscript") return true;
+  for (const m of attrs.matchAll(/([^\s"'>\/=]+)(?:\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'=<>`]+)))?/g)) {
+    const key = m[1].toLowerCase();
+    const value = (m[2] ?? m[3] ?? m[4] ?? "").trim().toLowerCase();
+    if (key === "hidden") return true;
+    if (key === "aria-hidden" && value === "true") return true;
+    if (key === "style" && /(?:^|;)\s*(?:display\s*:\s*none|(?:content-)?visibility\s*:\s*hidden)\b/.test(value)) return true;
+  }
+  return false;
+}
+
+/**
+ * Removes explicitly hidden subtrees so they cannot supply positive heading/sale/approval signals. This is a
+ * conservative markup filter, not computed visibility: stylesheet/class hiding, hydration and layout are unknown.
+ * An unclosed hidden element drops the rest of the document (fewer positive signals, never more).
+ */
+function withoutHiddenMarkup(html: string): string {
+  let out = "";
+  let last = 0;
+  let foreign = 0; // inside <svg>/<math>, "/>" really closes an element; in HTML it is ignored for non-void tags
+  let skip: { name: string; depth: number } | null = null;
+  for (const m of html.matchAll(/<(\/?)([a-zA-Z][a-zA-Z0-9-]*)((?:[^>"']|"[^"]*"|'[^']*')*)>/g)) {
+    const closing = m[1] === "/";
+    const name = m[2].toLowerCase();
+    const attrs = m[3];
+    const empty = !closing && (VOID_ELEMENTS.has(name) || (/\/\s*$/.test(attrs) && (foreign > 0 || name === "svg" || name === "math")));
+    if ((name === "svg" || name === "math") && !empty) foreign = closing ? Math.max(0, foreign - 1) : foreign + 1;
+    if (skip) {
+      if (name === skip.name && !empty) {
+        if (!closing) skip.depth++;
+        else if (--skip.depth === 0) {
+          skip = null;
+          last = m.index + m[0].length;
+        }
+      }
+      continue;
+    }
+    if (!closing && !empty && explicitlyHidden(name, attrs)) {
+      out += html.slice(last, m.index);
+      skip = { name, depth: 1 };
+    }
+  }
+  return skip ? out : out + html.slice(last);
+}
+
 /** HTML alone cannot attest the hydrated control state. It never infers no stock from missing fields. */
 export function inspectPublicHtml(html: string, url: string, now = Date.now()): EntryReport {
   const out = report("UNKNOWN_STRUCTURE", now, URLS.has(url) ? url : null, "imported-public-html");
   if (!URLS.has(url) || typeof html !== "string" || Buffer.byteLength(html) > MAX_BODY_BYTES) return out;
   out.bodySha256 = createHash("sha256").update(html).digest("hex");
   out.receivedBytes = Buffer.byteLength(html);
-  // Only inspect server-visible text; script/comment/style contents cannot supply positive page signals.
-  const visible = html.replace(/<!--[\s\S]*?-->/g, "").replace(/<(script|style)\b[^>]*>[\s\S]*?<\/\1\s*>/gi, "");
+  // Only inspect server-rendered displayed markup; script/comment/style and explicitly hidden subtrees
+  // (template, noscript, hidden, aria-hidden, inline display:none) cannot supply positive page signals.
+  const visible = withoutHiddenMarkup(html.replace(/<!--[\s\S]*?-->/g, "").replace(/<(script|style)\b[^>]*>[\s\S]*?<\/\1\s*>/gi, ""));
   // The current page contains SVG icon <title> elements in the body. Only document head title is authoritative.
   const heads = [...visible.matchAll(/<head\b[^>]*>([\s\S]*?)<\/head\s*>/gi)];
   if (heads.length !== 1) { out.blockers.push("document-head-unrecognized"); return out; }
@@ -105,7 +155,8 @@ export function inspectPublicDom(input: unknown, now = Date.now()): EntryReport 
   if (x.schema !== "applebuy-public-dom/v1" || (x.provenance !== "actual-browser" && x.provenance !== "fixture") ||
     typeof x.url !== "string" || !URLS.has(x.url) || typeof x.observedAt !== "string" ||
     !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{3})?Z$/.test(x.observedAt) ||
-    typeof x.renderComplete !== "boolean" || normalizeText(String(x.productHeading)) !== "iPhone Duo" ||
+    typeof x.renderComplete !== "boolean" ||
+    typeof x.productHeading !== "string" || normalizeText(x.productHeading) !== "iPhone Duo" ||
     typeof x.continuePresent !== "boolean" || ![null, true, false].includes(x.continueEnabled as null | boolean) ||
     ![null, true, false].includes(x.pickupUnavailable as null | boolean) ||
     ![null, true, false].includes(x.notOnSale as null | boolean)) return bad;

@@ -1,0 +1,43 @@
+{
+  "schema": "independent-check-receipt/v1",
+  "scope": "Offline runnable candidate only; Codex-authored takeover is pending actual Claude review",
+  "sourceManifestSha256": "7987df81952a2a30249dc5d4daae9ead98ee2f6e15c4a28b6474018b7f07621c",
+  "sourceFiles": 56,
+  "protectedReviewerFilesUnchanged": 16,
+  "tests": {
+    "check": "test",
+    "startedAtUtc": "2026-10-01T14:01:35.369846+00:00",
+    "endedAtUtc": "2026-10-01T14:01:41.120915+00:00",
+    "exitCode": 0,
+    "tests": 154,
+    "pass": 154,
+    "fail": 0,
+    "cancelled": 0,
+    "skipped": 0,
+    "todo": 0,
+    "durationLine": "ℹ duration_ms 5712.7602"
+  },
+  "cliScenarios": {
+    "total": 27,
+    "expected": 27,
+    "unexpected": 0,
+    "externalAccesses": 0
+  },
+  "browser": {
+    "fake": true,
+    "runId": "run-iascbnhzze",
+    "firstRefusal": true,
+    "freshSequences": [
+      13,
+      14
+    ],
+    "acceptedDifferentAuthorizedSlot": true,
+    "endpoint": "pre-payment rehearsal",
+    "finalSubmitCalls": 0,
+    "fakeOrders": 0,
+    "previousOwner": "crashed",
+    "restartNote": "Owned prior preview exited with code 1 and durable unclean owner record; actual new CLI reported crashed. Historical terminal run retained; new run succeeded. Not claimed a graceful shutdown."
+  },
+  "realPurchaseImplemented": false,
+  "mutualAgreement": false
+}

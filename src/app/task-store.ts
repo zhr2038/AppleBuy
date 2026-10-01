@@ -4,7 +4,7 @@ import { randomBytes } from "node:crypto";
 import { closeSync, existsSync, fsyncSync, mkdirSync, openSync, readFileSync, readdirSync, realpathSync, renameSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import type { LedgerEntry, LedgerLike } from "../journal.ts";
-import { FileLedger, readJournal } from "../journal.ts";
+import { FileLedger, errorCode, readJournal } from "../journal.ts";
 import type { Plan } from "../plan.ts";
 import { planHash, validatePlan } from "../plan.ts";
 
@@ -66,12 +66,43 @@ function validDoc(v: unknown): string | null {
   return null;
 }
 
+/** Why the task's durable purchase evidence cannot be trusted. Each cause names the artifact actually at fault. */
+export type EvidenceCause =
+  | "ledger-missing" | "ledger-unreadable" | "task-unreadable" | "runs-unreadable" | "orphan-run-evidence"
+  | "ledger-foreign-entry" | "run-journal-unverifiable" | "submit-missing-from-ledger" | "evidence-unverifiable";
+export type EvidenceProblem = { cause: EvidenceCause; runId: string | null; message: string };
+export type Evidence = { ok: true; entries: LedgerEntry[] } | { ok: false; problem: EvidenceProblem };
+
+/** Sentinel seen by the engine (LedgerLike) whenever evidence is unsafe: every plan counts as consumed/unknown. */
+export const UNSAFE_LEDGER_RUN = "ledger-unreadable";
+
+/** Shared Chinese guidance: fail closed, keep every artifact, never repair by deleting or recreating history. */
+export const EVIDENCE_GUIDANCE = "已禁止新的运行、启用授权和任何发送（失败即关闭）；所有原文件均已保留。请人工核对任务目录与订单状态，不要删除历史、不要新建空台账或新任务来重新提交";
+
+function problem(cause: EvidenceCause, message: string, runId: string | null = null): Evidence {
+  return { ok: false, problem: { cause, runId, message } };
+}
+
+/** True only when the ledger file itself is absent/unreadable; a missing run journal does not damage the ledger. */
+export function ledgerFileDamaged(p: EvidenceProblem): boolean {
+  return p.cause === "ledger-missing" || p.cause === "ledger-unreadable";
+}
+
+/** Actionable Chinese blocker naming the artifact actually at fault. */
+export function describeEvidence(p: EvidenceProblem): string {
+  return ledgerFileDamaged(p)
+    ? `购买台账损坏：${p.message}，按“已消耗/结果不明”处理。${EVIDENCE_GUIDANCE}`
+    : `持久证据不一致：${p.message}。${EVIDENCE_GUIDANCE}`;
+}
+
 /** Task-scoped ledger: any final-submit record of this task blocks it, whatever plan revision or label it used. */
 export class TaskLedger implements LedgerLike {
   readonly file: FileLedger;
   readonly #path: string;
+  readonly #taskDir: string;
   constructor(taskDir: string) {
     this.file = new FileLedger(taskDir);
+    this.#taskDir = taskDir;
     this.#path = join(taskDir, "purchase-ledger.json");
   }
   /** The plan hash argument is deliberately ignored: label or condition edits cannot evade a prior final submit. */
@@ -79,35 +110,77 @@ export class TaskLedger implements LedgerLike {
     return this.entries().at(-1) ?? null;
   }
   entries(): LedgerEntry[] {
-    const unsafe = (): LedgerEntry[] => [{ planHash: "0000000000000000", runId: "ledger-unreadable", opId: "op-0-0", status: "unknown" }];
-    if (!existsSync(this.#path)) return unsafe();
-    // FileLedger validates every entry; corruption reports "unknown" for any key and is never read as empty.
-    const probe = this.file.find("0000000000000000");
-    if (probe && probe.runId === "ledger-unreadable") return [probe];
+    const ev = this.evidence();
+    return ev.ok ? ev.entries : [{ planHash: "0000000000000000", runId: UNSAFE_LEDGER_RUN, opId: "op-0-0", status: "unknown" }];
+  }
+  /**
+   * Cross-checks every independent local artifact: ledger, task metadata, every recorded run journal AND every
+   * physical entry under runs/. Restoring task.json and the ledger together (a partial backup restore) cannot hide
+   * a run whose journal is still on disk: an unrecorded run artifact is unknown evidence and fails closed.
+   */
+  evidence(): Evidence {
     try {
-      const entries = JSON.parse(readFileSync(this.#path, "utf8")) as LedgerEntry[];
-      const taskDir = dirname(this.#path);
-      const task = JSON.parse(readFileSync(join(taskDir, "task.json"), "utf8")) as TaskDoc;
-      if (validDoc(task)) return unsafe();
-      // An empty, syntactically valid ledger must not erase durable final-submit evidence. Conversely, foreign
-      // entries are untrusted. Inspect every recorded run, not just the newest label/plan revision.
-      for (const entry of entries) {
-        if (!task.runs.some((r) => r.runId === entry.runId && r.planHash === entry.planHash)) return unsafe();
-      }
-      for (const run of task.runs) {
-        const log = readJournal(join(taskDir, "runs", run.runId, "journal.jsonl"), run.planHash);
-        if (!log.ok) return unsafe();
-        for (const sent of log.records.filter((r) => r.type === "sent" && r.kind === "submitOrder")) {
-          if (!entries.some((e) => e.runId === run.runId && e.planHash === run.planHash && e.opId === sent.opId)) return unsafe();
-        }
-      }
-      return entries;
-    } catch {
-      return unsafe();
+      return this.#readEvidence();
+    } catch (e) {
+      // Unexpected parsing/validation/filesystem errors cannot become trusted or empty history. Error messages
+      // may contain private paths; retain a bounded code only and preserve every artifact for investigation.
+      return problem("evidence-unverifiable", `持久证据核对发生异常（${errorCode(e)}），无法确认是否发送过操作`);
     }
   }
+  #readEvidence(): Evidence {
+    if (!existsSync(this.#path)) return problem("ledger-missing", "购买台账文件 purchase-ledger.json 缺失（任务创建时已生成，缺失按证据丢失处理）");
+    // FileLedger validates every entry; corruption reports "unknown" for any key and is never read as empty.
+    const probe = this.file.find("0000000000000000");
+    if (probe && probe.runId === UNSAFE_LEDGER_RUN) return problem("ledger-unreadable", "购买台账文件 purchase-ledger.json 无法解析或含无效记录");
+    let entries: LedgerEntry[];
+    let task: TaskDoc;
+    try {
+      entries = JSON.parse(readFileSync(this.#path, "utf8")) as LedgerEntry[];
+    } catch {
+      return problem("ledger-unreadable", "购买台账文件 purchase-ledger.json 无法读取");
+    }
+    try {
+      task = JSON.parse(readFileSync(join(this.#taskDir, "task.json"), "utf8")) as TaskDoc;
+    } catch {
+      return problem("task-unreadable", "任务文件 task.json 缺失或无法解析");
+    }
+    if (validDoc(task)) return problem("task-unreadable", "任务文件 task.json 校验失败");
+    const recorded = new Set(task.runs.map((r) => r.runId));
+    const runsDir = join(this.#taskDir, "runs");
+    if (existsSync(runsDir)) {
+      let names: string[];
+      try {
+        names = readdirSync(runsDir);
+      } catch {
+        return problem("runs-unreadable", "运行目录 runs 无法读取");
+      }
+      const orphan = names.find((n) => !recorded.has(n));
+      if (orphan !== undefined) return problem("orphan-run-evidence", `发现任务文件未登记的运行证据 runs/${orphan}（任务文件可能被部分回滚到旧版本），其中的日志可能记录过提交`, orphan);
+    }
+    // An empty, syntactically valid ledger must not erase durable final-submit evidence. Conversely, foreign
+    // entries are untrusted. Inspect every recorded run, not just the newest label/plan revision.
+    for (const entry of entries) {
+      if (!task.runs.some((r) => r.runId === entry.runId && r.planHash === entry.planHash)) {
+        return problem("ledger-foreign-entry", `购买台账中的记录（运行 ${entry.runId}）在任务文件中没有对应运行（任务文件可能被部分回滚，或台账混入外来记录）`, entry.runId);
+      }
+    }
+    for (const run of task.runs) {
+      const log = readJournal(join(runsDir, run.runId, "journal.jsonl"), run.planHash);
+      if (!log.ok) {
+        const what = log.error === "missing" ? "缺失" : log.error === "unreadable" ? `无法读取（${log.code ?? "unknown"}）` : `无法验证（${log.error}）`;
+        return problem("run-journal-unverifiable", `运行 ${run.runId} 的日志 runs/${run.runId}/journal.jsonl ${what}；无法确认该运行是否发送过操作`, run.runId);
+      }
+      for (const sent of log.records.filter((r) => r.type === "sent" && r.kind === "submitOrder")) {
+        if (!entries.some((e) => e.runId === run.runId && e.planHash === run.planHash && e.opId === sent.opId)) {
+          return problem("submit-missing-from-ledger", `运行 ${run.runId} 的日志记录了最终提交，但购买台账中没有对应记录（台账可能被回滚或清空）`, run.runId);
+        }
+      }
+    }
+    return { ok: true, entries };
+  }
   record(entry: LedgerEntry): void {
-    if (this.entries().some((e) => e.runId === "ledger-unreadable")) throw new Error("LedgerCorrupt: 购买台账或运行证据缺失/不一致，拒绝覆盖");
+    const ev = this.evidence();
+    if (!ev.ok) throw new Error(`LedgerCorrupt: ${ev.problem.message}；拒绝写入或覆盖`);
     this.file.record(entry);
   }
 }

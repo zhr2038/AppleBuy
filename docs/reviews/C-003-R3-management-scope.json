@@ -1,0 +1,27 @@
+{
+  "schema": "management-scope-check/v1",
+  "cases": [
+    {
+      "key": "src/../.local/private/purchase-request.json",
+      "rejectedBeforeSourceRead": true,
+      "exitCode": 1
+    },
+    {
+      "key": "src\\\\../.local/private/purchase-request.json",
+      "rejectedBeforeSourceRead": true,
+      "exitCode": 1
+    },
+    {
+      "key": "src//journal.ts",
+      "rejectedBeforeSourceRead": true,
+      "exitCode": 1
+    },
+    {
+      "key": "src/./journal.ts",
+      "rejectedBeforeSourceRead": true,
+      "exitCode": 1
+    }
+  ],
+  "physicalScope": "Code inspected; no real junction experiment performed",
+  "sourceFingerprintPrinted": false
+}

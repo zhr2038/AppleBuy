@@ -54,9 +54,15 @@ export function renderApp(s) {
   const run = s.run
     ? `运行 ${esc(s.run.runId)}｜绑定计划 v${esc(s.run.rev)}${s.run.boundToCurrentPlan ? "" : "（当前编辑的是更新版本，不影响此运行）"}｜${s.run.capability ? "附带一次模拟正式授权" : "默认演练：不会提交"}`
     : "尚无运行";
-  const ledger = s.ledger.entries ? `<b class=warn>购买台账：${s.ledger.corrupt ? "损坏（按结果不明处理）" : `已有最终提交记录（${esc(s.ledger.status)}）`}——此任务禁止再次提交</b>` : "购买台账：无提交记录";
+  // A run-evidence problem is not ledger damage: name the artifact actually at fault.
+  const problem = s.ledger.problem;
+  const ledger = problem
+    ? `<b class=warn>购买台账：${s.ledger.corrupt ? "损坏" : "文件可读，但与运行证据无法核对一致"}（按结果不明处理）——此任务禁止再次提交</b><br><b class=warn>持久证据异常：${esc(problem.summaryZh)}</b>`
+    : s.ledger.entries ? `<b class=warn>购买台账：已有最终提交记录（${esc(s.ledger.status)}）——此任务禁止再次提交</b>` : "购买台账：无提交记录";
+  // `control` exists only in the HTTP view (per-tab lease); a direct app.state() render has none.
+  const control = s.control ? `控制权：${s.control.you ? "本标签页" : s.control.held ? "其他标签页（本页只读）" : "无人"}｜连接标签页 ${esc(s.control.clients)}` : "控制权：未连接网页";
   return `<div class="card meta">
-<p>任务 ${esc(s.task.taskId)}｜执行进程 ${esc(s.owner.pid)}（${s.owner.previous === "crashed" ? "上一执行进程异常退出，已按日志恢复判定" : s.owner.previous === "clean" ? "上一执行进程正常退出" : "首次启动"}）｜控制权：${s.control.you ? "本标签页" : s.control.held ? "其他标签页（本页只读）" : "无人"}｜连接标签页 ${esc(s.control.clients)}</p>
+<p>任务 ${esc(s.task.taskId)}｜执行进程 ${esc(s.owner.pid)}（${s.owner.previous === "crashed" ? "上一执行进程异常退出，已按日志恢复判定" : s.owner.previous === "clean" ? "上一执行进程正常退出" : "首次启动"}）｜${control}</p>
 <p>${run}｜${s.running ? "执行中" : "未执行"}${s.loopError ? `｜<b class=warn>执行器错误：${esc(s.loopError)}</b>` : ""}</p>
 <p>${ledger}</p>
 <p>模拟正式授权：${s.formal.armed ? (s.formal.used ? `已被运行 ${esc(s.formal.used)} 使用（不可重复使用）` : `已启用一次，等待下一次运行使用，过期时间 ${fmtTime(s.formal.expiresAt)}`) : "未启用（默认演练不能提交）"}｜真实正式模式：${esc(s.formal.liveMode)}</p>

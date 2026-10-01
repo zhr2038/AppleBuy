@@ -1,11 +1,12 @@
 // Local task executor (C-003). Exactly one process owns a task directory (OS-level lock); inside it, exactly one
 // engine loop runs at a time. The browser UI and the CLI only send requests here; the decision core is the same
 // Engine + runEngine used by every C-002 scenario, test and benchmark — there is no second demo algorithm.
-import { relative, resolve, isAbsolute } from "node:path";
+import { realpathSync } from "node:fs";
+import { basename, dirname, isAbsolute, join, relative, resolve } from "node:path";
 import type { Command, ControlAction, Phase, Snapshot } from "../engine.ts";
 import { Engine, TERMINAL_PHASES, createMockFormalCapability } from "../engine.ts";
 import type { JournalRecord } from "../journal.ts";
-import { FileJournal, MemoryJournal, readJournal } from "../journal.ts";
+import { FileJournal, MemoryJournal, errorCode, readJournal } from "../journal.ts";
 import type { Plan } from "../plan.ts";
 import { planHash, validatePlan } from "../plan.ts";
 import { formatRecord } from "../messages.ts";
@@ -15,13 +16,29 @@ import type { SiteMethod, SiteScenario } from "../mock/live-site.ts";
 import { LiveMockSite, SITE_SCENARIOS } from "../mock/live-site.ts";
 import type { OwnerLock, PreviousOwner, StatusRead } from "./owner-lock.ts";
 import { acquireOwnership } from "./owner-lock.ts";
-import type { RunRecord, TaskDoc } from "./task-store.ts";
-import { FORMAL_PHRASE, FORMAL_TTL_MS, TaskStore, currentPlan, latestRun, letterId } from "./task-store.ts";
+import type { Evidence, RunRecord, TaskDoc } from "./task-store.ts";
+import { FORMAL_PHRASE, FORMAL_TTL_MS, TaskStore, currentPlan, describeEvidence, latestRun, ledgerFileDamaged, letterId } from "./task-store.ts";
 import { engineView } from "./view.ts";
 
 export const TEST_RUNS_ROOT = resolve(import.meta.dirname, "..", "..", ".local", "test-runs");
-export function isInsideTestRuns(dir: string): boolean {
-  const rel = relative(TEST_RUNS_ROOT, resolve(dir));
+/** Physical location: the nearest existing ancestor is resolved through junctions/symlinks; the missing tail is kept. */
+export function physicalPath(path: string, realpath: (p: string) => string = realpathSync.native): string {
+  const tail: string[] = [];
+  let cur = resolve(path);
+  for (;;) {
+    try {
+      return join(realpath(cur), ...tail);
+    } catch {
+      const parent = dirname(cur);
+      if (parent === cur) return resolve(path);
+      tail.unshift(basename(cur));
+      cur = parent;
+    }
+  }
+}
+/** Test fixtures follow the physical task location, so a lexical alias under .local/test-runs cannot enable them. */
+export function isInsideTestRuns(dir: string, realpath?: (p: string) => string): boolean {
+  const rel = relative(physicalPath(TEST_RUNS_ROOT, realpath), physicalPath(dir, realpath));
   return rel !== "" && !rel.startsWith("..") && !isAbsolute(rel);
 }
 
@@ -98,26 +115,35 @@ export class TaskApp {
   }
 
   static async open(o: AppOptions): Promise<OpenResult> {
-    const fixtures = isInsideTestRuns(o.taskDir);
     const store = new TaskStore(o.taskDir);
+    const fixtures = isInsideTestRuns(store.dir);
     let app: TaskApp | null = null;
     const acq = await acquireOwnership(store.dir, letterId("owner"), () => app?.ownerStatus() ?? { state: "starting" }, { statusDelayMs: fixtures ? o.statusDelayMs : undefined });
     if (!acq.ok) return acq.reason === "held" ? { ok: false, reason: "held", detail: "该任务已由另一个仍在运行的进程占用；不会抢占", status: acq.status } : { ok: false, reason: acq.reason, detail: acq.detail };
-    const loaded = store.load(o.initialPlan, Date.now(), acq.previous.kind !== "none");
-    if (!loaded.ok) {
-      await acq.lock.release();
-      return { ok: false, reason: loaded.error, detail: loaded.detail };
-    }
-    let site: LiveMockSite;
+    let site: LiveMockSite | null = null;
+    let stage = "task-load";
+    const releaseFailedOpen = async (): Promise<boolean> => {
+      let clean = true;
+      try { site?.close(); } catch { clean = false; }
+      try { await acq.lock.release(); } catch { clean = false; }
+      return clean;
+    };
     try {
+      const loaded = store.load(o.initialPlan, Date.now(), acq.previous.kind !== "none");
+      if (!loaded.ok) {
+        const clean = await releaseFailedOpen();
+        return { ok: false, reason: loaded.error, detail: loaded.detail + (clean ? "" : "；所有权状态未能完整保存，目录锁已释放，请人工检查") };
+      }
+      stage = "mock-site";
       site = new LiveMockSite(store.dir, { latencyMs: o.latencyMs, hold: o.hold });
+      app = new TaskApp({ ...o, crashAfter: fixtures ? o.crashAfter : null, statusDelayMs: fixtures ? o.statusDelayMs : undefined }, store, site, acq.lock, acq.previous);
+      stage = "run-load";
+      app.#refreshLastRun();
+      return { ok: true, app };
     } catch (e) {
-      await acq.lock.release();
-      return { ok: false, reason: "mock-site-corrupt", detail: e instanceof Error ? e.message : String(e) };
+      const clean = await releaseFailedOpen();
+      return { ok: false, reason: stage === "mock-site" ? "mock-site-corrupt" : "initialization-error", detail: `任务初始化无法完成（${stage}，${errorCode(e)}）；已保留原始证据并释放目录锁，请人工检查${clean ? "" : "；所有权状态未能完整保存"}` };
     }
-    app = new TaskApp({ ...o, crashAfter: fixtures ? o.crashAfter : null, statusDelayMs: fixtures ? o.statusDelayMs : undefined }, store, site, acq.lock, acq.previous);
-    app.#refreshLastRun();
-    return { ok: true, app };
   }
 
   // ---------- events ----------
@@ -194,19 +220,21 @@ export class TaskApp {
     }
   }
   /** Why a new run may not start; null when it may. Every reason is a fail-closed condition. */
-  startBlocker(): string | null {
+  startBlocker(ev: Evidence = this.store.ledger.evidence()): string | null {
     if (this.#closing) return "执行器已关闭，不能再发起操作";
     if (this.#loop) return "本进程已有运行中的任务（同一任务只允许一个执行器）";
-    const entries = this.store.ledger.entries();
-    if (entries.length) return entries[0].runId === "ledger-unreadable" ? "购买台账损坏：按“已消耗/结果不明”处理，禁止新的运行（需人工检查）" : "该任务已有最终提交记录（含结果不明）：禁止新的运行或再次提交；只能“恢复运行”做只读核实";
+    if (!ev.ok) return describeEvidence(ev.problem);
+    if (ev.entries.length) return "该任务已有最终提交记录（含结果不明）：禁止新的运行或再次提交；只能“恢复运行”做只读核实";
     const info = this.#lastRunInfo;
     if (info && !info.journalOk) return `上次运行的日志无法验证（${info.journalError}）：拒绝继续（失败即关闭），请人工检查`;
     if (info && info.phase !== "NOT_STARTED" && !TERMINAL_PHASES.has(info.phase as Phase)) return "上次运行尚未结束（可能因进程中断）：请先“恢复运行”，由日志只读核实后继续或停止";
     return null;
   }
-  recoverBlocker(): string | null {
+  /** `ev` lets one synchronous state() read share a single fresh evidence check; it is never kept between calls. */
+  recoverBlocker(ev: Evidence = this.store.ledger.evidence()): string | null {
     if (this.#closing) return "执行器已关闭，不能恢复操作";
     if (this.#loop) return "本进程已有运行中的任务";
+    if (!ev.ok) return `拒绝恢复：${describeEvidence(ev.problem)}`;
     const info = this.#lastRunInfo;
     if (!info) return "没有可恢复的运行";
     if (!info.journalOk) return `日志无法验证（${info.journalError}）：拒绝恢复（失败即关闭）`;
@@ -227,12 +255,15 @@ export class TaskApp {
     doc.currentRev = doc.planRevs.length;
     this.store.save(doc);
     this.#changed();
-    const consumed = this.store.ledger.entries().length > 0;
-    return { ok: true, message: `已保存为计划版本 v${doc.currentRev}（哈希 ${h}）。正在运行的任务仍绑定原计划版本${consumed ? "；该任务已有最终提交记录，修改计划不会解除限制" : ""}` };
+    const ev = this.store.ledger.evidence();
+    const warning = !ev.ok ? `；${describeEvidence(ev.problem)}` : ev.entries.length ? "；该任务已有最终提交记录，修改计划不会解除限制" : "";
+    return { ok: true, message: `已保存为计划版本 v${doc.currentRev}（哈希 ${h}）。正在运行的任务仍绑定原计划版本${warning}` };
   }
 
   armFormal(reviewedPlanHash: string, phrase: string): Result {
     if (this.#closing) return { ok: false, code: "closed", message: "执行器已关闭，不能启用授权" };
+    const ev = this.store.ledger.evidence();
+    if (!ev.ok) return { ok: false, code: "evidence", message: describeEvidence(ev.problem) };
     const doc = this.doc();
     const cur = currentPlan(doc);
     if (phrase !== FORMAL_PHRASE) return { ok: false, code: "phrase", message: `确认语不正确，需完整输入：${FORMAL_PHRASE}` };
@@ -317,9 +348,8 @@ export class TaskApp {
       // Validate every mutation after preparation, not just final submit. Abort before appending "sent" or
       // reaching the port if critical durable evidence became unreadable. Do not rewrite corrupt evidence.
       this.doc();
-      if (this.store.ledger.entries().some((e) => e.runId === "ledger-unreadable")) {
-        throw new Error("关键持久状态缺失、损坏或不一致：已停止发送，需要人工检查");
-      }
+      const ev = this.store.ledger.evidence();
+      if (!ev.ok) throw new Error(`已停止发送（本操作未发出）：${describeEvidence(ev.problem)}`);
     };
     this.#loop = runEngine(engine, this.site, WALL, {
       maxSteps: 5000,
@@ -377,7 +407,7 @@ export class TaskApp {
       .map((r) => formatRecord(r)?.replace(/^\[模拟\s+-?\d+ms\]/, `[+${((Number(r.t) - t0) / 1000).toFixed(1)}s]`) ?? null)
       .filter((x): x is string => x !== null)
       .slice(-60);
-    const ledger = this.store.ledger.entries();
+    const ev = this.store.ledger.evidence();
     const run = this.#engineRun ?? latestRun(doc);
     const arm = doc.formalArm;
     const display = engineView(s ?? this.#historicalSnapshot, this.#lastRunInfo, s === null && this.#historicalSnapshot !== null);
@@ -396,12 +426,15 @@ export class TaskApp {
       running: this.#loop !== null,
       loopError: this.#loopError,
       engine: display,
-      ledger: { entries: ledger.length, status: ledger.at(-1)?.status ?? null, corrupt: ledger[0]?.runId === "ledger-unreadable" },
+      // Unsafe evidence counts as one "unknown" entry (consumed); `corrupt` only when the ledger file itself is damaged.
+      ledger: ev.ok
+        ? { entries: ev.entries.length, status: ev.entries.at(-1)?.status ?? null, corrupt: false, problem: null }
+        : { entries: 1, status: "unknown", corrupt: ledgerFileDamaged(ev.problem), problem: { ...ev.problem, summaryZh: describeEvidence(ev.problem) } },
       formal: { phrase: FORMAL_PHRASE, armed: arm !== null, used: arm?.usedByRunId ?? null, expiresAt: arm?.expiresAt ?? null, armedPlanHash: arm?.planHash ?? null, liveMode: "不可用（未实现真实适配器，也没有真实授权）" },
       site: this.site.view(),
       scenarios: SITE_SCENARIOS,
-      startBlocker: this.startBlocker(),
-      recoverBlocker: this.recoverBlocker(),
+      startBlocker: this.startBlocker(ev),
+      recoverBlocker: this.recoverBlocker(ev),
       trace,
     };
   }

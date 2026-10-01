@@ -1,0 +1,190 @@
+{
+  "label": "离线决策级基准（FAKE 模拟门店，mock contract v0）——不是苹果官网性能，也不是人工操作速度",
+  "seed": 1,
+  "warmup": 20,
+  "measured": 200,
+  "environment": {
+    "os": "win32 x64 10.0.26300",
+    "cpu": "AMD Ryzen 7 9800X3D 8-Core Processor           ",
+    "logicalCpus": 16,
+    "node": "v24.16.0",
+    "powerMode": "未读取（基准程序没有查询电源设置）",
+    "commit": "未测量（本任务未读取 Git 元数据）"
+  },
+  "boundaries": {
+    "local": "performance.now() 包围 engine.handle() 与发送前 engine.authorize()，含分类后决策与命令生成，不含端口模拟耗时",
+    "acceptance": "simulatedMsToAccept 止于接受选择的回复到达（虚拟时钟）；之后的推进与终点观察单独计入 simulatedMsToRunEnd",
+    "remote": "模拟值：SimStorePort 种子随机延迟 60–240ms（虚拟时钟，不真实等待，不代表苹果网络）",
+    "rendering": "单独计时：每次决策后用浏览器界面同一渲染函数 web/render.js 在 Node 中生成状态卡片 HTML 字符串；不含浏览器排版/绘制，不计入本地决策时间，也不是真实浏览器渲染时间",
+    "journal": "内存日志，不含 fsync 落盘耗时（CLI 演练使用落盘日志）",
+    "refresh": "最小刷新间隔 2000ms 计入模拟时间（虚拟时钟）"
+  },
+  "workload": {
+    "pCompete": 0.12,
+    "pFreshList": 0.5,
+    "latencyMs": [
+      60,
+      240
+    ],
+    "capMax": 2,
+    "slotsPerList": 72,
+    "authorizedShare": "32/72（其余为未授权门店/日期，必须被过滤）",
+    "refs": "稳定（每个时段引用不变，避免对基线不公平的过期引用惩罚）"
+  },
+  "policies": [
+    {
+      "policy": "fresh-list",
+      "runs": 200,
+      "outcomes": {
+        "REHEARSAL_ENDPOINT:reached-mock-pre-payment": 200
+      },
+      "failures": 0,
+      "accepted": 200,
+      "attemptsToAccept": {
+        "n": 200,
+        "p50": 1,
+        "p95": 2,
+        "max": 3
+      },
+      "simulatedMsToAccept": {
+        "n": 200,
+        "p50": 302,
+        "p95": 451,
+        "max": 2439
+      },
+      "simulatedMsToRunEnd": {
+        "n": 200,
+        "p50": 605,
+        "p95": 821,
+        "max": 2701
+      },
+      "t1LocalMs": {
+        "n": 200,
+        "p50": 0.04779999999999518,
+        "p95": 0.0700999999999965,
+        "max": 0.2477999999999838
+      },
+      "t2LocalMs": {
+        "n": 14,
+        "p50": 0.07540000000000191,
+        "p95": 0.1652000000000271,
+        "max": 0.1652000000000271
+      },
+      "t2SimulatedRemoteMs": {
+        "n": 14,
+        "p50": 0,
+        "p95": 211,
+        "max": 211
+      },
+      "t3LocalMs": {
+        "n": 200,
+        "p50": 0.03309999999999036,
+        "p95": 0.05060000000003129,
+        "max": 0.1933999999999969
+      },
+      "t3SimulatedRemoteMs": {
+        "n": 200,
+        "p50": 0,
+        "p95": 0,
+        "max": 0
+      },
+      "t1RenderMs": {
+        "n": 200,
+        "p50": 0.05099999999998772,
+        "p95": 0.08259999999998513,
+        "max": 0.21979999999999222
+      },
+      "t2RenderMs": {
+        "n": 14,
+        "p50": 0.052199999999999136,
+        "p95": 0.15430000000000632,
+        "max": 0.15430000000000632
+      },
+      "t3RenderMs": {
+        "n": 200,
+        "p50": 0.04060000000001196,
+        "p95": 0.06560000000001764,
+        "max": 0.5175000000000125
+      },
+      "staleRefActions": 0,
+      "maxConcurrentMutations": 1
+    },
+    {
+      "policy": "naive-remembered",
+      "runs": 200,
+      "outcomes": {
+        "REHEARSAL_ENDPOINT:reached-mock-pre-payment": 200
+      },
+      "failures": 0,
+      "accepted": 200,
+      "attemptsToAccept": {
+        "n": 200,
+        "p50": 1,
+        "p95": 2,
+        "max": 3
+      },
+      "simulatedMsToAccept": {
+        "n": 200,
+        "p50": 302,
+        "p95": 451,
+        "max": 633
+      },
+      "simulatedMsToRunEnd": {
+        "n": 200,
+        "p50": 605,
+        "p95": 801,
+        "max": 948
+      },
+      "t1LocalMs": {
+        "n": 200,
+        "p50": 0.04370000000000118,
+        "p95": 0.0665000000000191,
+        "max": 0.3429999999999609
+      },
+      "t2LocalMs": {
+        "n": 16,
+        "p50": 0.043400000000019645,
+        "p95": 0.10869999999999891,
+        "max": 0.10869999999999891
+      },
+      "t2SimulatedRemoteMs": {
+        "n": 16,
+        "p50": 0,
+        "p95": 0,
+        "max": 0
+      },
+      "t3LocalMs": {
+        "n": 200,
+        "p50": 0.030199999999979354,
+        "p95": 0.042699999999967986,
+        "max": 0.19139999999998736
+      },
+      "t3SimulatedRemoteMs": {
+        "n": 200,
+        "p50": 0,
+        "p95": 0,
+        "max": 0
+      },
+      "t1RenderMs": {
+        "n": 200,
+        "p50": 0.0474999999999568,
+        "p95": 0.08070000000003574,
+        "max": 0.27789999999998827
+      },
+      "t2RenderMs": {
+        "n": 16,
+        "p50": 0.03950000000003229,
+        "p95": 0.08120000000002392,
+        "max": 0.08120000000002392
+      },
+      "t3RenderMs": {
+        "n": 200,
+        "p50": 0.03809999999998581,
+        "p95": 0.0594000000000392,
+        "max": 0.3543000000000234
+      },
+      "staleRefActions": 0,
+      "maxConcurrentMutations": 1
+    }
+  ]
+}

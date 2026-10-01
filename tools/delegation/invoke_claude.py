@@ -150,7 +150,8 @@ def main() -> int:
     summary["result_excerpt"] = clean(str((result or {}).get("result", "")))[:1800]
     if stderr:
         summary["stderr_excerpt"] = clean(stderr)[:600]
-    print(json.dumps(summary, ensure_ascii=False, indent=2), flush=True)
+    # Windows pipe/console encodings may be GBK. Keep stdout ASCII-safe while UTF-8 files retain the full report.
+    print(json.dumps(summary, ensure_ascii=True, indent=2), flush=True)
     return 0 if success else 1
 
 

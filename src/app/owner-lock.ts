@@ -11,6 +11,7 @@ import { createHash } from "node:crypto";
 import { appendFileSync, existsSync, readFileSync, realpathSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { atomicWriteJson } from "./task-store.ts";
+import { errorCode } from "../journal.ts";
 
 export type OwnerRecord = { schema: "applebuy-owner/v1"; ownerId: string; pid: number; startedAt: number; cleanExit: boolean; endedAt: number | null };
 export type StatusRead = { kind: "replied"; data: unknown } | { kind: "timeout" } | { kind: "gone" } | { kind: "error"; code: string };
@@ -84,8 +85,13 @@ export class OwnerLock {
   /** Clean shutdown: records the exit and releases the pipe. A crash skips this and the OS releases the pipe. */
   async release(): Promise<void> {
     this.#rec = { ...this.#rec, cleanExit: true, endedAt: Date.now() };
-    atomicWriteJson(join(this.taskDir, "owner.json"), this.#rec);
-    await new Promise<void>((r) => this.#server.close(() => r()));
+    try {
+      atomicWriteJson(join(this.taskDir, "owner.json"), this.#rec);
+    } finally {
+      // Failed metadata writes must not strand an OS owner. Its durable record remains unclean for the next
+      // owner, and release still rejects so callers know that the evidence write failed.
+      await new Promise<void>((r) => this.#server.close(() => r()));
+    }
   }
 }
 
@@ -109,6 +115,7 @@ export async function acquireOwnership(taskDir: string, ownerId: string, status:
     return { ok: false, reason: "lock-error", detail: String(listened.code ?? listened.message) };
   }
   server.unref();
+  try {
   // We hold the OS lock, so no live owner exists. Classify the previous owner from its record (never deleted).
   const path = join(taskDir, "owner.json");
   let previous: PreviousOwner = { kind: "none" };
@@ -120,7 +127,7 @@ export async function acquireOwnership(taskDir: string, ownerId: string, status:
       v = null;
     }
     if (!validOwner(v)) {
-      server.close();
+      await new Promise<void>((r) => server.close(() => r()));
       return { ok: false, reason: "owner-record-corrupt", detail: "所有权记录 owner.json 无法识别；已保留作为证据，需人工检查后处理" };
     }
     previous = v.cleanExit ? { kind: "clean", rec: v } : { kind: "crashed", rec: v };
@@ -129,4 +136,10 @@ export async function acquireOwnership(taskDir: string, ownerId: string, status:
   const rec: OwnerRecord = { schema: "applebuy-owner/v1", ownerId, pid: process.pid, startedAt: Date.now(), cleanExit: false, endedAt: null };
   atomicWriteJson(path, rec);
   return { ok: true, lock: new OwnerLock(taskDir, server, rec), previous };
+  } catch (e) {
+    // Ownership is already acquired here. A failed history/current-owner write is not permission to keep it
+    // or erase evidence: release only this server and return a bounded cause without a private OS message.
+    await new Promise<void>((r) => server.close(() => r()));
+    return { ok: false, reason: "lock-error", detail: `所有权记录无法读取或保存（${errorCode(e)}）；原始证据已保留，目录锁已释放，请人工检查` };
+  }
 }
