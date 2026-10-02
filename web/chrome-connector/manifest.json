@@ -1,0 +1,9 @@
+{
+  "manifest_version": 3,
+  "name": "AppleBuy 官网配置只读验证",
+  "version": "0.1.0",
+  "description": "只读取本人明确打开的苹果中国 Pro/Duo 公共商品页配置。不能下单、付款或读取账号资料。",
+  "permissions": ["activeTab", "scripting"],
+  "action": {"default_popup": "popup.html"},
+  "content_security_policy": {"extension_pages": "script-src 'self'; object-src 'none'; connect-src 'none'"}
+}

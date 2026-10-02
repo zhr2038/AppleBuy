@@ -1,0 +1,594 @@
+--- a/README.md
++++ b/README.md
+@@ -5 +5,15 @@
+-离线演练（C-003）、公开入口只读预检（C-004）与每天末档离线规则（C-005）已获得实际双方有限范围同意。C-006/C-007 最新改动由 Codex 在 Claude 额度耗尽后完成，仍需实际 Claude 复审；测试通过不表示双方最终验收。本地购买偏好仅为私有开发草稿，不启用真实模式。当前证据与精确恢复点见 [docs/status.md](docs/status.md)。
++离线演练、公开入口预检与末档规则已获得实际双方有限范围同意，C-007-R1 的修复已通过 Codex 独立验收。新增 C-010 实际 DOM 自动结账与 C-011 Chrome 只读连接候选由 Codex 在真实额度限制后完成，仍待 Claude 对准确改动复审；测试通过不表示这些新改动已经双方验收。当前证据与恢复点见 [docs/status.md](docs/status.md)。
++
++## 电脑一键完整 DOM 演练（当前功能候选）
++
++在项目目录执行：
++
++```powershell
++node src/dom-demo.ts --task-dir .local/dom-desktop
++```
++
++用你电脑的 Chrome 打开终端打印的本机地址，核对 **FAKE** 计划后点一次 **开始自动模拟下单**。程序实际操作页面原生控件：加购 → 到店自提 → 第一天末档拒绝 → 最新列表选第二天末档再拒绝 → 第三天末档接受 → 填虚构信息 → 选择模拟支付宝 → 最终点击一次 → 另一次查单核对未付款模拟订单。没有在线模型参与这些运行决策。
++
++当前整套 271 项测试通过；最终代码在实际 Chrome 单次测得 291ms，仅为本机虚构页面，不代表官网速度。提交回复丢失只做查单；超价、控件换新、订单条件不符和结果不明均停止。记录重启后保留，已有运行禁止新建订单；不提供删除历史后重试的入口。[运行与限制](docs/desktop-dom-runbook.md)
++
++普通 Chrome 的只读连接组件在 `web/chrome-connector/`，已验证当前官网公开配置采集逻辑，**尚未安装或获得独立运行权限**。它只申请本人点击后临时读取当前公共商品页，不能操作官网或结账。真实自动下单适配仍未完成。
+@@ -179 +193 @@
+-- **程序购买流程只有离线模拟。** Pro 浏览器实跑已确认一张未付款订单，未验证真实拒绝重选、付款后的日期确定、Duo 开售流程或程序端自动执行。界面中的模拟官网、延迟和时段都是虚构的。
++- **程序购买流程只有离线模拟。** Pro 浏览器实跑已确认一张未付款订单，未验证真实拒绝重选、付款后的日期确定、Duo 开售流程或官网程序端自动执行。界面中的模拟官网、延迟和时段都是虚构的。
+@@ -184 +198 @@
+-- C-003/C-004/C-005 已有实际双方有限范围同意；C-006/C-007 最新额度接手候选仍待实际 Claude 复审与一致，以 [docs/status.md](docs/status.md) 和验收记录为准。
++- C-003/C-004/C-005 已有实际双方有限范围同意；C-007-R1 修复已通过 Codex 独立验收；新 C-010/C-011 候选仍待实际 Claude 复审与一致，以 [docs/status.md](docs/status.md) 和验收记录为准。
+--- /dev/null
++++ b/src/app/dom-bridge.ts
+@@ -0,0 +1,140 @@
++// C-010 Codex quota takeover: actual local DOM transport. Only our loopback FAKE document can execute.
++// The original engine/runner mock-only guards are retained. This is NOT an Apple adapter.
++import http from 'node:http';
++import { randomBytes } from 'node:crypto';
++import { readFileSync } from 'node:fs';
++import { resolve, join } from 'node:path';
++import { Engine, createMockFormalCapability } from '../engine.ts';
++import { FileJournal, readJournal } from '../journal.ts';
++import { runEngine } from '../runner.ts';
++import type { CheckoutPort, PortReply } from '../runner.ts';
++import { TaskStore, currentPlan, latestRun, letterId } from './task-store.ts';
++import { acquireOwnership } from './owner-lock.ts';
++import type { Plan } from '../plan.ts';
++
++export const DOM_SCOPE='fake-dom-only';
++export const DOM_PLAN:Plan={schema:'pickup-plan/v1',fake:true,label:'FAKE Pro 原生控件自动下单演练',timezone:'Asia/Shanghai',fulfillment:'pickup',quantity:1,maxTotalCny:9999,
++  products:[{id:'FAKE-PRO-256-BLACK',model:'iPhone 18 Pro',capacity:'256GB',color:'黑色'}],stores:[{label:'FAKE 大连直营店',role:'primary'}],
++  dates:['2099-01-01','2099-01-02','2099-01-03'],windows:[{start:'10:00',end:'22:00'}],arrival:{earliest:'10:00',latest:'22:00'},priority:['date','store','window'],slotSelection:'last-offered-per-store-date',
++  bounds:{maxRefusals:5,maxRefreshes:5,maxAttemptsPerSlot:2,minRefreshIntervalMs:50,maxQueryFailures:2,maxReconcileAttempts:2},paymentMethodLabel:'支付宝'};
++
++export type DomCommand={scope:typeof DOM_SCOPE;id:string;client:string;document:string;taskId:string;runId:string;planHash:string;method:string;opId?:string;ref?:string;expect:Plan};
++/** A delivered command is never replayed on connection changes or timeout. */
++export class DomMailbox {
++  readonly timeoutMs:number; #pending:{command:DomCommand;resolve:(r:PortReply)=>void;reject:(e:Error)=>void;timer:ReturnType<typeof setTimeout>}|null=null;
++  send:(command:DomCommand)=>void;
++  constructor(send:(command:DomCommand)=>void,timeoutMs=8000){this.send=send;this.timeoutMs=timeoutMs;}
++  request(command:DomCommand):Promise<PortReply>{
++    if(this.#pending) return Promise.reject(new Error('DomMutationAlreadyInFlight'));
++    return new Promise((resolve,reject)=>{
++      const timer=setTimeout(()=>{if(this.#pending?.command.id===command.id){this.#pending=null;reject(new Error('DomResultUnknown'));}},this.timeoutMs);
++      this.#pending={command,resolve,reject,timer};
++      try{this.send(command);}catch{this.disconnect();}
++    });
++  }
++  reply(client:string,document:string,id:string,reply:unknown):boolean{
++    const p=this.#pending;
++    if(!p||p.command.client!==client||p.command.document!==document||p.command.id!==id)return false;
++    if(!reply||typeof reply!=='object'||Array.isArray(reply)||!('body' in reply)||Object.keys(reply).some(k=>!['body','simulatedMs'].includes(k)))return false;
++    const body=(reply as any).body;
++    if(p.command.opId&&body&&typeof body==='object'&&body.opId!==undefined&&body.opId!==p.command.opId)return false;
++    // Browser only sends bounded semantic fake contract fields. Runner classifiers validate business data.
++    if(JSON.stringify(reply).length>64000)return false;
++    this.#pending=null;clearTimeout(p.timer);p.resolve({body:(reply as any).body,simulatedMs:0});return true;
++  }
++  disconnect(){const p=this.#pending;this.#pending=null;if(p){clearTimeout(p.timer);p.reject(new Error('DomDisconnectedResultUnknown'));}}
++  get pending(){return this.#pending?.command??null;}
++}
++
++const ASSETS:Record<string,[string,string]>={'/':['desktop/index.html','text/html; charset=utf-8'],'/desktop/app.js':['desktop/app.js','text/javascript'],'/desktop/motor.js':['desktop/motor.js','text/javascript'],'/desktop/fixture.js':['desktop/fixture.js','text/javascript'],'/style.css':['style.css','text/css']};
++const ROOT=resolve(import.meta.dirname,'../..');
++const CLIENT=/^c-[a-z0-9-]{8,64}$/;const DOCUMENT=/^d-[a-z0-9-]{8,64}$/;
++const CSP="default-src 'none'; script-src 'self'; style-src 'self'; connect-src 'self'; img-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'";
++type Client={res:http.ServerResponse;document:string};
++
++export async function startDomDemo(taskDir:string,o:{port?:number;timeoutMs?:number;plan?:Plan}={}){
++  const store=new TaskStore(taskDir);let engine:Engine|null=null,loop:Promise<unknown>|null=null;let failure:string|null=null,closed=false,controller:string|null=null,document:string|null=null;
++  const clients=new Map<string,Client>();const controls:any[]=[];let signal=()=>{};let gate=new Promise<void>(r=>signal=r);
++  const wake=()=>{signal();gate=new Promise<void>(r=>signal=r);};
++  const token=randomBytes(24).toString('hex');
++  const own=await acquireOwnership(store.dir,letterId('owner'),()=>({scope:DOM_SCOPE,phase:engine?.phase??'idle',running:!!loop}));
++  if(!own.ok)throw new Error('DomOwnerUnavailable');
++  const loaded=store.load(o.plan??DOM_PLAN,Date.now(),own.previous.kind!=='none');
++  if(!loaded.ok){await own.lock.release();throw new Error('DomTaskEvidenceUnavailable');}
++  const load=()=>{const r=store.load(null,Date.now());if(!r.ok)throw new Error('DomTaskEvidenceUnavailable');return r.doc;};
++  const plan=currentPlan(loaded.doc).plan;
++  if(!plan.fake){await own.lock.release();throw new Error('RealActionBlocked');}
++  const readHistory=()=>{const d=load(),last=latestRun(d);if(!last)return null;const r=readJournal(store.journalPath(last.runId),last.planHash);return r.ok?{runId:last.runId,records:r.records}:null;};
++  let history=readHistory();
++  const snap=()=>{
++    const d=load(),ev=store.ledger.evidence();
++    return {scope:DOM_SCOPE,taskId:d.taskId,plan:currentPlan(d),engine:engine?.snapshot()??null,running:!!loop,failure,history,
++      startBlocked:closed||!!loop||d.runs.length>0||!ev.ok||ev.entries.length>0,ledger:ev.ok?ev.entries.map(x=>({status:x.status,runId:x.runId})):['unverifiable'],controller,document};
++  };
++  const push=()=>{let state;try{state=snap();}catch{state={scope:DOM_SCOPE,startBlocked:true,failure:'持久记录无法验证，停止操作'};}
++    for(const [client,x]of clients)x.res.write(`data: ${JSON.stringify({type:'state',you:controller===client,state})}\n\n`);
++  };
++  const mailbox=new DomMailbox(command=>{const c=clients.get(command.client);if(!c||controller!==command.client||document!==command.document)throw new Error('DomNoController');c.res.write(`data: ${JSON.stringify({type:'command',command})}\n\n`);},o.timeoutMs);
++  const start=(client:string,doc:string)=>{
++    if(controller!==client||document!==doc||snap().startBlocked)throw new Error('DomStartBlocked');
++    const d=load(),cur=currentPlan(d),runId=letterId('run');
++    const run={runId,rev:cur.rev,planHash:cur.planHash,startedAt:Date.now(),siteScenario:'fake-dom-chrome',capability:null};
++    d.runs.push(run);store.save(d); // one run recorded before bootstrap or any DOM action; restart never creates another
++    const journal=new FileJournal(store.journalPath(runId));
++    engine=new Engine({plan:cur.plan,planHash:cur.planHash,runId,journal,ledger:store.ledger,now:Date.now,portKind:'mock',capability:createMockFormalCapability(cur.planHash,runId,Date.now()+120000)});
++    const request=(method:string,opId?:string,ref?:string)=>{
++      const current=load();
++      if(closed||controller!==client||document!==doc||current.taskId!==d.taskId||currentPlan(current).planHash!==cur.planHash||latestRun(current)?.runId!==runId||!store.ledger.evidence().ok)throw new Error('DomEvidenceOrBindingChanged');
++      return mailbox.request({scope:DOM_SCOPE,id:letterId('cmd'),client,document:doc,taskId:d.taskId,runId,planHash:cur.planHash,method,opId,ref,expect:cur.plan});
++    };
++    const port:CheckoutPort={kind:'mock',label:'FAKE 本机 Chrome DOM',observe:()=>request('observe'),chooseSlot:(id,ref)=>request('chooseSlot',id,ref),advance:id=>request('advance',id),submitOrder:(id,cap)=>{
++      if(cap.scope!=='mock-only')throw new Error('RealActionBlocked');return request('submitOrder',id);},lookupOrder:id=>request('lookupOrder',id)};
++    const boundEngine=engine;
++    push(); // bind the browser motor to the task/run/plan before the first command is delivered
++    loop=(async()=>{
++      journal.append('dom-bootstrap',{runId,planHash:cur.planHash,kind:'intent',t:Date.now()});
++      const prepared=await request('prepare');
++      if((prepared.body as any)?.prepared!==true)throw new Error('DomPreparationStopped');
++      const afterPrepare=load();
++      if(currentPlan(afterPrepare).planHash!==cur.planHash||latestRun(afterPrepare)?.runId!==runId||!store.ledger.evidence().ok)throw new Error('DomPreparationEvidenceChanged');
++      journal.append('dom-bootstrap',{runId,planHash:cur.planHash,kind:'completed',t:Date.now()});
++      await runEngine(boundEngine,port,{now:Date.now,advance(){},advanceTo(){}},{maxSteps:200,hooks:{
++        takeControls:()=>controls.splice(0),controlSignal:()=>gate,closing:()=>closed||controller!==client||document!==doc,
++        sleepUntil:t=>new Promise<void>(r=>setTimeout(r,Math.max(0,t-Date.now()))),
++        beforeSend:()=>{load();if(!store.ledger.evidence().ok)throw new Error('DomEvidenceStopped');},onChange:push}});
++    })().catch(()=>{failure='执行停止或结果不明：保留记录，不重新下单；请只读核实';}).finally(()=>{loop=null;try{history=readHistory();}catch{failure='历史无法验证，停止操作';}push();});
++    push();
++  };
++  let origin='';
++  const server=http.createServer(async(req,res)=>{
++    try{
++      if(req.headers.host!==new URL(origin).host){res.writeHead(403);res.end();return;}
++      const url=new URL(req.url??'/',origin);
++      if(req.method==='GET'&&ASSETS[url.pathname]){
++        const [name,type]=ASSETS[url.pathname];let bytes=readFileSync(join(ROOT,'web',name));
++        if(url.pathname==='/')bytes=Buffer.from(bytes.toString().replace('__TOKEN__',token));
++        res.writeHead(200,{'content-type':type,'cache-control':'no-store','content-security-policy':CSP,'x-content-type-options':'nosniff'});res.end(bytes);return;
++      }
++      if(req.method==='GET'&&url.pathname==='/dom/events'){
++        const c=url.searchParams.get('client')??'',doc=url.searchParams.get('document')??'';
++        if(url.searchParams.get('token')!==token||!CLIENT.test(c)||!DOCUMENT.test(doc)||clients.has(c)){res.writeHead(403);res.end();return;}
++        res.writeHead(200,{'content-type':'text/event-stream','cache-control':'no-store'});clients.set(c,{res,document:doc});
++        if(!controller&&!loop){controller=c;document=doc;}push();
++        req.on('close',()=>{clients.delete(c);if(controller===c){controller=null;document=null;mailbox.disconnect();wake();}push();});return;
++      }
++      if(req.method!=='POST'||req.headers.origin!==origin||req.headers['content-type']!=='application/json'||req.headers['x-dom-token']!==token){res.writeHead(403);res.end();return;}
++      const client=String(req.headers['x-dom-client']??''),doc=String(req.headers['x-dom-document']??'');
++      if(!CLIENT.test(client)||!DOCUMENT.test(doc)||controller!==client||document!==doc){res.writeHead(409);res.end(JSON.stringify({ok:false}));return;}
++      let text='';for await(const bytes of req){text+=bytes;if(text.length>65000)throw new Error('BoundedInput');}
++      const body=JSON.parse(text);let ok=false;
++      if(url.pathname==='/dom/start'){if(Object.keys(body).length)throw new Error('StartInput');start(client,doc);ok=true;}
++      else if(url.pathname==='/dom/reply')ok=mailbox.reply(client,doc,body.id,body.reply);
++      else if(url.pathname==='/dom/control'&&['pause','resume','stop'].includes(body.action)&&loop){controls.push(body.action);wake();ok=true;}
++      res.writeHead(ok?200:409,{'content-type':'application/json'});res.end(JSON.stringify({ok}));
++    }catch{res.writeHead(409,{'content-type':'application/json'});res.end(JSON.stringify({ok:false,message:'已拒绝操作；请核对当前状态和记录'}));}
++  });
++  try{await new Promise<void>((yes,no)=>{server.once('error',no);server.listen(o.port??0,'127.0.0.1',yes);});}
++  catch(e){await own.lock.release();throw e;}
++  const port=(server.address()as any).port;origin=`http://127.0.0.1:${port}`;
++  return {url:origin+'/',port,token,taskDir:store.dir,snapshot:snap,mailbox,close:async()=>{closed=true;mailbox.disconnect();wake();for(const x of clients.values())x.res.end();clients.clear();await loop;await new Promise<void>(r=>server.close(()=>r()));await own.lock.release();}};
++}
+--- /dev/null
++++ b/src/dom-demo.ts
+@@ -0,0 +1,15 @@
++// Desktop-only runnable C-010 candidate. Normal Chrome, loopback DOM fixture, no merchant access.
++import { resolve } from 'node:path';
++import { installNetworkGuard } from './netguard.ts';
++import { startDomDemo } from './app/dom-bridge.ts';
++const args=process.argv.slice(2);const at=args.indexOf('--task-dir');
++const taskDir=resolve(at>=0?args[at+1]:'.local/dom-desktop');
++const pa=args.indexOf('--port');const port=pa>=0?Number(args[pa+1]):0;
++if(!Number.isInteger(port)||port<0||port>65535)throw new Error('InvalidPort');
++const guard=installNetworkGuard();
++const demo=await startDomDemo(taskDir,{port});
++console.log('FAKE｜真实 DOM 自动执行候选｜不访问苹果、不创建真实订单、不付款');
++console.log(`DOM-READY ${JSON.stringify({url:demo.url,pid:process.pid,taskDir})}`);
++await new Promise<void>(r=>{process.once('SIGINT',r);process.once('SIGTERM',r);});
++await demo.close();guard.uninstall();
++if(guard.attempts.length)process.exitCode=1;
+--- /dev/null
++++ b/test/chrome-connector.test.ts
+@@ -0,0 +1,27 @@
++// The actual extension is uninstalled: these checks cover its bounded source and collector, not Chrome permission.
++import test from 'node:test';
++import assert from 'node:assert/strict';
++import {readFileSync} from 'node:fs';
++import {inspectPublicEntry} from '../web/chrome-connector/read-entry.js';
++
++test('Chrome public connector requests temporary user-activated access only; no persistent merchant or private-data grants',()=>{
++  const manifest=JSON.parse(readFileSync(new URL('../web/chrome-connector/manifest.json',import.meta.url),'utf8'));
++  assert.equal(manifest.manifest_version,3);assert.deepEqual(manifest.permissions,['activeTab','scripting']);
++  for(const key of ['host_permissions','optional_host_permissions','content_scripts','externally_connectable','background'])assert.equal(key in manifest,false);
++  assert.match(manifest.content_security_policy.extension_pages,/connect-src 'none'/);
++});
++
++test('Chrome collector refuses account, checkout, another merchant and deceptive host BEFORE DOM access',()=>{
++  const original=Object.getOwnPropertyDescriptor(globalThis,'location');
++  try{
++    for(const url of ['https://secure6.www.apple.com.cn/shop/checkout','https://www.apple.com.cn/shop/order/list','https://www.apple.com.cn.example.org/shop/buy-iphone/iphone-duo','http://www.apple.com.cn/shop/buy-iphone/iphone-duo','https://example.org/']){
++      Object.defineProperty(globalThis,'location',{configurable:true,value:{href:url}});
++      assert.equal(inspectPublicEntry().state,'blocked');assert.equal(inspectPublicEntry().canPurchase,false);
++    }
++  }finally{if(original)Object.defineProperty(globalThis,'location',original);else delete (globalThis as any).location;}
++});
++
++test('Chrome collector serializes without closure dependencies and contains no mutation or private input API',()=>{
++  const source=inspectPublicEntry.toString();const fn=(0,eval)(`(${source})`);assert.equal(typeof fn,'function');
++  for(const forbidden of [/\.value\b/,/\.cookie\b/,/localStorage/,/sessionStorage/,/\.click\s*\(/,/dispatchEvent/,/fetch\s*\(/,/XMLHttpRequest/,/MutationObserver/])assert.equal(forbidden.test(source),false);
++});
+--- /dev/null
++++ b/test/dom-bridge.test.ts
+@@ -0,0 +1,107 @@
++// Codex implementation tests for the quota-takeover DOM transport. All network is loopback.
++import test from 'node:test';
++import assert from 'node:assert/strict';
++import { DomMailbox,DOM_PLAN,startDomDemo } from '../src/app/dom-bridge.ts';
++import type {DomCommand} from '../src/app/dom-bridge.ts';
++import { assertFakeTarget,validateConditions,DomMotor } from '../web/desktop/motor.js';
++import { classifyPage } from '../src/observe.ts';
++import { tempDir } from './helpers.ts';
++import {readFileSync,writeFileSync} from 'node:fs';
++import {join} from 'node:path';
++import {planHash} from '../src/plan.ts';
++const command:DomCommand={scope:'fake-dom-only',id:'cmd-testletters',client:'c-clientletters',document:'d-documentletters',taskId:'task-fakeletters',runId:'run-fakeletters',planHash:'0123456789abcdef',method:'observe',expect:DOM_PLAN};
++test('DOM transport refuses another tab/document, stale ack and duplicate ack without changing the live request',async()=>{
++  const m=new DomMailbox(()=>{},2000),pending=m.request(command),reply={body:{contract:'mock-v0',kind:'page'},simulatedMs:0};
++  assert.equal(m.reply('c-otherclient',command.document,command.id,reply),false);
++  assert.equal(m.reply(command.client,'d-oldletters',command.id,reply),false);
++  assert.equal(m.reply(command.client,command.document,'cmd-oldletters',reply),false);
++  await assert.rejects(m.request({...command,id:'cmd-secondletters'}),/AlreadyInFlight/);
++  assert.equal(m.reply(command.client,command.document,command.id,reply),true);await pending;
++  assert.equal(m.reply(command.client,command.document,command.id,reply),false);
++});
++test('DOM timeout and disconnect are unknown, do not replay a delivered action',async()=>{
++  let sends=0;const m=new DomMailbox(()=>sends++,15);
++  await assert.rejects(m.request({...command,method:'submitOrder'}),/ResultUnknown/);assert.equal(sends,1);assert.equal(m.pending,null);
++  const next=m.request({...command,id:'cmd-nextletters'});m.disconnect();await assert.rejects(next,/DisconnectedResultUnknown/);assert.equal(sends,2);
++});
++
++test('DOM ACK cannot settle a current final command with another operation id',async()=>{
++  const m=new DomMailbox(()=>{},2000),pending=m.request({...command,method:'submitOrder',opId:'op-0-1'});
++  const reply={body:{contract:'mock-v0',kind:'result',opId:'op-0-2',result:'accepted'},simulatedMs:0};
++  assert.equal(m.reply(command.client,command.document,command.id,reply),false);
++  assert.equal(m.pending?.opId,'op-0-1');
++  assert.equal(m.reply(command.client,command.document,command.id,{body:{...reply.body,opId:'op-0-1',result:'unknown'},simulatedMs:0}),true);
++  assert.equal((await pending).body.result,'unknown');
++});
++test('DOM conditions block wrong variant, excess quantity, price, store or delivery before bootstrap',()=>{
++  const p=DOM_PLAN.products[0],actual={productId:p.id,model:p.model,capacity:p.capacity,color:p.color,quantity:1,totalCny:9999,store:DOM_PLAN.stores[0].label,fulfillment:'pickup'};
++  assert.equal(validateConditions(actual,DOM_PLAN),true);
++  for(const change of [{model:p.model+' Max'},{color:'白色'},{quantity:2},{totalCny:10000},{store:'其他门店'},{fulfillment:'delivery'}])assert.equal(validateConditions({...actual,...change},DOM_PLAN),false);
++  assert.equal(validateConditions(actual,{...DOM_PLAN,fake:false}),false);
++});
++test('DOM action motor structurally rejects external/real documents, including an Apple URL with a fake marker',()=>{
++  const doc={querySelector:()=>({dataset:{fakeSchema:'applebuy-merchant-fixture/v1'}})};
++  assert.doesNotThrow(()=>assertFakeTarget(doc,'http://127.0.0.1:1234/'));
++  for(const url of ['https://www.apple.com.cn/','http://127.0.0.1:1234/checkout','http://127.0.0.1.example.org/','https://127.0.0.1/'])assert.throws(()=>assertFakeTarget(doc,url),/RealDomActionBlocked/);
++  assert.throws(()=>assertFakeTarget({querySelector:()=>null},'http://127.0.0.1:1234/'),/RealDomActionBlocked/);
++});
++
++test('native DOM checkout stages satisfy the existing engine observation contract',()=>{
++  const context={productId:DOM_PLAN.products[0].id,quantity:1,totalCny:9999,fulfillment:'pickup'};
++  const acceptedSlot={store:DOM_PLAN.stores[0].label,date:DOM_PLAN.dates[2],start:'21:15',end:'21:30'};
++  for(const [step,state] of [['accepted','CHECKOUT_REVIEW'],['details','CHECKOUT_REVIEW'],['payment','CHECKOUT_REVIEW'],['review','PRE_PAYMENT']]){
++    const receiver={doc:{getElementById:()=>({dataset:{step,seq:'10'}})},context:()=>context,accepted:()=>acceptedSlot,observationSeq:0};
++    assert.equal(classifyPage(DomMotor.prototype.page.call(receiver)).state,state);
++    const another=DomMotor.prototype.page.call(receiver);assert.equal(another.seq,2);
++  }
++});
++test('DOM bridge rejects foreign origins and tokens; only one tab owns it; recorded start survives restart',async()=>{
++  const {dir,cleanup}=tempDir('dom-bridge-protocol');let demo:any;
++  try{
++    demo=await startDomDemo(dir,{timeoutMs:100});
++    const ctl=new AbortController(),client='c-controllerletters',document='d-documentletters';
++    const stream=await fetch(`${demo.url}dom/events?token=${demo.token}&client=${client}&document=${document}`,{signal:ctl.signal});
++    const reader=stream.body!.getReader();await reader.read();
++    const headers={'content-type':'application/json','origin':demo.url.slice(0,-1),'x-dom-token':demo.token,'x-dom-client':client,'x-dom-document':document};
++    const request=(h:Record<string,string>)=>fetch(`${demo.url}dom/start`,{method:'POST',headers:h,body:'{}'});
++    assert.equal((await request({...headers,origin:'https://www.apple.com.cn'})).status,403);
++    assert.equal((await request({...headers,'x-dom-token':'wrong'})).status,403);
++    assert.equal((await request({...headers,'x-dom-client':'c-secondaryletters'})).status,409);
++    assert.equal((await request(headers)).status,200);
++    assert.equal((await request(headers)).status,409);
++    ctl.abort();await reader.cancel().catch(()=>{});await demo.close();demo=null;
++    demo=await startDomDemo(dir);assert.equal(demo.snapshot().startBlocked,true);assert.equal(demo.snapshot().history.runId.startsWith('run-'),true);
++    assert.equal(demo.snapshot().ledger.length,0); // bootstrap stopped, no final action; old run still blocks new start
++  }finally{if(demo)await demo.close();cleanup();}
++});
++
++for(const corruption of ['journal','plan'] as const)test(`DOM bridge stops after bootstrap when ${corruption} evidence changes, before another delivered command`,async()=>{
++  const {dir,cleanup}=tempDir('dom-boundary-'+corruption);let demo:any;const ctl=new AbortController();let reader:any;
++  try{
++    demo=await startDomDemo(dir,{timeoutMs:2000});const client='c-controllerletters',document='d-documentletters';
++    const stream=await fetch(`${demo.url}dom/events?token=${demo.token}&client=${client}&document=${document}`,{signal:ctl.signal});reader=stream.body!.getReader();await reader.read();
++    const headers={'content-type':'application/json','origin':demo.url.slice(0,-1),'x-dom-token':demo.token,'x-dom-client':client,'x-dom-document':document};
++    const post=(path:string,body:any)=>fetch(demo.url+path,{method:'POST',headers,body:JSON.stringify(body)});
++    assert.equal((await post('dom/start',{})).status,200);
++    const pending=demo.mailbox.pending;assert.equal(pending.method,'prepare');
++    const task=JSON.parse(readFileSync(join(dir,'task.json'),'utf8')),run=task.runs[0];
++    if(corruption==='journal')writeFileSync(join(dir,'runs',run.runId,'journal.jsonl'),'corrupt\n');
++    else{
++      const plan={...DOM_PLAN,label:'FAKE changed plan'};task.planRevs.push({rev:2,planHash:planHash(plan),plan,savedAt:Date.now()});task.currentRev=2;
++      writeFileSync(join(dir,'task.json'),JSON.stringify(task));
++    }
++    assert.equal((await post('dom/reply',{id:pending.id,reply:{body:{prepared:true},simulatedMs:0}})).status,200);
++    for(let i=0;i<100&&demo.snapshot().running;i++)await new Promise<void>(r=>setImmediate(r));
++    assert.equal(demo.snapshot().running,false);assert.ok(demo.snapshot().failure);assert.equal(demo.snapshot().startBlocked,true);assert.equal(demo.mailbox.pending,null);
++    if(corruption==='journal')assert.equal(readFileSync(join(dir,'runs',run.runId,'journal.jsonl'),'utf8'),'corrupt\n');
++    else assert.equal(demo.snapshot().ledger.length,0);
++  }finally{ctl.abort();if(reader)await reader.cancel().catch(()=>{});if(demo)await demo.close();cleanup();}
++});
++
++test('DOM bridge keeps one task process owner and refuses a real plan before exposing a motor',async()=>{
++  const one=tempDir('dom-single-owner'),real=tempDir('dom-real-plan');let demo:any;
++  try{
++    demo=await startDomDemo(one.dir);await assert.rejects(startDomDemo(one.dir),/DomOwnerUnavailable/);
++    await assert.rejects(startDomDemo(real.dir,{plan:{...DOM_PLAN,fake:false}}),/RealActionBlocked/);
++  }finally{if(demo)await demo.close();one.cleanup();real.cleanup();}
++});
+--- /dev/null
++++ b/web/chrome-connector/manifest.json
+@@ -0,0 +1,9 @@
++{
++  "manifest_version": 3,
++  "name": "AppleBuy 官网配置只读验证",
++  "version": "0.1.0",
++  "description": "只读取本人明确打开的苹果中国 Pro/Duo 公共商品页配置。不能下单、付款或读取账号资料。",
++  "permissions": ["activeTab", "scripting"],
++  "action": {"default_popup": "popup.html"},
++  "content_security_policy": {"extension_pages": "script-src 'self'; object-src 'none'; connect-src 'none'"}
++}
+--- /dev/null
++++ b/web/chrome-connector/popup.html
+@@ -0,0 +1,5 @@
++<!doctype html>
++<html lang="zh-CN"><head><meta charset="utf-8"><title>官网配置只读验证</title></head>
++<body><h1>官网配置只读验证</h1><p>只读取你当前打开的苹果中国 Pro 或 Duo 公共商品页。不会点击官网控件、加购、下单或付款；不读取账号、证件、输入值或 Cookie。</p>
++<button id="read">读取当前商品配置（不下单）</button><p id="status" role="status">等待本人点击</p><pre id="result"></pre>
++<script type="module" src="popup.js"></script></body></html>
+--- /dev/null
++++ b/web/chrome-connector/popup.js
+@@ -0,0 +1,17 @@
++import {inspectPublicEntry} from './read-entry.js';
++const status=document.getElementById('status'),result=document.getElementById('result'),read=document.getElementById('read');
++read.addEventListener('click',async()=>{
++  read.disabled=true;status.textContent='正在只读核对当前商品页';
++  try{
++    const [tab]=await chrome.tabs.query({active:true,currentWindow:true});
++    const url=new URL(tab?.url??'');
++    const allowed=['/shop/buy-iphone/iphone-18-pro','/shop/buy-iphone/iphone-duo','/shop/buy-iphone/iphone-duo/mk2m4ch/a'];
++    if(url.protocol!=='https:'||url.hostname!=='www.apple.com.cn'||!allowed.includes(url.pathname.replace(/\/$/,'')))throw new Error('OutsidePublicEntry');
++    const replies=await chrome.scripting.executeScript({target:{tabId:tab.id,frameIds:[0]},world:'ISOLATED',func:inspectPublicEntry});
++    const report=replies.length===1&&replies[0].frameId===0?replies[0].result:null;
++    if(!report||report.scope!=='public-entry-read-only')throw new Error('UnknownDocument');
++    result.textContent=JSON.stringify(report,null,2);
++    status.textContent=report.state==='observed'?'配置已读取。此组件不能下单。':'页面无法安全识别：停止读取';
++  }catch{status.textContent='当前页面或临时权限无法核实：停止读取，不执行任何官网动作';result.textContent='';}
++  finally{read.disabled=false;}
++});
+--- /dev/null
++++ b/web/chrome-connector/read-entry.js
+@@ -0,0 +1,39 @@
++// C-011 Codex quota takeover. Self-contained function for Chrome MV3 executeScript serialization.
++// Only whitelisted public facts leave the page. No actions, input values, identity data, cookies or requests.
++export function inspectPublicEntry(){
++  const blocked={schema:'applebuy-public-entry/v1',scope:'public-entry-read-only',state:'blocked',canPurchase:false};
++  const url=new URL(location.href);
++  const allowed=['/shop/buy-iphone/iphone-18-pro','/shop/buy-iphone/iphone-duo','/shop/buy-iphone/iphone-duo/mk2m4ch/a'];
++  if(url.protocol!=='https:'||url.hostname!=='www.apple.com.cn'||!allowed.includes(url.pathname.replace(/\/$/,'')))return blocked;
++  const main=document.querySelector('main,[role="main"]');if(!main)return blocked;
++  // Treat login or sensitive forms as a hard boundary; never inspect their contents or values.
++  if(main.querySelector('input[type="password"],input[type="email"],input[autocomplete="one-time-code"],input[autocomplete="cc-number"]'))return blocked;
++  const shown=(element,transparentNative=false)=>{
++    if(!element)return false;
++    for(let e=element;e;e=e.parentElement){
++      if(e.hasAttribute('hidden')||e.hasAttribute('inert')||e.getAttribute('aria-hidden')==='true')return false;
++      const style=getComputedStyle(e);
++      if(style.display==='none'||style.visibility==='hidden'||style.visibility==='collapse'||(!transparentNative&&style.opacity==='0'))return false;
++    }
++    return true;
++  };
++  const norm=text=>String(text??'').replace(/[\s\u200b\u200c\u200d\u2060]+/g,' ').trim();
++  const h1=main.querySelector('h1');const heading=norm(h1?.textContent);
++  if(!shown(h1)||!['购买 iPhone 18 Pro','iPhone Duo','购买 iPhone Duo'].includes(heading))return blocked;
++  const controls=[];
++  for(const input of main.querySelectorAll('input[type="radio"]')){
++    const labels=[...main.querySelectorAll('label')].filter(label=>label.getAttribute('for')===input.getAttribute('id'));
++    const name=norm(input.getAttribute('aria-label')||labels.filter(label=>shown(label)).map(label=>label.textContent).join(' '));
++    const match=/^(iPhone 18 Pro Max|iPhone 18 Pro|256GB|512GB|1TB|2TB|星光白色|夜空色|勃艮第酒红色|冰川蓝色|银色|黑色)(?![A-Za-z])/.exec(name);
++    if(!match||!shown(input,true)||(!input.getAttribute('aria-label')&&!labels.some(label=>shown(label))))continue;
++    // Price in the public selector is a configuration quote, never an order total or stock proof.
++    const price=/\bRMB\s*(\d[\d,]*(?:\.\d{2})?)/.exec(name);
++    controls.push({name:match[1],checked:input.checked===true,enabled:!input.disabled&&input.getAttribute('aria-disabled')!=='true',quotedCny:price?Number(price[1].replaceAll(',','')):null});
++  }
++  if(controls.length===0||controls.length>32)return blocked;
++  const next=[...main.querySelectorAll('button')].filter(button=>shown(button)&&norm(button.textContent)==='继续');
++  return {schema:'applebuy-public-entry/v1',scope:'public-entry-read-only',state:'observed',canPurchase:false,
++    product:heading.includes('Duo')?'iPhone Duo':'iPhone 18 Pro',path:url.pathname,controls,
++    continueEnabled:next.length===1&&!next[0].disabled&&next[0].getAttribute('aria-disabled')!=='true',
++    slotListObserved:false,skuObserved:url.pathname==='/shop/buy-iphone/iphone-duo/mk2m4ch/a',sku:url.pathname==='/shop/buy-iphone/iphone-duo/mk2m4ch/a'?'MK2M4CH/A':null,orderStateObserved:false};
++}
+--- /dev/null
++++ b/web/desktop/app.js
+@@ -0,0 +1,35 @@
++import {FakeMerchant} from './fixture.js';
++import {DomMotor} from './motor.js';
++const $=id=>document.getElementById(id);const token=document.querySelector('meta[name="dom-token"]').content;
++const identity={client:'c-'+crypto.randomUUID(),document:'d-'+crypto.randomUUID()};const motor=new DomMotor(document,location.href,identity);
++const merchant=new FakeMerchant($('merchant'));let state=null,configured=false,active=false,startedAt=0;
++const headers={'content-type':'application/json','x-dom-token':token,'x-dom-client':identity.client,'x-dom-document':identity.document};
++async function post(path,body){const response=await fetch(path,{method:'POST',headers,body:JSON.stringify(body)});const result=await response.json();if(!response.ok)throw new Error('DomRequestRefused');return result;}
++const stream=new EventSource(`/dom/events?token=${token}&client=${identity.client}&document=${identity.document}`);
++stream.onmessage=async event=>{
++  const data=JSON.parse(event.data);
++  if(data.type==='state'){
++    state=data.state;active=data.you;
++    identity.taskId=state.taskId;identity.runId=state.engine?.runId;identity.planHash=state.plan?.planHash;
++    $('start').disabled=!active||state.startBlocked;$('scenario').disabled=state.startBlocked;
++    for(const action of ['pause','resume','stop'])$(action).disabled=!active||!state.running;
++    if(state.plan&&!configured){merchant.configure(state.plan.plan,$('scenario').value);configured=true;}
++    $('target').textContent=state.plan?`虚构计划：${state.plan.plan.products[0].model} ${state.plan.plan.products[0].capacity} ${state.plan.plan.products[0].color}，1 台，上限 ¥${state.plan.plan.maxTotalCny}，每天末档，${state.plan.plan.stores[0].label}`:'';
++    $('status').textContent=(active?'':'本标签页只读；')+(state.failure??(state.engine?`程序状态：${state.engine.phase}；明确拒绝 ${state.engine.refusals} 次`:(state.startBlocked?'已有历史或提交记录：不能新建订单，只读保留':'已就绪：本标签页执行')));
++    $('merchant').hidden=state.startBlocked&&(!active||!startedAt);
++    if(state.engine?.phase==='ORDER_CONFIRMED_MOCK')$('result').textContent=startedAt&&active?`已独立核实一张未付款模拟订单。实际本机 DOM 链路耗时 ${(performance.now()-startedAt).toFixed(0)}ms（单次，本机虚构页面，不代表官网速度）。最终点击 ${merchant.state.submits} 次，订单 ${merchant.state.orders.length} 张。`:'保存的运行已确认一张模拟订单。本页只展示保存的结果，不再次执行。';
++    if(!state.engine&&state.history)$('result').textContent='已恢复保存的运行记录；不自动重新执行。虚构商店页面只保存在原标签页中，本页面不能证明当前订单状态。';
++    if(state.engine?.phase==='MANUAL_VERIFICATION')$('result').textContent=state.ledger?.some(x=>typeof x==='object')?'提交结果仍不明：已停止，保留唯一提交记录，不再下单。':'动作结果仍不明：已停止，保留运行记录，不再执行新动作。';
++    $('trace').textContent=JSON.stringify({engine:state.engine,ledger:state.ledger,history:state.history,scope:state.scope},null,2);return;
++  }
++  if(data.type==='command'){
++    if(!active)return;let reply;try{reply=await motor.execute(data.command);}catch{reply={body:{contract:'mock-v0',kind:'error',error:'network',opId:data.command.opId},simulatedMs:0};}
++    // Explicit offline fault injection: final DOM click happened, but its transport reply is lost.
++    if(merchant.scenario==='lost-reply'&&data.command.method==='submitOrder')return;
++    try{await post('/dom/reply',{id:data.command.id,reply});}catch{$('status').textContent='回复失联或过期：结果可能不明，不能重新操作';}
++  }
++};
++stream.onerror=()=>{active=false;for(const action of ['start','pause','resume','stop'])$(action).disabled=true;$('status').textContent='连接中断：停止新操作，保留记录；不要重建任务或重新下单';};
++$('scenario').onchange=()=>{if(!state?.startBlocked)merchant.configure(state.plan.plan,$('scenario').value);};
++$('start').onclick=async()=>{$('start').disabled=true;startedAt=performance.now();try{await post('/dom/start',{});}catch{$('status').textContent='开始被拒绝：请核对当前记录，不要重复下单';}};
++for(const action of ['pause','resume','stop'])$(action).onclick=()=>post('/dom/control',{action}).catch(()=>{$('status').textContent='控制请求未被接受；请保留当前状态';});
+--- /dev/null
++++ b/web/desktop/fixture.js
+@@ -0,0 +1,63 @@
++// Deliberately invented local merchant. Pro contributes native-control shape only, no Apple semantics.
++export class FakeMerchant {
++  constructor(root){this.root=root;this.state={step:'product',seq:1,refusals:0,bagAdds:0,chooses:0,advances:0,submits:0,lookups:0,orders:[],accepted:null};this.scenario='normal';}
++  configure(plan,scenario){if(this.state.step!=='product')throw new Error('FakeAlreadyStarted');this.plan=plan;this.scenario=scenario;this.render();}
++  render(){
++    const s=this.state,p=this.plan;if(!p)return;const product=p.products[0];
++    this.root.replaceChildren();this.root.dataset.step=s.step;this.root.dataset.seq=String(s.seq);
++    const add=(tag,text,attributes={})=>{const e=document.createElement(tag);e.textContent=text;for(const[k,v]of Object.entries(attributes))e.setAttribute(k,v);this.root.append(e);return e;};
++    add('h2','虚构官网：'+({product:'选择商品',bag:'购物袋',fulfillment:'取货方式',slots:'选择取货时间',accepted:'时段已接受',details:'取货详情',payment:'付款方式',review:'核对订单',unpaid:'等待付款',unknown:'结果不明',orders:'模拟订单详情'}[s.step]??s.step));
++    const summary=add('p',`${product.model} ${product.capacity} ${product.color}｜数量 1｜总计（含税） ¥${this.scenario==='wrong-price'?p.maxTotalCny+1:p.maxTotalCny}｜${p.stores[0].label}`,{id:'condition'});
++    Object.assign(summary.dataset,{productId:product.id,model:product.model,capacity:product.capacity,color:product.color,quantity:'1',total:String(this.scenario==='wrong-price'?p.maxTotalCny+1:p.maxTotalCny),store:p.stores[0].label,fulfillment:'pickup'});
++    const button=(id,label,fn)=>{const b=add('button',label,{id,type:'button'});b.onclick=()=>{fn();s.seq++;this.render();};return b;};
++    if(s.step==='product')button('add-bag','添加到购物袋（模拟）',()=>{s.bagAdds++;s.step='bag';});
++    if(s.step==='bag'){add('p','购物袋数量：1');button('checkout','安全结账（模拟）',()=>s.step='fulfillment');}
++    if(s.step==='fulfillment'){
++      const r=add('input','',{type:'radio',id:'pickup',name:'fulfillment'});r.value='pickup';add('label','我要取货',{for:'pickup'});
++      button('pickup-next','继续选择取货时间',()=>{if(!r.checked)return;s.step='slots';});
++    }
++    if(s.step==='slots')for(const[day,date]of p.dates.entries()){
++      const group=add('fieldset','',{ 'data-date':date });const legend=document.createElement('legend');legend.textContent=date;group.append(legend);
++      const select=document.createElement('select');select.setAttribute('aria-label',date+' 取货时间');select.dataset.date=date;
++      const placeholder=document.createElement('option');placeholder.textContent='可选时段';placeholder.disabled=true;placeholder.selected=true;placeholder.value='';select.append(placeholder);
++      for(const[i,time]of ['20:30-20:45','20:45-21:00','21:15-21:30'].entries()){
++        // Removed/refused terminal is no longer displayed: do not fall back to its earlier sibling.
++        if(i===2&&day<s.refusals)continue;
++        const opt=document.createElement('option');opt.textContent=time.replace('-','–');opt.value=`r${s.seq}-${day}-${i}`;opt.dataset.start=time.split('-')[0];opt.dataset.end=time.split('-')[1];select.append(opt);
++      }group.append(select);
++      if(this.scenario==='redraw')select.onchange=()=>{if(!s.redrawn){s.redrawn=true;s.seq++;this.render();}};
++      const b=document.createElement('button');b.type='button';b.textContent='继续填写取货详情';b.dataset.date=date;b.onclick=()=>{
++        if(!select.value)return;const opt=select.selectedOptions[0];s.chooses++;
++        if(day<2&&s.refusals<2){s.refusals++;s.feedback='rejected';s.rejected={store:p.stores[0].label,date,start:opt.dataset.start,end:opt.dataset.end};}
++        else{s.feedback='accepted';s.accepted={store:p.stores[0].label,date,start:opt.dataset.start,end:opt.dataset.end};s.step='accepted';}
++        s.seq++;this.render();
++      };group.append(b);
++    }
++    if(s.feedback){const feedback=add('p',s.feedback==='rejected'?'所选时段已满，请重新选择':'取货时段已接受',{id:'feedback'});feedback.dataset.result=s.feedback;}
++    if(s.accepted){const accepted=add('p',`${s.accepted.date} ${s.accepted.start}–${s.accepted.end}`,{id:'accepted'});Object.assign(accepted.dataset,s.accepted);}
++    if(s.step==='accepted')button('details','继续填写取货详情',()=>{s.advances++;s.step='details';});
++    if(s.step==='details'){
++      add('p','仅使用 FAKE 演练信息，不读取真实姓名、账号、证件或付款资料。');const input=add('input','',{id:'fake-suffix',type:'text',maxlength:'4','aria-label':'虚构证件末四位'});
++      button('details-next','继续选择付款方式',()=>{if(input.value==='0000')s.step='payment';});
++    }
++    if(s.step==='payment'){
++      const alipay=add('input','',{id:'alipay',type:'radio',name:'payment'});add('label','支付宝（模拟，不支付）',{for:'alipay'});
++      button('review-next','继续核对订单',()=>{if(alipay.checked)s.step='review';});
++    }
++    if(s.step==='review'){
++      add('p','仅虚构下单，无真实商店条款或付款行为。');button('place-order','创建未付款模拟订单',()=>{
++        s.submits++;if(!s.orders.length)s.orders.push({id:'FAKE-order-'+crypto.randomUUID().replaceAll('-',''),status:'unpaid',slot:s.accepted,productId:product.id,model:product.model,capacity:product.capacity,color:product.color,quantity:1,total:p.maxTotalCny,store:p.stores[0].label,fulfillment:'pickup'});
++        s.step=this.scenario==='unknown'?'unknown':'unpaid';
++      });
++    }
++    if(['unpaid','unknown','orders'].includes(s.step)){
++      button('lookup-order','只读查看模拟订单',()=>{s.lookups++;s.step=this.scenario==='unknown'?'unknown':'orders';});
++      if(s.step==='orders'){
++        const o=s.orders[0],order=add('p','模拟订单：待付款，数量 1；商品和取货门店按订单记录核对',{id:'order'});
++        if(o){Object.assign(order.dataset,o,o.slot);delete order.dataset.slot;order.dataset.color=this.scenario==='wrong-order'?'错误颜色':o.color;}
++      }
++      if(s.step==='unknown')add('p','结果仍不明：停止并保留记录，不能重新下单');
++    }
++    add('p',`加购 ${s.bagAdds}｜时段选择 ${s.chooses}｜继续 ${s.advances}｜最终提交 ${s.submits}｜只读查单 ${s.lookups}｜模拟订单 ${s.orders.length}`,{id:'merchant-counts'});
++  }
++}
+--- /dev/null
++++ b/web/desktop/index.html
+@@ -0,0 +1,7 @@
++<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="dom-token" content="__TOKEN__"><title>电脑自动结账验证</title><link rel="stylesheet" href="/style.css"></head><body><main class="wrap">
++<h1>电脑自动结账验证</h1><p class="notice">FAKE 本机虚构官网。程序实际操作下面的 DOM 控件，创建一张未付款模拟订单。不会访问苹果官网、占用真实时段、创建真实订单或付款。</p>
++<p id="target"></p><label for="scenario">验证场景</label><select id="scenario"><option value="normal">两个末档被拒，然后接受、下单并独立核实</option><option value="unknown">提交后结果不明，只读核实也不明</option><option value="wrong-price">总价超出计划，应在加购前停止</option><option value="redraw">动作前控件更新，应拒绝旧引用并停止核实</option><option value="lost-reply">最终点击后回复丢失，仅查单，不重下单</option><option value="wrong-order">订单记录颜色错误，应停止人工核实</option></select>
++<p>点击一次后只对这个虚构任务执行；已有运行或提交记录会阻止再次开始，刷新不会重建订单。</p><button id="start">开始自动模拟下单</button><button id="pause">暂停</button><button id="resume">恢复</button><button id="stop">停止</button><p id="status" role="status">正在连接</p><p id="result"></p>
++<section id="merchant" class="panel" data-fake-schema="applebuy-merchant-fixture/v1"></section>
++<details class="panel"><summary>执行记录</summary><pre id="trace"></pre></details>
++</main><script type="module" src="/desktop/app.js"></script></body></html>
+--- /dev/null
++++ b/web/desktop/motor.js
+@@ -0,0 +1,69 @@
++// C-010 browser motor. Actual DOM actions; deliberately refuses every external or real merchant document.
++// A future real adapter requires separate permissions and current verified contracts. Nothing here enables it.
++export function assertFakeTarget(doc,url){
++  const u=new URL(url);if(u.protocol!=='http:'||u.hostname!=='127.0.0.1'||u.pathname!=='/'||doc.querySelector('#merchant')?.dataset.fakeSchema!=='applebuy-merchant-fixture/v1')throw new Error('RealDomActionBlocked');
++}
++export function validateConditions(actual,plan){
++  const p=plan.products[0];return plan.fake===true&&actual.productId===p.id&&actual.model===p.model&&actual.capacity===p.capacity&&actual.color===p.color&&actual.quantity===1&&Number.isFinite(actual.totalCny)&&actual.totalCny<=plan.maxTotalCny&&actual.totalCny>0&&actual.fulfillment==='pickup'&&plan.stores.some(s=>s.label===actual.store);
++}
++const visible=e=>!!e?.isConnected&&!e.closest('[inert]')&&e.checkVisibility({checkOpacity:true,checkVisibilityCSS:true});
++export class DomMotor{
++  constructor(doc,url,identity){this.doc=doc;this.url=url;this.identity=identity;this.processed=new Set();this.observationSeq=0;}
++  context(){const e=this.doc.querySelector('#condition');if(!visible(e))throw new Error('ConditionsNotVisible');return {productId:e.dataset.productId,model:e.dataset.model,capacity:e.dataset.capacity,color:e.dataset.color,quantity:Number(e.dataset.quantity),totalCny:Number(e.dataset.total),store:e.dataset.store,fulfillment:e.dataset.fulfillment};}
++  check(command){assertFakeTarget(this.doc,this.url);const i=this.identity;if(command.scope!=='fake-dom-only'||command.client!==i.client||command.document!==i.document||command.taskId!==i.taskId||!command.id||!command.runId||!command.planHash)throw new Error('DomIdentityMismatch');if(!i.runId||i.runId!==command.runId)throw new Error('DomRunMismatch');if(!i.planHash||i.planHash!==command.planHash)throw new Error('DomPlanMismatch');if(!validateConditions(this.context(),command.expect))throw new Error('DomConditionsMismatch');}
++  click(id){const e=this.doc.getElementById(id);if(!visible(e)||e.disabled||e.tagName!=='BUTTON')throw new Error('DomButtonUnavailable');e.click();}
++  accepted(){const e=this.doc.getElementById('accepted');if(!visible(e))return null;return {store:e.dataset.store,date:e.dataset.date,start:e.dataset.start,end:e.dataset.end};}
++  page(){
++    const m=this.doc.getElementById('merchant'),step=m.dataset.step,context=this.context();
++    // Every completed read is fresh evidence even when the document revision has not changed.
++    // DOM revision remains in the native option ref; do not confuse it with observation ordering.
++    const raw={contract:'mock-v0',kind:'page',seq:++this.observationSeq,context:{productId:context.productId,quantity:context.quantity,totalCny:context.totalCny,fulfillment:context.fulfillment}};
++    if(step==='review')return {...raw,step:'pre-payment',acceptedSlot:this.accepted()};
++    if(['accepted','details','payment'].includes(step))return {...raw,step:'checkout-review',acceptedSlot:this.accepted()};
++    if(['unpaid','unknown','orders'].includes(step))return {...raw,step:'processing'};
++    if(step!=='slots')return {contract:'mock-v0',kind:'error',error:'status'};
++    const slots=[];for(const select of m.querySelectorAll('select[data-date]'))if(visible(select))for(const option of select.options){if(!option.value)continue;slots.push({store:context.store,date:select.dataset.date,start:option.dataset.start,end:option.dataset.end,ref:option.value,selectable:!select.disabled&&!option.disabled});}
++    return {...raw,step:'slot-selection',slots};
++  }
++  async execute(c){
++    this.check(c);if(this.processed.has(c.id))throw new Error('DomCommandAlreadyUsed');this.processed.add(c.id); // consume before the DOM event
++    const result=(r,extra={})=>({body:{contract:'mock-v0',kind:'result',opId:c.opId,result:r,...extra},simulatedMs:0});
++    if(c.method==='prepare'){
++      for(let n=0;n<4;n++){this.check(c);const step=this.doc.getElementById('merchant').dataset.step;if(step==='slots')return {body:{prepared:true},simulatedMs:0};
++        if(step==='product')this.click('add-bag');else if(step==='bag')this.click('checkout');else if(step==='fulfillment'){const r=this.doc.getElementById('pickup');if(!visible(r)||r.type!=='radio')throw new Error('PickupUnavailable');r.checked=true;r.dispatchEvent(new Event('change',{bubbles:true}));this.click('pickup-next');}else throw new Error('PreparationStageUnknown');}
++      throw new Error('PreparationBound');
++    }
++    if(c.method==='observe')return {body:this.page(),simulatedMs:0};
++    if(c.method==='chooseSlot'){
++      const m=this.doc.getElementById('merchant');if(m.dataset.step!=='slots')throw new Error('SlotStageChanged');
++      const matches=[...m.querySelectorAll('select[data-date]')].flatMap(select=>[...select.options].filter(o=>o.value===c.ref).map(option=>({select,option})));
++      if(matches.length!==1)throw new Error('DomRefStale');const{select,option}=matches[0];if(!visible(select)||select.disabled||option.disabled)throw new Error('DomRefUnavailable');
++      select.value=option.value;select.dispatchEvent(new Event('change',{bubbles:true}));this.check(c);
++      // Re-render after a change invalidates the element: cancel before continuing, never act on detached refs.
++      if(!visible(select)||select.selectedOptions[0]!==option)throw new Error('DomRefChanged');
++      const b=select.parentElement.querySelector('button[data-date]');if(!visible(b)||b.dataset.date!==select.dataset.date)throw new Error('DomContinueUnavailable');b.click();
++      const feedback=this.doc.getElementById('feedback');if(!visible(feedback))return result('unknown');
++      if(feedback.dataset.result==='rejected')return result('rejected',{code:'fake-slot-full',slotRefused:true,freshList:this.page()});
++      if(feedback.dataset.result==='accepted'&&this.accepted())return result('accepted',{evidence:'FAKE-visible-DOM-acceptance'});return result('unknown');
++    }
++    if(c.method==='advance'){
++      for(let n=0;n<5;n++){this.check(c);const step=this.doc.getElementById('merchant').dataset.step;if(step==='review')return result('accepted',{evidence:'FAKE-visible-review'});
++        if(step==='accepted')this.click('details');else if(step==='details'){const input=this.doc.getElementById('fake-suffix');if(!visible(input))throw new Error('FakeDetailsUnknown');input.value='0000';input.dispatchEvent(new Event('input',{bubbles:true}));this.click('details-next');}
++        else if(step==='payment'){const p=this.doc.getElementById('alipay');if(!visible(p))throw new Error('FakePaymentUnknown');p.checked=true;p.dispatchEvent(new Event('change',{bubbles:true}));this.click('review-next');}else throw new Error('AdvanceStageUnknown');}
++      throw new Error('AdvanceBound');
++    }
++    if(c.method==='submitOrder'){
++      if(this.doc.getElementById('merchant').dataset.step!=='review')throw new Error('SubmitStageUnknown');this.click('place-order');
++      // A local selected option/final screen is not independent order proof. Always reconcile via separate lookup.
++      return result('unknown');
++    }
++    if(c.method==='lookupOrder'){
++      this.click('lookup-order');this.check(c);const order=this.doc.getElementById('order');
++      const accepted=this.accepted();
++      const actual=order?{productId:order.dataset.productId,model:order.dataset.model,capacity:order.dataset.capacity,color:order.dataset.color,quantity:Number(order.dataset.quantity),totalCny:Number(order.dataset.total),store:order.dataset.store,fulfillment:order.dataset.fulfillment}:null;
++      const matched=visible(order)&&order.dataset.status==='unpaid'&&order.dataset.id.startsWith('FAKE-order-')&&actual&&validateConditions(actual,c.expect)&&accepted&&['store','date','start','end'].every(k=>order.dataset[k]===accepted[k]);
++      return {body:{contract:'mock-v0',kind:'lookup',opId:c.opId,order:matched?'confirmed':'unknown',evidence:'FAKE-independent-DOM-unpaid'},simulatedMs:0};
++    }
++    throw new Error('DomMethodUnknown');
++  }
++}

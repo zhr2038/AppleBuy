@@ -1,0 +1,7 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="dom-token" content="__TOKEN__"><title>电脑自动结账验证</title><link rel="stylesheet" href="/style.css"></head><body><main class="wrap">
+<h1>电脑自动结账验证</h1><p class="notice">FAKE 本机虚构官网。程序实际操作下面的 DOM 控件，创建一张未付款模拟订单。不会访问苹果官网、占用真实时段、创建真实订单或付款。</p>
+<p id="target"></p><label for="scenario">验证场景</label><select id="scenario"><option value="normal">两个末档被拒，然后接受、下单并独立核实</option><option value="unknown">提交后结果不明，只读核实也不明</option><option value="wrong-price">总价超出计划，应在加购前停止</option><option value="redraw">动作前控件更新，应拒绝旧引用并停止核实</option><option value="lost-reply">最终点击后回复丢失，仅查单，不重下单</option><option value="wrong-order">订单记录颜色错误，应停止人工核实</option></select>
+<p>点击一次后只对这个虚构任务执行；已有运行或提交记录会阻止再次开始，刷新不会重建订单。</p><button id="start">开始自动模拟下单</button><button id="pause">暂停</button><button id="resume">恢复</button><button id="stop">停止</button><p id="status" role="status">正在连接</p><p id="result"></p>
+<section id="merchant" class="panel" data-fake-schema="applebuy-merchant-fixture/v1"></section>
+<details class="panel"><summary>执行记录</summary><pre id="trace"></pre></details>
+</main><script type="module" src="/desktop/app.js"></script></body></html>

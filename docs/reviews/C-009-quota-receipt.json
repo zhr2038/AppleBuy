@@ -1,0 +1,31 @@
+{
+  "task": "C-009",
+  "sessionId": "11941a88-4609-4e7f-a2f8-78c5b5837285",
+  "startedAtUtc": "2026-10-02T11:59:43.109043+00:00",
+  "endedAtUtc": "2026-10-02T12:04:44.135342+00:00",
+  "durationSeconds": 301.02,
+  "status": "failed-quota",
+  "exitCode": 1,
+  "apiErrorStatus": 429,
+  "reportedTurns": 18,
+  "quotaMessage": "You've hit your session limit \u00b7 resets 11:10pm (Asia/Shanghai)",
+  "requestedModel": "claude-opus-5-5",
+  "requestedEffort": "xhigh",
+  "structuredModelUsageKeys": [
+    "claude-opus-5-5"
+  ],
+  "dispatcherCompleteDeliveryModelGate": false,
+  "explanation": "Synthetic quota error in primary messages fails the complete delivery gate; structured modelUsage records Opus 5.5 only. No completed design or final agreement.",
+  "ownedProcessExitConfirmed": true,
+  "permissionDenials": [],
+  "partialEvidence": [
+    "Actual Claude verified the exact 90-file manifest.",
+    "Actual Claude executed launch replay and reported 20/20."
+  ],
+  "proposalDelivered": false,
+  "rootTakeoverAuthorized": true,
+  "takeoverTask": "docs/tasks/C-010-Codex-takeover.md",
+  "beforeManifest": "docs/reviews/C-007-R1-final-candidate-manifest.json",
+  "beforeSha256": "6bbc8bf13ac5c0dc73c20c3ae154cb834235ebb27e215bfb2c50b10e43038dda",
+  "publicationCommit": "ee2f1e3df2430de92f27b0fc651219332c5e2617"
+}
