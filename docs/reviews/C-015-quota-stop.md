@@ -1,5 +1,7 @@
 # C-015 quota stop: partial implementation, exact recovery point
 
+ACTUAL SHUTDOWN OUTCOME: normal `C:\WINDOWS\system32\shutdown.exe /s /t 0` was invoked and returned system error **203** (environment option not found). The computer remains on. No `/f`, positive countdown, elevation or permission workaround was attempted. Both project preview PIDs and the original Claude PID were verified absent; the existing heartbeat was actually paused. Public checkpoint source was pushed and remotely verified. Private checkpoint preserves the failed command and precise recovery state. This is a failed shutdown, not a successful power-off.
+
 The already-restored productive Claude cycle received a NEW genuine provider session-quota error at 2026-10-03 07:29:51 Asia/Shanghai, reporting 09:10 reset. This is the user's specified save/sync/normal-shutdown trigger, unlike the earlier 00:24 error. No artificial quota work or new takeover implementation is performed.
 
 Actual original-session CLI used requested Opus 5.5/xhigh. Full structured usage privately verifies the exact Opus model; a synthetic assistant quota message and `is_error=true` mean complete delivery validation is false. The call reported 12 turns, no permission denial or wall timeout, and confirmed owned-process cleanup. Its only Bash command verified the original 126-file input. Invocation/raw records remain ignored and private.

@@ -72,5 +72,10 @@
   "RootProductChangesThisRecoveredCycle": 0,
   "shutdownTriggerSatisfied": true,
   "shutdownIssued": false,
-  "exactResumeTask": "docs/tasks/C-015-CONTINUE.md"
+  "exactResumeTask": "docs/tasks/C-015-CONTINUE.md",
+  "shutdownExitCode": 203,
+  "shutdownAttemptState": "FAILED_COMPUTER_REMAINS_ON",
+  "heartbeatStatus": "PAUSED",
+  "projectPreviewsExited": true,
+  "workStopped": true
 }
