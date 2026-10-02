@@ -1,0 +1,46 @@
+{
+  "checkedAt": "2026-10-02T23:24:34.594416+00:00",
+  "scope": "FAKE independent decoder and full regression; no real resource actions",
+  "candidate": {
+    "manifest": "docs/reviews/C-015-input-candidate-manifest.json",
+    "files": 126,
+    "sha256": "c37b239a27e9c057cc647c8726956d18aeb0f57b38597db2af82bef82413adff"
+  },
+  "old125BytesUnchanged": true,
+  "checks": [
+    {
+      "label": "targeted",
+      "command": [
+        "node",
+        "--test",
+        "review/c015-async-evidence.test.ts"
+      ],
+      "exitCode": 1,
+      "tests": 6,
+      "pass": 2,
+      "fail": 4,
+      "cancelled": 0,
+      "skipped": 0,
+      "todo": 0
+    },
+    {
+      "label": "whole-input",
+      "command": [
+        "node",
+        "--test",
+        "test/*.test.ts",
+        "review/*.test.ts"
+      ],
+      "exitCode": 1,
+      "tests": 413,
+      "pass": 409,
+      "fail": 4,
+      "cancelled": 0,
+      "skipped": 0,
+      "todo": 0
+    }
+  ],
+  "verdict": "RETURN_FOR_REPAIR",
+  "bilateralAccepted": false,
+  "realPurchasingReady": false
+}

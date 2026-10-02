@@ -1,0 +1,76 @@
+{
+  "checkedAt": "2026-10-02T23:36:45.400110+00:00",
+  "task": "C-015-ASYNC-EVIDENCE",
+  "startedAt": "2026-10-02T23:24:59.530696+00:00",
+  "endedAt": "2026-10-02T23:29:51.347158+00:00",
+  "durationSeconds": 290.26,
+  "requestedModel": "claude-opus-5-5",
+  "requestedEffort": "xhigh",
+  "structuredModels": [
+    "claude-opus-5-5"
+  ],
+  "structuredUsageVerifiedPrivately": true,
+  "isError": true,
+  "subtype": "success",
+  "reportedTurns": 12,
+  "metadataDeliveryModelVerified": false,
+  "partialOpusUsageConfirmed": true,
+  "completeDelivery": false,
+  "providerQuota": true,
+  "providerMessage": "You've hit your session limit \u00b7 resets 9:10am (Asia/Shanghai)",
+  "providerReset": "2026-10-03 09:10 Asia/Shanghai",
+  "timedOut": false,
+  "permissionDenials": [],
+  "cleanupConfirmed": true,
+  "onlyApprovedCommandObserved": "python tools/delegation/verify_candidate_manifest.py docs/reviews/C-015-input-candidate-manifest.json",
+  "changedProductFiles": [
+    "web/checkout-connector/page-program.js"
+  ],
+  "protectedReviewFilesUnchanged": 29,
+  "existingImplementationTestsUnchanged": true,
+  "candidate": {
+    "manifest": "docs/reviews/C-015-quota-candidate-manifest.json",
+    "files": 126,
+    "sha256": "667dc062d25e5bf653279ffdcd71375723685063c1088c1fbe877e50adfba691"
+  },
+  "independentChecks": [
+    {
+      "label": "targeted",
+      "command": [
+        "node",
+        "--test",
+        "review/c015-async-evidence.test.ts"
+      ],
+      "exitCode": 1,
+      "tests": 6,
+      "pass": 2,
+      "fail": 4,
+      "cancelled": 0,
+      "skipped": 0,
+      "todo": 0
+    },
+    {
+      "label": "whole-suite",
+      "command": [
+        "node",
+        "--test",
+        "test/*.test.ts",
+        "review/*.test.ts"
+      ],
+      "exitCode": 1,
+      "tests": 413,
+      "pass": 409,
+      "fail": 4,
+      "cancelled": 0,
+      "skipped": 0,
+      "todo": 0
+    }
+  ],
+  "verdict": "INCOMPLETE_FOUR_FAILURES_REMAIN_NOT_ACCEPTED",
+  "bilateralAgreement": false,
+  "realPurchasingReady": false,
+  "RootProductChangesThisRecoveredCycle": 0,
+  "shutdownTriggerSatisfied": true,
+  "shutdownIssued": false,
+  "exactResumeTask": "docs/tasks/C-015-CONTINUE.md"
+}

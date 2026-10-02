@@ -1,5 +1,7 @@
 # C-014 — installed Chrome connector verification (not yet dispatched)
 
+LATEST RECOVERY GATE (2026-10-03): C015 independently reproduced four additional asynchronous final-action failures. Its actual quota-interrupted partial source in the current directory is NOT ACCEPTED (126 files SHA `667dc062d25e5bf653279ffdcd71375723685063c1088c1fbe877e50adfba691`, 409/413 passing). Resume `C-015-CONTINUE.md` and obtain exact new-source bilateral agreement before preparing this installed verification. Prior C013 agreement below remains historical bounded evidence and cannot approve C015 bytes. Installation/read-only consent still persists; actual loading remains unconfirmed. No live action or extra permission follows from this task.
+
 Priority is the user's actual one-phone purchase execution, native terminal selection and conservative re-selection, not appearance work. This task is currently blocked on manual Chrome installation and action-time host-access confirmation. It has NOT been dispatched and there is no actual delivery to claim.
 
 The user has now explicitly authorized installation and read-only verification of this candidate. Do not ask for installation approval again. Manual loading/opening the control page has not been confirmed; authorization does not prove installation. Current-host access is a separate action-time confirmation.

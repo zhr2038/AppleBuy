@@ -5,19 +5,24 @@
 // Codex quota takeover: reject conflicting quantity/store evidence and revalidate after a native slot change.
 // C-013 (Codex, quota fallback): observed order-login path is an explicit human authentication gate.
 // C-013-R3 (Claude): delivery memo before stale-evidence handling; slot continuation decided after the change task boundary.
-export async function merchantDocument(plan,command=null){
+// C-015 (Claude): the order-reference digest is the only awaited decoding step. After it the program re-enters and decodes
+// the whole current document again; every action decides synchronously from that final decode. Slot continuation re-enters too.
+export async function merchantDocument(plan,command=null,internal=null){
+  // `internal` is set only by this program's own re-entry; ChromePort passes plan and command only.
+  // A structured command always receives a structured report. Nothing was written unless this id was already delivered.
+  const report=reason=>{const memo=globalThis.__applebuyExecuted,prior=typeof memo?.has==='function'&&memo.has(command.id)===true;
+    if(command.structured!==true)throw new Error(prior?'OperationAlreadyDelivered':reason);
+    return {delivered:false,touched:prior,reason:prior?'OperationAlreadyDelivered':reason};};
   const u=new URL(location.href);
   const safe=u.protocol==='https:'&&(u.hostname==='www.apple.com.cn'||/^secure(?:\d+)?\.www\.apple\.com\.cn$/.test(u.hostname))&&/^\/shop\/(?:buy-iphone\/(?:iphone-18-pro|iphone-duo)(?:\/[^/]+\/a)?|bag|checkout|order(?:\/[^?#]*)?|signIn(?:\/orders)?)(?:\/)?$/.test(u.pathname);
-  if(!safe)return {schema:'applebuy-merchant-read/v1',phase:'UNKNOWN',reason:'unsupported-official-url'};
+  if(!safe)return command?.structured===true?report('UnsupportedOfficialUrl'):{schema:'applebuy-merchant-read/v1',phase:'UNKNOWN',reason:'unsupported-official-url'};
   if(/^\/shop\/signIn\/orders\/?$/.test(u.pathname)){
     // C-013-R1: same-document delivery evidence survives the AUTH route. A memoized command is never positively
     // untouched. Only the memo is consulted: no authentication DOM or field is read and no action is taken.
-    if(command){const memo=globalThis.__applebuyExecuted,prior=typeof memo?.has==='function'&&memo.has(command.id)===true;
-      if(command.structured!==true)throw new Error(prior?'OperationAlreadyDelivered':'AuthenticationRequired');
-      return {delivered:false,touched:prior,reason:prior?'OperationAlreadyDelivered':'AuthenticationRequired'};}
+    if(command)return report('AuthenticationRequired');
     return {schema:'applebuy-merchant-read/v1',phase:'AUTH',verifiedStep:false,reason:'official-order-sign-in-required',dates:[],times:[]};
   }
-  const main=document.querySelector('main,[role="main"]');if(!main)return {schema:'applebuy-merchant-read/v1',phase:'UNKNOWN',reason:'main-not-found'};
+  const main=document.querySelector('main,[role="main"]');if(!main)return command?.structured===true?report('MainNotFound'):{schema:'applebuy-merchant-read/v1',phase:'UNKNOWN',reason:'main-not-found'};
   const norm=s=>String(s??'').normalize('NFKC').replace(/[\s\u{200B}\u{200C}\u{200D}\u{2060}]+/gu,' ').trim();
   const visible=e=>{if(!e||!e.isConnected)return false;for(let p=e;p;p=p.parentElement){const st=getComputedStyle(p);if(p.hidden||p.hasAttribute('inert')||p.getAttribute('aria-hidden')==='true'||st.display==='none'||['hidden','collapse'].includes(st.visibility))return false;}return true;};
   const disabled=e=>e.disabled===true||!!e.closest('[disabled],[aria-disabled="true"],[inert]');
