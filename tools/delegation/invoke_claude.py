@@ -13,6 +13,7 @@ import sys
 import time
 import uuid
 from dispatch_lock import DispatchAlreadyRunning, dispatch_lease
+from process_tree import OwnedProcess, ProcessTreeUnresolved
 
 ROOT = Path(__file__).resolve().parents[2]
 MODEL = "claude-opus-5-5"
@@ -26,6 +27,18 @@ def clean(value: str) -> str:
 
 def now() -> str:
     return dt.datetime.now(dt.timezone.utc).isoformat()
+
+
+def assert_terminal_records(outdir: Path) -> None:
+    for record in outdir.glob("*.meta.json"):
+        try:
+            previous = json.loads(record.read_text(encoding="utf-8"))
+        except (OSError, ValueError):
+            raise DispatchAlreadyRunning("An invocation record cannot be verified; inspect it before dispatch")
+        if not isinstance(previous, dict) or previous.get("status") not in {"running", "returned_for_review", "failed"}:
+            raise DispatchAlreadyRunning("An invocation record has an unrecognized terminal state")
+        if previous["status"] == "running":
+            raise DispatchAlreadyRunning("An earlier invocation is active or its terminal status is unresolved")
 
 
 def run_task() -> int:
@@ -89,27 +102,45 @@ def run_task() -> int:
     resultfile = outdir / f"{run_id}.result.json"
 
     def save() -> None:
-        metafile.write_text(json.dumps(meta, ensure_ascii=False, indent=2), encoding="utf-8")
+        temporary = metafile.with_name(metafile.name + "." + uuid.uuid4().hex + ".tmp")
+        with temporary.open("w", encoding="utf-8") as receipt:
+            receipt.write(json.dumps(meta, ensure_ascii=False, indent=2))
+            receipt.flush()
+            os.fsync(receipt.fileno())
+        os.replace(temporary, metafile)
 
     save()
     print(json.dumps({"started": args.task, "session_id": session_id, "record": str(metafile)}), flush=True)
-    flags = subprocess.CREATE_NO_WINDOW if os.name == "nt" else 0
-    process = subprocess.Popen(command, cwd=ROOT, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                               encoding="utf-8", errors="replace", creationflags=flags)
-    meta["pid"] = process.pid
-    save()
-    # communicate(timeout=...) enforces a wall budget without orphaning a second implementer.
     started = time.monotonic()
+    def on_started(pid: int) -> None:
+        meta.update({"pid": pid, "process_tree": "Windows kill-on-close Job Object; child still suspended"})
+        save()
     try:
-        stdout, stderr = process.communicate(input=prompt, timeout=args.timeout)
-    except subprocess.TimeoutExpired:
-        process.terminate()
-        try:
-            stdout, stderr = process.communicate(timeout=15)
-        except subprocess.TimeoutExpired:
-            process.kill()
-            stdout, stderr = process.communicate()
-        meta["timed_out"] = True
+        owned = OwnedProcess(command, ROOT, on_started)
+    except ProcessTreeUnresolved as error:
+        meta.update({"startup_error": type(error).__name__, "cleanup_confirmed": False, "status": "running"})
+        save()
+        print(json.dumps({"status": "unresolved", "record": str(metafile), "newDispatchBlocked": True}), flush=True)
+        return 5
+    except Exception as error:
+        meta.update({"startup_error": type(error).__name__, "cleanup_confirmed": True, "status": "failed", "ended_at": now(), "result_path": None, "model_verified": False})
+        save()
+        print(json.dumps({"status": "failed", "startup_error": type(error).__name__, "record": str(metafile), "ownedProcessesRemaining": 0}), flush=True)
+        return 1
+    process = owned.process
+    try:
+        stdout, stderr, timed_out = owned.communicate(prompt, args.timeout)
+        meta.update({"timed_out": timed_out, "cleanup_confirmed": True, "process_tree": "Windows kill-on-close Job Object; all owned exit signals confirmed"})
+    except ProcessTreeUnresolved as error:
+        meta.update({"communication_error": type(error).__name__, "cleanup_confirmed": False, "status": "running"})
+        save()
+        print(json.dumps({"status": "unresolved", "record": str(metafile), "newDispatchBlocked": True}), flush=True)
+        return 5
+    except Exception as error:
+        meta.update({"communication_error": type(error).__name__, "cleanup_confirmed": True, "status": "failed", "ended_at": now(), "result_path": None, "model_verified": False})
+        save()
+        print(json.dumps({"status": "failed", "communication_error": type(error).__name__, "record": str(metafile), "ownedProcessesRemaining": 0}), flush=True)
+        return 1
     logfile.write_text(clean(stdout), encoding="utf-8")
     (outdir / f"{run_id}.stderr.txt").write_text(clean(stderr), encoding="utf-8")
     result = None
@@ -162,13 +193,7 @@ def main() -> int:
         with dispatch_lease(outdir):
             # A killed dispatcher may leave its Claude child alive after the OS lease is released. Metadata that
             # never reached a terminal status therefore also blocks dispatch, until independently resolved.
-            for record in outdir.glob("*.meta.json"):
-                try:
-                    previous = json.loads(record.read_text(encoding="utf-8"))
-                except (OSError, ValueError):
-                    raise DispatchAlreadyRunning("An invocation record cannot be verified; inspect it before dispatch")
-                if previous.get("status") == "running":
-                    raise DispatchAlreadyRunning("An earlier invocation is active or its terminal status is unresolved")
+            assert_terminal_records(outdir)
             return run_task()
     except DispatchAlreadyRunning as error:
         print(json.dumps({"status": "dispatch_refused", "reason": str(error), "newClaudeStarted": False}), flush=True)

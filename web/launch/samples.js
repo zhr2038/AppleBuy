@@ -38,20 +38,26 @@ export const samples = {
   /**
    * Pickup date/time stage. dates: [{ label, enabled }]; selected: index into dates; times: [[start,end]] for the
    * selected date; layout "select" mirrors the observed native controls, "radios" uses changed control types/order.
+   * The store is a selected choice in a store control and the price a labelled tax-inclusive total: the wording of
+   * both (门店控件、"总计（含税）") is SYNTHETIC, not an observed Apple label.
    */
   pickup: ({ dates, selected = 0, times, disabledTimes = [], layout = "select", store = "FAKE 门店甲", product = "iPhone Duo", capacity='256GB', color='星光白色', price=15999, quantity=1, pickup=true }) => {
     const opt = ([s, e]) => `${s}–${e}`;
+    const other = "FAKE 其他门店（未授权）";
+    const total = `<p>总计（含税） RMB ${price}</p>`;
     if (layout === "radios") {
       const dateTabs = dates.map((d, i) => `<span role="tab" aria-selected="${i === selected}"${d.enabled ? "" : ' aria-disabled="true"'}>${d.label}</span>`).join("");
       const timeRadios = times.map((t) => `<label role="radio" aria-checked="false"${disabledTimes.includes(t[0]) ? ' aria-disabled="true"' : ""}>${opt(t)}</label>`).join("");
+      const storeRadios = `<div role="radiogroup" aria-label="取货门店"><span role="radio" aria-checked="false">${other}</span><span role="radio" aria-checked="true">${store}</span></div>`;
       return doc(`<div class="pk-v2"><aside><div role="radiogroup" aria-label="时段">${timeRadios}</div></aside>
-        <section><div role="tablist">${dateTabs}</div><p>${store}</p><p>${product} ${capacity} ${color}</p><p>RMB ${price}</p><p>数量: ${quantity}</p><button role="radio" aria-checked="${pickup}">我要取货</button></section>
+        <section><div role="tablist">${dateTabs}</div>${storeRadios}<p>${product} ${capacity} ${color}</p>${total}<p>数量: ${quantity}</p><button role="radio" aria-checked="${pickup}">我要取货</button></section>
         <div role="button" aria-label="继续填写取货详情">继续填写取货详情</div></div>`);
     }
     const dateOpts = dates.map((d, i) => `<option${i === selected ? " selected" : ""}${d.enabled ? "" : " disabled"}>${d.label}</option>`).join("");
     const dateControl = layout==='input-radios' ? `<div role="radiogroup" aria-label="取货日期">${dates.map((d,i)=>`<label><input type="radio" name="synthetic-date" aria-label="${d.label}"${i===selected?' checked':''}${d.enabled?'':' disabled'}>${d.label}</label>`).join('')}</div>` : `<select aria-label="取货日期">${dateOpts}</select>`;
     const timeOpts = times.map((t) => `<option${disabledTimes.includes(t[0]) ? " disabled" : ""}>${opt(t)}</option>`).join("");
-    return doc(`<main><h2>到店自提</h2><button role="radio" aria-checked="${pickup}">我要取货</button><p>${store}</p><p>${product} ${capacity} ${color}</p><p>RMB ${price}</p><p>数量: ${quantity}</p><p>需要签到</p>
+    const storeSelect = `<select aria-label="取货门店"><option selected>${store}</option><option>${other}</option></select>`;
+    return doc(`<main><h2>到店自提</h2><button role="radio" aria-checked="${pickup}">我要取货</button>${storeSelect}<p>${product} ${capacity} ${color}</p>${total}<p>数量: ${quantity}</p><p>需要签到</p>
       ${dateControl}
       <select aria-label="取货时段"><option disabled selected>可选时段</option>${timeOpts}</select>
       <button type="button">继续填写取货详情</button></main>`);

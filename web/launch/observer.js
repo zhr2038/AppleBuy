@@ -16,6 +16,9 @@ export const ANCHORS = {
   continueLabel: { provenance: "OBSERVED pro/duo", prefix: "继续" },
   maintenance: { provenance: "UNVERIFIED hypothesis, no current official maintenance page observed", texts: ["正在更新 Apple Store", "我们正在更新", "稍后再来"] },
   quantity: { provenance: "SYNTHETIC: quantity line on the pickup page is not in the sanitized Pro report", re: /^数量\s*[:：]?\s*(\d+)$/ },
+  // Matched after NFKC normalization (full-width brackets/colons/currency become ASCII forms).
+  total: { provenance: "SYNTHETIC: tax-inclusive total wording is not verified on a current official page",
+    label: /^(?:总计|合计|应付总额|总价|订单总额|含税)/, re: /^(?:总计|合计|应付总额) ?\(含税\) ?:? ?(?:RMB|¥) ?(\d{1,3}(?:,\d{3})+|\d+)(?:\.(\d{2}))?$/ },
 };
 
 const SKIP = new Set(["script", "style", "template", "noscript", "head"]);
@@ -23,7 +26,7 @@ const VOID = new Set(["area", "base", "br", "col", "embed", "hr", "img", "input"
 const TIME_RANGE = /^(\d{2}):(\d{2})\s*[-–—~至]\s*(\d{2}):(\d{2})$/;
 const CN_DATE = /^(?:(\d{4})\s*年\s*)?(\d{1,2})\s*月\s*(\d{1,2})\s*日(?:\s*(?:星期|周)[一二三四五六日天])?$/;
 const ISO_DATE = /^(\d{4})-(\d{2})-(\d{2})$/;
-const PRICE = /(?:RMB|¥|￥)\s*([\d,]+)(?:\.(\d{2}))?/g;
+const CAPACITY = /\b\d+ ?(?:GB|TB)\b/i;
 
 /** Minimal tolerant parser for the project's own synthetic samples (Node side only; not a general HTML parser). */
 export function parseHtml(html) {
@@ -43,7 +46,7 @@ export function parseHtml(html) {
     }
     const attrs = {};
     for (const a of m[3].matchAll(/([^\s"'>\/=]+)(?:\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'=<>`]+)))?/g)) attrs[a[1].toLowerCase()] = decode(a[2] ?? a[3] ?? a[4] ?? "");
-    const el = { tag, attrs, kids: [], path: `n${n++}`, inheritedDisabled: top.inheritedDisabled || 'disabled' in top.attrs || top.attrs['aria-disabled'] === 'true' };
+    const el = { tag, attrs, kids: [], path: `n${n++}`, inheritedDisabled: top.inheritedDisabled || 'disabled' in top.attrs || 'inert' in top.attrs || top.attrs['aria-disabled'] === 'true' };
     top.kids.push(el);
     if (!VOID.has(tag) && !/\/\s*$/.test(m[3])) stack.push(el);
   }
@@ -53,13 +56,18 @@ function decode(s) {
   return s.replace(/&nbsp;/g, " ").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&amp;/g, "&");
 }
 
-/** Browser side: copy only structure, semantic attributes and visible text. Live elements are kept in `live`. */
-export function fromDom(el, live = new Map(), path = "0") {
+/**
+ * Browser side: copy only structure, semantic attributes and visible text. Live elements are kept in `live`.
+ * Visibility is the actual computed result (CSS classes included), not markup: an element that cannot be shown to
+ * be visible is treated as hidden, so it can never count as an offered date, store, time or total. `env` supplies
+ * getComputedStyle (the window in the browser; a test double in Node).
+ */
+export function fromDom(el, live = new Map(), path = "0", env = globalThis) {
   if (el.nodeType === 3) return { text: el.nodeValue ?? "" };
   if (el.nodeType !== 1) return null;
   const tag = el.tagName.toLowerCase();
   const attrs = {};
-  for (const name of ["hidden", "aria-hidden", "aria-busy", "aria-disabled", "aria-selected", "aria-checked", "aria-pressed", "aria-label", "role", "disabled", "type", "style"]) {
+  for (const name of ["hidden", "aria-hidden", "aria-busy", "aria-disabled", "aria-selected", "aria-checked", "aria-pressed", "aria-label", "role", "disabled", "inert", "type", "style"]) {
     if (el.hasAttribute(name)) attrs[name] = el.getAttribute(name) ?? "";
   }
   // Native option state comes from the live element (the attribute may not reflect the current choice).
@@ -68,24 +76,29 @@ export function fromDom(el, live = new Map(), path = "0") {
     if (el.checked) attrs.checked = "";
     if (!attrs['aria-label'] && el.labels?.length) attrs['aria-label'] = [...el.labels].map(x => x.textContent ?? '').join(' ');
   }
-  // Native options do not have visible rectangles while their select is closed. Their parent's visibility
-  // determines whether they are offered; hiding each option would lose the actual list.
-  if (!['option', 'optgroup'].includes(tag) && typeof el.checkVisibility === "function" && el.isConnected && !el.checkVisibility()) attrs.hidden = "";
-  const inheritedDisabled = !!el.parentElement?.closest('[disabled], [aria-disabled="true"]');
+  if (['option', 'optgroup'].includes(tag)) {
+    // A closed select's options have no rectangles, so their own computed style decides (e.g. a class with
+    // display:none); the select's own visibility is checked on the select and prunes the whole subtree.
+    const cs = typeof env.getComputedStyle === "function" ? env.getComputedStyle(el) : null;
+    if (!cs || cs.display === "none" || cs.visibility === "hidden" || cs.visibility === "collapse") attrs.hidden = "";
+  } else if (typeof el.checkVisibility !== "function" || !el.isConnected || !el.checkVisibility({ checkOpacity: true, checkVisibilityCSS: true, opacityProperty: true, visibilityProperty: true })) attrs.hidden = "";
+  const inheritedDisabled = !!el.parentElement?.closest('[disabled], [aria-disabled="true"], [inert]');
   const node = { tag, attrs, kids: [], path, inheritedDisabled };
   live.set(path, el);
   let i = 0;
   for (const child of el.childNodes) {
-    const c = fromDom(child, live, `${path}.${i++}`);
+    const c = fromDom(child, live, `${path}.${i++}`, env);
     if (c) node.kids.push(c);
   }
   return node;
 }
 
 const norm = (s) => s.replace(/\s+/gu, " ").trim();
+/** Comparison form for page text and plan values: NFKC (full-width forms) plus collapsed whitespace. */
+const nf = (s) => norm(String(s).normalize("NFKC"));
 function hidden(n) {
   const a = n.attrs;
-  return SKIP.has(n.tag) || "hidden" in a || a["aria-hidden"] === "true" || /(?:^|;)\s*(?:display\s*:\s*none|visibility\s*:\s*hidden)/i.test(a.style ?? "");
+  return SKIP.has(n.tag) || "hidden" in a || a["aria-hidden"] === "true" || /(?:^|;)\s*(?:display\s*:\s*none|visibility\s*:\s*(?:hidden|collapse)|opacity\s*:\s*0(?:\.0*)?\s*(?:;|$))/i.test(a.style ?? "");
 }
 function* walk(n) {
   if (n.text !== undefined) return;
@@ -100,7 +113,7 @@ function textOf(n) {
 }
 const label = (n) => norm(n.attrs["aria-label"] ?? textOf(n));
 const ownText = (n) => norm(textOf(n));
-const disabled = (n) => !!n.inheritedDisabled || "disabled" in n.attrs || n.attrs["aria-disabled"] === "true";
+const disabled = (n) => !!n.inheritedDisabled || "disabled" in n.attrs || "inert" in n.attrs || n.attrs["aria-disabled"] === "true";
 const selected = (n) => "selected" in n.attrs || "checked" in n.attrs || n.attrs["aria-selected"] === "true" || n.attrs["aria-checked"] === "true" || n.attrs["aria-pressed"] === "true";
 const isButton = (n) => n.tag === "button" || n.attrs.role === "button" || (n.tag === "input" && /^(submit|button)$/i.test(n.attrs.type ?? ""));
 const isChoice = (n) => n.tag === "option" || ["option", "radio", "tab"].includes(n.attrs.role ?? "") || (n.tag === 'input' && n.attrs.type === 'radio') || (n.tag === "button" && "aria-pressed" in n.attrs);
@@ -126,23 +139,46 @@ function innermost(els, pred) {
   return els.filter((n) => n.tag !== "#root" && pred(ownText(n)) && !elementKids(n).some((k) => [...walk(k)].some((d) => pred(ownText(d)))));
 }
 
+const directText = (n) => n.kids.filter((k) => k.text !== undefined).map((k) => k.text).join(" ");
+const isTimeGroup = (opts) => opts.some((o) => TIME_RANGE.test(label(o)) || ANCHORS.timePlaceholder.texts.includes(label(o)));
+const isDateGroup = (opts) => opts.length > 0 && opts.every((o) => parseDateLabel(label(o)));
+
 /**
- * Purchase conditions that this page actually displays. A product name found anywhere is NOT enough: model, capacity
- * and color must appear together in one element; store must be one exact element; one price; quantity must be shown.
+ * Purchase conditions that this page actually displays; anything unknown or conflicting is not "verified".
+ * - product: one visible product line must EQUAL "model capacity color" of one plan product after normalization.
+ *   Any other product-like line (a capacity, or text starting with the plan's model family word) is a conflict.
+ * - store: exactly one store choice control, whose single selected, enabled, visible choice equals a plan store.
+ *   Prose naming a store is not a selection; another plan store named elsewhere is a conflict.
+ * - price: exactly one labelled tax-inclusive total; any other text starting with a total label (monthly payment,
+ *   "起", missing 含税, split or extra amounts) makes it ambiguous. Unlabelled amounts never count.
  */
-function conditions(els, expect) {
+function conditions(els, expect, groups) {
   const c = { product: { status: "missing" }, store: { status: "missing" }, price: { status: "missing" }, quantity: { status: "missing" }, fulfillment: { status: "missing" } };
-  const line = (p) => (t) => t.includes(p.model) && t.includes(p.capacity) && t.includes(p.color) && t.length <= 120;
-  const hits = (expect.products ?? []).filter((p) => innermost(els, line(p)).length > 0);
-  if (hits.length === 1) c.product = { status: "verified", id: hits[0].id, text: `${hits[0].model} ${hits[0].capacity} ${hits[0].color}` };
-  else if (hits.length > 1) c.product = { status: "ambiguous" };
-  const stores = new Set(innermost(els, (t) => (expect.stores ?? []).includes(t)).map(ownText));
-  if (stores.size === 1) c.store = { status: "verified", value: [...stores][0] };
-  else if (stores.size > 1) c.store = { status: "ambiguous" };
-  const prices = new Set();
-  for (const n of innermost(els, (t) => /(?:RMB|¥|￥)\s*[\d,]+/.test(t))) for (const m of ownText(n).matchAll(PRICE)) prices.add(Number(m[1].replace(/,/g, "")) + (m[2] ? Number(m[2]) / 100 : 0));
-  if (prices.size === 1) c.price = { status: "verified", value: [...prices][0] };
-  else if (prices.size > 1) c.price = { status: "ambiguous" };
+  const want = (expect.products ?? []).map((p) => ({ p, line: nf(`${p.model} ${p.capacity} ${p.color}`) }));
+  const stores = (expect.stores ?? []).map((label) => ({ label, n: nf(label) }));
+  const family = [...new Set(want.map(({ p }) => nf(p.model).split(" ")[0]).filter(Boolean))];
+  const productLike = (t) => !stores.some((s) => s.n === t) && (CAPACITY.test(t) || family.some((w) => t === w || t.startsWith(`${w} `)));
+  const lines = innermost(els, (t) => productLike(nf(t))).map((n) => nf(ownText(n)));
+  const exact = want.filter(({ line }) => lines.includes(line));
+  if (exact.length === 1 && lines.every((t) => t === exact[0].line)) c.product = { status: "verified", id: exact[0].p.id, text: exact[0].line };
+  else if (lines.length) c.product = { status: "ambiguous" };
+
+  const storeGroups = groups.filter(({ opts }) => opts.length > 0 && !isTimeGroup(opts) && !isDateGroup(opts) && !opts.some((o) => ANCHORS.pickup.texts.includes(label(o))));
+  if (storeGroups.length > 1) c.store = { status: "ambiguous" };
+  else if (storeGroups.length === 1) {
+    const picked = storeGroups[0].opts.filter(selected);
+    const hit = picked.length === 1 && !disabled(picked[0]) ? stores.find((s) => s.n === nf(label(picked[0]))) : undefined;
+    const inside = new Set(walk(storeGroups[0].g));
+    const elsewhere = hit && innermost(els, (t) => stores.some((s) => s.n === nf(t) && s.n !== hit.n)).some((n) => !inside.has(n));
+    c.store = hit && !elsewhere ? { status: "verified", value: hit.label } : { status: "ambiguous" };
+  }
+
+  const holders = els.filter((n) => n.tag !== "#root" && ANCHORS.total.label.test(nf(directText(n))));
+  const totals = holders.map((n) => ANCHORS.total.re.exec(nf(ownText(n))));
+  const values = new Set(totals.filter(Boolean).map((m) => Number(m[1].replace(/,/g, "")) + (m[2] ? Number(m[2]) / 100 : 0)));
+  if (totals.some((m) => !m) || values.size > 1) c.price = { status: "ambiguous" };
+  else if (values.size === 1) c.price = { status: "verified", value: [...values][0], provenance: ANCHORS.total.provenance };
+
   const qty = new Set(innermost(els, (t) => ANCHORS.quantity.re.test(t)).map((n) => Number(ANCHORS.quantity.re.exec(ownText(n))[1])));
   if (qty.size === 1) c.quantity = { status: "verified", value: [...qty][0], provenance: ANCHORS.quantity.provenance };
   else if (qty.size > 1) c.quantity = { status: "ambiguous" };
@@ -175,14 +211,15 @@ export function observePage(tree, { observedAt, expect }) {
   const continues = els.filter((n) => isButton(n) && label(n).startsWith(ANCHORS.continueLabel.prefix));
   if (continues.length > 1) return { ...out, stage: "UNKNOWN_STRUCTURE", detail: "ambiguous-continue" };
   if (continues.length === 1) out.continue = { enabled: !disabled(continues[0]), ref: continues[0].path ?? null };
-  out.conditions = conditions(els, expect);
+  // Choice groups and their visible choices (hidden subtrees and hidden options are never offered).
+  const groups = els.filter((n) => n.tag === "select" || ["radiogroup", "listbox", "tablist"].includes(n.attrs.role ?? ""))
+    .map((g) => ({ g, opts: [...walk(g)].filter((n) => n !== g && isChoice(n)) }));
+  out.conditions = conditions(els, expect, groups);
 
   if (has("pickup")) {
     // The mere presence of the pickup tab is not a selected fulfillment method.
     const picked = els.filter(n => isChoice(n) && label(n) === '我要取货' && selected(n) && !disabled(n));
     if (picked.length === 1) out.conditions.fulfillment = { status: "verified", value: "pickup" };
-    const groups = els.filter((n) => n.tag === "select" || ["radiogroup", "listbox", "tablist"].includes(n.attrs.role ?? ""))
-      .map((g) => ({ g, opts: [...walk(g)].filter((n) => n !== g && isChoice(n)) }));
     const timeGroups = groups.filter(({ opts }) => opts.some((o) => TIME_RANGE.test(label(o))));
     if (timeGroups.length !== 1) return { ...out, stage: timeGroups.length ? "UNKNOWN_STRUCTURE" : "RENDERING_INCOMPLETE", detail: timeGroups.length ? "ambiguous-time-control" : "time-control-not-rendered" };
     const keys = new Set();
@@ -200,7 +237,7 @@ export function observePage(tree, { observedAt, expect }) {
       out.times.push({ start, end, enabled: !disabled(o), selected: selected(o), ref: o.path ?? null });
     }
     // Exactly one date control group: its choices must all be dates (no guessing which nodes are dates).
-    const dateGroups = groups.filter(({ g, opts }) => g !== timeGroups[0].g && opts.length > 0 && opts.every((o) => parseDateLabel(label(o))));
+    const dateGroups = groups.filter(({ g, opts }) => g !== timeGroups[0].g && isDateGroup(opts));
     if (dateGroups.length !== 1) return { ...out, stage: "UNKNOWN_STRUCTURE", detail: dateGroups.length ? "ambiguous-date-control" : "date-control-unrecognized" };
     const seen = new Set();
     for (const d of dateGroups[0].opts) {

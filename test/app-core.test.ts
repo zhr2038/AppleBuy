@@ -287,7 +287,10 @@ test("A08/A11: the loopback service validates host, origin, token and the tab co
     assert.equal((await a.post("/api/claim")).status, 200);
     assert.equal((await b.post("/api/claim")).body.code, "controlled-elsewhere");
     assert.equal((await b.post("/api/start")).body.code, "not-controller");
-    const [s1, s2] = await Promise.all([a.post("/api/start"), a.post("/api/start")]);
+    // The page must send the outcome it displayed beside the start button; a request without one never starts.
+    assert.equal((await a.post("/api/start")).body.code, "outcome-changed");
+    const shown = { expect: { kind: "default", armId: null } };
+    const [s1, s2] = await Promise.all([a.post("/api/start", shown), a.post("/api/start", shown)]);
     assert.deepEqual([s1.status, s2.status].sort(), [200, 409], "exactly one run starts");
     // any authenticated tab may pause (it only reduces automation); only the controller may resume
     assert.equal((await b.post("/api/control", { action: "pause" })).status, 200);

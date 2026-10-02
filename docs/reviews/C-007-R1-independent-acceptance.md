@@ -1,0 +1,23 @@
+# C-007-R1 independent functional acceptance
+
+Codex accepts the bounded **offline** C-006-R1/C-007 repair milestone on October 2, 2026. This does not enable an Apple adapter, prove Duo purchasing, reserve a slot or renew the consumed Pro authorization. The user's latest priority is functional desktop purchasing; mobile layout and visual polish are outside the next milestone.
+
+Exact candidate: 90 files, SHA-256 `6bbc8bf13ac5c0dc73c20c3ae154cb834235ebb27e215bfb2c50b10e43038dda`, in `C-007-R1-final-candidate-manifest.json`. All 30 protected reviewer/management files match their pre-continuation hashes. No candidate bytes changed during independent checks.
+
+Codex actually ran the full Node suite: **258/258**, including all 18 independent findings/recovery reproductions. The core CLI passed **29/29**, with zero external requests. The launch replay CLI independently passed **20/20**, preserved unknown submission, and reported zero real requests/actions. Management tests independently passed **5+2+2**, using isolated owned Windows process trees.
+
+On the current backend, Codex actually used the user's desktop Chrome: one explicit start selected day-one's terminal, observed explicit refusal, reselected day-two's terminal from a new list, observed another refusal, selected day-three's terminal, observed acceptance, and continued to the local pre-payment endpoint. The local mock records show three selections, one continuation, zero final submissions and zero orders. This is an actual browser of a FAKE merchant, not Apple execution or a merchant speed measurement.
+
+The same current browser exercised 21 synthetic DOM pages: prelaunch, maintenance, incomplete rendering, entry/reordered entry, native/select and radio dates, redraw/reordered controls, omitted terminal, fourth date, year omission, unselected pickup, wrong product, login, consent, unknown page, throttling, access restriction, 503 and transport failure. All 21 observations were saved through the server-issued projection checks; persisted history confirms the expected stages. A second tab remained read-only. Pause/resume preserved scope. A synthetic unknown final result survived reload, invalidated prior refs and remained reconciliation-only. The separately captured computed-CSS visibility probe is applicable: observer SHA remains `ab8c07b59735572b43128dcc860fd50f8d048bb478313b2b009d3e661d837f45`.
+
+Source review confirmed pre-write recovery payload validation, conservative observed/unbound-v2 migration, first-scope freeze, bounded issued-sample provenance, transient input rejection, exact condition checks, outcome comparison before arm claim, and the ledger's pre-claim stop. Crash tests demonstrate process-interruption recovery, **not power-loss durability**. Unknown original scope requires handoff; it cannot authorize a later fourth date.
+
+Actual Claude authored the repairs and `docs/claude/C-007-R1-report.md`. Its separate management review explicitly agrees on M1/M2 within the stated Windows scope and finds no new defect in the unchanged Codex classifier/sample/CLI portions. The CLI has now also been independently executed. Codex agrees with that bounded scope and independently accepts Claude's repairs; Claude did not self-approve them. C-009 will confirm the exact manifest and the remaining Codex CLI scope before implementation proceeds.
+
+## Invocation disclosure and report errata
+
+The actual continuation **did not finish successfully at CLI level**: it returned exit 1, `error_max_turns`, 46 reported turns with a requested limit of 45, 812.67 seconds. It was neither a wall timeout nor quota exhaustion; structured `modelUsage` verified only `claude-opus-5-5`, requested effort `xhigh`, and owned-process exit confirmation succeeded. The written report exists despite that interruption. Its section 10 claim of no turn-cap failure is inaccurate and is superseded by this disclosure and the sanitized continuation receipt. Preserve the original report as the actual artifact; do not fabricate a successful final response.
+
+The runbook's example "power outage" overstates the process-crash tests. No directory fsync/power-loss durability was established. That example must not be used as an acceptance claim.
+
+Remaining work is the actual desktop Chrome execution adapter and local protected customer input use, current real plan/product/year/list and refusal feedback evidence, durable cross-navigation no-repeat purchase intent, and independent unpaid endpoint reconciliation. The historical one-order Pro pilot supplies normal-flow reference only. C-009 selects the technical approach; no earlier browser-control mechanism is preapproved.

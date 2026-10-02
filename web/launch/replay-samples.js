@@ -7,7 +7,8 @@ export function replaySample(id,plan) {
   const p=plan.products[0],expect={products:plan.products,stores:plan.stores.map(s=>s.label)};
   const htmlDoc=body=>`<!doctype html><html lang="zh-CN"><body><p>合成样本 SYNTHETIC — 不访问 Apple</p>${body}</body></html>`;
   const line=`${escape(p.model)} ${escape(p.capacity)} ${escape(p.color)}`;
-  const prices=`<p>RMB ${plan.maxTotalCny}</p><p>数量: 1</p>`;
+  // SYNTHETIC wording: a labelled tax-inclusive total (the observer never accepts an unlabelled price).
+  const prices=`<p>总计（含税） RMB ${plan.maxTotalCny}</p><p>数量: 1</p>`;
   const entry=layout=>htmlDoc(layout?`<div role="button" aria-label="继续">继续 ›</div>${prices}<p>${line}</p><h1>${escape(p.model)}</h1>`:`<h1>${escape(p.model)}</h1><p>${line}</p>${prices}<button>继续</button>`);
   const dates=plan.dates.map(d=>({label:d,enabled:true}));
   // Changing cadence/ordering is a fixture parameter, never an asserted official slot duration.

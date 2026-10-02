@@ -1,0 +1,62 @@
+{
+  "checkedAtUtc": "2026-10-02T12:00:19.459681+00:00",
+  "candidateSha256": "6bbc8bf13ac5c0dc73c20c3ae154cb834235ebb27e215bfb2c50b10e43038dda",
+  "candidateFiles": 90,
+  "protectedFiles": 30,
+  "protectedChanges": [],
+  "nodeSuite": {
+    "tests": 258,
+    "pass": 258,
+    "fail": 0
+  },
+  "coreCli": {
+    "scenarios": 29,
+    "pass": 29,
+    "externalRequests": 0
+  },
+  "launchCli": {
+    "scenarios": 20,
+    "pass": 20,
+    "unknownPreserved": true,
+    "realRequests": 0,
+    "realActions": 0
+  },
+  "managementTests": {
+    "processTree": 5,
+    "invocationGuard": 2,
+    "dispatchLock": 2,
+    "pass": 9
+  },
+  "chrome": {
+    "scope": "actual desktop Chrome running local FAKE merchant; no Apple requests or actions",
+    "taskId": "task-ebumranhof",
+    "runId": "run-xuagdyzyqz",
+    "nodePid": 37860,
+    "url": "http://127.0.0.1:13471/",
+    "scenario": "last-slot-three-dates",
+    "choices": [
+      "FAKE \u95e8\u5e97\u7532|2099-01-01|21:15-21:30",
+      "FAKE \u95e8\u5e97\u7532|2099-01-02|21:15-21:30",
+      "FAKE \u95e8\u5e97\u7532|2099-01-03|20:45-21:00"
+    ],
+    "explicitRefusals": 2,
+    "sentSelections": 3,
+    "sentContinuations": 1,
+    "sentFinalSubmissions": 0,
+    "orders": 0,
+    "domSampleCount": 21,
+    "persistedExpectedStagesMatch": true,
+    "secondaryTabReadOnly": true,
+    "pauseResumePreservedBinding": true,
+    "unknownSurvivesReload": true,
+    "unknownNext": "read-only reconciliation",
+    "computedCssObserverSha256": "ab8c07b59735572b43128dcc860fd50f8d048bb478313b2b009d3e661d837f45",
+    "desktopOnlyAcceptance": true,
+    "mobileLayoutDeferredByUser": true,
+    "browserScreenshotPrivate": ".local/reviewer/C007-R1-Chrome-functional.png"
+  },
+  "verdict": "PASS_OFFLINE_FUNCTIONAL_MILESTONE",
+  "realAdapterReady": false,
+  "duoPurchaseReady": false,
+  "historicalProAuthorization": "consumed; no second order"
+}

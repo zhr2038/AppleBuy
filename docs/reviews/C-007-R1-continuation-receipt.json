@@ -1,0 +1,26 @@
+{
+  "task": "C-007-R1-CONTINUE",
+  "session_id": "11941a88-4609-4e7f-a2f8-78c5b5837285",
+  "model_requested": "claude-opus-5-5",
+  "effort_requested": "xhigh",
+  "started_at": "2026-10-02T11:26:40.490485+00:00",
+  "ended_at": "2026-10-02T11:40:13.165104+00:00",
+  "status": "failed",
+  "subtype": "error_max_turns",
+  "exit_code": 1,
+  "duration_seconds": 812.67,
+  "timed_out": false,
+  "cleanup_confirmed": true,
+  "models_actual": [
+    "claude-opus-5-5"
+  ],
+  "model_verified": true,
+  "permission_denials": [],
+  "reportedTurns": 46,
+  "writtenArtifact": "docs/claude/C-007-R1-report.md",
+  "artifactExists": true,
+  "quotaExhaustion": false,
+  "cliInvocationSucceeded": false,
+  "artifactIndependentlyAccepted": true,
+  "reportErrata": "Section 10 falsely predicts no turn-cap failure; actual CLI error_max_turns is authoritative."
+}

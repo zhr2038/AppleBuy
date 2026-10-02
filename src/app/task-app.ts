@@ -20,6 +20,7 @@ import type { Evidence, RunRecord, TaskDoc } from "./task-store.ts";
 import { FORMAL_PHRASE, FORMAL_TTL_MS, TaskStore, currentPlan, describeEvidence, latestRun, ledgerFileDamaged, letterId } from "./task-store.ts";
 import { businessHistory, engineView } from "./view.ts";
 import { PRESETS, presetById, requiredPresetFor } from "./presets.ts";
+import { runOutcome, sameOutcome } from "../../web/outcome.js";
 
 export const TEST_RUNS_ROOT = resolve(import.meta.dirname, "..", "..", ".local", "test-runs");
 /** Physical location: the nearest existing ancestor is resolved through junctions/symlinks; the missing tail is kept. */
@@ -92,6 +93,12 @@ class CrashableJournal extends FileJournal {
     if (this.#at && type === this.#at.type && (!this.#at.kind || rec.kind === this.#at.kind)) process.exit(86);
     return rec;
   }
+}
+
+/** The simulated formal capability as displayed; `armId` identifies the arm a start would claim. */
+function formalView(doc: TaskDoc) {
+  const arm = doc.formalArm;
+  return { phrase: FORMAL_PHRASE, armed: arm !== null, armId: arm?.armId ?? null, used: arm?.usedByRunId ?? null, expiresAt: arm?.expiresAt ?? null, armedPlanHash: arm?.planHash ?? null, liveMode: "不可用（未实现真实适配器，也没有真实授权）" };
 }
 
 export type RunInfo = { runId: string; rev: number; planHash: string; phase: Phase | "UNREADABLE" | "NOT_STARTED"; reason: string; journalOk: boolean; journalError: string | null };
@@ -302,16 +309,25 @@ export class TaskApp {
     return { ok: true, message: `已为计划 v${cur.rev} 启用一次模拟正式授权（仅对本机模拟官网有效，30 分钟内由下一次运行使用；真实正式模式不可用）` };
   }
 
-  start(scenario: SiteScenario = "refuse-then-accept"): Result {
+  /**
+   * `expect` is the outcome the page displayed beside its start button ({kind, armId}, see web/outcome.js). The
+   * HTTP service always passes it (null when missing); a start whose actual outcome differs is refused before any
+   * arm is claimed. Direct programmatic callers (CLI --auto-start, tests) omit it.
+   */
+  start(scenario: SiteScenario = "refuse-then-accept", expect?: unknown): Result {
     if (!(scenario in SITE_SCENARIOS)) return { ok: false, code: "scenario", message: "未知的模拟官网场景" };
     this.#refreshLastRun();
-    const blocker = this.startBlocker();
+    const ev = this.store.ledger.evidence();
+    const blocker = this.startBlocker(ev);
     if (blocker) return { ok: false, code: "start-blocked", message: blocker };
     const doc = this.doc();
     const cur = currentPlan(doc);
     // A fixture written for one example plan would demonstrate nothing meaningful under another plan.
     const required = requiredPresetFor(scenario);
     if (required && planHash(required.plan) !== cur.planHash) return { ok: false, code: "preset-required", message: `请先载入示例计划“${required.title}”，核对后再开始` };
+    if (expect !== undefined && !sameOutcome(expect, runOutcome({ formal: formalView(doc), ledger: { entries: ev.ok ? ev.entries.length : 1 }, plan: { planHash: cur.planHash } }, Date.now()))) {
+      return { ok: false, code: "outcome-changed", message: "开始前，模拟正式授权的状态已变化（例如刚启用、已过期、已使用或计划已修改），与页面显示的说明不一致：本次没有开始，也没有领取授权。请核对开始按钮旁的最新说明后再点开始" };
+    }
     const runId = letterId("run");
     let capability: RunRecord["capability"] = null;
     if (doc.formalArm && doc.formalArm.usedByRunId === null) {
@@ -456,7 +472,6 @@ export class TaskApp {
       .slice(-60);
     const ev = this.store.ledger.evidence();
     const run = this.#engineRun ?? latestRun(doc);
-    const arm = doc.formalArm;
     const display = engineView(s ?? this.#historicalSnapshot, this.#lastRunInfo, s === null && this.#historicalSnapshot !== null);
     if (this.#loopError) {
       display.needsHuman = true;
@@ -477,7 +492,7 @@ export class TaskApp {
       ledger: ev.ok
         ? { entries: ev.entries.length, status: ev.entries.at(-1)?.status ?? null, corrupt: false, problem: null }
         : { entries: 1, status: "unknown", corrupt: ledgerFileDamaged(ev.problem), problem: { ...ev.problem, summaryZh: describeEvidence(ev.problem) } },
-      formal: { phrase: FORMAL_PHRASE, armed: arm !== null, used: arm?.usedByRunId ?? null, expiresAt: arm?.expiresAt ?? null, armedPlanHash: arm?.planHash ?? null, liveMode: "不可用（未实现真实适配器，也没有真实授权）" },
+      formal: formalView(doc),
       site: this.site.view(),
       scenarios: SITE_SCENARIOS,
       examples: PRESETS.map((p) => ({

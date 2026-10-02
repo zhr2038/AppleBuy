@@ -1,5 +1,7 @@
 # C-009 — one-start desktop Chrome adapter proposal
 
+Historical prepared sheet. Actual dispatch occurred on October 2 at 19:59:43 Asia/Shanghai using the updated [C-009 task](C-009.md), original session and exact Opus 5.5/xhigh, after independent offline acceptance. The older "not dispatched" text below is retained as preparation history and is superseded by that actual invocation record.
+
 Prepared dependency task; not dispatched. Execute only after the exact C-006-R1/C-007 candidate has actual scoped Claude/Codex agreement and no other invocation is unresolved. English, same workspace, original session, Opus 5.5/xhigh. Read requirements, the current accepted manifest/report and the sanitized October 2 Pro pilot report. Do not read private customer/runtime files, account history or unrelated projects.
 
 The user wants to configure the product and pickup rule ahead of time, then explicitly start once and reach one approved unpaid official order. The current program only rehearses. Codex's successful merchant flow supplies normal-flow evidence but does not prove an application adapter, launch performance, a slot hold or Duo compatibility. Claude owns the technical approach; do not treat an earlier framework or browser-control discussion as approved architecture.

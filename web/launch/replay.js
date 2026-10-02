@@ -23,7 +23,12 @@ $('claim').onclick=()=>post('/api/claim',{});
 $('pause').onclick=()=>post('/api/launch/pause',{paused:true});
 $('resume').onclick=()=>post('/api/launch/pause',{paused:false});
 $('pending').onclick=()=>post('/api/launch/pending-fixture',{});
-$('import').onclick=async()=>{try{await post('/api/launch/observe',{source:'imported-observation',observation:JSON.parse($('observation').value)});}catch{$('message').textContent='观察 JSON 无法解析；没有更新记录';}};
+// An import is only previewed in executor memory: it is never saved, never yields candidates and never acts.
+$('import').onclick=async()=>{
+  let observation;try{observation=JSON.parse($('observation').value);}catch{$('message').textContent='观察 JSON 无法解析；没有更新记录';return;}
+  const r=await post('/api/launch/observe',{source:'imported-observation',observation});
+  $('preview').textContent=r?.preview?`仅预览（未保存）：${r.message}`:'';
+};
 $('observe').onclick=async()=>{
   if(busy||!current?.control.you)return;busy=true;render(current);
   try {

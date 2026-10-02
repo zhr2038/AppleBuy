@@ -21,6 +21,17 @@ export type PageObservation = {
 };
 export type Pending = { opId: string; kind: "chooseSlot" | "advance" | "submitOrder"; status: "in-flight" | "unknown"; epoch: number };
 export type Binding = { dates: string[]; boundAt: string; source: "synthetic-sample"; realBindingVerified: false };
+/**
+ * The first N visible, enabled dates of the first complete recognized list. Frozen once, even when not bindable.
+ * origin "legacy-unknown" (no dates, never bindable): a v2 state had observed pages but saved no scope, so whether it
+ * had already seen an unbindable first list cannot be shown. It is never replaced and never grants candidates.
+ */
+export type DateScope = { dates: string[]; frozenAt: string; bindable: boolean; origin?: "legacy-unknown" };
+/** A rejected input (bad shape, stale, future, duplicate pending): nothing was changed; it is not evidence damage. */
+export class LaunchInputRejected extends Error {
+  readonly code: string;
+  constructor(code: string) { super(code); this.code = code; }
+}
 export type ObservationSource = 'synthetic-sample'|'imported-observation';
 type Options = {taskId: string; planHash: string; relativeDates: number; plan: Plan};
 export type Next =
@@ -31,7 +42,8 @@ export type Next =
 
 const INTERRUPTED = new Set<PageStage>(["MAINTENANCE", "TRANSPORT_FAILED", "SERVICE_UNAVAILABLE", "RATE_LIMITED", "RENDERING_INCOMPLETE", "UNKNOWN_STRUCTURE", "RESTORED_UNOBSERVED"]);
 const HANDOFF = new Set<PageStage>(["SIGN_IN_REQUIRED", "CONSENT_REQUIRED", "RATE_LIMITED", "ACCESS_RESTRICTED", "PLAN_MISMATCH", "UNKNOWN_STRUCTURE"]);
-export const LIMITS = { renderIncompleteObservations: 5, history: 50 };
+// futureSkewMs: an observation may not claim a time later than the receiving clock plus this skew.
+export const LIMITS = { renderIncompleteObservations: 5, history: 50, futureSkewMs: 60_000 };
 
 export const STAGE_ZH: Record<PageStage, string> = {
   PRELAUNCH: "未开售：页面显示暂未发售/暂不提供取货，继续不可用",
@@ -52,9 +64,9 @@ export const STAGE_ZH: Record<PageStage, string> = {
 };
 
 export type MonitorState = {
-  schema: "applebuy-launch-monitor/v2"; taskId: string; planHash: string; relativeDates: number;
+  schema: "applebuy-launch-monitor/v3"; taskId: string; planHash: string; relativeDates: number;
   epoch: number; obsSeq: number; stage: PageStage; detail: string; lastValid: { at: string; stage: PageStage } | null;
-  binding: Binding | null; pending: Pending | null; paused: boolean; incomplete: number; floors: SlotFields[]; lastObservedAt: string|null;
+  scope: DateScope | null; binding: Binding | null; pending: Pending | null; paused: boolean; incomplete: number; floors: SlotFields[]; lastObservedAt: string|null;
   history: { at: string; stage: PageStage; detail: string; epoch: number }[];
 };
 
@@ -88,10 +100,19 @@ export function validateObservation(v:unknown):v is PageObservation {
   for(const t of v.times) if(!obj(t)||!keys(t,['start','end','enabled','selected','ref'])||!isTime(t.start)||!isTime(t.end)||t.start>=t.end||typeof t.enabled!=='boolean'||typeof t.selected!=='boolean'||!validRef(t.ref)) return false;
   return new Set(v.dates.map((d:any)=>d.date??d.label)).size===v.dates.length && new Set(v.times.map((t:any)=>`${t.start}-${t.end}`)).size===v.times.length && v.times.filter((t:any)=>t.selected).length<=1;
 }
+const dateList = (v:unknown,max:number) => Array.isArray(v)&&v.length>=1&&v.length<=max&&new Set(v).size===v.length&&v.every(isDate)&&v.join()===[...v].sort().join();
 function validState(s:MonitorState,o:Options):boolean {
-  if(!keys(s,['schema','taskId','planHash','relativeDates','epoch','obsSeq','stage','detail','lastValid','binding','pending','paused','incomplete','floors','lastObservedAt','history'])||!stage(s.stage)||!code(s.detail)||typeof s.paused!=='boolean'||!(s.lastObservedAt===null||iso(s.lastObservedAt))) return false;
+  if(!keys(s,['schema','taskId','planHash','relativeDates','epoch','obsSeq','stage','detail','lastValid','scope','binding','pending','paused','incomplete','floors','lastObservedAt','history'])||!stage(s.stage)||!code(s.detail)||typeof s.paused!=='boolean'||!(s.lastObservedAt===null||iso(s.lastObservedAt))) return false;
   if(![s.epoch,s.obsSeq,s.incomplete].every(Number.isSafeInteger)||s.epoch<1||s.obsSeq<0||s.incomplete<0||!validPending(s.pending,s.epoch)) return false;
   if(s.lastValid!==null&&(!obj(s.lastValid)||!keys(s.lastValid,['at','stage'])||!iso(s.lastValid.at)||!stage(s.lastValid.stage))) return false;
+  // A binding exists exactly when the frozen first scope was bindable, and it is that scope. An unbindable scope
+  // must actually contain an unauthorized date; it has no binding and no floors.
+  const sc=s.scope;
+  if(sc!==null&&(!obj(sc)||!keys(sc,['dates','frozenAt','bindable','origin'])||typeof sc.bindable!=='boolean'||!iso(sc.frozenAt))) return false;
+  if(sc!==null&&('origin' in sc
+    ? sc.origin!=='legacy-unknown'||!Array.isArray(sc.dates)||sc.dates.length!==0||sc.bindable!==false
+    : !dateList(sc.dates,o.relativeDates)||sc.bindable!==sc.dates.every(d=>o.plan.dates.includes(d)))) return false;
+  if((s.binding!==null)!==(sc?.bindable===true)||(s.binding&&s.binding.dates.join()!==sc!.dates.join())) return false;
   if(s.binding!==null) {
     const b=s.binding;
     if(!obj(b)||!keys(b,['dates','boundAt','source','realBindingVerified'])||b.source!=='synthetic-sample'||b.realBindingVerified!==false||!o.plan.fake||!iso(b.boundAt)||!Array.isArray(b.dates)||b.dates.length<1||b.dates.length>o.relativeDates||new Set(b.dates).size!==b.dates.length||b.dates.some(d=>!isDate(d)||!o.plan.dates.includes(d))||b.dates.join()!==[...b.dates].sort().join()) return false;
@@ -102,6 +123,21 @@ function validState(s:MonitorState,o:Options):boolean {
   return Array.isArray(s.history)&&s.history.length<=LIMITS.history&&!s.history.some(h=>!obj(h)||!keys(h,['at','stage','detail','epoch'])||!iso(h.at)||!stage(h.stage)||!code(h.detail)||!Number.isSafeInteger(h.epoch)||h.epoch<1||h.epoch>s.epoch);
 }
 
+/**
+ * v2 saved no scope. Its binding, if any, is its frozen scope (floors and pending carry over unchanged). Without a
+ * binding, v2 evidence can only prove "never observed": every accepted v2 observation set lastObservedAt and added
+ * a history entry. Any other v2 state may already have seen an unbindable first list, so its scope is unknown and
+ * migrates conservatively to a permanent handoff; it can never freeze a later list.
+ */
+function migrateV2(s: Record<string, any>): MonitorState {
+  const b = s.binding, history = Array.isArray(s.history) ? s.history : null;
+  const never = s.lastObservedAt === null && s.lastValid === null && history !== null && history.length === 0;
+  const lastAt = [s.lastObservedAt, obj(s.lastValid) ? s.lastValid.at : null, history?.at(-1)?.at].find(iso) ?? "";
+  const scope: DateScope | null = obj(b) && Array.isArray(b.dates) ? { dates: [...b.dates], frozenAt: b.boundAt, bindable: true }
+    : never ? null : { dates: [], frozenAt: lastAt, bindable: false, origin: "legacy-unknown" };
+  return { ...s, schema: "applebuy-launch-monitor/v3", scope } as MonitorState;
+}
+
 export class LaunchMonitor {
   #s: MonitorState;
   #last: PageObservation | null = null;
@@ -110,14 +146,15 @@ export class LaunchMonitor {
   constructor(o: Options) {
     if (!/^[a-z0-9-]{1,80}$/.test(o.taskId) || !validatePlan(o.plan).plan || planHash(o.plan)!==o.planHash || !Number.isInteger(o.relativeDates) || o.relativeDates < 1 || o.relativeDates > 3) throw new Error("InvalidLaunchOptions");
     this.#plan = structuredClone(o.plan);
-    this.#s = { schema: "applebuy-launch-monitor/v2", taskId:o.taskId, planHash:o.planHash, relativeDates:o.relativeDates, epoch: 1, obsSeq: 0, stage: "RESTORED_UNOBSERVED", detail: "not-yet-observed",
-      lastValid: null, binding: null, pending: null, paused: false, incomplete: 0, floors: [], lastObservedAt:null, history: [] };
+    this.#s = { schema: "applebuy-launch-monitor/v3", taskId:o.taskId, planHash:o.planHash, relativeDates:o.relativeDates, epoch: 1, obsSeq: 0, stage: "RESTORED_UNOBSERVED", detail: "not-yet-observed",
+      lastValid: null, scope: null, binding: null, pending: null, paused: false, incomplete: 0, floors: [], lastObservedAt:null, history: [] };
   }
 
-  /** Restart: identity, binding, pending truth and history survive; every page reference from before is invalid. */
+  /** Restart: identity, date scope, binding, pending truth and history survive; every page reference from before is invalid. */
   static restore(json: string, o: Options): LaunchMonitor {
-    const s = JSON.parse(json) as MonitorState;
-    if (s?.schema !== "applebuy-launch-monitor/v2" || s.taskId !== o.taskId || s.planHash !== o.planHash || s.relativeDates !== o.relativeDates || !validState(s,o)) {
+    let s = JSON.parse(json) as MonitorState;
+    if (obj(s) && (s as any).schema === "applebuy-launch-monitor/v2" && !Object.hasOwn(s, "scope")) s = migrateV2(s);
+    if (s?.schema !== "applebuy-launch-monitor/v3" || s.taskId !== o.taskId || s.planHash !== o.planHash || s.relativeDates !== o.relativeDates || !validState(s,o)) {
       throw new Error("LaunchStateMismatch");
     }
     const monitor = new LaunchMonitor(o);
@@ -133,8 +170,10 @@ export class LaunchMonitor {
 
   /** Ingest one observation of the CURRENT page (observer output or transport classification). */
   ingest(raw: unknown, at: string, source: ObservationSource): Next {
-    if (!validateObservation(raw) || !iso(at) || !['synthetic-sample','imported-observation'].includes(source)) throw new Error('InvalidObservation');
-    if (this.#s.lastObservedAt && Date.parse(raw.observedAt)<=Date.parse(this.#s.lastObservedAt)) throw new Error('StaleObservation');
+    // Every rejection happens before any state change.
+    if (!validateObservation(raw) || !iso(at) || !['synthetic-sample','imported-observation'].includes(source)) throw new LaunchInputRejected('InvalidObservation');
+    if (Date.parse(raw.observedAt) > Date.parse(at) + LIMITS.futureSkewMs) throw new LaunchInputRejected('FutureObservation');
+    if (this.#s.lastObservedAt && Date.parse(raw.observedAt)<=Date.parse(this.#s.lastObservedAt)) throw new LaunchInputRejected('StaleObservation');
     const obs = structuredClone(raw);
     const s = this.#s;
     let stage = obs.stage;
@@ -154,7 +193,8 @@ export class LaunchMonitor {
     s.lastObservedAt = obs.observedAt;
     if (!INTERRUPTED.has(stage) && !HANDOFF.has(stage)) s.lastValid = { at, stage };
     if (stage === "SLOT_SELECTION" && this.#ready()) {
-      if (s.binding===null) this.#bind(obs, at);
+      if (s.scope===null) this.#freeze(obs, at);
+      // Floors are recorded from the freezing observation onward, before any later omission could matter.
       if(s.binding?.dates.includes(obs.selectedDate!)) for(const f of terminalOffers(this.#offers()).values()) {
         const old=s.floors.find(x=>slotGroup(x)===slotGroup(f));
         if(!old) s.floors.push({store:f.store,date:f.date,start:f.start,end:f.end});
@@ -166,11 +206,16 @@ export class LaunchMonitor {
     return this.next();
   }
 
-  /** Bind the first N enabled offered dates of the first complete recognized list; never calendar today, never later. */
-  #bind(obs: PageObservation, at: string): void {
+  /**
+   * Freeze the first N visible, enabled offered dates of the first complete recognized list; never calendar today.
+   * Disabled labels are not offered. If any frozen date is outside the plan, the scope is frozen as unbindable:
+   * a later list can never roll the scope forward to an originally later (e.g. fourth) date.
+   */
+  #freeze(obs: PageObservation, at: string): void {
     const dates = obs.dates.filter(d=>d.enabled).map(d=>d.date!).sort().slice(0,this.#s.relativeDates);
-    if (!dates.length || !dates.every(d=>this.#plan.dates.includes(d))) return;
-    this.#s.binding = { dates, boundAt: at, source:'synthetic-sample', realBindingVerified: false };
+    const bindable = dates.every(d=>this.#plan.dates.includes(d));
+    this.#s.scope = { dates, frozenAt: at, bindable };
+    if (bindable) this.#s.binding = { dates, boundAt: at, source:'synthetic-sample', realBindingVerified: false };
   }
 
   #ready(): boolean {
@@ -188,11 +233,12 @@ export class LaunchMonitor {
   }
 
   setPending(p: Pending): void {
-    if(this.#s.pending || p===null || !validPending(p,this.#s.epoch)) throw new Error('PendingRequiresReconciliation');
+    if(this.#s.pending) throw new LaunchInputRejected('PendingRequiresReconciliation');
+    if(p===null || !validPending(p,this.#s.epoch)) throw new Error('InvalidPending');
     this.#s.pending = structuredClone(p);
   }
   setPaused(paused: boolean): void {
-    if(typeof paused!=='boolean') throw new Error('InvalidPause');
+    if(typeof paused!=='boolean') throw new LaunchInputRejected('InvalidPause');
     this.#s.paused = paused; this.#s.epoch++; this.#last=null;
   }
 
@@ -209,6 +255,8 @@ export class LaunchMonitor {
     const s = this.#s;
     if (s.pending) return { kind: "reconcile", reason: "pending-or-unknown-result-observe-first" };
     if (HANDOFF.has(s.stage)) return { kind: "handoff", reason: s.detail };
+    // Permanent for this task: the frozen first scope contains an unauthorized date; no later list may replace it.
+    if (s.scope && !s.scope.bindable) return { kind: "handoff", reason: s.scope.origin === "legacy-unknown" ? "legacy-date-scope-unknown" : "initial-date-scope-not-authorized" };
     if (s.paused) return { kind: "wait", reason: "paused" };
     if (s.stage !== "SLOT_SELECTION" || !this.#last) return { kind: "wait", reason: s.stage };
     const obs = this.#last;
@@ -232,7 +280,9 @@ export class LaunchMonitor {
       step: s.stage==='RESTORED_UNOBSERVED' && s.detail==='not-yet-observed' ? '尚未读取页面：请选择合成样本并观察' : s.detail==='page-owner-changed' ? '控制页面已更换：旧页面控件作废，请重新观察' : STAGE_ZH[s.stage],
       next,
       lastValid: s.lastValid ? `${s.lastValid.at}（${STAGE_ZH[s.lastValid.stage].split("：")[0]}）` : "尚无有效观察",
-      binding: s.binding ? `已固定首次提供的 ${s.binding.dates.length} 个日期：${s.binding.dates.join("、")}${s.binding.source === "synthetic-sample" ? "（合成样本，不是真实绑定）" : "（真实绑定尚未验证）"}` : "尚未固定日期",
+      binding: s.binding ? `已固定首次提供的 ${s.binding.dates.length} 个日期：${s.binding.dates.join("、")}${s.binding.source === "synthetic-sample" ? "（合成样本，不是真实绑定）" : "（真实绑定尚未验证）"}`
+        : s.scope?.origin === "legacy-unknown" ? "旧版回放记录没有保存最初日期范围，无法证明是否已看到过不能绑定的首个列表：不会固定新的日期，也不会产生候选，请人工处理"
+        : s.scope ? `首次完整列表的前 ${s.scope.dates.length} 个可选日期为 ${s.scope.dates.join("、")}，含计划外日期：已冻结且不能绑定，不会改用之后出现的日期，请人工处理` : "尚未固定日期",
     };
   }
 }

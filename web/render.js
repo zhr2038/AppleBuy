@@ -3,6 +3,8 @@
 // Basic path: what this is, what to do next, the current business step and a short business history. Technical
 // identifiers, hashes, raw slot keys, mock-site internals and the full trace live only in the advanced details.
 
+import { runOutcome } from "./outcome.js";
+
 export function esc(v) {
   return String(v ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
 }
@@ -34,18 +36,39 @@ export function planSummary(plan) {
 </dl>`;
 }
 
+const DEFAULT_RUN = "默认演练：到达模拟付款前步骤即停止，不提交任何订单（包括模拟订单）。";
 /**
- * What the NEXT run may do with the one-use simulated formal capability, mirroring TaskApp.start (an unused arm is
- * always claimed by the next run) and the engine's send-time checks (plan version, expiry, ledger). Shown next to
- * every start action so the generic "stops before payment" copy can never contradict an armed next run.
+ * What the NEXT run may do with the one-use simulated formal capability (web/outcome.js, the same function the
+ * executor checks at start). Shown next to every start action so the generic "stops before payment" copy can never
+ * contradict an armed next run. `kind`/`armId` are sent with the start request; a mismatch is refused by the server.
+ * Everything here is the local mock site: a mock final submission is never a real Apple order or payment.
  */
 export function nextRunOutcome(s, now = Date.now()) {
+  const o = runOutcome(s, now);
   const f = s.formal;
-  if (!f || !f.armed || f.used) return { submits: false, cls: "outcome", text: "默认演练：到达模拟付款前步骤即停止，不提交任何订单（包括模拟订单）。" };
-  if (s.ledger?.entries) return { submits: false, cls: "outcome", text: "本任务已有最终提交记录，不能再开始会提交的运行。" };
-  if (f.armedPlanHash !== s.plan?.planHash) return { submits: false, cls: "outcome formal", text: "注意：已启用的一次性模拟正式授权属于另一个计划版本。下一次运行会领取并用掉它，但提交会被阻断，演练在付款前停止。" };
-  if (f.expiresAt !== null && f.expiresAt <= now) return { submits: false, cls: "outcome formal", text: "注意：已启用的一次性模拟正式授权已过期。下一次运行会领取并用掉它，但提交会被阻断，演练在付款前停止。" };
-  return { submits: true, cls: "outcome formal", text: `注意：已启用一次性模拟正式授权（${fmtTime(f.expiresAt)} 前有效）。下一次运行如在此之前到达付款前步骤，会向本机模拟官网提交一单模拟订单（不是真实订单，也不能再次提交）。` };
+  const text = {
+    default: DEFAULT_RUN,
+    used: `本任务唯一一次模拟正式授权已被运行 ${f?.used ?? ""} 使用，不能再次启用。${DEFAULT_RUN}`,
+    ledger: "本任务已有最终提交记录（或购买台账无法核对）：不能开始新的运行；已启用但未使用的模拟正式授权不会被领取，也不会再提交。",
+    "plan-mismatch": "注意：已启用的一次性模拟正式授权属于另一个计划版本。下一次运行会领取并用掉它，但提交会被阻断，演练在付款前停止。",
+    expired: "注意：已启用的一次性模拟正式授权已过期。下一次运行会领取并用掉它，但提交会被阻断，演练在付款前停止。",
+    submits: `注意：已启用一次性模拟正式授权（${fmtTime(f?.expiresAt)} 前有效）。下一次运行如在此之前到达付款前步骤，会向本机模拟官网提交一单模拟订单（不是真实订单，也不能再次提交）。`,
+  }[o.kind];
+  return { ...o, submits: o.kind === "submits", cls: o.kind === "default" || o.kind === "used" ? "outcome" : "outcome formal", text };
+}
+
+/** Start button text for the outcome: primary panel or the advanced scenario button. */
+export function startLabel(o, advanced = false) {
+  const base = advanced ? "用当前计划开始此场景" : "开始演练";
+  if (o.submits) return `${base}（会提交一单模拟订单）`;
+  if (o.armId) return `${base}（会用掉模拟授权，但不会提交）`;
+  return base;
+}
+
+/** Copy beside the advanced start button; the same outcome function as the primary panel. */
+export function advancedStartCopy(s, now = Date.now()) {
+  const o = nextRunOutcome(s, now);
+  return { text: o.text, cls: o.cls, label: startLabel(o, true), expect: { kind: o.kind, armId: o.armId } };
 }
 
 /** "Start a new rehearsal" panel: examples and the plan a new run would use (the current plan revision). */
@@ -63,7 +86,7 @@ export function renderStart(s, ui = {}) {
   else if (!pick.ready) action = pick.canLoad
     ? `<p class="small">此示例需要它自己的 FAKE 计划。载入会保存为新的计划版本（旧版本保留，正在运行的绑定不变），请核对后再开始。</p>${btn("preset", "载入此示例计划", `data-preset="${esc(pick.id)}"`, "primary")}`
     : `<p class="warn">当前计划不是 FAKE 演练计划：为避免替换你保存的计划，不能自动载入示例。</p>`;
-  else action = `<p class="${outcome.cls}">${esc(outcome.text)}</p>${btn("start", outcome.submits ? "开始演练（会提交一单模拟订单）" : "开始演练", `data-scenario="${esc(pick.scenario)}"`, "primary big")}`;
+  else action = `<p class="${outcome.cls}">${esc(outcome.text)}</p>${btn("start", startLabel(outcome), `data-scenario="${esc(pick.scenario)}"`, "primary big")}`;
   const plan = s.plan?.plan;
   const body = `<div class="choices">${choices}</div>
 ${plan ? `<h3>新演练将使用的计划（版本 v${esc(s.plan.rev)}）</h3>${planSummary(plan)}` : ""}
@@ -186,7 +209,7 @@ export function renderApp(s, ui = {}) {
   // A simulated formal authorization changes what a run may do: always visible, never only in advanced details.
   const f = s.formal;
   const formal = f.armed
-    ? `<div class="card formal"><b>${f.used ? `本任务唯一一次“模拟正式授权”已被运行 ${esc(f.used)} 使用（不可再次启用）` : esc(nextRunOutcome(s).text)}</b>只作用于本机模拟官网，不是真实订单；真实正式模式不可用。</div>`
+    ? `<div class="card formal"><b>${esc(nextRunOutcome(s).text)}</b>只作用于本机模拟官网，不是真实订单；真实正式模式不可用。</div>`
     : "";
   const history = (s.history ?? []).length
     ? `<ol class="history">${s.history.map((h) => `<li><span class="small">${fmtTime(h.t)}</span> ${esc(h.text)}</li>`).join("")}</ol>`

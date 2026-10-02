@@ -1,6 +1,6 @@
 // Browser client. It never executes purchase logic: it only displays the executor's state and sends requests to
 // the loopback service. No third-party scripts, fonts, images, cookies or browser storage.
-import { nextRunOutcome, renderAdvanced, renderApp, renderRunDetails, renderStart } from "/render.js";
+import { advancedStartCopy, nextRunOutcome, renderAdvanced, renderApp, renderRunDetails, renderStart } from "/render.js";
 
 const token = document.querySelector('meta[name="session-token"]').content;
 // A duplicated tab can inherit sessionStorage. Connection identities must be fresh per document; the durable
@@ -11,6 +11,7 @@ let state = null;
 let planDirty = false;
 let autoClaimTried = false;
 let displayedOutcome = null;
+let displayedText = null;
 const ui = { example: null };
 
 function msg(text, bad = false) {
@@ -38,11 +39,13 @@ function paint() {
   $("start").innerHTML = renderStart(state, ui);
   $("details").innerHTML = renderRunDetails(state);
   if (!state.fatal && state.formal) {
-    const o = nextRunOutcome(state);
-    displayedOutcome = o.text;
-    $("advOutcome").textContent = o.text;
-    $("advOutcome").className = o.cls;
-    $("startAdvanced").textContent = o.submits ? "用当前计划开始此场景（会提交一单模拟订单）" : "用当前计划开始此场景";
+    // Primary and advanced copy come from one outcome; this exact outcome is what a start request claims to have shown.
+    const a = advancedStartCopy(state);
+    displayedOutcome = a.expect;
+    displayedText = a.text;
+    $("advOutcome").textContent = a.text;
+    $("advOutcome").className = a.cls;
+    $("startAdvanced").textContent = a.label;
   }
   // Re-render the advanced panel only while it is open: closed details cost nothing and keep the page light.
   if ($("advanced").open) $("advView").innerHTML = renderAdvanced(state);
@@ -75,18 +78,19 @@ es.onerror = () => msg("与本机执行进程的连接中断；浏览器会自�
 
 // An idle page must still show expiration. Repaint only when the effective outcome changes.
 function refreshOutcome() {
-  if (state?.formal && nextRunOutcome(state).text !== displayedOutcome) paint();
+  if (state?.formal && nextRunOutcome(state).text !== displayedText) paint();
 }
 setInterval(refreshOutcome, 1000);
 window.addEventListener("focus", refreshOutcome);
 document.addEventListener("visibilitychange", () => { if (!document.hidden) refreshOutcome(); });
 function startScenario(scenario) {
-  if (state?.formal && nextRunOutcome(state).text !== displayedOutcome) {
+  if (state?.formal && nextRunOutcome(state).text !== displayedText) {
     paint();
     msg("授权状态已变化，请核对开始按钮旁的最新说明，再点开始。", true);
     return null;
   }
-  return post("/api/start", { scenario });
+  // The server compares this with the actual outcome at start time (it may have changed before this page heard).
+  return post("/api/start", { scenario, expect: displayedOutcome });
 }
 
 // One delegated handler for the re-rendered basic panels.

@@ -1,0 +1,21 @@
+{
+  "task": "C-007-R1 interrupted by actual max-turn cap",
+  "stop": "error_max_turns",
+  "actualModelVerified": true,
+  "scope": "unfinished repair; no final report or acceptance",
+  "sourceFilesAt234Suite": 88,
+  "sourceSha256At234Suite": "96374685a86d73e0b31096787e73e9f9ef35405614351362232a99406b6aca39",
+  "independentChecks": {
+    "originalReprosPass": 9,
+    "fullSuiteBeforeNewReprosPass": 234,
+    "newCrashRecoveryPass": 7,
+    "newFailures": [
+      "legacy-unbound-upgrade-expands-date-scope",
+      "malformed-redo-payload-written-before-validation"
+    ],
+    "protectedFilesUnchangedBeforeNewReviewerFile": 29,
+    "merchantRequests": 0,
+    "merchantSubmissions": 0
+  },
+  "continuationTask": "C-007-R1-CONTINUE"
+}

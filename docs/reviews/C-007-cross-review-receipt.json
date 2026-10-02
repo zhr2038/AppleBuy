@@ -1,0 +1,27 @@
+{
+  "task": "C-007-CROSS-REVIEW",
+  "invocationStartedAt": "2026-10-02T10:14:48.621042+00:00",
+  "invocationEndedAt": "2026-10-02T10:24:40.486539+00:00",
+  "durationSeconds": 591.86,
+  "configuredTurns": 35,
+  "reportedTurns": 41,
+  "configuredCliBudgetUsd": 9.0,
+  "actualModelUsageGate": true,
+  "modelUsageModels": [
+    "claude-opus-5-5"
+  ],
+  "requestedEffort": "xhigh",
+  "exitCode": 0,
+  "isError": false,
+  "candidateSha256": "6e1d83f904a1c1479d310c4c927a3e189ee2561393e7dc9e2d6cf171f40e13a7",
+  "sourceUnchangedOnIndependentCheck": true,
+  "permissionDenialCount": 1,
+  "unapprovedReadOnlyCommandsDisclosedByClaude": true,
+  "claudeConclusions": {
+    "C-006-R1": "bounded agreement",
+    "C-007": "not accepted; findings need independent reproduction and fixes",
+    "management": "conditional bounded agreement; M1 unresolved"
+  },
+  "mutualFinalAcceptance": false,
+  "note": "CLI reported 41 turns despite configured 35; configured CLI budget is not a proven subscription/usage cap. Private provider usage is retained in the original receipt."
+}

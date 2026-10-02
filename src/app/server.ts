@@ -25,6 +25,7 @@ const ASSETS: Record<string, [string, string]> = {
   "/": ["index.html", "text/html; charset=utf-8"],
   "/app.js": ["app.js", "text/javascript; charset=utf-8"],
   "/render.js": ["render.js", "text/javascript; charset=utf-8"],
+  "/outcome.js": ["outcome.js", "text/javascript; charset=utf-8"],
   "/style.css": ["style.css", "text/css; charset=utf-8"],
   '/launch': ['launch/index.html','text/html; charset=utf-8'],
   '/launch/replay.js': ['launch/replay.js','text/javascript; charset=utf-8'],
@@ -111,7 +112,8 @@ export async function startServer(app: TaskApp, o: { port?: number } = {}): Prom
       if (!sameToken(String(req.headers["x-session-token"] ?? url.searchParams.get("token") ?? ""), token)) return send(res, 403, { ok: false, code: "token" });
       if (url.pathname === "/api/state") return send(res, 200, viewFor(CLIENT_RE.test(clientId) ? clientId : null));
       if (url.pathname === '/api/launch/sample') {
-        try {return send(res,200,launch.sample(url.searchParams.get('id')??''));}
+        // Issued to this tab only: its observation can be saved once, by the same tab, under the same plan.
+        try {return send(res,200,launch.sample(url.searchParams.get('id')??'',CLIENT_RE.test(clientId)?clientId:null));}
         catch {return send(res,400,{ok:false,code:'sample',message:'无法使用这个合成场景'});}
       }
       if (url.pathname === "/api/events" && CLIENT_RE.test(clientId)) {
@@ -158,14 +160,15 @@ export async function startServer(app: TaskApp, o: { port?: number } = {}): Prom
       r = app.control(action);
     } else {
       if (!isController) return send(res, 409, { ok: false, code: "not-controller", message: "本标签页没有控制权（只读）。请先获取控制权" });
-      if (url.pathname === "/api/start") r = app.start((typeof b.scenario === "string" ? b.scenario : "refuse-then-accept") as SiteScenario);
+      // The page sends the outcome it displayed beside the start button; a stale or missing one is refused.
+      if (url.pathname === "/api/start") r = app.start((typeof b.scenario === "string" ? b.scenario : "refuse-then-accept") as SiteScenario, b.expect ?? null);
       else if (url.pathname === "/api/recover") r = app.recover();
       else if (url.pathname === "/api/plan") r = app.editPlan(b.plan);
       else if (url.pathname === "/api/preset") r = app.loadPreset(b.preset);
       else if (url.pathname === "/api/formal") r = app.armFormal(String(b.planHash ?? ""), String(b.phrase ?? ""));
       else if (url.pathname === '/api/launch/observe') {
         if(!['synthetic-sample','imported-observation'].includes(String(b.source))) return send(res,400,{ok:false,code:'source'});
-        r=launch.observe(b.observation,b.source as 'synthetic-sample'|'imported-observation');
+        r=launch.observe(b.observation,b.source as 'synthetic-sample'|'imported-observation',clientId);
       }
       else if (url.pathname === '/api/launch/pause'&&b.paused===false) r=launch.pause(false);
       else if (url.pathname === '/api/launch/pending-fixture') r=launch.fixturePending();
