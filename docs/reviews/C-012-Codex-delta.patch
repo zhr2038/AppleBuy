@@ -1,0 +1,658 @@
+diff --git a/test/checkout-chrome-port.test.ts b/test/checkout-chrome-port.test.ts
+new file mode 100644
+--- /dev/null
++++ b/test/checkout-chrome-port.test.ts
+@@ -0,0 +1,46 @@
++import test from 'node:test';
++import assert from 'node:assert/strict';
++import {readFileSync} from 'node:fs';
++import {ChromePort,allowedMerchantUrl} from '../web/checkout-connector/chrome-port.js';
++const plan={product:{model:'iPhone Duo',capacity:'256GB',color:'星光白色'},stores:['Apple 大连恒隆广场'],maxTotalCny:15999};
++const summary={date:'10月23日',start:'21:15',end:'21:30',verified:true},hash='a'.repeat(64);
++function harness(){
++  const h={url:'https://www.apple.com.cn/shop/bag',allowed:true,doc:'doc',calls:[],updates:[],raw:{schema:'applebuy-merchant-read/v1',phase:'BAG',purchase:{verified:true},dates:[],times:[]}};
++  const api={tabs:{async get(){return {url:h.url};},async update(id,data){h.updates.push(data);h.url=data.url;h.doc='detail';h.raw={...h.raw,phase:'ORDER_DETAIL',slotSummary:summary};}},permissions:{async contains(){return h.allowed;}},scripting:{async executeScript(x){h.calls.push(x);return [{frameId:0,documentId:h.doc,result:x.args.length===1?h.raw:{delivered:true}}];}}};
++  return {...h,api,h,port:new ChromePort(api,7,{authorized:true})};
++}
++test('executor grants are optional, contain no persistent host/content/background/debugger/cookie/network access',()=>{
++  const m=JSON.parse(readFileSync(new URL('../web/checkout-connector/manifest.json',import.meta.url),'utf8'));
++  assert.deepEqual(m.permissions,['scripting','storage','activeTab']);assert.deepEqual(m.optional_host_permissions,['https://www.apple.com.cn/*','https://*.www.apple.com.cn/*']);
++  for(const k of ['host_permissions','background','content_scripts','externally_connectable'])assert.equal(k in m,false);
++  assert.match(m.content_security_policy.extension_pages,/connect-src 'none'/);
++  const ui=readFileSync(new URL('../web/checkout-connector/control.js',import.meta.url),'utf8');assert.match(ui,/withPurchaseOwner\(navigator\.locks/);assert.match(ui,/storage\.session/);assert.doesNotMatch(ui,/storage\.local\.remove|\.clear\(/);
++});
++test('only current mainland public/bag/checkout/order routes are eligible; deceptive hosts and unrelated account pages are rejected',()=>{
++  for(const u of ['https://www.apple.com.cn/shop/buy-iphone/iphone-duo/mk2m4ch/a','https://secure6.www.apple.com.cn/shop/checkout','https://secure.www.apple.com.cn/shop/order/fixture','https://www.apple.com.cn/shop/order/fixture'])assert.equal(allowedMerchantUrl(u),true);
++  for(const u of ['http://www.apple.com.cn/shop/bag','https://www.apple.com.cn.bad.example/shop/bag','https://idmsa.apple.com/','https://www.apple.com.cn/account','https://www.apple.com.cn/shop/buy-iphone/iphone-18-pro-max','https://www.apple.com.cn/shop/payment'])assert.equal(allowedMerchantUrl(u),false);
++});
++test('no granted current origin means no script injection; authorization defaults false',async()=>{
++  const {h,port,api}=harness();h.allowed=false;await assert.rejects(port.observe(plan),/Permission/);assert.equal(h.calls.length,0);h.allowed=true;const p=new ChromePort(api,7);await p.observe(plan);await assert.rejects(p.act({documentId:'doc',plan,action:'checkout'}),/Authorized/);assert.equal(h.calls.length,1);
++});
++test('commands target exact observed documentId and ISOLATED world; changed reply document means unknown',async()=>{
++  const {h,port}=harness();await port.observe(plan);await port.act({documentId:'doc',plan,action:'checkout',id:'action',taskId:'task'});assert.deepEqual(h.calls[1].target,{tabId:7,documentIds:['doc']});assert.equal(h.calls[1].world,'ISOLATED');
++  await assert.rejects(port.act({documentId:'old',plan,action:'checkout'}),/Authorized/);h.doc='new';await assert.rejects(port.act({documentId:'doc',plan,action:'checkout'}),/Unknown/);
++});
++test('resume sequence and accepted slot reconciliation preserve the recorded pending selection',async()=>{
++  const {h,api}=harness();h.raw={...h.raw,phase:'DETAILS',verifiedStep:true};const p=new ChromePort(api,7,{initialSequence:12,pending:{action:'chooseSlot',...summary,generation:7}});const o=await p.observe(plan);assert.equal(o.seq,13);assert.equal(o.acceptedSlot.date,summary.date);assert.match(o.acceptedSlot.basis,/not a hold/);
++});
++test('private pickup data enters only detail action arguments, never observation or other mutation',async()=>{
++  const {h,api}=harness();const p=new ChromePort(api,7,{authorized:true,privatePickupData:{identitySuffix:'1234'}});await p.observe(plan);assert.equal(JSON.stringify(h.calls).includes('1234'),false);
++  await p.act({documentId:'doc',plan,action:'checkout'});assert.equal(JSON.stringify(h.calls[1]).includes('1234'),false);
++  await p.act({documentId:'doc',plan,action:'fillDetails'});assert.equal(h.calls[2].args[1].privatePickupData.identitySuffix,'1234');
++});
++test('independent unpaid lookup uses receipt-observed official link then requires merchant-displayed slot and exact hash',async()=>{
++  const {h,port}=harness();h.raw={...h.raw,phase:'ORDER_RECEIPT',receiptVerified:true,orderRefHash:hash,orderDetailLink:'https://www.apple.com.cn/shop/order/fixture'};port.wait=async()=>{};
++  const result=await port.lookupOrder(plan,hash);assert.equal(result.independent,true);assert.deepEqual(result.acceptedSlot,summary);assert.equal(h.updates.length,1);
++  h.raw.slotSummary=null;assert.equal((await port.lookupOrder(plan,hash)).independent,false);
++  h.raw.slotSummary=summary;assert.equal((await port.lookupOrder(plan,'b'.repeat(64))).independent,false);
++});
++test('unknown receipt, ungranted detail origin and missing link cannot reconstruct a lookup URL',async()=>{
++  const {h,port}=harness();h.raw={...h.raw,phase:'ORDER_RECEIPT',receiptVerified:true,orderRefHash:hash};assert.equal((await port.lookupOrder(plan,hash)).independent,false);assert.equal(h.updates.length,0);
++});
+diff --git a/test/checkout-job.test.ts b/test/checkout-job.test.ts
+new file mode 100644
+--- /dev/null
++++ b/test/checkout-job.test.ts
+@@ -0,0 +1,132 @@
++// Codex C-012 quota takeover. These are synthetic merchant contracts, NOT live Apple evidence.
++import test from 'node:test';
++import assert from 'node:assert/strict';
++import {PurchaseJob,TASK_KEY,validIntent,validStored} from '../web/checkout-connector/job.js';
++
++const plan={schema:'applebuy-intent/v1',product:{model:'iPhone Duo',capacity:'256GB',color:'星光白色'},quantity:1,maxTotalCny:15999,city:'大连',fulfillment:'pickup',stores:['Apple 大连恒隆广场'],dateRule:'initial-first-three-terminal',paymentMethod:'支付宝'};
++const purchase={itemVerified:true,verified:true,...plan.product,quantity:1,totalCny:15999,store:plan.stores[0],fulfillment:'pickup'};
++const slot={date:'10月23日',start:'21:15',end:'21:30',verified:true};
++const hash='a'.repeat(64),terms='https://www.apple.com.cn/shop/open/salespolicies';
++function read(phase,extra={}){return {schema:'applebuy-merchant-read/v1',documentId:'doc',phase,verifiedStep:true,continueAvailable:true,purchase:structuredClone(purchase),...extra};}
++function slots(extra={}){return read('SLOTS',{listComplete:true,generation:1,dates:['10月23日','10月24日','10月25日'].map((label,i)=>({label,ref:'date:'+i,enabled:true})),selectedDate:'10月23日',times:[{ref:'time:0',start:'09:00',end:'09:15',enabled:true},{ref:'time:1',start:'21:15',end:'21:30',enabled:true}],...extra});}
++function setup(initial,handler=(c,h)=>{},seed=null){
++  let time=100000,seq=seed?.lastRead??0,serial=0;
++  const store={row:seed,async get(k){assert.equal(k,TASK_KEY);return structuredClone(this.row);},async put(k,v){assert.equal(k,TASK_KEY);this.row=structuredClone(v);}};
++  const h={store,actions:[],current:initial,now:()=>time,advance:n=>{time+=n;}};
++  const port={async observe(){return {...structuredClone(h.current),seq:++seq};},async act(c){assert.equal(store.row.pending.id,c.id,'write-ahead precedes every send');h.actions.push(structuredClone(c));return await handler(c,h);},async lookupOrder(){return h.order??{state:'unknown',independent:false};},async wait(n){time+=n;}};
++  const job=new PurchaseJob({store,port,now:()=>time,id:()=>`id-${++serial}`,maxSteps:200});
++  Object.assign(h,{port,job,run:grant=>job.run(plan,{tabId:7,planDigest:'digest',grant})});return h;
++}
++function grant(h,extra={}){return {id:'grant',taskId:h.store.row.taskId,planDigest:'digest',documentId:'doc',termsUrl:terms,termsAccepted:true,existingOrdersChecked:true,noExtras:true,expiry:h.now()+120000,...extra};}
++function review(extra={}){return read('REVIEW',{paymentMethod:'支付宝',extras:false,existingOrdersChecked:true,slotSummary:slot,termsLinks:[terms],...extra});}
++function fullHandler(c,h){
++  if(c.action==='configureProduct')h.current=read('ENTRY',{needsSelection:[],selectedProductChoices:[c.choice]});
++  else if(c.action==='continueProduct')h.current=read('VARIANT',{variantVerified:true,quotedCny:15999});
++  else if(c.action==='addBag')h.current=read('ACCESSORIES');
++  else if(c.action==='viewBag')h.current=read('BAG',{purchase:{...purchase,verified:false,fulfillment:null,store:null}});
++  else if(c.action==='checkout')h.current=read('FULFILLMENT',{purchase:{...purchase,verified:false,fulfillment:null,store:null}});
++  else if(c.action==='selectPickup')h.current=read('FULFILLMENT',{purchase:{...purchase,verified:false,store:null}});
++  else if(c.action==='selectStore')h.current=slots();
++  else if(c.action==='selectDate')h.current=slots({generation:h.current.generation+1,selectedDate:c.date});
++  else if(c.action==='chooseSlot'){
++    if(h.actions.filter(x=>x.action==='chooseSlot').length<3)h.current=slots({generation:h.current.generation+1,selectedDate:c.date,feedback:{kind:'slot-refused',verified:true,ref:c.ref,generation:h.current.generation+1}});
++    else h.current=read('DETAILS',{acceptedSlot:{...slot,date:c.date}});
++  }else if(c.action==='fillDetails')h.current=read('PAYMENT',{paymentMethod:null});
++  else if(c.action==='selectPayment')h.current=read('PAYMENT',{paymentMethod:'支付宝'});
++  else if(c.action==='continuePayment')h.current=review({slotSummary:{...slot,date:'10月25日'}});
++  else if(c.action==='submitOrder'){
++    h.current=read('ORDER_RECEIPT',{receiptVerified:true,orderRefHash:hash});
++    h.order={state:'unpaid',independent:true,orderRefHash:hash,purchase,acceptedSlot:{...slot,date:'10月25日'}};
++  }
++  return {delivered:true};
++}
++test('full native-stage contract: configure, one bag, pickup/store, two fresh refusals, third terminal, details, Alipay, one independently matched unpaid order',async()=>{
++  const h=setup(read('ENTRY',{needsSelection:['星光白色']}),fullHandler);
++  const prepared=await h.run();assert.equal(prepared.state,'NEEDS_USER');assert.equal(prepared.refusals,2);
++  assert.deepEqual(h.actions.filter(x=>x.action==='chooseSlot').map(x=>[x.date,x.start]),[['10月23日','21:15'],['10月24日','21:15'],['10月25日','21:15']]);
++  assert.equal(h.actions.filter(x=>x.action==='addBag').length,1);assert.equal(h.actions.some(x=>x.action==='submitOrder'),false);
++  assert.equal((await h.run(grant(h))).state,'CONFIRMED_UNPAID');const n=h.actions.length;assert.equal((await h.run(grant(h))).state,'CONFIRMED_UNPAID');assert.equal(h.actions.length,n);
++  assert.equal(h.actions.filter(x=>x.action==='submitOrder').length,1);
++  assert.equal(h.actions.some(x=>['pay','submitPayment','paymentSubmit'].includes(x.action)),false);
++});
++test('advance terms and single-order permission allow ONE start from public configuration through independent unpaid confirmation',async()=>{
++  const h=setup(read('ENTRY',{needsSelection:['星光白色']}),fullHandler);
++  const g={id:'start',start:true,taskId:'prepared',planDigest:'digest',entryDocumentId:'doc',termsUrl:terms,termsAccepted:true,existingOrdersChecked:true,noExtras:true,expiry:h.now()+1200000};
++  const result=await h.job.run(plan,{tabId:7,planDigest:'digest',taskId:'prepared',grant:g});assert.equal(result.state,'CONFIRMED_UNPAID');assert.equal(h.actions.filter(x=>x.action==='submitOrder').length,1);assert.equal(h.actions.filter(x=>x.action==='chooseSlot').length,3);
++});
++test('advance permission bound to a replaced entry document, wrong task or expired grant blocks before any mutation',async()=>{
++  for(const delta of [{entryDocumentId:'old'},{taskId:'other'},{expiry:1},{noExtras:false}]){const h=setup(read('ENTRY',{needsSelection:['星光白色']}));const g={id:'start',start:true,taskId:'prepared',planDigest:'digest',entryDocumentId:'doc',termsUrl:terms,termsAccepted:true,existingOrdersChecked:true,noExtras:true,expiry:h.now()+1200000,...delta};assert.equal((await h.job.run(plan,{tabId:7,planDigest:'digest',taskId:'prepared',grant:g})).state,'BLOCKED');assert.equal(h.actions.length,0);}
++});
++test('bag reconciliation after lost reply never adds the item again, including restart',async()=>{
++  const h=setup(read('VARIANT',{variantVerified:true,quotedCny:15999}),(c,h)=>{if(c.action==='addBag'){h.current=read('BAG',{purchase:{...purchase,verified:false,store:null,fulfillment:null}});throw Error('lost');}h.current=read('AUTH');});
++  assert.equal((await h.run()).state,'NEEDS_VERIFICATION');assert.equal(h.store.row.pending.action,'addBag');
++  const resumed=setup(h.current,(c,h)=>{h.current=read('AUTH');},h.store.row);await resumed.run();
++  assert.deepEqual(resumed.actions.map(x=>x.action),['checkout']);assert.equal(h.actions.filter(x=>x.action==='addBag').length,1);
++});
++test('slot processing is awaited, not interpreted as a refusal or sent twice',async()=>{
++  const h=setup(slots(),(c,h)=>{h.current=read('PROCESSING');});let waits=0;
++  h.port.wait=async n=>{h.advance(n);if(++waits===3)h.current=read('DETAILS',{acceptedSlot:slot});};
++  h.port.act=async c=>{h.actions.push(c);h.current=c.action==='chooseSlot'?read('PROCESSING'):read('AUTH');return {delivered:true};};
++  await h.run();assert.equal(h.actions.filter(x=>x.action==='chooseSlot').length,1);assert.equal(h.store.row.refusals,0);assert.equal(h.actions.filter(x=>x.action==='fillDetails').length,1);
++});
++test('unverified alert and unchanged list never authorize slot reselection',async()=>{
++  const h=setup(slots(),(c,h)=>{h.current=slots({feedback:{kind:'slot-refused',ref:c.ref,generation:2,verified:false}});});
++  assert.equal((await h.run()).state,'NEEDS_VERIFICATION');assert.equal(h.actions.length,1);assert.equal(h.store.row.refusals,0);
++});
++test('same-generation refusal cannot authorize a second choice',async()=>{
++  const h=setup(slots(),(c,h)=>{h.current=slots({feedback:{kind:'slot-refused',ref:c.ref,generation:1,verified:true}});});await h.run();assert.equal(h.actions.length,1);assert.equal(h.store.row.refusals,0);
++});
++test('disabled terminal advances a date; removing a previously observed terminal cannot allow an earlier slot after restart',async()=>{
++  const h=setup(slots({times:[{ref:'time:0',start:'09:00',end:'09:15',enabled:true},{ref:'time:1',start:'21:15',end:'21:30',enabled:false}]}),(c,h)=>{h.current=read('AUTH');});await h.run();assert.equal(h.actions[0].action,'selectDate');assert.equal(h.actions[0].date,'10月24日');
++  h.store.row.dateCursor=0;h.store.row.pending=null;
++  const r=setup(slots({generation:4,times:[{ref:'time:0',start:'09:00',end:'09:15',enabled:true}]}),(c,h)=>{h.current=read('AUTH');},h.store.row);await r.run();assert.equal(r.actions[0].action,'selectDate');assert.equal(r.actions[0].date,'10月24日');
++});
++test('initial offered date set stays frozen; disappearance cannot silently roll to a fourth day',async()=>{
++  const h=setup(slots(),(c,h)=>{throw Error('loss');});await h.run();h.store.row.pending=null;h.store.row.dateCursor=2;
++  const r=setup(slots({dates:['10月24日','10月26日'].map((label,i)=>({label,ref:'date:'+i,enabled:true})),selectedDate:'10月24日'}),()=>{},h.store.row);
++  assert.equal((await r.run()).state,'EXHAUSTED');assert.equal(r.actions.length,0);assert.deepEqual(r.store.row.initialDates,['10月23日','10月24日','10月25日']);
++});
++test('one final write-ahead intent survives lost reply and independently reconciles, no repeat after restart',async()=>{
++  const h=setup(review(),(c,h)=>{h.current=read('ORDER_RECEIPT',{receiptVerified:true,orderRefHash:hash});throw Error('lost');});await h.store.put(TASK_KEY,{...(await setup(slots(),()=>{}).run()),pending:null,acceptedSlot:slot,lastPhase:'REVIEW',lastRead:0,tabId:7,planDigest:'digest'});
++  await h.run(grant(h));assert.equal(h.actions.length,1);assert.equal(h.store.row.finalIntent.sent,true);
++  const r=setup(h.current,()=>{throw Error('must not resend');},h.store.row);r.order={state:'unpaid',independent:true,orderRefHash:hash,purchase,acceptedSlot:slot};
++  assert.equal((await r.run()).state,'CONFIRMED_UNPAID');assert.equal(r.actions.length,0);
++});
++test('unknown final, wrong order identity, paid state, wrong pickup or non-independent lookup preserve intent without another submission',async()=>{
++  for(const change of [{},{orderRefHash:'b'.repeat(64)},{state:'paid'},{acceptedSlot:{...slot,start:'09:00'}},{independent:false},{purchase:{...purchase,quantity:2}}]){
++    const h=setup(review(),(c,h)=>{h.current=read('ORDER_RECEIPT',{receiptVerified:true,orderRefHash:hash});});
++    const seed=await setup(slots(),()=>{throw Error();}).run();Object.assign(seed,{pending:null,acceptedSlot:slot,lastRead:0});await h.store.put(TASK_KEY,seed);
++    h.order=Object.keys(change).length?{state:'unpaid',independent:true,orderRefHash:hash,purchase,acceptedSlot:slot,...change}:{state:'unknown'};
++    assert.equal((await h.run(grant(h))).state,'NEEDS_VERIFICATION');await h.run(grant(h));assert.equal(h.actions.length,1);assert.equal(h.store.row.finalIntent.sent,true);
++  }
++});
++test('final grant must bind the actual document, terms link, plan and short expiry',async()=>{
++  for(const delta of [{expiry:1},{expiry:99999999},{documentId:'stale'},{planDigest:'other'},{termsUrl:'https://example.org'},{termsAccepted:false}]){
++    const h=setup(review());const seed=await setup(slots(),()=>{throw Error();}).run();Object.assign(seed,{pending:null,acceptedSlot:slot,lastRead:0});await h.store.put(TASK_KEY,seed);
++    assert.equal((await h.run(grant(h,delta))).state,'NEEDS_USER');assert.equal(h.actions.length,0);
++  }
++});
++test('final review rejects shifted slot and missing human existing-order/no-extras checks',async()=>{
++  for(const delta of [{slotSummary:{...slot,start:'09:00'}},{slotSummary:null},{existingOrdersChecked:false},{extras:null},{paymentMethod:'银行卡'}]){
++    const h=setup(review(delta));const seed=await setup(slots(),()=>{throw Error();}).run();Object.assign(seed,{pending:null,acceptedSlot:slot,lastRead:0});await h.store.put(TASK_KEY,seed);assert.equal((await h.run(grant(h))).state,'BLOCKED');assert.equal(h.actions.length,0);
++  }
++});
++test('wrong product, quantity, price or store never advances checkout',async()=>{
++  for(const change of [{model:'iPhone 18 Pro'},{quantity:2},{totalCny:16000},{store:'Apple 北京'}, {fulfillment:'shipping'},{verified:false}]){const h=setup(slots({purchase:{...purchase,...change}}));assert.equal((await h.run()).state,'BLOCKED');assert.equal(h.actions.length,0);}
++});
++test('stale or duplicate observations never advance',async()=>{const h=setup(slots());h.port.observe=async()=>({...slots(),seq:0});assert.equal((await h.run()).state,'NEEDS_VERIFICATION');assert.equal(h.actions.length,0);});
++test('disabled public Continue causes no prepared mutation and is not called out of stock',async()=>{const h=setup(read('ENTRY',{needsSelection:[],continueAvailable:false}));const s=await h.run();assert.equal(s.state,'NOT_READY');assert.equal(s.pending,null);assert.equal(h.actions.length,0);assert.match(s.reason,/availability not established/);});
++test('human authentication, consent, challenge, throttle, query unknown and prelaunch are distinct non-mutating gates',async()=>{
++  for(const phase of ['AUTH','CONSENT','CHALLENGE','THROTTLE','UNKNOWN','PRELAUNCH']){const h=setup(read(phase));const s=await h.run();assert.equal(h.actions.length,0);assert.equal(s.state,phase==='PRELAUNCH'?'NOT_RELEASED':'NEEDS_USER');}
++});
++test('plan or tab rebinding, expired task and corrupt persistence do not reset unknown history',async()=>{
++  const h=setup(slots(),()=>{throw Error('lost');});await h.run();const before=structuredClone(h.store.row);
++  assert.equal((await h.job.run(plan,{tabId:8,planDigest:'digest'})).state,'BLOCKED');assert.deepEqual(h.store.row.pending,before.pending);
++  h.advance(1800001);assert.equal((await h.run()).state,'EXPIRED');assert.equal(h.actions.length,1);
++  h.store.row.floors={date:'bad'};assert.equal(validStored(h.store.row),false);await assert.rejects(h.run(),/Corrupt/);
++  assert.equal(validIntent({...plan,quantity:2}),false);assert.equal(validIntent({...plan,city:'北京'}),false);
++});
++test('write-ahead storage failure means no send; pause arriving during storage also prevents send',async()=>{
++  const h=setup(slots());h.store.put=async(k,v)=>{if(v.pending)throw Error('disk');h.store.row=v;};await assert.rejects(h.run(),/disk/);assert.equal(h.actions.length,0);
++  const p=setup(slots());const put=p.store.put.bind(p.store);p.store.put=async(k,v)=>{await put(k,v);if(v.pending)p.job.pause();};assert.equal((await p.run()).state,'PAUSED');assert.equal(p.actions.length,0);assert.equal(p.store.row.pending.action,'chooseSlot');
++});
+diff --git a/test/checkout-owner.test.ts b/test/checkout-owner.test.ts
+new file mode 100644
+--- /dev/null
++++ b/test/checkout-owner.test.ts
+@@ -0,0 +1,10 @@
++import test from 'node:test';
++import assert from 'node:assert/strict';
++import {withPurchaseOwner} from '../web/checkout-connector/owner.js';
++test('two control pages contending through the real Web Locks API cannot advance concurrently',async()=>{
++  let release,started;const ready=new Promise(r=>{started=r;}),hold=new Promise(r=>{release=r;});let sends=0;
++  const first=withPurchaseOwner(navigator.locks,async()=>{sends++;started();await hold;return 'first';});await ready;
++  const second=await withPurchaseOwner(navigator.locks,async()=>{sends++;return 'second';});assert.equal(second.owned,false);assert.equal(sends,1);
++  release();assert.deepEqual(await first,{owned:true,result:'first'});assert.equal((await withPurchaseOwner(navigator.locks,async()=> 'next')).owned,true);
++});
++test('missing exclusive owner is a blocker, never a fallback to unlocked execution',async()=>{let sent=false;await assert.rejects(withPurchaseOwner(null,async()=>{sent=true;}),/Unavailable/);assert.equal(sent,false);});
+diff --git a/test/checkout-page-program.test.ts b/test/checkout-page-program.test.ts
+new file mode 100644
+--- /dev/null
++++ b/test/checkout-page-program.test.ts
+@@ -0,0 +1,72 @@
++// Minimal synthetic DOM contract. It does not claim current Apple structure compatibility.
++import test from 'node:test';
++import assert from 'node:assert/strict';
++import vm from 'node:vm';
++import {webcrypto} from 'node:crypto';
++import {merchantDocument} from '../web/checkout-connector/page-program.js';
++const plan={product:{model:'iPhone Duo',capacity:'256GB',color:'星光白色'},stores:['Apple 大连恒隆广场'],maxTotalCny:15999};
++class Element{
++  constructor(text,attrs={}){this.textContent=text;this.attrs=attrs;this.isConnected=true;this.parentElement=null;this.hidden=false;this.disabled=false;this.checked=false;this.labels=[];this.clicks=0;this.tagName='DIV';this.options=[];}
++  getAttribute(k){return this.attrs[k]??null;}hasAttribute(k){return Object.hasOwn(this.attrs,k);}closest(){return null;}
++  click(){this.clicks++;if(this.tagName==='INPUT')this.checked=true;this.onClick?.();}dispatchEvent(e){this.onEvent?.(e);return true;}
++  get selectedOptions(){return this.options.filter((o,i)=>o.selected||i===this.selectedIndex);}checkValidity(){return true;}
++}
++class Input extends Element{set value(v){this._value=v;}get value(){return this._value??'';}}
++const el=(text,tag='DIV')=>Object.assign(new Element(text),{tagName:tag});
++function fixture({url='https://secure6.www.apple.com.cn/shop/checkout',texts=[],buttons=[],radios=[],selects=[],inputs=[],links=[],title='购买 iPhone Duo',auth=false,busy=false}={}){
++  const btn=buttons.map(t=>el(t,'BUTTON')),rs=radios.map(([text,checked])=>Object.assign(el(text,'INPUT'),{checked})),nodes=texts.map(t=>el(t));const h1=el(title,'H1');
++  const main=el('');main.querySelector=s=>s==='h1'?h1:s.includes('password')&&auth?el(''):s==='[aria-busy="true"]'&&busy?el(''):null;
++  main.querySelectorAll=s=>s.startsWith('button')?btn:s.startsWith('input[type="radio"]')?rs:s==='select'?selects:s==='h1,h2,h3,p,span,div'?[h1,...nodes]:s==='input'?inputs:s==='input[required]'?inputs.filter(i=>i.required):s==='a[href]'?links:[];
++  const document={querySelector:()=>main,querySelectorAll:s=>s==='a[href]'?links:[]};
++  const context=vm.createContext({location:{href:url},document,URL,TextEncoder,crypto:webcrypto,Date,HTMLInputElement:Input,Event:class{constructor(type){this.type=type;}},getComputedStyle:e=>({display:e.hidden?'none':'block',visibility:'visible'})});
++  const fn=vm.runInContext('('+merchantDocument.toString()+')',context);
++  let serial=0;return {fn,btn,rs,nodes,async read(){return await fn(plan);},async act(action,extra={}){const out=await fn(plan);return await fn(plan,{id:'action-'+(++serial),taskId:'task',authorized:true,expected:JSON.stringify(out),action,...extra});}};
++}
++const matching=['iPhone Duo 256GB 星光白色','数量：1','总计：RMB 15,999','取货地点：Apple 大连恒隆广场','店内取货'];
++function times(disabled=false){const s=el('可选时段','SELECT');s.options=[el('可选时段','OPTION'),el('09:00 - 09:15','OPTION'),Object.assign(el('21:15 - 21:30','OPTION'),{disabled})];s.selectedIndex=0;return s;}
++test('serialization is self-contained; unsupported domain exits before DOM access',async()=>{
++  const f=fixture({url:'https://example.org/shop/checkout'});const o=await f.read();assert.equal(o.phase,'UNKNOWN');assert.equal(o.reason,'unsupported-official-url');
++  for(const pattern of [/document\.cookie/,/localStorage/,/sessionStorage/,/fetch\(/,/XMLHttpRequest/,/chrome\./])assert.equal(pattern.test(merchantDocument.toString()),false);
++});
++test('bag is recognized with item proof before selecting pickup; no early store requirement',async()=>{
++  const f=fixture({url:'https://www.apple.com.cn/shop/bag',texts:matching.slice(0,3),buttons:['安全结账']});const o=await f.read();assert.equal(o.phase,'BAG');assert.equal(o.purchase.itemVerified,true);assert.equal(o.purchase.verified,false);await f.act('checkout');assert.equal(f.btn[0].clicks,1);
++});
++test('delivery choice and exact allowed store are normal UI actions, never a shipping continuation',async()=>{
++  const f=fixture({texts:matching.slice(0,3),radios:[['我要取货',false],['Apple 大连恒隆广场',false]]});await f.act('selectPickup');assert.equal(f.rs[0].clicks,1);await f.act('selectStore',{store:'Apple 大连恒隆广场'});assert.equal(f.rs[1].clicks,1);
++});
++test('native full time capture includes disabled terminal; selection is one change and one continuation',async()=>{
++  const s=times();const f=fixture({texts:matching,buttons:['继续填写取货详情'],radios:[['10月23日',true],['10月24日',false],['10月25日',false]],selects:[s]});const o=await f.read();assert.equal(o.listComplete,true);assert.equal(o.times[1].start,'21:15');assert.equal(o.feedback,null);
++  await f.act('chooseSlot',{ref:'time:2',date:'10月23日',start:'21:15',end:'21:30'});assert.equal(s.selectedIndex,2);assert.equal(f.btn[0].clicks,1);
++  const d=times(true);const fd=fixture({texts:matching,buttons:['继续填写取货详情'],radios:[['10月23日',true]],selects:[d]});assert.equal((await fd.read()).times[1].enabled,false);await assert.rejects(fd.act('chooseSlot',{ref:'time:2',date:'10月23日',start:'21:15',end:'21:30'}),/Changed/);
++});
++test('redrawn time selector stops before continuation; duplicate command and stale expected evidence cannot click',async()=>{
++  const s=times();s.onEvent=()=>{s.isConnected=false;};const f=fixture({texts:matching,buttons:['继续填写取货详情'],radios:[['10月23日',true]],selects:[s]});await assert.rejects(f.act('chooseSlot',{ref:'time:2',date:'10月23日',start:'21:15',end:'21:30'}),/Redrawn/);assert.equal(f.btn[0].clicks,0);
++  const b=fixture({url:'https://www.apple.com.cn/shop/bag',texts:matching,buttons:['安全结账']});const o=await b.read();await b.act('checkout',{id:'fixed'});await assert.rejects(b.act('checkout',{id:'fixed'}),/AlreadyDelivered/);assert.equal(b.btn[0].clicks,1);
++  await assert.rejects(b.fn(plan,{id:'new',taskId:'task',authorized:true,expected:JSON.stringify({...o,phase:'other'}),action:'checkout'}),/Changed/);
++});
++test('multiple quantity controls, different variant and unlabelled store prose never create full purchase proof',async()=>{
++  for(const texts of [[...matching,'iPhone 18 Pro 256GB 黑色'],matching.map(t=>t.startsWith('取货地点')?'附近有 Apple 大连恒隆广场':t),matching.map(t=>t==='数量：1'?'数量：2':t)]){assert.equal((await fixture({texts,buttons:['立即下单']}).read()).purchase.verified,false);}
++  const q1=el('数量','SELECT'),q2=el('数量','SELECT');q1.options=[Object.assign(el('1','OPTION'),{selected:true})];q2.options=[Object.assign(el('1','OPTION'),{selected:true})];assert.equal((await fixture({texts:matching,selects:[q1,q2],buttons:['立即下单']}).read()).purchase.verified,false);
++});
++test('Pro model choice never resolves to Pro Max, even when both are visible',async()=>{
++  const p={...plan,product:{model:'iPhone 18 Pro',capacity:'256GB',color:'黑色'}};const f=fixture({url:'https://www.apple.com.cn/shop/buy-iphone/iphone-18-pro',title:'购买 iPhone 18 Pro',radios:[['iPhone 18 Pro',false],['iPhone 18 Pro Max',false],['黑色',true],['256GB RMB 9,999',true]]});const o=await f.fn(p);await f.fn(p,{id:'a',taskId:'t',authorized:true,expected:JSON.stringify(o),action:'configureProduct',choice:'iPhone 18 Pro'});assert.equal(f.rs[0].clicks,1);assert.equal(f.rs[1].clicks,0);
++});
++test('authentication and processing remain distinct; arbitrary alerts never become verified rejection',async()=>{
++  assert.equal((await fixture({auth:true}).read()).phase,'AUTH');assert.equal((await fixture({busy:true}).read()).phase,'PROCESSING');assert.equal((await fixture({texts:['选定时间不可用，请重试'],buttons:['继续填写取货详情']}).read()).feedback,null);
++});
++test('current public Duo approval/prelaunch text and disabled Continue block actions; footer sales policy is the actual advance-terms link',async()=>{
++  const a=el('销售政策','A');a.href='https://www.apple.com.cn/shop/open/salespolicies';const other=el('分期付款条款','A');other.href='https://www.apple.com.cn/shop/browse/finance/terms';
++  const f=fixture({url:'https://www.apple.com.cn/shop/buy-iphone/iphone-duo/mk2m4ch/a',texts:['机型将在获得批准后发售'],buttons:['继续'],radios:[['星光白色',true],['256GB RMB 15,999',true]],links:[a,other]});f.btn[0].disabled=true;
++  const o=await f.read();assert.equal(o.phase,'PRELAUNCH');assert.deepEqual(Array.from(o.termsLinks),[a.href]);await assert.rejects(f.act('continueProduct'),/NotRecognized/);assert.equal(f.btn[0].clicks,0);
++});
++test('an unpaid order-list row and list link never masquerade as an independent detail receipt',async()=>{
++  const a=el('查看订单详情','A');a.href='https://secure.www.apple.com.cn/shop/order/list/';const f=fixture({url:'https://secure.www.apple.com.cn/shop/order/list',texts:[...matching,'等待付款','订单编号：FIXTURE42'],links:[a]});const o=await f.read();assert.equal(o.phase,'UNKNOWN');assert.equal(o.receiptVerified,false);assert.equal(o.orderDetailLink,null);
++});
++test('detail values stay out of observation; all labels bind before first write and required invalid fields stop continuation',async()=>{
++  const i=new Input('');i.attrs={'aria-label':'身份证件号码最后4位'};const f=fixture({texts:matching,buttons:['继续选择付款方式'],inputs:[i]});await f.act('fillDetails',{privatePickupData:{identitySuffix:'1234'}});assert.equal(i.value,'1234');assert.equal(f.btn[0].clicks,1);assert.equal(JSON.stringify(await f.read()).includes('1234'),false);
++  const j=new Input('');j.attrs={'aria-label':'身份证件号码最后4位'};const bad=fixture({texts:matching,buttons:['继续选择付款方式'],inputs:[j]});await assert.rejects(bad.act('fillDetails',{privatePickupData:{identitySuffix:'1234',phone:'13800000000'}}),/ContractUnrecognized/);assert.equal(j.value,'');assert.equal(bad.btn[0].clicks,0);
++  const required=new Input('');required.required=true;required.checkValidity=()=>false;const inv=fixture({texts:matching,buttons:['继续选择付款方式'],inputs:[required]});await assert.rejects(inv.act('fillDetails'),/RequireHuman/);assert.equal(inv.btn[0].clicks,0);
++});
++test('receipt exposes only hashed order identity, independent detail link and current merchant slot fields',async()=>{
++  const a=el('查看订单详情','A');a.href='https://secure6.www.apple.com.cn/shop/order/FIXTURE42';const f=fixture({texts:[...matching,'等待付款','订单编号：FIXTURE42','取货日期：10月23日','取货时间：21:15 - 21:30'],links:[a]});const o=await f.read();assert.equal(o.receiptVerified,true);assert.equal(o.orderRefHash.length,64);assert.equal(o.orderRefHash.includes('FIXTURE42'),false);assert.equal(o.slotSummary.date,'10月23日');assert.equal(o.orderDetailLink,a.href);
++});
+diff --git a/web/checkout-connector/chrome-port.js b/web/checkout-connector/chrome-port.js
+new file mode 100644
+--- /dev/null
++++ b/web/checkout-connector/chrome-port.js
+@@ -0,0 +1,35 @@
++import {merchantDocument} from './page-program.js';
++export function allowedMerchantUrl(raw){try{const u=new URL(raw);return u.protocol==='https:'&&(u.hostname==='www.apple.com.cn'||/^secure(?:\d+)?\.www\.apple\.com\.cn$/.test(u.hostname))&&/^\/shop\/(?:buy-iphone\/(?:iphone-18-pro|iphone-duo)(?:\/[^/]+\/a)?|bag|checkout|order(?:\/[^?#]*)?|signIn)(?:\/)?$/.test(u.pathname);}catch{return false;}}
++export class ChromePort {
++  constructor(api,tabId,{authorized=false,privatePickupData={},initialSequence=0,acceptedSlot=null,pending=null,reviewGrant=null}={}){this.api=api;this.tabId=tabId;this.authorized=authorized;this.seq=initialSequence;this.generation=pending?.generation??0;this.last=null;this.privatePickupData=privatePickupData;this.acceptedSlot=acceptedSlot;this.reviewGrant=reviewGrant;this.lastChoice=pending?.action==='chooseSlot'?{date:pending.date,start:pending.start,end:pending.end}:null;}
++  async permission(){const t=await this.api.tabs.get(this.tabId);if(!allowedMerchantUrl(t.url))throw new Error('UnsupportedMerchantPage');const u=new URL(t.url);return await this.api.permissions.contains({origins:[u.origin+'/*']});}
++  async observe(plan){
++    if(!await this.permission())throw new Error('CurrentHostPermissionMissing');
++    const r=await this.api.scripting.executeScript({target:{tabId:this.tabId,frameIds:[0]},world:'ISOLATED',func:merchantDocument,args:[plan]});
++    if(r.length!==1||r[0].frameId!==0||!r[0].documentId||r[0].error||!r[0].result)throw new Error('CurrentDocumentUnrecognized');
++    const raw=r[0].result;const fingerprint=JSON.stringify([raw.dates,raw.times,raw.selectedDate]);if(!this.last||fingerprint!==this.last.fingerprint)this.generation++;
++    this.last={raw:structuredClone(raw),fingerprint,documentId:r[0].documentId};
++    if(this.lastChoice&&['DETAILS','PAYMENT','REVIEW'].includes(raw.phase)&&raw.verifiedStep&&raw.purchase?.verified){this.acceptedSlot={date:this.lastChoice.date,start:this.lastChoice.start,end:this.lastChoice.end,verified:true,basis:'normal-checkout-progression; not a hold guarantee'};this.lastChoice=null;}
++    const humanReview=this.reviewGrant?.expiry>Date.now()&&(this.reviewGrant.documentId===r[0].documentId||(this.reviewGrant.start===true&&raw.termsLinks?.includes(this.reviewGrant.termsUrl)));
++    return {...raw,acceptedSlot:this.acceptedSlot,extras:humanReview&&this.reviewGrant.noExtras?false:raw.extras,existingOrdersChecked:humanReview&&this.reviewGrant.existingOrdersChecked===true,documentId:r[0].documentId,seq:++this.seq,generation:this.generation};
++  }
++  async act(command){
++    if(!this.authorized||!this.last||command.documentId!==this.last.documentId||!await this.permission())throw new Error('CurrentOperationNotAuthorized');
++    if(command.action==='chooseSlot')this.lastChoice={date:command.date,start:command.start,end:command.end};
++    const r=await this.api.scripting.executeScript({target:{tabId:this.tabId,documentIds:[command.documentId]},world:'ISOLATED',func:merchantDocument,args:[command.plan,{...command,privatePickupData:command.action==='fillDetails'?this.privatePickupData:undefined,authorized:true,expected:JSON.stringify(this.last.raw)}]});
++    if(r.length!==1||r[0].documentId!==command.documentId||r[0].error||r[0].result?.delivered!==true)throw new Error('MutationResultUnknown');return r[0].result;
++  }
++  async lookupOrder(plan,expectedRef){
++    let o=await this.observe(plan);
++    if(o.phase==='ORDER_RECEIPT'&&expectedRef&&o.orderRefHash===expectedRef&&o.receiptVerified&&o.orderDetailLink){
++      // Navigate ONLY the link observed in this exact receipt. No reconstructed order/account endpoint.
++      const link=new URL(o.orderDetailLink);if(!allowedMerchantUrl(link.href)||!await this.api.permissions.contains({origins:[link.origin+'/*']}))return {state:'unknown',independent:false};
++      await this.api.tabs.update(this.tabId,{url:link.href});
++      for(let n=0;n<40;n++){await this.wait(50);o=await this.observe(plan);if(o.phase!=='ORDER_RECEIPT'&&o.phase!=='PROCESSING')break;}
++    }
++    if(o.phase!=='ORDER_DETAIL'||!expectedRef||o.orderRefHash!==expectedRef||!o.purchase?.verified||!o.slotSummary?.verified)return {state:'unknown',independent:false};
++    // An actual separately opened detail route, exact hashed receipt identity, current fields and unpaid state.
++    return {state:'unpaid',independent:true,orderRefHash:o.orderRefHash,purchase:o.purchase,acceptedSlot:o.slotSummary};
++  }
++  async wait(ms){await new Promise(r=>setTimeout(r,ms));}
++}
+diff --git a/web/checkout-connector/control.html b/web/checkout-connector/control.html
+new file mode 100644
+--- /dev/null
++++ b/web/checkout-connector/control.html
+@@ -0,0 +1,13 @@
++<!doctype html><html lang="zh-CN"><meta charset="utf-8"><title>AppleBuy 官网执行器候选</title><body><main>
++<h1>官网购买执行器候选</h1><p>使用你现有的 Chrome。当前代码仍待 Claude 复审、安装和官网联调；取货资料、官方拒绝反馈及最终订单核实尚未验证，遇到这些步骤会停下。</p>
++<label>商品<select id="product"><option value="duo">iPhone Duo 256GB 星光白色，上限 ¥15,999</option><option value="pro">iPhone 18 Pro 256GB 黑色，上限 ¥9,999</option></select></label>
++<p>一台 · Apple 大连恒隆广场 · 仅到店自提 · 首次提供的前三个日期依次选每天末档 · 支付宝 · 不添加额外商品</p>
++<button id="find">读取当前官网标签页</button><select id="tab" aria-label="官网标签页"></select>
++<button id="permission">允许读取和操作所选官网主机</button><button id="prepare">只读预检与读取当前条款</button><p>主机授权由 Chrome 保存，可在扩展设置撤销；跨官网主机需另行允许。</p>
++<details><summary>提前填写自提资料（仅本次 Chrome 会话保存）</summary><p>不填写账号密码。官网已有资料可留空；字段不能确认时会停下。</p>
++<label>名字<input id="firstName" autocomplete="off"></label><label>姓氏<input id="lastName" autocomplete="off"></label><label>手机号码<input id="phone" autocomplete="off"></label><label>电子邮件<input id="email" autocomplete="off"></label><label>证件后四位<input id="identitySuffix" maxlength="4" autocomplete="off"></label><button id="savePrivate">仅本次会话记住这些自提资料</button></details>
++<label><input id="approve" type="checkbox">本次允许按上述条件推进结账；遇到登录、条款或订单核实需本人处理</label>
++<p><a id="terms" target="_blank" rel="noopener">当前官网条款（先点只读预检）</a></p><label><input id="finalReview" type="checkbox">我已核对没有同款待付款订单、不添加额外商品，并接受当前官网条款；本次只创建这一张未付款订单，不支付</label>
++<p>完成预检并确认后，一次开始即可自动推进至提交、查单。没有提前确认时只推进到订单复核。登录、验证和无法确认的官网反馈仍需本人处理。</p>
++<button id="start">一键开始本次官网购买</button><button id="pause">暂停</button><button id="resume">恢复本任务</button><button id="stop">停止</button><button id="final" disabled>复核页确认后自动提交并查单</button>
++<p role="status" id="state">尚未运行。开发授权不能代替一次真实购买授权。</p><script type="module" src="control.js"></script></main></body></html>
+diff --git a/web/checkout-connector/control.js b/web/checkout-connector/control.js
+new file mode 100644
+--- /dev/null
++++ b/web/checkout-connector/control.js
+@@ -0,0 +1,31 @@
++import {PurchaseJob,TASK_KEY} from './job.js';
++import {ChromePort,allowedMerchantUrl} from './chrome-port.js';
++import {withPurchaseOwner} from './owner.js';
++const $=id=>document.getElementById(id);let job=null;
++const store={async get(k){return (await chrome.storage.local.get(k))[k]??null;},async put(k,v){await chrome.storage.local.set({[k]:v});}};
++const status=s=>{$('state').textContent=s;};
++const plan=()=>({schema:'applebuy-intent/v1',product:$('product').value==='duo'?{model:'iPhone Duo',capacity:'256GB',color:'星光白色'}:{model:'iPhone 18 Pro',capacity:'256GB',color:'黑色'},quantity:1,maxTotalCny:$('product').value==='duo'?15999:9999,city:'大连',fulfillment:'pickup',stores:['Apple 大连恒隆广场'],dateRule:'initial-first-three-terminal',paymentMethod:'支付宝'});
++$('find').onclick=async()=>{const tabs=(await chrome.tabs.query({})).filter(t=>allowedMerchantUrl(t.url));$('tab').replaceChildren(...tabs.map(t=>{const o=document.createElement('option');o.value=t.id;o.textContent=`${new URL(t.url).hostname} · 标签页 ${t.id}`;return o;}));status(tabs.length?'请选择唯一的官网标签页':'没有可访问的官网标签页；先本人打开官网');};
++$('permission').onclick=async()=>{try{const t=await chrome.tabs.get(Number($('tab').value));if(!allowedMerchantUrl(t.url))throw new Error();const ok=await chrome.permissions.request({origins:[new URL(t.url).origin+'/*']});status(ok?'该官网主机访问已允许；页面跨主机后需本人另行确认':'访问未允许');}catch{status('当前标签页或权限不可用');}};
++let finalGrant=null,activeGrant=null,prepared=null;
++async function digestPlan(p){const bytes=new TextEncoder().encode(JSON.stringify(p));return [...new Uint8Array(await crypto.subtle.digest('SHA-256',bytes))].map(b=>b.toString(16).padStart(2,'0')).join('');}
++$('prepare').onclick=async()=>{try{const p=plan(),tabId=Number($('tab').value),digest=await digestPlan(p),previous=await store.get(TASK_KEY),port=new ChromePort(chrome,tabId,{initialSequence:previous?.lastRead??0});const o=await port.observe(p);if(!o.termsLinks?.length){prepared=null;status('该页面未识别当前商店条款；可推进到官网复核页后再确认');return;}prepared={taskId:previous?.taskId??crypto.randomUUID(),planDigest:digest,tabId,entryDocumentId:previous?.entryDocumentId??o.documentId,termsUrl:o.termsLinks[0]};$('terms').href=prepared.termsUrl;status('只读预检完成。核对购买条件和条款后可一键开始；尚未提交任何购买动作');}catch{prepared=null;status('预检未完成；请核实当前标签页和主机授权');}};
++$('savePrivate').onclick=async()=>{const v={};for(const k of ['firstName','lastName','phone','email','identitySuffix'])if($(k).value)v[k]=$(k).value;if(v.identitySuffix&&!/^\d{4}$/.test(v.identitySuffix)){status('证件后四位格式不正确');return;}await chrome.storage.session.set({applebuyPickupSession:v});status('自提资料已仅保留在本次 Chrome 会话，不进入购买记录或日志');};
++async function run(starting=false){
++  if(!$('approve').checked){status('需要本人明确允许本次结账推进；历史授权不能复用');return;}
++  if(!navigator.locks){status('浏览器缺少执行互斥能力，无法安全运行');return;}
++  const ownership=await withPurchaseOwner(navigator.locks,async()=>{
++    const p=plan(),tabId=Number($('tab').value),digest=await digestPlan(p);
++    if(starting){activeGrant=null;if($('finalReview').checked){if(!prepared||prepared.planDigest!==digest||prepared.tabId!==tabId){status('一键购买前需重新只读预检；当前购买条件已变化或尚未预检');return;}activeGrant={...prepared,id:crypto.randomUUID(),start:true,termsAccepted:true,existingOrdersChecked:true,noExtras:true,expiry:Date.now()+1200000};}}
++    const useGrant=finalGrant??activeGrant;
++    const previous=await store.get(TASK_KEY),privatePickupData=(await chrome.storage.session.get('applebuyPickupSession')).applebuyPickupSession??{};
++    const port=new ChromePort(chrome,tabId,{authorized:true,initialSequence:previous?.lastRead??0,acceptedSlot:previous?.acceptedSlot??null,pending:previous?.pending??null,privatePickupData,reviewGrant:useGrant});
++    job=new PurchaseJob({store,port,maxSteps:300,onState:s=>status(`状态：${s.state}；页面：${s.phase??'尚未读取'}；${s.reason??''}`)});
++    try{const result=await job.run(p,{tabId,planDigest:digest,grant:useGrant,taskId:useGrant?.taskId??null});$('final').disabled=result.lastPhase!=='REVIEW'||result.finalIntent!==null;if(result.lastPhase==='REVIEW'&&port.last?.raw.termsLinks?.length){$('terms').href=port.last.raw.termsLinks[0];}}catch{status('执行已停止，请核实当前任务；已发送的动作不会自动重试');}finally{job=null;finalGrant=null;}
++  });
++  if(!ownership.owned)status('另一控制页正在执行，当前页只读');
++}
++$('start').onclick=()=>run(true);$('resume').onclick=()=>run(false);$('pause').onclick=()=>job?.pause();$('stop').onclick=()=>{activeGrant=null;job?.stop();};
++$('final').onclick=async()=>{if(!$('finalReview').checked){status('需要本人核对当前官网并确认这一张订单');return;}const s=await store.get(TASK_KEY);if(!s||s.lastPhase!=='REVIEW'||s.finalIntent){status('当前任务不能发出新的最终订单');return;}finalGrant={id:crypto.randomUUID(),taskId:s.taskId,planDigest:s.planDigest,documentId:s.lastDocumentId,termsUrl:$('terms').href,termsAccepted:true,existingOrdersChecked:true,noExtras:true,expiry:Date.now()+120000};await run();};
++// No delete/reset: completed and unknown purchase history cannot be erased by reopening a control page.
++const saved=await store.get(TASK_KEY);if(saved)status(`保留的任务：${saved.state}；重新打开不会清除购买或未知记录`);
+diff --git a/web/checkout-connector/job.js b/web/checkout-connector/job.js
+new file mode 100644
+--- /dev/null
++++ b/web/checkout-connector/job.js
+@@ -0,0 +1,119 @@
++// Codex C-012 quota takeover. Transport-independent official-checkout controller.
++// This controller does not make a merchant request; ChromePort supplies normal UI operations.
++export const TASK_KEY='applebuy-single-personal-purchase/v1';
++const STOP=new Set(['AUTH','CONSENT','CHALLENGE','THROTTLE','UNKNOWN','DETAILS_UNSUPPORTED']);
++const SLOT=/^(?:[01]\d|2[0-3]):[0-5]\d$/;
++const clone=x=>structuredClone(x);
++export function validStored(s){return s&&s.schema==='applebuy-purchase-job/v1'&&typeof s.taskId==='string'&&typeof s.planDigest==='string'&&Number.isSafeInteger(s.tabId)&&validIntent(s.plan)&&Number.isSafeInteger(s.lastRead)&&s.lastRead>=0&&Number.isFinite(s.expiresAt)&&Number.isSafeInteger(s.dateCursor)&&s.dateCursor>=0&&s.dateCursor<=3&&Number.isSafeInteger(s.refusals)&&s.refusals>=0&&Array.isArray(s.rejected)&&s.rejected.every(r=>typeof r.date==='string'&&SLOT.test(r.start)&&SLOT.test(r.end)&&Number.isSafeInteger(r.generation))&&s.floors&&typeof s.floors==='object'&&Object.values(s.floors).every(t=>SLOT.test(t))&&(s.initialDates===null||(Array.isArray(s.initialDates)&&s.initialDates.length<=3&&new Set(s.initialDates).size===s.initialDates.length&&s.initialDates.every(d=>typeof d==='string')))&&(s.pending===null||(typeof s.pending.id==='string'&&typeof s.pending.documentId==='string'&&Number.isFinite(s.pending.deadline)&&['configureProduct','continueProduct','addBag','viewBag','checkout','selectPickup','selectStore','selectDate','chooseSlot','fillDetails','selectPayment','continuePayment','submitOrder'].includes(s.pending.action)))&&(s.finalIntent===null||(typeof s.finalIntent.id==='string'&&typeof s.finalIntent.sent==='boolean'))&&(!s.finalIntent?.sent||s.pending?.action==='submitOrder'||s.state==='CONFIRMED_UNPAID');}
++export function validIntent(p){
++  return p?.schema==='applebuy-intent/v1'&&p.quantity===1&&p.fulfillment==='pickup'&&p.city==='大连'&&
++    ['iPhone Duo','iPhone 18 Pro'].includes(p.product?.model)&&p.product?.capacity==='256GB'&&
++    (p.product.model==='iPhone Duo'?p.product.color==='星光白色':p.product.color==='黑色')&&
++    Number.isSafeInteger(p.maxTotalCny)&&p.maxTotalCny>0&&p.maxTotalCny<100000&&
++    Array.isArray(p.stores)&&p.stores.length>0&&p.stores.every(s=>s==='Apple 大连恒隆广场')&&
++    p.dateRule==='initial-first-three-terminal'&&p.paymentMethod==='支付宝';
++}
++export function purchaseMatches(p,c){
++  return !!c&&c.verified===true&&c.model===p.product.model&&c.capacity===p.product.capacity&&c.color===p.product.color&&
++    c.quantity===1&&c.fulfillment==='pickup'&&p.stores.includes(c.store)&&Number.isFinite(c.totalCny)&&c.totalCny>0&&c.totalCny<=p.maxTotalCny;
++}
++export function itemMatches(p,c){return !!c&&c.itemVerified===true&&c.model===p.product.model&&c.capacity===p.product.capacity&&c.color===p.product.color&&c.quantity===1&&Number.isFinite(c.totalCny)&&c.totalCny>0&&c.totalCny<=p.maxTotalCny;}
++function terminal(times){
++  if(!Array.isArray(times)||times.length===0||times.some(t=>!SLOT.test(t.start)||!SLOT.test(t.end)||t.start>=t.end||typeof t.ref!=='string'))return null;
++  const keys=times.map(t=>t.start+'-'+t.end);if(new Set(keys).size!==keys.length)return null;
++  return [...times].sort((a,b)=>a.start.localeCompare(b.start)||a.end.localeCompare(b.end)).at(-1);
++}
++export class PurchaseJob {
++  constructor({store,port,now=()=>Date.now(),id=()=>crypto.randomUUID(),maxSteps=100,onState=()=>{}}){Object.assign(this,{store,port,now,id,maxSteps,onState});this.paused=false;this.stopped=false;}
++  pause(){this.paused=true;} resume(){this.paused=false;} stop(){this.stopped=true;}
++  async save(s){await this.store.put(TASK_KEY,clone(s));this.onState({state:s.state,phase:s.lastPhase,reason:s.reason??null,refusals:s.refusals,finalIntent:s.finalIntent!==null});}
++  async gate(s,reason,state='NEEDS_USER'){s.state=state;s.reason=reason;await this.save(s);return clone(s);}
++  async run(plan,{tabId,planDigest,grant=null,taskId=null}={}){
++    if(!validIntent(plan)||!Number.isSafeInteger(tabId)||!planDigest)throw new Error('InvalidPurchaseConfiguration');
++    const old=await this.store.get(TASK_KEY);
++    if(old&&!validStored(old))throw new Error('StoredPurchaseTaskCorrupt');
++    let s=old??{schema:'applebuy-purchase-job/v1',taskId:taskId??this.id(),plan:clone(plan),planDigest,tabId,state:'RUNNING',lastPhase:null,lastDocumentId:null,entryDocumentId:null,reason:null,pending:null,finalIntent:null,orderRefHash:null,initialDates:null,dateCursor:0,floors:{},rejected:[],refusals:0,lastRead:0,expiresAt:this.now()+1800000};
++    if(s.schema!=='applebuy-purchase-job/v1'||s.planDigest!==planDigest||JSON.stringify(s.plan)!==JSON.stringify(plan)||s.tabId!==tabId)return this.gate(s,'existing-task-binding-differs','BLOCKED');
++    if(s.state==='CONFIRMED_UNPAID')return clone(s);
++    if(s.finalIntent&&s.finalIntent.sent&&s.pending?.action!=='submitOrder')return this.gate(s,'final-intent-already-consumed','NEEDS_VERIFICATION');
++    s.state='RUNNING';s.reason=null;await this.save(s);
++    for(let step=0;step<this.maxSteps;step++){
++      if(s.expiresAt<=this.now())return this.gate(s,'task-window-expired; existing intent preserved','EXPIRED');
++      if(this.stopped)return this.gate(s,'stopped; sent operations may still complete','STOPPED');
++      if(this.paused)return this.gate(s,'paused; sent operations may still complete','PAUSED');
++      let o;try{o=await this.port.observe(plan);}catch{return this.gate(s,'observation-transport-failed','NEEDS_VERIFICATION');}
++      if(!o||o.schema!=='applebuy-merchant-read/v1'||!o.documentId||!Number.isSafeInteger(o.seq)||o.seq<=s.lastRead)return this.gate(s,'invalid-or-stale-observation','NEEDS_VERIFICATION');
++      s.lastRead=o.seq;s.lastPhase=o.phase;s.lastDocumentId=o.documentId;s.entryDocumentId??=o.documentId;await this.save(s);
++      if(grant?.start===true&&(grant.entryDocumentId!==s.entryDocumentId||grant.taskId!==s.taskId||grant.planDigest!==s.planDigest||grant.existingOrdersChecked!==true||grant.noExtras!==true||grant.termsAccepted!==true||!Number.isFinite(grant.expiry)||grant.expiry<=this.now()||grant.expiry>this.now()+1800000))return this.gate(s,'start-authorization-no-longer-current','BLOCKED');
++      // Reconcile a previously delivered command, including a crash/restart. Never send it again.
++      if(s.pending){
++        const pending=s.pending;
++        if(pending.action==='submitOrder'){
++          if(!s.orderRefHash&&o.phase==='ORDER_RECEIPT'&&o.receiptVerified===true&&purchaseMatches(plan,o.purchase)&&o.orderRefHash){s.orderRefHash=o.orderRefHash;await this.save(s);}
++          let order;try{order=await this.port.lookupOrder(plan,s.orderRefHash);}catch{}
++          if(order?.independent===true&&order.state==='unpaid'&&s.orderRefHash&&order.orderRefHash===s.orderRefHash&&purchaseMatches(plan,order.purchase)&&order.acceptedSlot?.date===s.acceptedSlot?.date&&order.acceptedSlot?.start===s.acceptedSlot?.start&&order.acceptedSlot?.end===s.acceptedSlot?.end){s.pending=null;s.state='CONFIRMED_UNPAID';s.reason=null;await this.save(s);return clone(s);}
++          return this.gate(s,'final-result-unconfirmed; no resubmission','NEEDS_VERIFICATION');
++        }
++        if(pending.action==='chooseSlot'){
++          if(o.feedback?.kind==='slot-refused'&&o.feedback.verified===true&&o.feedback.ref===pending.ref&&o.feedback.generation>pending.generation){
++            s.rejected.push({date:pending.date,start:pending.start,end:pending.end,generation:pending.generation});s.refusals++;s.pending=null;s.dateCursor++;await this.save(s);
++            if(s.refusals>5)return this.gate(s,'refusal-bound-reached','EXHAUSTED');continue;
++          }
++          if(['DETAILS','PAYMENT','REVIEW'].includes(o.phase)&&o.acceptedSlot?.verified===true&&purchaseMatches(plan,o.purchase)&&o.acceptedSlot.date===pending.date&&o.acceptedSlot.start===pending.start&&o.acceptedSlot.end===pending.end){s.acceptedSlot=clone(o.acceptedSlot);s.pending=null;await this.save(s);continue;}
++          if((o.phase==='PROCESSING'||o.phase===pending.beforePhase)&&this.now()<pending.deadline&&this.port.wait){await this.port.wait(50);continue;}
++          return this.gate(s,'slot-result-unconfirmed; no resubmission','NEEDS_VERIFICATION');
++        }
++        const reached={configureProduct:['ENTRY','VARIANT'],continueProduct:['VARIANT'],addBag:['ACCESSORIES','BAG'],viewBag:['BAG'],checkout:['FULFILLMENT','SLOTS'],selectPickup:['FULFILLMENT','SLOTS'],selectStore:['SLOTS'],selectDate:['SLOTS'],fillDetails:['PAYMENT'],selectPayment:['PAYMENT'],continuePayment:['REVIEW']}[pending.action]??[];
++        const conditions=o.phase==='BAG'||o.phase==='FULFILLMENT'?itemMatches(plan,o.purchase):!['SLOTS','PAYMENT','REVIEW'].includes(o.phase)||purchaseMatches(plan,o.purchase);
++        if(reached.includes(o.phase)&&o.verifiedStep===true&&conditions&&(pending.action!=='selectPickup'||o.purchase?.fulfillment==='pickup')&&(pending.action!=='selectDate'||o.selectedDate===pending.date)&&(pending.action!=='configureProduct'||o.selectedProductChoices?.includes(pending.choice))&&(pending.action!=='selectPayment'||o.paymentMethod===plan.paymentMethod)){s.pending=null;await this.save(s);continue;}
++        if(STOP.has(o.phase))return this.gate(s,o.phase.toLowerCase());
++        if((o.phase===pending.beforePhase||o.phase==='PROCESSING')&&this.now()<pending.deadline&&this.port.wait){await this.port.wait(50);continue;}
++        return this.gate(s,'mutation-result-unconfirmed; no automatic repeat','NEEDS_VERIFICATION');
++      }
++      if(STOP.has(o.phase))return this.gate(s,o.phase.toLowerCase());
++      if(o.phase==='PROCESSING'){if(this.port.wait){await this.port.wait(50);continue;}return this.gate(s,'merchant-processing','NEEDS_VERIFICATION');}
++      if(o.phase==='PRELAUNCH')return this.gate(s,'official-entry-not-released','NOT_RELEASED');
++      let command;
++      if(o.phase==='ENTRY'){if(!o.needsSelection?.length&&o.continueAvailable!==true)return this.gate(s,'official-continue-disabled; availability not established','NOT_READY');command=o.needsSelection?.length?{action:'configureProduct',choice:o.needsSelection[0]}:{action:'continueProduct'};}
++      else if(o.phase==='VARIANT'){
++        if(!o.variantVerified||o.quotedCny>plan.maxTotalCny||!Number.isFinite(o.quotedCny)||o.quotedCny<=0)return this.gate(s,'variant-or-price-not-verified','BLOCKED');
++        command={action:'addBag'};
++      }else if(o.phase==='ACCESSORIES')command={action:'viewBag'};
++      else if(o.phase==='BAG'){if(!itemMatches(plan,o.purchase))return this.gate(s,'bag-conditions-not-verified','BLOCKED');command={action:'checkout'};}
++      else if(o.phase==='FULFILLMENT'){if(!itemMatches(plan,o.purchase))return this.gate(s,'pickup-conditions-not-verified','BLOCKED');command=o.purchase.fulfillment!=='pickup'?{action:'selectPickup'}:{action:'selectStore',store:plan.stores[0]};}
++      else if(o.phase==='SLOTS'){
++        if(!purchaseMatches(plan,o.purchase)||o.listComplete!==true||!Number.isSafeInteger(o.generation)||!Array.isArray(o.dates)||o.dates.length===0||o.dates.some(d=>typeof d.label!=='string'||!d.label||typeof d.ref!=='string')||new Set(o.dates.map(d=>d.label)).size!==o.dates.length)return this.gate(s,'slot-list-or-conditions-not-verified','BLOCKED');
++        // Freeze actual offered labels in merchant order. Never invent a calendar year or roll to a fourth date.
++        if(!s.initialDates){s.initialDates=o.dates.slice(0,3).map(d=>d.label);await this.save(s);}
++        const date=s.initialDates[s.dateCursor];if(!date)return this.gate(s,'initial-three-terminal-slots-exhausted','EXHAUSTED');
++        const d=o.dates.find(d=>d.label===date);if(!d||!d.enabled){s.dateCursor++;await this.save(s);continue;}
++        if(o.selectedDate!==date)command={action:'selectDate',date,ref:d.ref};
++        else{
++          const t=terminal(o.times);if(!t)return this.gate(s,'native-time-list-unrecognized','BLOCKED');
++          const oldFloor=s.floors[date];if(!oldFloor||t.start>oldFloor)s.floors[date]=t.start;await this.save(s);
++          if(t.start<s.floors[date]||!t.enabled){s.dateCursor++;await this.save(s);continue;}
++          if(s.rejected.some(r=>r.date===date&&r.start===t.start&&r.end===t.end&&r.generation>=o.generation))return this.gate(s,'no-fresh-refusal-list','NEEDS_VERIFICATION');
++          command={action:'chooseSlot',date,start:t.start,end:t.end,ref:t.ref,generation:o.generation};
++        }
++      }else if(o.phase==='DETAILS'){
++        if(!s.acceptedSlot||!purchaseMatches(plan,o.purchase))return this.gate(s,'accepted-slot-or-details-conditions-missing','BLOCKED');command={action:'fillDetails'};
++      }else if(o.phase==='PAYMENT'){
++        if(!s.acceptedSlot||!purchaseMatches(plan,o.purchase))return this.gate(s,'payment-conditions-not-verified','BLOCKED');command={action:o.paymentMethod===plan.paymentMethod?'continuePayment':'selectPayment'};
++      }else if(o.phase==='REVIEW'){
++        if(!s.acceptedSlot||!purchaseMatches(plan,o.purchase)||o.paymentMethod!==plan.paymentMethod||o.extras!==false||o.existingOrdersChecked!==true||o.slotSummary?.date!==s.acceptedSlot.date||o.slotSummary?.start!==s.acceptedSlot.start||o.slotSummary?.end!==s.acceptedSlot.end)return this.gate(s,'final-review-or-existing-order-check-missing','BLOCKED');
++        if(s.finalIntent)return this.gate(s,'final-intent-already-recorded','NEEDS_VERIFICATION');
++        if(!grant||typeof grant.id!=='string'||grant.taskId!==s.taskId||grant.planDigest!==s.planDigest||(grant.start!==true&&grant.documentId!==o.documentId)||grant.termsAccepted!==true||!o.termsLinks?.includes(grant.termsUrl)||!Number.isFinite(grant.expiry)||grant.expiry<=this.now()||grant.expiry>this.now()+(grant.start===true?1800000:180000))return this.gate(s,'confirm-current-terms-and-this-one-order');
++        s.finalIntent={id:this.id(),grantId:grant.id,sent:false};await this.save(s);command={action:'submitOrder',intentId:s.finalIntent.id,finalGrant:{...clone(grant),documentId:o.documentId}};
++      }else return this.gate(s,'unsupported-merchant-stage','NEEDS_VERIFICATION');
++      if(this.paused||this.stopped)return this.gate(s,'control-changed-before-send',this.stopped?'STOPPED':'PAUSED');
++      // Write-ahead before EVERY mutation. Storage failure means zero send.
++      s.pending={...command,id:this.id(),documentId:o.documentId,beforePhase:o.phase,deadline:this.now()+8000};if(command.action==='submitOrder')s.finalIntent.sent=true;await this.save(s);
++      if(this.paused||this.stopped)return this.gate(s,'control-changed-after-write; intent preserved',this.stopped?'STOPPED':'PAUSED');
++      let reply;try{reply=await this.port.act({...s.pending,plan:clone(plan),taskId:s.taskId,planDigest:s.planDigest});}catch{return this.gate(s,'mutation-transport-lost; reconcile before proceeding','NEEDS_VERIFICATION');}
++      if(reply?.orderRefHash&&command.action==='submitOrder')s.orderRefHash=reply.orderRefHash;
++      await this.save(s);
++      // Even an apparently successful click is not acceptance. The next iteration must inspect current evidence.
++    }
++    return this.gate(s,'step-bound-reached','NEEDS_VERIFICATION');
++  }
++}
+diff --git a/web/checkout-connector/manifest.json b/web/checkout-connector/manifest.json
+new file mode 100644
+--- /dev/null
++++ b/web/checkout-connector/manifest.json
+@@ -0,0 +1,10 @@
++{
++  "manifest_version": 3,
++  "name": "AppleBuy 官网购买执行器候选",
++  "version": "0.1.0",
++  "description": "预先配置、一张订单、未知结果不重试。未安装联调与 Claude 复审前不代表可实购。",
++  "permissions": ["scripting", "storage", "activeTab"],
++  "optional_host_permissions": ["https://www.apple.com.cn/*", "https://*.www.apple.com.cn/*"],
++  "action": {"default_popup": "open.html"},
++  "content_security_policy": {"extension_pages": "script-src 'self'; object-src 'none'; connect-src 'none'"}
++}
+diff --git a/web/checkout-connector/open.html b/web/checkout-connector/open.html
+new file mode 100644
+--- /dev/null
++++ b/web/checkout-connector/open.html
+@@ -0,0 +1,1 @@
++<!doctype html><html lang="zh-CN"><meta charset="utf-8"><title>AppleBuy</title><body><button id="open">打开官网购买控制页</button><script src="open.js"></script></body></html>
+diff --git a/web/checkout-connector/open.js b/web/checkout-connector/open.js
+new file mode 100644
+--- /dev/null
++++ b/web/checkout-connector/open.js
+@@ -0,0 +1,1 @@
++document.getElementById('open').addEventListener('click',()=>chrome.tabs.create({url:chrome.runtime.getURL('control.html')}));
+diff --git a/web/checkout-connector/owner.js b/web/checkout-connector/owner.js
+new file mode 100644
+--- /dev/null
++++ b/web/checkout-connector/owner.js
+@@ -0,0 +1,5 @@
++// One extension-origin Web Lock owns the ENTIRE advancing task, not individual clicks.
++export async function withPurchaseOwner(locks,operation){
++  if(!locks||typeof locks.request!=='function')throw new Error('ExclusiveOwnerUnavailable');
++  return await locks.request('applebuy-single-purchase-owner',{ifAvailable:true},async lock=>lock?{owned:true,result:await operation()}:{owned:false});
++}
+diff --git a/web/checkout-connector/page-program.js b/web/checkout-connector/page-program.js
+new file mode 100644
+--- /dev/null
++++ b/web/checkout-connector/page-program.js
+@@ -0,0 +1,118 @@
++// Serializable ISOLATED-world program. Merchant semantics, not undocumented HTTP interfaces.
++// Unsupported/ambiguous evidence stops. Refusal text catalog is deliberately EMPTY for real Apple.
++export async function merchantDocument(plan,command=null){
++  const u=new URL(location.href);
++  const safe=u.protocol==='https:'&&(u.hostname==='www.apple.com.cn'||/^secure(?:\d+)?\.www\.apple\.com\.cn$/.test(u.hostname))&&/^\/shop\/(?:buy-iphone\/(?:iphone-18-pro|iphone-duo)(?:\/[^/]+\/a)?|bag|checkout|order(?:\/[^?#]*)?|signIn)(?:\/)?$/.test(u.pathname);
++  if(!safe)return {schema:'applebuy-merchant-read/v1',phase:'UNKNOWN',reason:'unsupported-official-url'};
++  const main=document.querySelector('main,[role="main"]');if(!main)return {schema:'applebuy-merchant-read/v1',phase:'UNKNOWN',reason:'main-not-found'};
++  const norm=s=>String(s??'').normalize('NFKC').replace(/[\s\u200b\u200c\u200d\u2060]+/g,' ').trim();
++  const visible=e=>{if(!e||!e.isConnected)return false;for(let p=e;p;p=p.parentElement){const st=getComputedStyle(p);if(p.hidden||p.hasAttribute('inert')||p.getAttribute('aria-hidden')==='true'||st.display==='none'||['hidden','collapse'].includes(st.visibility))return false;}return true;};
++  const disabled=e=>e.disabled===true||!!e.closest('[disabled],[aria-disabled="true"],[inert]');
++  const name=e=>norm(e.getAttribute('aria-label')||([...e.labels??[]].filter(visible).map(x=>x.textContent).join(' '))||e.textContent);
++  // Public labels/selected choices only. No password, contact values, cookie, storage or traffic capture.
++  const buttons=[...main.querySelectorAll('button,a[role="button"],input[type="submit"]')].filter(visible);
++  const radios=[...main.querySelectorAll('input[type="radio"],[role="radio"]')].filter(visible);
++  const selects=[...main.querySelectorAll('select')].filter(visible);
++  const texts=[...main.querySelectorAll('h1,h2,h3,p,span,div')].filter(visible).map(e=>norm(e.textContent)).filter(t=>t.length>0&&t.length<=180);
++  const exact=t=>buttons.filter(b=>name(b)===t&&!disabled(b));
++  const checked=e=>e.checked===true||e.getAttribute('aria-checked')==='true';
++  const findRadio=t=>radios.filter(e=>(name(e)===t||name(e).startsWith(t+' '))&&!(t==='iPhone 18 Pro'&&name(e).startsWith('iPhone 18 Pro Max')));
++  const fullVariant=norm(`${plan.product.model} ${plan.product.capacity} ${plan.product.color}`);
++  const productLines=texts.filter(t=>/^iPhone (?:18 Pro(?: Max)?|Duo)\b/.test(t)&&/\b(?:256GB|512GB|1TB|2TB)\b/.test(t));
++  const exactProduct=productLines.some(t=>t===fullVariant)&&productLines.every(t=>t===fullVariant);
++  const quantityLines=[...new Set(texts.filter(t=>/^数量\s*[:：]?\s*\d+$/.test(t)))];
++  const qtyControls=selects.filter(e=>/数量/.test(name(e)));
++  const qty=qtyControls.length>1?null:qtyControls.length===1?Number(norm(qtyControls[0].selectedOptions[0]?.textContent)):quantityLines.length===1?Number(quantityLines[0].match(/\d+/)[0]):null;
++  const totalLines=[...new Set(texts.filter(t=>/^(?:总计|合计|应付总额)(?:\s*\(含税\))?\s*[:：]?\s*(?:RMB|¥|￥)\s*[\d,]+(?:\.\d{2})?$/.test(t)))];
++  const total=totalLines.length===1?Number(totalLines[0].match(/(?:RMB|¥|￥)\s*([\d,]+(?:\.\d{2})?)/)[1].replaceAll(',','')):null;
++  const storeFields=texts.filter(t=>/^(?:取货地点|取货门店|自提门店|店内取货地点)\s*[:：]?/.test(t));
++  const stores=plan.stores.filter(s=>findRadio(s).some(checked)||storeFields.some(t=>t.includes(norm(s))));
++  const pickedPickup=findRadio('我要取货').filter(checked);
++  const pickupShown=pickedPickup.length===1||texts.includes('店内取货')||texts.includes('到店取货');
++  const purchase={itemVerified:exactProduct&&qty===1&&Number.isFinite(total),verified:exactProduct&&qty===1&&Number.isFinite(total)&&stores.length===1&&pickupShown,model:exactProduct?plan.product.model:null,capacity:exactProduct?plan.product.capacity:null,color:exactProduct?plan.product.color:null,quantity:qty,totalCny:total,store:stores.length===1?stores[0]:null,fulfillment:pickupShown?'pickup':null};
++  let phase='UNKNOWN';
++  if(main.querySelector('input[type="password"],input[autocomplete="one-time-code"]')||texts.includes('以游客身份继续'))phase='AUTH';
++  else if(texts.some(t=>t==='Apple 和你的数据隐私'))phase='CONSENT';
++  else if(main.querySelector('[aria-busy="true"]'))phase='PROCESSING';
++  else if(texts.some(t=>['待付款','等待付款','请完成付款'].includes(t)))phase=/^\/shop\/order\/(?!list(?:\/|$))[^/]+\/?$/.test(u.pathname)?'ORDER_DETAIL':u.pathname==='/shop/checkout'?'ORDER_RECEIPT':'UNKNOWN';
++  else if(exact('立即下单').length===1)phase='REVIEW';
++  else if(exact('继续选择付款方式').length===1)phase='DETAILS';
++  else if(exact('继续填写取货详情').length===1&&purchase.fulfillment==='pickup'&&purchase.store)phase='SLOTS';
++  else if(findRadio('支付宝').length===1)phase='PAYMENT';
++  else if(findRadio('我要取货').length===1)phase='FULFILLMENT';
++  else if(exact('结账').length===1||exact('安全结账').length===1)phase='BAG';
++  else if(exact('查看购物袋').length===1)phase='ACCESSORIES';
++  else if(exact('添加到购物袋').length===1)phase='VARIANT';
++  else if(u.pathname.startsWith('/shop/buy-iphone/'))phase='ENTRY';
++  const out={schema:'applebuy-merchant-read/v1',phase,purchase,verifiedStep:!['UNKNOWN','AUTH','CONSENT','PROCESSING'].includes(phase),path:u.pathname,feedback:null,acceptedSlot:null,slotSummary:null,continueAvailable:exact('继续').length===1,variantVerified:false,quotedCny:null,listComplete:false,dates:[],times:[],selectedDate:null,paymentMethod:findRadio('支付宝').some(checked)?'支付宝':null,extras:null,existingOrdersChecked:false,orderRefHash:null,orderDetailLink:null};
++  const selected=radios.filter(checked).map(name);
++  const title=norm(main.querySelector('h1')?.textContent);
++  const modelShown=title===plan.product.model||title==='购买 '+plan.product.model;
++  const modelChoices=findRadio(plan.product.model);
++  const needed=[...(modelChoices.length?[plan.product.model]:[]),plan.product.color,plan.product.capacity];
++  out.selectedProductChoices=needed.filter(t=>selected.some(n=>n===t||n.startsWith(t+' ')));
++  out.needsSelection=needed.filter(t=>!out.selectedProductChoices.includes(t));
++  const specSelected=modelShown&&out.needsSelection.length===0;
++  const quoteRadio=findRadio(plan.product.capacity).filter(checked);
++  const quote=quoteRadio.length===1?/\bRMB\s*([\d,]+(?:\.\d{2})?)/.exec(name(quoteRadio[0])):null;
++  if(specSelected&&quote){out.variantVerified=true;out.quotedCny=Number(quote[1].replaceAll(',',''));}
++  if(texts.some(t=>t.includes('暂未发售')||t.includes('机型将在获得批准后发售'))&&buttons.some(b=>name(b)==='继续'&&disabled(b))&&!buttons.some(b=>name(b)==='继续'&&!disabled(b)))out.phase=phase='PRELAUNCH';
++  const timeSelects=selects.filter(e=>[...e.options].some(o=>/^\d{2}:\d{2}\s*[-–—至]\s*\d{2}:\d{2}$/.test(norm(o.textContent))));
++  const datePattern=/^(?:(?:\d{4}年)?\d{1,2}月\d{1,2}日(?:\s*(?:周|星期)[一二三四五六日天])?|(?:January|February|March|April|May|June|July|August|September|October|November|December)\s+\d{1,2})$/;
++  const dateSummary=[...new Set(texts.flatMap(t=>{const m=/^取货日期\s*[:：]?\s*(.+)$/.exec(t);return m&&datePattern.test(m[1])?[m[1]]:[]}))];
++  const timeSummary=[...new Set(texts.flatMap(t=>{const m=/^取货时间\s*[:：]?\s*(\d{2}:\d{2})\s*[-–—至]\s*(\d{2}:\d{2})$/.exec(t);return m?[m[1]+'-'+m[2]]:[]}))];
++  if(dateSummary.length===1&&timeSummary.length===1){const [start,end]=timeSummary[0].split('-');if(start<end)out.slotSummary={date:dateSummary[0],start,end,verified:true};}
++  const dateChoices=radios.filter(e=>datePattern.test(name(e)));
++  const dateSelects=selects.filter(e=>e!==timeSelects[0]&&[...e.options].length>0&&[...e.options].every(o=>datePattern.test(norm(o.textContent))));
++  if(phase==='SLOTS'&&timeSelects.length===1&&(dateChoices.length>0) !== (dateSelects.length===1)){
++    const ds=dateChoices.length?dateChoices:[...dateSelects[0].options];
++    out.dates=ds.map((d,i)=>({label:name(d),ref:'date:'+i,enabled:!disabled(d),selected:d.tagName==='OPTION'?d.selected:checked(d)}));
++    const one=out.dates.filter(d=>d.selected);out.selectedDate=one.length===1?one[0].label:null;
++    out.times=[...timeSelects[0].options].flatMap((o,i)=>{const m=/^(\d{2}:\d{2})\s*[-–—至]\s*(\d{2}:\d{2})$/.exec(norm(o.textContent));return m?[{start:m[1],end:m[2],ref:'time:'+i,enabled:!disabled(timeSelects[0])&&!disabled(o)}]:[];});
++    // Complete current native control capture, not proof of server capacity or a held allocation.
++    out.listComplete=one.length===1&&out.times.length>0&&[...timeSelects[0].options].every(o=>norm(o.textContent)==='可选时段'||/^\d{2}:\d{2}\s*[-–—至]\s*\d{2}:\d{2}$/.test(norm(o.textContent)));
++  }
++  // Known normal-flow transition is not a hold guarantee. ChromePort binds it to its delivered choice.
++  out.termsLinks=[...new Set([...document.querySelectorAll('a[href]')].filter(a=>visible(a)&&/条款|销售政策/.test(name(a))).flatMap(a=>{try{const h=new URL(a.href);return h.protocol==='https:'&&h.hostname==='www.apple.com.cn'&&/^\/shop\/open\/salespolicies\/?$/.test(h.pathname)?[h.origin+h.pathname.replace(/\/$/,'')]:[];}catch{return [];}}))];
++  const orderLabels=[...new Set(texts.filter(t=>/^订单(?:编号|号)\s*[:：]?\s*[A-Z0-9-]{6,30}$/.test(t)).map(t=>t.match(/[A-Z0-9-]{6,30}$/)[0]))];
++  if(orderLabels.length===1){const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(orderLabels[0]));out.orderRefHash=[...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('');}
++  const detailLinks=[...new Set([...main.querySelectorAll('a[href]')].filter(a=>visible(a)&&['查看订单','查看订单详情'].includes(name(a))).flatMap(a=>{try{const h=new URL(a.href);return h.protocol==='https:'&&(h.hostname==='www.apple.com.cn'||/^secure(?:\d+)?\.www\.apple\.com\.cn$/.test(h.hostname))&&/^\/shop\/order\/(?!list(?:\/|$))[^/]+(?:\/)?$/.test(h.pathname)?[h.href]:[];}catch{return [];}}))];
++  if(detailLinks.length===1)out.orderDetailLink=detailLinks[0];
++  out.receiptVerified=phase==='ORDER_RECEIPT'&&!!out.orderRefHash&&purchase.verified;
++  // Official refusal anchors are not yet observed: real alerts remain unknown rather than invented rejection.
++  if(!command)return out;
++  if(command.authorized!==true||command.expected!==JSON.stringify(out)||!command.id||!command.taskId)throw new Error('OperationEvidenceChanged');
++  const memo=globalThis.__applebuyExecuted??=(new Set());if(memo.has(command.id))throw new Error('OperationAlreadyDelivered');memo.add(command.id);
++  const click=t=>{const b=exact(t);if(b.length!==1||!b[0].isConnected)throw new Error('CurrentControlUnrecognized');b[0].click();};
++  const pick=t=>{const r=findRadio(t).filter(e=>!disabled(e));if(r.length!==1||!r[0].isConnected)throw new Error('CurrentChoiceUnrecognized');r[0].click();};
++  if(command.action==='configureProduct'){
++    // Observe again after every individual public selection; never click a newly detached selector.
++    if(!out.needsSelection.includes(command.choice))throw new Error('ProductChoiceChanged');pick(command.choice);
++  }else if(command.action==='continueProduct'&&phase==='ENTRY'&&specSelected){click('继续');
++  }else if(command.action==='addBag'&&phase==='VARIANT'&&out.variantVerified&&out.quotedCny<=plan.maxTotalCny)click('添加到购物袋');
++  else if(command.action==='viewBag'&&phase==='ACCESSORIES')click('查看购物袋');
++  else if(command.action==='checkout'&&phase==='BAG'&&purchase.itemVerified){if(exact('安全结账').length===1)click('安全结账');else click('结账');}
++  else if(command.action==='selectPickup'&&phase==='FULFILLMENT'&&purchase.itemVerified)pick('我要取货');
++  else if(command.action==='selectStore'&&phase==='FULFILLMENT'&&purchase.itemVerified&&pickupShown&&plan.stores.includes(command.store))pick(command.store);
++  else if(command.action==='selectDate'&&phase==='SLOTS'){
++    const index=Number(command.ref?.split(':')[1]),d=out.dates[index];if(!d||d.label!==command.date||!d.enabled)throw new Error('DateEvidenceChanged');
++    if(dateChoices.length)dateChoices[index].click();else{const s=dateSelects[0];s.selectedIndex=index;s.dispatchEvent(new Event('change',{bubbles:true}));}
++  }else if(command.action==='chooseSlot'&&phase==='SLOTS'&&purchase.verified&&out.listComplete){
++    const t=out.times.find(t=>t.ref===command.ref);if(!t||!t.enabled||t.start!==command.start||t.end!==command.end||out.selectedDate!==command.date)throw new Error('SlotEvidenceChanged');
++    const s=timeSelects[0];s.selectedIndex=Number(command.ref.split(':')[1]);s.dispatchEvent(new Event('change',{bubbles:true}));
++    if(!s.isConnected)throw new Error('SlotControlRedrawn');click('继续填写取货详情');
++  }else if(command.action==='fillDetails'&&phase==='DETAILS'&&purchase.verified){
++    const rules={firstName:['名字'],lastName:['姓氏'],phone:['手机号码','电话号码'],email:['电子邮件地址'],identitySuffix:['身份证件号码最后4位','身份证件号码后四位']};
++    const supplied=command.privatePickupData??{};if(Object.keys(supplied).some(k=>!Object.hasOwn(rules,k)))throw new Error('PrivateFieldNotAllowed');
++    const targets=[];for(const [key,value] of Object.entries(supplied)){if(typeof value!=='string'||value.length>100||(key==='identitySuffix'&&!/^\d{4}$/.test(value)))throw new Error('PrivateFieldInvalid');const matches=[...main.querySelectorAll('input')].filter(e=>visible(e)&&!disabled(e)&&rules[key].includes(name(e)));if(matches.length!==1)throw new Error('PrivateFieldContractUnrecognized');targets.push([matches[0],value]);}
++    // Validate all field bindings BEFORE transmitting the first value. Never return or persist values.
++    for(const [e,v] of targets){const setter=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value')?.set;if(!setter)throw new Error('NativeInputSetterMissing');setter.call(e,v);e.dispatchEvent(new Event('input',{bubbles:true}));e.dispatchEvent(new Event('change',{bubbles:true}));}
++    if([...main.querySelectorAll('input[required]')].filter(visible).some(e=>!e.checkValidity()))throw new Error('PickupDetailsRequireHuman');click('继续选择付款方式');
++  }else if(command.action==='selectPayment'&&phase==='PAYMENT'&&purchase.verified){pick('支付宝');}
++  else if(command.action==='continuePayment'&&phase==='PAYMENT'&&purchase.verified&&out.paymentMethod==='支付宝'){if(exact('继续查看订单').length===1)click('继续查看订单');else click('继续');}
++  else if(command.action==='submitOrder'&&phase==='REVIEW'&&purchase.verified&&out.paymentMethod==='支付宝'){
++    const g=command.finalGrant;if(!g||g.termsAccepted!==true||g.taskId!==command.taskId||g.planDigest!==command.planDigest||g.expiry<=Date.now()||g.existingOrdersChecked!==true||g.noExtras!==true||!out.termsLinks.includes(g.termsUrl)||!out.slotSummary)throw new Error('CurrentFinalGrantMissing');click('立即下单');
++  }
++  else throw new Error('ActionNotRecognizedForCurrentStage');
++  return {delivered:true};
++}

@@ -1,0 +1,141 @@
+{
+  "schema": "codex-candidate-verification/v1",
+  "verifiedAtUtc": "2026-10-02T15:02:59.002824+00:00",
+  "sourceFiles": 115,
+  "sourceSha256": "6932a7a5fb3858c93ef566c4403690860aed13081d5f9239919dd5dfb17c1df0",
+  "previousScope": {
+    "files": 102,
+    "sha256": "5447c7012d0d60878a0c311ba2173c911871209780838db9482cda63d65d8f5a",
+    "unchanged": true
+  },
+  "CodexSourceChanges": [
+    {
+      "path": "test/checkout-chrome-port.test.ts",
+      "kind": "added",
+      "beforeSha256": null,
+      "afterSha256": "d0103578b3905d1e201e3f0fe0ccdd01d321c02b7c8831faa1c99c20a6244317",
+      "author": "Codex after actual C-009 API429; independent actual Claude review pending"
+    },
+    {
+      "path": "test/checkout-job.test.ts",
+      "kind": "added",
+      "beforeSha256": null,
+      "afterSha256": "b8da313d377c24c8836d6088e059712efddf0f4e180b46a4c63e38df37faf7f5",
+      "author": "Codex after actual C-009 API429; independent actual Claude review pending"
+    },
+    {
+      "path": "test/checkout-owner.test.ts",
+      "kind": "added",
+      "beforeSha256": null,
+      "afterSha256": "4eb74ff20b3d69c21334d32d35ac684b41b97d885c4347b86e62255d6f5d68c5",
+      "author": "Codex after actual C-009 API429; independent actual Claude review pending"
+    },
+    {
+      "path": "test/checkout-page-program.test.ts",
+      "kind": "added",
+      "beforeSha256": null,
+      "afterSha256": "73323ecc6200403f90c1fe4485dd5f3c5f134f015e634af5e0c3e685e79ac4c4",
+      "author": "Codex after actual C-009 API429; independent actual Claude review pending"
+    },
+    {
+      "path": "web/checkout-connector/chrome-port.js",
+      "kind": "added",
+      "beforeSha256": null,
+      "afterSha256": "611e5f0e4b876315a2aeb71b1e2010692500319e618a8e2f45187374b561a2d5",
+      "author": "Codex after actual C-009 API429; independent actual Claude review pending"
+    },
+    {
+      "path": "web/checkout-connector/control.html",
+      "kind": "added",
+      "beforeSha256": null,
+      "afterSha256": "9fa7156881d27dee165982fb239d39fe144ffc6fb708a2213ad29ff2fcde32a1",
+      "author": "Codex after actual C-009 API429; independent actual Claude review pending"
+    },
+    {
+      "path": "web/checkout-connector/control.js",
+      "kind": "added",
+      "beforeSha256": null,
+      "afterSha256": "69e240aa3146ef4fdd8d2f80c75000b9713c9c7ad23abfbf3605956b7c6b391d",
+      "author": "Codex after actual C-009 API429; independent actual Claude review pending"
+    },
+    {
+      "path": "web/checkout-connector/job.js",
+      "kind": "added",
+      "beforeSha256": null,
+      "afterSha256": "77e8f25cc0bf054f0ae8d07da5800d0b0ae76dfa01be859534a0a3e00f5b008b",
+      "author": "Codex after actual C-009 API429; independent actual Claude review pending"
+    },
+    {
+      "path": "web/checkout-connector/manifest.json",
+      "kind": "added",
+      "beforeSha256": null,
+      "afterSha256": "872e16c3a19ffd24c2b84213ec079463e97872af58ad424153ae35a8c60c1d0d",
+      "author": "Codex after actual C-009 API429; independent actual Claude review pending"
+    },
+    {
+      "path": "web/checkout-connector/open.html",
+      "kind": "added",
+      "beforeSha256": null,
+      "afterSha256": "ff5010007a6bd18358606f60f16aed96a0304dc6669db7cbe1271597027c149e",
+      "author": "Codex after actual C-009 API429; independent actual Claude review pending"
+    },
+    {
+      "path": "web/checkout-connector/open.js",
+      "kind": "added",
+      "beforeSha256": null,
+      "afterSha256": "1e50610d766d92e5bd4271a3746b2667485fa5bd9cae7121b02f06bb95add1b8",
+      "author": "Codex after actual C-009 API429; independent actual Claude review pending"
+    },
+    {
+      "path": "web/checkout-connector/owner.js",
+      "kind": "added",
+      "beforeSha256": null,
+      "afterSha256": "2aa17b6b1666dabe757c56e620a29b8c2f62130d6993b8ff988665bd262577ed",
+      "author": "Codex after actual C-009 API429; independent actual Claude review pending"
+    },
+    {
+      "path": "web/checkout-connector/page-program.js",
+      "kind": "added",
+      "beforeSha256": null,
+      "afterSha256": "8a3108fad80f829e7d9b1fd031a827522530ffa883646b14ab0468fb953e8d2d",
+      "author": "Codex after actual C-009 API429; independent actual Claude review pending"
+    }
+  ],
+  "tests": {
+    "command": [
+      "node",
+      "--test",
+      "test/*.test.ts",
+      "review/*.test.ts"
+    ],
+    "exitCode": 0,
+    "pass": 312,
+    "fail": 0,
+    "total": 312,
+    "elapsedSeconds": 5.905954
+  },
+  "actualClaudeReview": false,
+  "bilateralAgreement": false,
+  "extensionInstalled": false,
+  "standaloneExecuteScriptVerified": false,
+  "merchantMutationsThisTurn": 0,
+  "merchantOrdersThisTurn": 0,
+  "paymentsThisTurn": 0,
+  "realPurchasingReady": false,
+  "realRefusalContractVerified": false,
+  "humanExistingOrdersCheckNotAutomatic": true,
+  "publicChromeReadOnlyPrefix": {
+    "Duo": "white256 quote15999, PRELAUNCH, current sales policy",
+    "Pro": "black256 quote9999, ENTRY, current sales policy",
+    "extensionProof": false
+  },
+  "unverified": [
+    "secure host grant and standalone API execution",
+    "bag/details/review/receipt shape",
+    "unpaid detail route and slot summary/deferred timing",
+    "official explicit refusal/new list",
+    "Duo pickup and launch behavior",
+    "protected DPAPI configuration consumption",
+    "actual website speed"
+  ]
+}
