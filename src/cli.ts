@@ -13,6 +13,7 @@ import type { CrashPoint } from "./app/task-app.ts";
 import { startServer } from "./app/server.ts";
 import { readOwnerStatus } from "./app/owner-lock.ts";
 import type { SiteMethod, SiteScenario } from "./mock/live-site.ts";
+import { runLaunchReplay } from './launch-replay.ts';
 
 const BANNER = "【演练模式｜FAKE 虚构数据｜离线模拟，不访问苹果官网，不产生真实订单/付款/时段占用】";
 const DEFAULT_PLAN = "examples/plan.fake.json";
@@ -43,7 +44,9 @@ function help(): void {
   node src/cli.ts bench [--runs 200] [--warmup 20] [--seed 1]   决策级基准（模拟）
   node src/cli.ts app [--task-dir .local/task] [--port 0] [--latency-ms 500] [--plan <文件>] [--recover] [--auto-start <场景>]
       启动本机浏览器演练界面（只监听 127.0.0.1；同一任务目录只允许一个执行进程）
-  node src/cli.ts app-status [--task-dir .local/task] [--timeout-ms 800]   只读查询任务执行进程是否存活`);
+  node src/cli.ts app-status [--task-dir .local/task] [--timeout-ms 800]   只读查询任务执行进程是否存活
+  node src/cli.ts launch-replay [--task-dir .local/launch-replay] [--plan examples/plan.launch.fake.json]
+      离线页面转换回放（合成 HTML；实际 DOM 回放请在本机 app 的 /launch 页面操作）`);
 }
 
 function appFixtures(): { hold: SiteMethod[]; crashAfter: CrashPoint | null; statusDelayMs?: number } {
@@ -277,6 +280,12 @@ async function main(): Promise<number> {
       return appCmd(opts);
     case "app-status":
       return appStatus(opts);
+    case 'launch-replay': {
+      const loaded=loadPlanFile(typeof opts.plan==='string'?opts.plan:'examples/plan.launch.fake.json');
+      if(!loaded.plan){console.error('回放计划校验失败');return 2;}
+      const report=await runLaunchReplay(loaded.plan,resolve(typeof opts['task-dir']==='string'?opts['task-dir']:'.local/launch-replay'));
+      console.log(JSON.stringify(report,null,2));return report.passed?0:1;
+    }
     case "help":
     case "--help":
       help();

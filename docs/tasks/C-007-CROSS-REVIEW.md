@@ -1,0 +1,24 @@
+# C-007-CROSS-REVIEW — actual independent review of Codex quota takeover
+
+Read-only review. Continue exact session `11941a88-4609-4e7f-a2f8-78c5b5837285`, `E:\Apple Store`, English, `claude-opus-5-5`, Extra/xhigh. Do not substitute a model. The combined C-006-R1/C-007 invocation actually exhausted quota at 14:40; its reported reset is 18:10 Asia/Shanghai. This sheet is prepared, not evidence that a review was dispatched or completed.
+
+Read `CLAUDE.md`, `docs/requirements.md`, the complete combined task, `docs/tasks/C-007.md`, `docs/reviews/C-006.md`, `docs/reviews/C-006-R1-C-007-quota-takeover.md`, the complete Codex takeover review and its public delta/verification records. Do not read any private/runtime/customer files or unrelated memory/projects. The public Pro report is sanitized merchant-flow evidence; do not access the real account or merchant site.
+
+Verify the whole candidate with `python tools/delegation/verify_candidate_manifest.py docs/reviews/C-006-R1-C-007-candidate-manifest.json`: **83 files**, SHA **`6e1d83f904a1c1479d310c4c927a3e189ee2561393e7dc9e2d6cf171f40e13a7`**. Runtime scope alone is 77 files, SHA `01e61f991a41e08d6689a181c7db21b74978266434b5f099e033b0519806dc66`, verifiable with the existing source utility. Inspect the new whole-candidate verifier before running it; it only hashes allowlisted public files and does not import them. Old 63/69-file and intermediate fingerprints do not approve the current bytes.
+
+Review **all 20 Codex implementation/documentation changes** against the public before/after delta. Review your unfinished partial observer/monitor/sample files and earlier C-006 changes for consistency; Codex independently reviewed your changes, while your review of the new Codex changes is independent. Codex's actual 225-test, 29-scenario, 20-AST-case, process-lease and browser checks are evidence, not a substitute for your review.
+
+Priority concerns:
+
+1. No wrong purchase conditions, real authorization, hidden fallback to earlier terminal siblings or fourth dates; preserve original date binding and terminal floors across redraw/omission/pause/restart.
+2. Native select/radio visibility, checked and inherited disabled states; matching prose alone does not verify all meaningful conditions, official list completeness or acceptance. Unknown year/source/conditions must stop recommendations.
+3. Import schema, unsafe/private data and provenance claims; no arbitrary HTML, extra private fields or user URLs reach public state or diagnostics; imported completeness cannot become authorization.
+4. Maintenance/partial/transport/503/auth/consent/429/403 classification; ownership replacement and browser reload invalidate references while preserving task, plan, floors, pause and pending truth.
+5. Durable replay state, marker/journal consistency, crash between writes, same-length edits, concurrent writers and stale observations. Distinguish reachable normal producer defects from coherent wholesale evidence replacement; disclose detection limits.
+6. Existing engine in-flight/unknown/ledger truth has precedence. Replay is a non-executing observer; it cannot bypass the accepted core or create real readiness. Review the synthetic pending fixture's precise scope separately from actual engine submission tests.
+7. Primary and advanced start copy matches default/armed/used/expired/wrong-plan behavior with advanced details closed. Check idle expiry updates, click-time stale-warning handling and preserved bound/next-plan truth.
+8. Separately inspect the unchanged Codex dispatch lock/wrapper/test and the new candidate verifier. No concurrent implementer may be launched.
+
+Approved commands only: both exact manifest verifier commands; `node --test test/launch-boundary.test.ts test/launch-session.test.ts test/next-run-outcome.test.ts`; and `python tools/delegation/test_dispatch_lock.py`. Additional specific repro commands require an explicit task update; disclose permission denials instead of disguising commands. No source writes, live requests, real orders/payment/slot holds, private files, agents, installing tools, settings changes, publication or pushing.
+
+Return an English report with verified identity, checks actually run, reachable findings with reproduction/impact/acceptance conditions, and **separate bounded conclusions** for C-006-R1, C-007 offline DOM replay and management changes. Explicitly state agreement or disagreement with Codex's candidate, without self-approval of your earlier code. Do not approve an unattended Apple adapter, real relative-date completeness, official refusal/hold contracts, Duo checkout or the overall purchase goal. If quota or permissions stop the task, return the exact stop condition and do not imply a review occurred. Codex will save the actual report, independently reproduce findings, dispatch fixes as necessary and require scoped agreement before final acceptance.

@@ -44,6 +44,10 @@ export function reasonZh(reason: string): string {
     "advance-accepted": "继续操作已被接受",
     "refusal-limit": "明确拒绝次数达到上限",
     "refresh-limit-confirmed-none": "官方明确无可选时段，且有限刷新次数已用完",
+    "last-slot-restricted": "按“每个门店/日期只选最晚时段”规则：该日最晚时段已被拒、不可选或从最新列表消失，不回退到更早时段（不等于无货），继续有限刷新",
+    "refresh-limit-last-slot-restricted": "有限刷新次数已用完：列表仍有更早时段，但按“只选最晚时段”规则不回退（不等于无货）",
+    "last-slot-evidence-unreadable": "最晚时段记录无法读取：为安全起见不自动选择时段，请人工检查",
+    "last-slot-history-incomplete": "本次运行的日志无法证明各门店/日期已出现过的最晚时段（旧版本日志或写入中断）：为避免回退到更早时段，已停止自动选择/继续；已发送操作仍只读核实，不重发，请人工核对",
     LIST_STALE_SUSPECTED: "疑似过期列表：同一列表连续被拒、刷新后仍未变化，停止盲点",
     "auth-required": "登录过期或需要本人登录",
     "auth-required-op-unknown": "登录过期；已发送操作结果不明",
@@ -121,7 +125,11 @@ export function formatRecord(rec: JournalRecord): string | null {
     case "decision":
       return rec.slotKey
         ? `${t} [决策] 选择 ${k(rec.slotKey)}（列表 seq=${k(rec.seq)} 代次=${k(rec.gen)}，符合计划的候选 ${k(rec.eligible)} 个，按计划优先级第一）`
-        : `${t} [决策] 当前列表无符合计划的可选时段（seq=${k(rec.seq)}）`;
+        : rec.reason === "last-slot-restricted"
+          ? `${t} [决策] 当前列表只剩更早时段：按“只选最晚时段”规则不回退（seq=${k(rec.seq)}，不等于无货）`
+          : `${t} [决策] 当前列表无符合计划的可选时段（seq=${k(rec.seq)}）`;
+    case "terminal":
+      return `${t} [最晚时段] 本次运行记录该门店/日期最晚时段 ${k(rec.slotKey)}（seq=${k(rec.seq)}；之后不回退到更早时段）`;
     case "intent":
       return `${t} [准备] ${KIND_ZH[String(rec.kind)] ?? rec.kind}${rec.slotKey ? ` ${k(rec.slotKey)}` : ""}（${k(rec.opId)}，已写入日志，尚未发送）`;
     case "sent":

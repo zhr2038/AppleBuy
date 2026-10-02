@@ -12,6 +12,13 @@ import { join, resolve } from "node:path";
 import type { ControlAction } from "../engine.ts";
 import type { SiteScenario } from "../mock/live-site.ts";
 import type { TaskApp, Result } from "./task-app.ts";
+import { errorCode } from "../journal.ts";
+import { LaunchSession } from './launch-session.ts';
+
+/** Bounded Chinese text for an unexpected failure: a short code only, never raw exception text or private paths. */
+export function unexpectedZh(e: unknown, what: string): string {
+  return `${what}（错误代码 ${errorCode(e)}）。没有自动重试；请刷新页面查看最新状态，必要时按 README“安全恢复”人工检查`;
+}
 
 const WEB_DIR = resolve(import.meta.dirname, "..", "..", "web");
 const ASSETS: Record<string, [string, string]> = {
@@ -19,6 +26,9 @@ const ASSETS: Record<string, [string, string]> = {
   "/app.js": ["app.js", "text/javascript; charset=utf-8"],
   "/render.js": ["render.js", "text/javascript; charset=utf-8"],
   "/style.css": ["style.css", "text/css; charset=utf-8"],
+  '/launch': ['launch/index.html','text/html; charset=utf-8'],
+  '/launch/replay.js': ['launch/replay.js','text/javascript; charset=utf-8'],
+  '/launch/observer.js': ['launch/observer.js','text/javascript; charset=utf-8'],
 };
 const CSP = "default-src 'none'; script-src 'self'; style-src 'self'; connect-src 'self'; img-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'";
 const CLIENT_RE = /^c-[a-z0-9]{8,32}$/;
@@ -33,6 +43,7 @@ function sameToken(a: string | null | undefined, b: string): boolean {
 }
 
 export async function startServer(app: TaskApp, o: { port?: number } = {}): Promise<ServerHandle> {
+  const launch = new LaunchSession(app);
   const token = randomBytes(24).toString("hex");
   const streams = new Map<string, http.ServerResponse>();
   let controller: string | null = null;
@@ -49,9 +60,10 @@ export async function startServer(app: TaskApp, o: { port?: number } = {}): Prom
     try {
       state = app.state();
     } catch (e) {
-      state = { fatal: e instanceof Error ? e.message : String(e) };
+      // The task file or evidence could not be read: show a bounded blocker, not the raw error (it may hold paths).
+      state = { fatal: e instanceof Error && e.message.startsWith("TaskStateUnavailable") ? "任务文件 task.json 无法读取或校验失败：已停止显示与操作，原文件已保留、不会覆盖。请人工检查任务目录，不要删除历史" : unexpectedZh(e, "无法生成当前状态") };
     }
-    return { ...(state as object), control: { you: clientId !== null && clientId === controller, held: controller !== null, clients: streams.size } };
+    return { ...(state as object), launch:launch.view(), control: { you: clientId !== null && clientId === controller, held: controller !== null, clients: streams.size } };
   };
   let pending = false;
   const broadcast = () => {
@@ -89,7 +101,7 @@ export async function startServer(app: TaskApp, o: { port?: number } = {}): Prom
     const asset = ASSETS[url.pathname];
     if (req.method === "GET" && asset) {
       let body = readFileSync(join(WEB_DIR, asset[0]), "utf8");
-      if (asset[0] === "index.html") body = body.replace("__SESSION_TOKEN__", token);
+      if (asset[0].endsWith('index.html')) body = body.replace("__SESSION_TOKEN__", token);
       res.writeHead(200, { "content-type": asset[1], "content-security-policy": CSP, "x-content-type-options": "nosniff", "referrer-policy": "no-referrer", "cache-control": "no-store", "x-frame-options": "DENY" });
       return res.end(body);
     }
@@ -98,6 +110,10 @@ export async function startServer(app: TaskApp, o: { port?: number } = {}): Prom
     if (req.method === "GET") {
       if (!sameToken(String(req.headers["x-session-token"] ?? url.searchParams.get("token") ?? ""), token)) return send(res, 403, { ok: false, code: "token" });
       if (url.pathname === "/api/state") return send(res, 200, viewFor(CLIENT_RE.test(clientId) ? clientId : null));
+      if (url.pathname === '/api/launch/sample') {
+        try {return send(res,200,launch.sample(url.searchParams.get('id')??''));}
+        catch {return send(res,400,{ok:false,code:'sample',message:'无法使用这个合成场景'});}
+      }
       if (url.pathname === "/api/events" && CLIENT_RE.test(clientId)) {
         res.writeHead(200, { "content-type": "text/event-stream; charset=utf-8", "cache-control": "no-store", connection: "keep-alive", "x-content-type-options": "nosniff" });
         streams.get(clientId)?.end();
@@ -127,11 +143,14 @@ export async function startServer(app: TaskApp, o: { port?: number } = {}): Prom
     if (url.pathname === "/api/claim") {
       if (!streams.has(clientId)) return send(res, 409, { ok: false, code: "no-stream", message: "该标签页尚未连接状态推送，不能获取控制权" });
       if (controller && controller !== clientId && streams.has(controller)) return send(res, 409, { ok: false, code: "controlled-elsewhere", message: "另一个标签页正在控制此任务；关闭那个标签页后才能获取控制权（不会按时间抢占）" });
+      const changedOwner = controller !== clientId;
       controller = clientId;
+      if (changedOwner) launch.ownerChanged();
       broadcast();
       return send(res, 200, { ok: true, message: "本标签页已获得控制权" });
     }
     let r: Result;
+    if(url.pathname==='/api/launch/pause'&&b.paused===true) {r=launch.pause(true);broadcast();return send(res,r.ok?200:409,r);}
     if (url.pathname === "/api/control") {
       const action = b.action as ControlAction;
       if (!["pause", "resume", "takeover", "stop"].includes(String(action))) return send(res, 400, { ok: false, code: "action" });
@@ -142,7 +161,14 @@ export async function startServer(app: TaskApp, o: { port?: number } = {}): Prom
       if (url.pathname === "/api/start") r = app.start((typeof b.scenario === "string" ? b.scenario : "refuse-then-accept") as SiteScenario);
       else if (url.pathname === "/api/recover") r = app.recover();
       else if (url.pathname === "/api/plan") r = app.editPlan(b.plan);
+      else if (url.pathname === "/api/preset") r = app.loadPreset(b.preset);
       else if (url.pathname === "/api/formal") r = app.armFormal(String(b.planHash ?? ""), String(b.phrase ?? ""));
+      else if (url.pathname === '/api/launch/observe') {
+        if(!['synthetic-sample','imported-observation'].includes(String(b.source))) return send(res,400,{ok:false,code:'source'});
+        r=launch.observe(b.observation,b.source as 'synthetic-sample'|'imported-observation');
+      }
+      else if (url.pathname === '/api/launch/pause'&&b.paused===false) r=launch.pause(false);
+      else if (url.pathname === '/api/launch/pending-fixture') r=launch.fixturePending();
       else return send(res, 404, { ok: false, code: "not-found" });
     }
     broadcast();
@@ -151,7 +177,7 @@ export async function startServer(app: TaskApp, o: { port?: number } = {}): Prom
 
   const server = http.createServer((req, res) => {
     handle(req, res).catch((e: unknown) => {
-      if (!res.headersSent) send(res, 500, { ok: false, code: "internal", message: e instanceof Error ? e.message : String(e) });
+      if (!res.headersSent) send(res, 500, { ok: false, code: "internal", message: unexpectedZh(e, "本机服务处理请求时出错，该操作可能未执行") });
     });
   });
   await new Promise<void>((ok, fail) => {

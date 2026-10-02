@@ -1,5 +1,7 @@
 # C-005-REVIEW — current complete takeover candidate
 
+Dispatch budget for the October 2 resumed run: at most 45 CLI turns, 900 seconds wall time, USD 6 configured CLI budget. These are invocation limits, not a guarantee of charged first-party subscription cost or successful completion. Leave a precise checkpoint on quota/time/budget/permission failure.
+
 This supersedes C-003-REVIEW-R3 as the **current source review target**, preserving all old tasks and receipts as history. Resume session `11941a88-4609-4e7f-a2f8-78c5b5837285` only after the actual reported reset **2026-10-02 01:20 Asia/Shanghai**, verified availability and no duplicate invocation for this project/session. English, exact `claude-opus-5-5`, Extra (`xhigh`), working directory `E:\Apple Store`. Use the existing dispatcher `review` profile: Read/Glob/Grep and explicitly approved bounded commands only. No edits, other agents, installs, live sites, private user/runtime/account data, publication or permission expansion.
 
 Read the full baseline, requirements, status, C-005 business criteria and report/receipt, R3 takeover and previous actual Claude cross-reviews. Inspect the **actual code**, not only reports. Current complete source identity is the **58-file** `docs/reviews/C-005-source-manifest.json`, SHA **`b0e5696aeeb4218bbf809b89905ee25b3fc8340efda7a216ecb802b75ad00b0d`**. Validate completeness independently if needed. The previous 56/53/48/44-file manifests are historical and cannot verify current bytes.

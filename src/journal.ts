@@ -9,7 +9,7 @@ const FIELDS: Record<string, FieldKind> = {
   type: "text", runId: "text", planHash: "hex", epoch: "int", t: "int",
   seq: "int", gen: "int", fingerprint: "hex", refTag: "hex", opId: "opid", kind: "text", slotKey: "text",
   state: "text", phase: "text", reason: "text", code: "text", count: "int", selectable: "int", eligible: "int",
-  attempt: "int", listSeq: "int", notBefore: "int", action: "text", slotRefused: "int",
+  attempt: "int", listSeq: "int", notBefore: "int", action: "text", slotRefused: "int", groups: "int",
 };
 const TEXT_RE = /^[\p{L}\p{N} _:|.,\-+/()·]{0,160}$/u;
 const LONG_DIGITS = /\d{7,}/; // phone, ID, card or order numbers never belong in the journal

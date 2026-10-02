@@ -1,0 +1,105 @@
+{
+  "task": "C-005-R2",
+  "verdict": "PASS_OFFLINE_LAST_SLOT_C005",
+  "sourceManifest": "docs/reviews/C-005-R2-source-manifest.json",
+  "sourceSha256": "41cc1970177a4234ca608d3261c20a889702bb3db2f0b0581e09a41809f5e67b",
+  "sourceFiles": 63,
+  "independentChecks": [
+    {
+      "task": "C-005-R2",
+      "mode": "full",
+      "command": [
+        "node",
+        "--test",
+        "test/*.test.ts",
+        "review/*.test.ts"
+      ],
+      "startedAtUtc": "2026-10-02T05:58:09.280909+00:00",
+      "endedAtUtc": "2026-10-02T05:58:15.345396+00:00",
+      "exitCode": 0,
+      "protectedFilesUnchanged": 20,
+      "sourceFiles": 63,
+      "sourceSha256": "41cc1970177a4234ca608d3261c20a889702bb3db2f0b0581e09a41809f5e67b",
+      "tests": 198,
+      "pass": 198,
+      "fail": 0,
+      "cancelled": 0,
+      "skipped": 0,
+      "todo": 0
+    },
+    {
+      "task": "C-005-R2",
+      "mode": "scenarios",
+      "command": [
+        "node",
+        "src/cli.ts",
+        "rehearse",
+        "--all",
+        "--json"
+      ],
+      "startedAtUtc": "2026-10-02T05:58:09.861855+00:00",
+      "endedAtUtc": "2026-10-02T05:58:13.056654+00:00",
+      "exitCode": 0,
+      "protectedFilesUnchanged": 20,
+      "sourceFiles": 63,
+      "sourceSha256": "41cc1970177a4234ca608d3261c20a889702bb3db2f0b0581e09a41809f5e67b",
+      "scenarios": 29,
+      "mismatches": 0,
+      "nonlocalNetworkAttempts": 0
+    },
+    {
+      "task": "C-005-R2",
+      "mode": "vertical",
+      "command": [
+        "node",
+        "src/cli.ts",
+        "rehearse",
+        "--scenario",
+        "last-slot-omitted-terminals",
+        "--plan",
+        "examples/plan.last-slot.fake.json",
+        "--json"
+      ],
+      "startedAtUtc": "2026-10-02T05:58:10.126303+00:00",
+      "endedAtUtc": "2026-10-02T05:58:10.596936+00:00",
+      "exitCode": 0,
+      "protectedFilesUnchanged": 20,
+      "sourceFiles": 63,
+      "sourceSha256": "41cc1970177a4234ca608d3261c20a889702bb3db2f0b0581e09a41809f5e67b",
+      "scenarios": 1,
+      "mismatches": 0,
+      "nonlocalNetworkAttempts": 0,
+      "phase": "REHEARSAL_ENDPOINT",
+      "chosen": [
+        "FAKE \u95e8\u5e97\u7532|2099-01-01|17:30-18:00",
+        "FAKE \u95e8\u5e97\u7532|2099-01-02|17:00-17:30",
+        "FAKE \u95e8\u5e97\u7532|2099-01-03|16:30-17:00"
+      ],
+      "finalSubmits": 0
+    }
+  ],
+  "realPurchaseImplemented": false,
+  "realMutationsAuthorized": false,
+  "mutualBoundedAgreement": true,
+  "claudeActualReview": {
+    "task": "C-005-REVIEW-R2",
+    "model": "claude-opus-5-5",
+    "effort": "xhigh",
+    "returnedTurns": 17,
+    "success": true,
+    "report": "docs/reviews/C-005-claude-re-review-R2.md"
+  },
+  "scopeVerdicts": {
+    "C003": "PASS_OFFLINE_LOCAL_APPLICATION",
+    "C004": "PASS_BOUNDED_READONLY_PREFLIGHT",
+    "C005": "PASS_OFFLINE_LAST_SLOT_RESELECTION"
+  },
+  "acceptedAtUtc": "2026-10-02T06:07:57.727948+00:00",
+  "limitations": [
+    "Real relative-date binding and full-slot-list contract are unverified",
+    "Real browser/checkout adapter not implemented",
+    "No real orders/payment/slot holds authorized",
+    "Legacy incomplete last-slot history reconciles first then remains manual",
+    "Hand-rechained journal semantic hardening and remaining diagnostic nits are nonblocking follow-ups"
+  ]
+}

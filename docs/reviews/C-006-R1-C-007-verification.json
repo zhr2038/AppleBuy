@@ -1,0 +1,178 @@
+{
+  "task": "C-006-R1-C-007 Codex quota takeover",
+  "verdict": "PASS_CODEX_OFFLINE_CHECKS_AWAIT_ACTUAL_CLAUDE_REVIEW",
+  "candidateFiles": 83,
+  "candidateSha256": "6e1d83f904a1c1479d310c4c927a3e189ee2561393e7dc9e2d6cf171f40e13a7",
+  "runtimeSourceFiles": 77,
+  "runtimeSourceSha256": "01e61f991a41e08d6689a181c7db21b74978266434b5f099e033b0519806dc66",
+  "protectedReviewerFilesUnchanged": 20,
+  "checks": [
+    {
+      "task": "C-006-R1-C-007 Codex quota takeover candidate",
+      "mode": "full",
+      "command": [
+        "node",
+        "--test",
+        "test/*.test.ts",
+        "review/*.test.ts"
+      ],
+      "startedAtUtc": "2026-10-02T09:40:23.096285+00:00",
+      "endedAtUtc": "2026-10-02T09:40:29.009035+00:00",
+      "exitCode": 0,
+      "protectedFilesUnchanged": 20,
+      "sourceFiles": 83,
+      "sourceSha256": "6e1d83f904a1c1479d310c4c927a3e189ee2561393e7dc9e2d6cf171f40e13a7",
+      "actualClaudeCrossReview": "PENDING",
+      "tests": 225,
+      "pass": 225,
+      "fail": 0,
+      "cancelled": 0,
+      "skipped": 0,
+      "todo": 0
+    },
+    {
+      "task": "C-006-R1-C-007 Codex quota takeover candidate",
+      "mode": "scenarios",
+      "command": [
+        "node",
+        "src/cli.ts",
+        "rehearse",
+        "--all",
+        "--json"
+      ],
+      "startedAtUtc": "2026-10-02T09:40:23.096786+00:00",
+      "endedAtUtc": "2026-10-02T09:40:26.349345+00:00",
+      "exitCode": 0,
+      "protectedFilesUnchanged": 20,
+      "sourceFiles": 83,
+      "sourceSha256": "6e1d83f904a1c1479d310c4c927a3e189ee2561393e7dc9e2d6cf171f40e13a7",
+      "actualClaudeCrossReview": "PENDING",
+      "scenarios": 29,
+      "mismatches": 0
+    },
+    {
+      "task": "C-006-R1-C-007 Codex quota takeover candidate",
+      "mode": "vertical",
+      "command": [
+        "node",
+        "src/cli.ts",
+        "rehearse",
+        "--scenario",
+        "last-slot-omitted-terminals",
+        "--plan",
+        "examples/plan.last-slot.fake.json",
+        "--json"
+      ],
+      "startedAtUtc": "2026-10-02T09:40:26.426344+00:00",
+      "endedAtUtc": "2026-10-02T09:40:26.715763+00:00",
+      "exitCode": 0,
+      "protectedFilesUnchanged": 20,
+      "sourceFiles": 83,
+      "sourceSha256": "6e1d83f904a1c1479d310c4c927a3e189ee2561393e7dc9e2d6cf171f40e13a7",
+      "actualClaudeCrossReview": "PENDING",
+      "scenarios": 1,
+      "mismatches": 0,
+      "phase": "REHEARSAL_ENDPOINT",
+      "chosen": [
+        "FAKE 门店甲|2099-01-01|17:30-18:00",
+        "FAKE 门店甲|2099-01-02|17:00-17:30",
+        "FAKE 门店甲|2099-01-03|16:30-17:00"
+      ],
+      "finalSubmits": 0
+    },
+    {
+      "task": "C-006-R1-C-007 Codex quota takeover candidate",
+      "mode": "launch",
+      "command": [
+        "node",
+        "src/cli.ts",
+        "launch-replay",
+        "--task-dir",
+        ".local/test-runs/c007-final-cli5"
+      ],
+      "startedAtUtc": "2026-10-02T09:40:23.096786+00:00",
+      "endedAtUtc": "2026-10-02T09:40:23.691812+00:00",
+      "exitCode": 0,
+      "protectedFilesUnchanged": 20,
+      "sourceFiles": 83,
+      "sourceSha256": "6e1d83f904a1c1479d310c4c927a3e189ee2561393e7dc9e2d6cf171f40e13a7",
+      "actualClaudeCrossReview": "PENDING",
+      "scenarios": 20,
+      "passed": true,
+      "unknownPreserved": true,
+      "realRequests": 0,
+      "realActions": 0
+    },
+    {
+      "task": "C-006-R1-C-007 Codex quota takeover candidate",
+      "mode": "management",
+      "command": [
+        "python",
+        "tools/delegation/test_dispatch_lock.py"
+      ],
+      "startedAtUtc": "2026-10-02T09:40:23.817320+00:00",
+      "endedAtUtc": "2026-10-02T09:40:24.135337+00:00",
+      "exitCode": 0,
+      "protectedFilesUnchanged": 20,
+      "sourceFiles": 83,
+      "sourceSha256": "6e1d83f904a1c1479d310c4c927a3e189ee2561393e7dc9e2d6cf171f40e13a7",
+      "actualClaudeCrossReview": "PENDING"
+    }
+  ],
+  "codexModifiedOrAddedFiles": [
+    "README.md",
+    "examples/plan.launch.fake.json",
+    "src/app/launch-session.ts",
+    "src/app/server.ts",
+    "src/cli.ts",
+    "src/launch-replay.ts",
+    "src/launch.ts",
+    "test/launch-boundary.test.ts",
+    "test/launch-session.test.ts",
+    "test/next-run-outcome.test.ts",
+    "tools/delegation/verify_candidate_manifest.py",
+    "web/app.js",
+    "web/index.html",
+    "web/launch/index.html",
+    "web/launch/observer.js",
+    "web/launch/replay-samples.js",
+    "web/launch/replay.js",
+    "web/launch/samples.js",
+    "web/render.js",
+    "web/style.css"
+  ],
+  "unchangedHeadFilesAddedToManifestCoverage": [
+    "entry/cli.ts",
+    "entry/public-entry.ts",
+    "examples/plan.fake.json",
+    "examples/plan.last-slot.fake.json"
+  ],
+  "actualClaudeCrossReview": "PENDING",
+  "realAdapterImplemented": false,
+  "realActionsFromOfflineRuntime": 0,
+  "actualChromeChecks": {
+    "browser": "user desktop Chrome",
+    "sourceSha256": "6e1d83f904a1c1479d310c4c927a3e189ee2561393e7dc9e2d6cf171f40e13a7",
+    "domCases": 19,
+    "threeDateTerminalVertical": "first refused, second refused, third accepted, rehearsal endpoint",
+    "fakeFinalSubmits": 0,
+    "fakeOrderRecords": 0,
+    "reloadInvalidatesPageReferences": true,
+    "secondTabObservationDisabled": true,
+    "secondTabOwnerClaimRefused": true,
+    "pauseResumeRequiresFreshObservation": true,
+    "terminalFloorPreservedAfterRemoval": true,
+    "syntheticUnknownPreservedThroughMaintenanceAndReload": true,
+    "syntheticUnknownSendsNoSubmission": true,
+    "actualThirtyMinuteIdleCapabilityExpiry": {
+      "primaryCopyUpdatedWithoutReload": true,
+      "runAfterExpiry": "BLOCKED formal-capability-expired",
+      "observe": 3,
+      "choose": 2,
+      "advance": 1,
+      "submit": 0,
+      "orderRecords": 0
+    },
+    "scopeNote": "Browser uses generated FAKE DOM. Last change selected the matching ready example on home reload; replay decision/producer files were unchanged. No official adapter readiness."
+  }
+}

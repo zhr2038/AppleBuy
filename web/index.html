@@ -2,41 +2,38 @@
 <html lang="zh-CN">
 <head>
 <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="session-token" content="__SESSION_TOKEN__">
 <meta name="referrer" content="no-referrer">
 <title>直营店自提助手｜本机演练（FAKE）</title>
 <link rel="stylesheet" href="/style.css">
 </head>
 <body>
-<header class="banner">【演练模式｜FAKE 虚构数据｜本机模拟官网，不访问苹果官网，不产生真实订单/付款/时段占用】</header>
+<header class="banner">演练模式｜FAKE 虚构数据｜不访问苹果官网，不会下单、付款或占用时段</header>
 <main>
-  <section class="controls card">
-    <h2>操作</h2>
-    <p id="msg" class="msg">连接中…</p>
-    <div class="row">
-      <button id="claim">获取控制权</button>
-      <label>模拟官网场景 <select id="scenario"></select></label>
-      <button id="start">开始自动演练</button>
-      <button id="recover">恢复运行（从日志，只读核实优先）</button>
-    </div>
-    <div class="row">
-      <button id="pause">暂停</button>
-      <button id="resume">恢复（先重新观察）</button>
-      <button id="takeover">人工接管</button>
-      <button id="stop">停止</button>
-    </div>
+  <section class="card hero">
+    <h1>苹果直营店自提助手</h1>
+    <p>现在<b>只能离线演练</b>：程序在本机的<b>模拟官网</b>上自动选取货时段，遇到拒绝就用最新列表改选，被接受后继续结账。是否会提交一单<b>模拟</b>订单，以“开始演练”按钮旁的说明为准。</p>
+    <p class="warn"><b>真实购买尚未接入。</b>演练成功不代表苹果官网可以买到，也不是预约或下单。</p>
   </section>
+  <p id="msg" class="msg" role="status" aria-live="polite">连接中…</p>
   <div id="view"></div>
-  <section class="card">
-    <h2>购买计划（FAKE，可编辑；保存后形成新版本，不影响正在运行的绑定版本）</h2>
-    <textarea id="plan" rows="18" spellcheck="false"></textarea>
-    <div class="row"><button id="savePlan">保存计划</button><button id="reloadPlan">放弃修改</button></div>
-  </section>
-  <section class="card">
-    <h2>一次性模拟正式授权（仅对本机模拟官网有效；真实正式模式不可用）</h2>
-    <p>请完整核对上方计划（当前版本哈希 <code id="planHash"></code>），然后输入确认语：<code id="phrase"></code></p>
-    <div class="row"><label><input type="checkbox" id="reviewed"> 我已核对当前计划版本</label><input id="phraseInput" size="30" autocomplete="off"><button id="arm">启用一次</button></div>
-  </section>
+  <div id="start"></div>
+  <div id="details"></div>
+  <details class="card advanced" id="advanced">
+    <summary>高级详情（技术信息、完整日志、计划 JSON、其他模拟场景、模拟正式授权）</summary>
+    <p><a href="/launch">开售页面回放（仅本机合成样本）</a></p>
+    <div id="advView"></div>
+    <h3>其他模拟官网场景</h3>
+    <p id="advOutcome" class="outcome"></p>
+    <div class="row"><select id="scenario"></select><button type="button" id="startAdvanced">用当前计划开始此场景</button></div>
+    <h3>购买计划 JSON（FAKE，可编辑；保存后形成新版本，不影响正在运行的绑定版本）</h3>
+    <textarea id="plan" rows="14" spellcheck="false"></textarea>
+    <div class="row"><button type="button" id="savePlan">保存计划</button><button type="button" id="reloadPlan">放弃修改</button></div>
+    <h3>一次性模拟正式授权（仅对本机模拟官网有效；真实正式模式不可用）</h3>
+    <p>请完整核对计划（当前版本 <code id="planHash"></code>），然后输入确认语：<code id="phrase"></code></p>
+    <div class="row"><label><input type="checkbox" id="reviewed"> 我已核对当前计划版本</label><input id="phraseInput" autocomplete="off"><button type="button" id="arm">启用一次</button></div>
+  </details>
 </main>
 <script type="module" src="/app.js"></script>
 </body>

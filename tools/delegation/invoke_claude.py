@@ -12,6 +12,7 @@ import subprocess
 import sys
 import time
 import uuid
+from dispatch_lock import DispatchAlreadyRunning, dispatch_lease
 
 ROOT = Path(__file__).resolve().parents[2]
 MODEL = "claude-opus-5-5"
@@ -27,7 +28,7 @@ def now() -> str:
     return dt.datetime.now(dt.timezone.utc).isoformat()
 
 
-def main() -> int:
+def run_task() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("task")
     parser.add_argument("--profile", choices=["probe", "proposal", "implementation", "documentation", "review"], default="proposal")
@@ -153,6 +154,25 @@ def main() -> int:
     # Windows pipe/console encodings may be GBK. Keep stdout ASCII-safe while UTF-8 files retain the full report.
     print(json.dumps(summary, ensure_ascii=True, indent=2), flush=True)
     return 0 if success else 1
+
+
+def main() -> int:
+    outdir = ROOT / ".local" / "claude"
+    try:
+        with dispatch_lease(outdir):
+            # A killed dispatcher may leave its Claude child alive after the OS lease is released. Metadata that
+            # never reached a terminal status therefore also blocks dispatch, until independently resolved.
+            for record in outdir.glob("*.meta.json"):
+                try:
+                    previous = json.loads(record.read_text(encoding="utf-8"))
+                except (OSError, ValueError):
+                    raise DispatchAlreadyRunning("An invocation record cannot be verified; inspect it before dispatch")
+                if previous.get("status") == "running":
+                    raise DispatchAlreadyRunning("An earlier invocation is active or its terminal status is unresolved")
+            return run_task()
+    except DispatchAlreadyRunning as error:
+        print(json.dumps({"status": "dispatch_refused", "reason": str(error), "newClaudeStarted": False}), flush=True)
+        return 5
 
 
 if __name__ == "__main__":

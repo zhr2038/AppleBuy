@@ -1,18 +1,54 @@
-body { font-family: "Microsoft YaHei", "PingFang SC", system-ui, sans-serif; margin: 0; background: #f5f5f7; color: #1d1d1f; }
-.banner { background: #b00020; color: #fff; padding: 8px 16px; font-weight: bold; position: sticky; top: 0; z-index: 1; }
-main { max-width: 1100px; margin: 0 auto; padding: 12px; }
-.card { background: #fff; border-radius: 8px; padding: 10px 16px; margin: 10px 0; box-shadow: 0 1px 3px rgba(0,0,0,.08); }
-.card h2 { font-size: 16px; margin: 6px 0; }
-.card h3 { font-size: 14px; margin: 6px 0; }
-.status.human { border: 2px solid #b00020; }
-.site { border: 2px dashed #888; }
-.site tr.accepted { background: #e6f4ea; }
-.trace pre { max-height: 360px; overflow: auto; font-size: 12px; background: #fafafa; padding: 8px; white-space: pre-wrap; }
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body { font-family: "Microsoft YaHei", "PingFang SC", system-ui, sans-serif; margin: 0; background: #f5f5f7; color: #1d1d1f; font-size: 14px; line-height: 1.5; overflow-wrap: anywhere; }
+.banner { background: #b00020; color: #fff; padding: 6px 12px; font-weight: bold; position: sticky; top: 0; z-index: 1; font-size: 13px; }
+main { max-width: 860px; margin: 0 auto; padding: 8px; }
+.panel { background:#fff; border:1px solid #ddd; border-radius:8px; padding:14px; margin:12px 0; }
+.notice { padding:10px; border-left:3px solid #aa7700; background:#fff9eb; }
+.card { background: #fff; border-radius: 8px; padding: 10px 12px; margin: 8px 0; box-shadow: 0 1px 3px rgba(0,0,0,.08); min-width: 0; }
+h1 { font-size: 18px; margin: 4px 0; }
+.card h2 { font-size: 16px; margin: 4px 0 6px; }
+.card h3, .advanced h3 { font-size: 14px; margin: 10px 0 4px; }
+.hero p { margin: 4px 0; }
+.status.human, .blockers { border: 2px solid #b00020; }
+.formal { border: 2px solid #b00020; background: #fff4f4; }
+.outcome { background: #eef5ff; padding: 6px 10px; border-radius: 6px; margin: 4px 0; flex-basis: 100%; }
+.outcome.formal { background: #fff4f4; border: 2px solid #b00020; font-weight: bold; }
+.readonly { background: #fff8e1; padding: 6px 10px; border-radius: 6px; }
+.next { background: #eef5ff; padding: 6px 10px; border-radius: 6px; }
+.fake { color: #b00020; }
+.summary { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 2px 10px; margin: 6px 0; }
+.summary dt { color: #555; }
+.summary dd { margin: 0; min-width: 0; }
+.choices { display: grid; gap: 6px; }
+.choice { display: block; border: 1px solid #ccc; border-radius: 6px; padding: 6px 8px; cursor: pointer; }
+.choice.on { border-color: #0066cc; background: #f0f7ff; }
+.choice .small { display: block; margin-left: 1.4em; }
+.history { margin: 4px 0; padding-left: 1.6em; }
 .row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 6px 0; }
-button { padding: 6px 12px; }
+.row > * { max-width: 100%; }
+button { padding: 6px 12px; font: inherit; border-radius: 6px; border: 1px solid #999; background: #fff; cursor: pointer; }
+button:disabled { opacity: .5; cursor: not-allowed; }
+button.primary { background: #0066cc; border-color: #0066cc; color: #fff; }
+button.big { padding: 8px 20px; font-size: 15px; }
+button.danger { border-color: #b00020; color: #b00020; }
+select, input:not([type]), input[type="text"] { max-width: 100%; min-width: 0; font: inherit; }
+#phraseInput { width: 22em; }
 textarea { width: 100%; font-family: Consolas, monospace; font-size: 12px; }
+.advanced summary { cursor: pointer; font-weight: bold; }
+.site { border: 2px dashed #888; padding: 6px; margin: 8px 0; }
+.site tr.accepted { background: #e6f4ea; }
+.scroll { max-height: 280px; overflow: auto; max-width: 100%; }
+.trace pre { max-height: 360px; overflow: auto; font-size: 12px; background: #fafafa; padding: 8px; white-space: pre-wrap; }
 table { border-collapse: collapse; font-size: 13px; }
 td, th { border: 1px solid #ddd; padding: 2px 8px; }
+code { overflow-wrap: anywhere; }
 .warn { color: #b00020; }
-.msg { min-height: 1.4em; }
+.msg { min-height: 1.4em; margin: 4px 2px; }
 .small { font-size: 12px; color: #555; }
+@media (max-width: 480px) {
+  main { padding: 4px; }
+  .card { padding: 8px; }
+  .summary { grid-template-columns: minmax(0, 1fr); }
+  .summary dt { font-weight: bold; margin-top: 4px; }
+}

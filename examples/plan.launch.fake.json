@@ -1,0 +1,8 @@
+{
+  "schema":"pickup-plan/v1","fake":true,"label":"FAKE 开售页面回放，四个虚构日期用于验证初始三日限制","timezone":"Asia/Shanghai","fulfillment":"pickup","quantity":1,"maxTotalCny":15999,
+  "products":[{"id":"FAKE-duo","model":"iPhone Duo","capacity":"256GB","color":"星光白色"}],
+  "stores":[{"label":"FAKE 门店甲","role":"primary"}],
+  "dates":["2099-01-01","2099-01-02","2099-01-03","2099-01-04"],
+  "windows":[{"start":"20:00","end":"22:00"}],"arrival":{"earliest":"20:00","latest":"22:00"},"priority":["date","store","window"],"slotSelection":"last-offered-per-store-date",
+  "bounds":{"maxRefusals":8,"maxRefreshes":5,"maxAttemptsPerSlot":2,"minRefreshIntervalMs":2000,"maxQueryFailures":3,"maxReconcileAttempts":2},"paymentMethodLabel":"FAKE 付款方式"
+}

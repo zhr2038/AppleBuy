@@ -15,6 +15,7 @@ export const SITE_SCENARIOS = {
   "refuse-then-accept": "首选时段显示可选但已满 → 明确拒绝 → 新列表重选 → 接受 → 继续到付款前",
   "submit-confirm": "同上；若已启用一次模拟正式授权，模拟提交被确认",
   "submit-unknown": "同上；若已启用一次模拟正式授权，模拟提交超时且只读查询仍不明",
+  "last-slot-three-dates": "三日末档（FAKE；仅借用历史 Pro 页面“日期 + 15 分钟时段”的形状）：第 1、2 天最晚时段被明确拒绝并从列表移除 → 第 3 天最晚时段被接受 → 继续到付款前",
 } as const;
 export type SiteScenario = keyof typeof SITE_SCENARIOS;
 export type SiteMethod = "observe" | "chooseSlot" | "advance" | "submitOrder" | "lookupOrder";
@@ -42,7 +43,24 @@ const FAKE_SLOTS: SiteSlot[] = [
   { t: ["FAKE 门店乙", "2099-01-01", "10:00", "10:30"], cap: 1, shown: true },
 ];
 
-const zeroCounts = (): Record<SiteMethod, number> => ({ observe: 0, chooseSlot: 0, advance: 0, submitOrder: 0, lookupOrder: 0 });
+/**
+ * FAKE fixture shaped like the historical Pro observation (one date, 15-minute options 10:00–10:15 … 21:15–21:30).
+ * Dates, capacities and the last time per date are invented; day 3 deliberately ends earlier so the engine must read
+ * each date's last time from the list rather than assume 21:30. Capacity 0 = displayed but explicitly refused.
+ */
+function threeDateSlots(): SiteSlot[] {
+  const days: [string, string][] = [["2099-01-01", "21:30"], ["2099-01-02", "21:30"], ["2099-01-03", "21:00"]];
+  const hm = (m: number) => `${String(Math.floor(m / 60)).padStart(2, "0")}:${String(m % 60).padStart(2, "0")}`;
+  const slots: SiteSlot[] = [];
+  for (const [i, [date, close]] of days.entries()) {
+    const last = Number(close.slice(0, 2)) * 60 + Number(close.slice(3)) - 15;
+    for (let m = 10 * 60; m <= last; m += 15) slots.push({ t: ["FAKE 门店甲", date, hm(m), hm(m + 15)], cap: m === last && i < 2 ? 0 : 1, shown: true });
+  }
+  return slots;
+}
+const slotsFor = (scenario: SiteScenario): SiteSlot[] => (scenario === "last-slot-three-dates" ? threeDateSlots() : structuredClone(FAKE_SLOTS));
+
+const zeroCounts =(): Record<SiteMethod, number> => ({ observe: 0, chooseSlot: 0, advance: 0, submitOrder: 0, lookupOrder: 0 });
 
 export type LiveSiteOptions = { latencyMs?: number; hold?: string[] };
 
@@ -75,7 +93,7 @@ export class LiveMockSite implements CheckoutPort {
 
   /** New selection flow for a new run. Remote order records and call counters are kept (they are remote truth). */
   reset(scenario: SiteScenario): void {
-    this.#s = { ...this.#s, scenario, listVersion: this.#s.listVersion + 1, step: "slot-selection", slots: structuredClone(FAKE_SLOTS), accepted: null };
+    this.#s = { ...this.#s, scenario, listVersion: this.#s.listVersion + 1, step: "slot-selection", slots: slotsFor(scenario), accepted: null };
     this.#save();
   }
   setHold(methods: string[]): void {
@@ -163,8 +181,9 @@ export class LiveMockSite implements CheckoutPort {
         s.step = "checkout-review";
         return res(opId, "accepted");
       }
-      // Explicit refusal; the page is redrawn (new refs) and now shows the slot as unavailable.
-      slot.shown = false;
+      // Explicit refusal; the page is redrawn (new refs) and shows the slot as unavailable, or omits it entirely.
+      if (s.scenario === "last-slot-three-dates") s.slots.splice(i, 1);
+      else slot.shown = false;
       s.listVersion++;
       return res(opId, "rejected", { code: "slot-full", slotRefused: true });
     });

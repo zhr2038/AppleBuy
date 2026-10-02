@@ -1,0 +1,20 @@
+# C-009 — one-start desktop Chrome adapter proposal
+
+Prepared dependency task; not dispatched. Execute only after the exact C-006-R1/C-007 candidate has actual scoped Claude/Codex agreement and no other invocation is unresolved. English, same workspace, original session, Opus 5.5/xhigh. Read requirements, the current accepted manifest/report and the sanitized October 2 Pro pilot report. Do not read private customer/runtime files, account history or unrelated projects.
+
+The user wants to configure the product and pickup rule ahead of time, then explicitly start once and reach one approved unpaid official order. The current program only rehearses. Codex's successful merchant flow supplies normal-flow evidence but does not prove an application adapter, launch performance, a slot hold or Duo compatibility. Claude owns the technical approach; do not treat an earlier framework or browser-control discussion as approved architecture.
+
+Required business behavior:
+
+- Only mainland Apple's official retail-store pickup, one unit, exact authorized variant, permitted Dalian stores, price cap and payment-method label; no delivery, extras, trade-in, installment or silent substitutions.
+- Select only the terminal range on each of the initial first at most three genuinely offered dates, in date order. A refused or removed terminal range advances to the next allowed date, never earlier that day or a fourth day. Preserve binding and evidence across redraw, pause, reconnect and restart.
+- Human authentication, verification and acceptance of binding terms remain explicit gates. A remembered account session or local encrypted suffix does not prove current merchant identity or authorize a new order. No credentials, raw authenticated requests, cookies or private inputs in model prompts, logs or Git.
+- Before a final submission, verify merchant conditions and existing orders, then durably record a unique one-order intent. Any timeout or ambiguous result enters read-only reconciliation; no second submit after reload, another tab, crash or expiry. The already executed Pro authorization is consumed; this task authorizes zero real submissions or reservations.
+- The main screen must show the configured target and effective result of the next start in concise Chinese. Technical details stay folded. Offline, read-only preflight, manual-gate, unknown-result and unsupported-real-mode states must be obvious beside the start action.
+- Runtime selection and recovery must run locally without online model calls. Do not bypass site verification, queues, access controls, rate limits or purchase limits.
+
+Produce a concise feasibility/architecture proposal with current evidence for each planned transition: product entry, bag, pickup selection, details, payment label, review, final action and independently confirmed unpaid endpoint. State what the Pro pilot establishes and what it leaves unknown, especially missing calendar year, list completeness, official refusal/acceptance/hold feedback and unknown-order reconciliation. A public purchase page or DOM selector must not be invented as a merchant API contract.
+
+Choose the smallest useful runnable next vertical and define measurable acceptance: real-page observation to decision and accepted-state continuation timing without human waiting, a controllable local merchant fixture for actual refusal and ambiguous-submission recovery, same-process/tab ownership, persistent no-repeat intent, and no external mutations in test mode. Give a concrete migration path from the accepted engine and explain the boundaries between observation, recommendation and execution. Identify additional actual official observation or user input needed. No stress tests or real-order repeats.
+
+Return a proposal and implementation task breakdown only. This prepared sheet does not expand tools, authorize source writes, install software, change browser security settings or enable real purchase. Codex will review the concrete proposal and dispatch an appropriate implementation task with explicit allowed operations. A future real merchant test needs a new specific authorization and any action-time terms confirmation.

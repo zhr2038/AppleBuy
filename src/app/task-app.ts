@@ -18,7 +18,8 @@ import type { OwnerLock, PreviousOwner, StatusRead } from "./owner-lock.ts";
 import { acquireOwnership } from "./owner-lock.ts";
 import type { Evidence, RunRecord, TaskDoc } from "./task-store.ts";
 import { FORMAL_PHRASE, FORMAL_TTL_MS, TaskStore, currentPlan, describeEvidence, latestRun, ledgerFileDamaged, letterId } from "./task-store.ts";
-import { engineView } from "./view.ts";
+import { businessHistory, engineView } from "./view.ts";
+import { PRESETS, presetById, requiredPresetFor } from "./presets.ts";
 
 export const TEST_RUNS_ROOT = resolve(import.meta.dirname, "..", "..", ".local", "test-runs");
 /** Physical location: the nearest existing ancestor is resolved through junctions/symlinks; the missing tail is kept. */
@@ -44,6 +45,17 @@ export function isInsideTestRuns(dir: string, realpath?: (p: string) => string):
 
 /** Wall clock: real time passes on its own, so the runner's virtual-clock advances are no-ops. */
 const WALL: RunClock = { now: () => Date.now(), advance: () => {}, advanceTo: () => {} };
+
+// Bounded diagnostics: never raw exception text or private paths. The unreadable file is kept as evidence, never rewritten.
+const TASK_FILE_STOPPED_ZH = "已停止发送（本操作未发出）：任务文件 task.json 无法读取或解析；原文件已保留、不会覆盖，请人工检查";
+const TASK_FILE_FINALIZE_ZH = "运行结束后无法读取任务文件 task.json：显示的状态可能不是最新；原文件已保留、不会覆盖，请人工检查";
+function loopFailureZh(e: unknown): string {
+  const message = e instanceof Error ? e.message : "";
+  // Our own send-time stops are already bounded Chinese diagnostics.
+  if (message.startsWith("已停止发送")) return message;
+  if (message.startsWith("TaskStateUnavailable")) return TASK_FILE_STOPPED_ZH;
+  return `执行器异常停止（${errorCode(e)}）：未自动重发，请人工检查`;
+}
 
 export type CrashPoint = { type: string; kind?: string };
 export type AppOptions = {
@@ -260,6 +272,19 @@ export class TaskApp {
     return { ok: true, message: `已保存为计划版本 v${doc.currentRev}（哈希 ${h}）。正在运行的任务仍绑定原计划版本${warning}` };
   }
 
+  /**
+   * Explicitly loads a built-in FAKE example as a new plan revision (earlier revisions and any running binding are kept).
+   * A non-FAKE current plan is never displaced by a preset: that may be a saved customer plan.
+   */
+  loadPreset(id: unknown): Result {
+    if (this.#closing) return { ok: false, code: "closed", message: "执行器已关闭，不能修改计划" };
+    const preset = presetById(id);
+    if (!preset) return { ok: false, code: "preset", message: "未知的示例" };
+    if (currentPlan(this.doc()).plan.fake !== true) return { ok: false, code: "plan-not-fake", message: "当前计划不是 FAKE 演练计划：为避免替换你保存的计划，示例不会载入。请在“高级”中人工处理" };
+    const r = this.editPlan(structuredClone(preset.plan));
+    return r.ok ? { ok: true, message: `已载入示例“${preset.title}”。${r.message}` } : r;
+  }
+
   armFormal(reviewedPlanHash: string, phrase: string): Result {
     if (this.#closing) return { ok: false, code: "closed", message: "执行器已关闭，不能启用授权" };
     const ev = this.store.ledger.evidence();
@@ -284,6 +309,9 @@ export class TaskApp {
     if (blocker) return { ok: false, code: "start-blocked", message: blocker };
     const doc = this.doc();
     const cur = currentPlan(doc);
+    // A fixture written for one example plan would demonstrate nothing meaningful under another plan.
+    const required = requiredPresetFor(scenario);
+    if (required && planHash(required.plan) !== cur.planHash) return { ok: false, code: "preset-required", message: `请先载入示例计划“${required.title}”，核对后再开始` };
     const runId = letterId("run");
     let capability: RunRecord["capability"] = null;
     if (doc.formalArm && doc.formalArm.usedByRunId === null) {
@@ -327,7 +355,9 @@ export class TaskApp {
     if (!this.#loop || !this.#engine) return { ok: false, code: "not-running", message: "当前没有运行中的任务" };
     this.#controls.push(action);
     this.#signal();
-    return { ok: true, message: { pause: "已请求暂停", resume: "已请求恢复（将先重新观察）", takeover: "已请求人工接管", stop: "已请求停止" }[action] };
+    // Pause/takeover/stop never recall an operation that already reached the site; its result is still verified.
+    const sent = "；已发出的操作不会被撤回，其结果仍会被核实";
+    return { ok: true, message: { pause: `已请求暂停：不再发起新动作${sent}`, resume: "已请求恢复（将先重新观察）", takeover: `已请求人工接管：不再发起新动作${sent}`, stop: `已请求停止：不再发起新动作${sent}` }[action] };
   }
 
   #launch(engine: Engine, run: RunRecord, journal: FileJournal): void {
@@ -347,7 +377,11 @@ export class TaskApp {
       this.#o.beforeSend?.(cmd);
       // Validate every mutation after preparation, not just final submit. Abort before appending "sent" or
       // reaching the port if critical durable evidence became unreadable. Do not rewrite corrupt evidence.
-      this.doc();
+      try {
+        this.doc();
+      } catch {
+        throw new Error(TASK_FILE_STOPPED_ZH);
+      }
       const ev = this.store.ledger.evidence();
       if (!ev.ok) throw new Error(`已停止发送（本操作未发出）：${describeEvidence(ev.problem)}`);
     };
@@ -359,12 +393,21 @@ export class TaskApp {
         if (r.aborted && r.aborted !== "runner-shutdown") this.#loopError = r.aborted;
       })
       .catch((e: unknown) => {
-        this.#loopError = e instanceof Error ? e.message : String(e);
+        this.#loopError = loopFailureZh(e);
       })
       .finally(() => {
         this.#loop = null;
-        this.#refreshLastRun();
-        this.#changed();
+        // The finalizer must settle: an unreadable task file cannot reject idle()/close() or strand the OS lock.
+        try {
+          this.#refreshLastRun();
+        } catch {
+          this.#loopError ??= TASK_FILE_FINALIZE_ZH;
+        }
+        try {
+          this.#changed();
+        } catch (e) {
+          this.#loopError ??= loopFailureZh(e);
+        }
       });
     this.#changed();
   }
@@ -379,14 +422,18 @@ export class TaskApp {
     }
     this.#signal();
     this.#closePromise = (async () => {
-      await this.idle();
-      this.site.close();
-      for (const [timer, settle] of this.#sleeps) {
-        clearTimeout(timer);
-        settle();
+      try {
+        await this.idle();
+      } finally {
+        // Shutdown always detaches the site and releases this owner's OS lock, even if the loop failed.
+        this.site.close();
+        for (const [timer, settle] of this.#sleeps) {
+          clearTimeout(timer);
+          settle();
+        }
+        this.#sleeps.clear();
+        await this.lock.release();
       }
-      this.#sleeps.clear();
-      await this.lock.release();
     })();
     return this.#closePromise;
   }
@@ -433,8 +480,14 @@ export class TaskApp {
       formal: { phrase: FORMAL_PHRASE, armed: arm !== null, used: arm?.usedByRunId ?? null, expiresAt: arm?.expiresAt ?? null, armedPlanHash: arm?.planHash ?? null, liveMode: "不可用（未实现真实适配器，也没有真实授权）" },
       site: this.site.view(),
       scenarios: SITE_SCENARIOS,
+      examples: PRESETS.map((p) => ({
+        id: p.id, title: p.title, summary: p.summary, scenario: p.scenario,
+        ready: p.requiresPlan ? planHash(p.plan) === cur.planHash : cur.plan.slotSelection === undefined,
+        canLoad: cur.plan.fake === true,
+      })),
       startBlocker: this.startBlocker(ev),
       recoverBlocker: this.recoverBlocker(ev),
+      history: businessHistory(records),
       trace,
     };
   }

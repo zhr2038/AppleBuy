@@ -139,10 +139,17 @@ export class TaskLedger implements LedgerLike {
     } catch {
       return problem("ledger-unreadable", "购买台账文件 purchase-ledger.json 无法读取");
     }
+    // Reading and parsing fail for different reasons; an I/O error is never reported as malformed content.
+    let taskText: string;
     try {
-      task = JSON.parse(readFileSync(join(this.#taskDir, "task.json"), "utf8")) as TaskDoc;
+      taskText = readFileSync(join(this.#taskDir, "task.json"), "utf8");
+    } catch (e) {
+      return problem("task-unreadable", `任务文件 task.json ${errorCode(e) === "ENOENT" ? "缺失" : `无法读取（${errorCode(e)}）`}`);
+    }
+    try {
+      task = JSON.parse(taskText) as TaskDoc;
     } catch {
-      return problem("task-unreadable", "任务文件 task.json 缺失或无法解析");
+      return problem("task-unreadable", "任务文件 task.json 无法解析");
     }
     if (validDoc(task)) return problem("task-unreadable", "任务文件 task.json 校验失败");
     const recorded = new Set(task.runs.map((r) => r.runId));
@@ -222,9 +229,15 @@ export class TaskStore {
       atomicWriteJson(this.taskPath, doc);
       return { ok: true, doc, created: true };
     }
+    let text: string;
+    try {
+      text = readFileSync(this.taskPath, "utf8");
+    } catch (e) {
+      return { ok: false, error: "task-unreadable", detail: `任务文件无法读取（${errorCode(e)}）；不是内容损坏的结论，已保留原文件、不会覆盖，请人工检查` };
+    }
     let v: unknown;
     try {
-      v = JSON.parse(readFileSync(this.taskPath, "utf8"));
+      v = JSON.parse(text);
     } catch {
       return { ok: false, error: "task-corrupt", detail: "任务文件无法解析；已保留原文件作为证据，不会覆盖" };
     }

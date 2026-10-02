@@ -111,6 +111,32 @@ export const SCENARIOS: ScenarioDef[] = [
     },
   },
   {
+    id: "last-slot-omitted-terminals",
+    title: "每天末档（被拒末档从新列表消失）：第一天末档拒绝并移除 → 第二天末档拒绝并移除 → 第三天末档接受 → 演练终点；更早时段仍在列表中也不回退",
+    covers: ["C005", "F5-1", "A01", "A02", "A05", "A06", "A11"],
+    plan: LAST_SLOT_FAKE_PLAN,
+    steps: () => {
+      const s = LAST_DAY_SLOTS;
+      const all: [SlotTuple, boolean][] = [
+        [s.thirdLast, true], [s.firstEarly, true], [s.secondLast, true],
+        [s.thirdEarly, true], [s.firstLast, true], [s.secondEarly, true],
+      ];
+      const offers = (...removed: SlotTuple[]) => all.filter(([t]) => !removed.includes(t));
+      return [
+        obs(() => r(page(1, offers()))),
+        choose((c) => r(res(c.opId, "rejected", { code: "slot-full", slotRefused: true, freshList: page(2, offers(s.firstLast)) }))),
+        choose((c) => r(res(c.opId, "rejected", { code: "slot-full", slotRefused: true, freshList: page(3, offers(s.firstLast, s.secondLast)) }))),
+        choose(accept),
+        ...endSteps(s.thirdLast, 4),
+      ];
+    },
+    expect: {
+      phase: "REHEARSAL_ENDPOINT",
+      chosen: [key(LAST_DAY_SLOTS.firstLast), key(LAST_DAY_SLOTS.secondLast), key(LAST_DAY_SLOTS.thirdLast)],
+      chooseCalls: 3, submits: 0,
+    },
+  },
+  {
     id: "refuse-then-accept",
     title: "首选时段被明确拒绝 → 有限刷新得到新列表/新引用 → 选另一个授权时段被接受 → 自动继续到模拟付款前终点",
     covers: ["A02", "A01", "R04", "R05"],

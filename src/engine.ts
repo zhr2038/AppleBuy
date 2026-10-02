@@ -2,8 +2,8 @@
 // Event in -> commands out. Mutations are two-phase: the core PREPARES a command (durable "intent"), and the
 // runner must call authorize() immediately before the port call; authorize() re-validates control state, plan,
 // page context and list freshness, writes a durable "sent" record (write-ahead), or cancels the prepared op.
-import type { Bounds, CheckoutContext, Plan, SlotFields } from "./plan.ts";
-import { compareRank, contextViolations, planHash, preferredSlotOffers, rankTuple, shortHash, slotPlanViolation, validatePlan } from "./plan.ts";
+import type { Bounds, CheckoutContext, Plan, SlotEdge, SlotFields } from "./plan.ts";
+import { compareRank, contextViolations, laterSlot, parseSlotKey, planHash, preferredSlotOffers, rankTuple, shortHash, slotGroup, slotPlanViolation, terminalOffers, validatePlan } from "./plan.ts";
 import type { ListObservation, MutationOutcome, Observation, ObservedSlot, StepObservation } from "./observe.ts";
 import type { Fields, JournalRecord, JournalSink, LedgerLike } from "./journal.ts";
 
@@ -120,6 +120,12 @@ export class Engine {
   #unsentOnRestore: PendingOp[] = [];
   #remembered: ObservedSlot[] | null = null;
   #tried = new Set<string>();
+  // Last-slot plans only: per store/date, the latest terminal offer any recognized list of this run established.
+  // Kept across pause/resume and rebuilt on restart from durable "terminal"/"intent" records.
+  #floor = new Map<string, SlotEdge>();
+  // Non-null when replayed history cannot prove the complete floor: no new mutation, only read-only reconciliation.
+  #floorBlock: "last-slot-evidence-unreadable" | "last-slot-history-incomplete" | null = null;
+  #floorUnreadable = false;
 
   constructor(o: EngineOptions) {
     // Structural rehearsal guard (A11): only the offline mock port kind is accepted.
@@ -224,7 +230,7 @@ export class Engine {
         // The click must target the newest applicable list: a redraw or newer list since preparation supersedes it.
         const L = this.#latest;
         const s = L?.slots.find((x) => x.ref === cmd.ref && x.key === p.slotKey);
-        if (!L || !s || !s.selectable || this.#suppressed(s.key, L.gen) || !preferredSlotOffers(this.#plan, L.slots).some((offer) => offer.key === s.key)) {
+        if (!L || !s || !s.selectable || this.#suppressed(s.key, L.gen) || !preferredSlotOffers(this.#plan, L.slots, this.#floor).some((offer) => offer.key === s.key)) {
           this.#cancel(p, "superseded-by-newer-list");
           this.#setPhase("AWAIT_LIST", "re-decide-newest-list");
           return no(this.#afterListReady());
@@ -316,6 +322,8 @@ export class Engine {
       this.#setPhase("RECONCILING", "restart-unknown-op");
       return [this.#reconcileCmd(p)];
     }
+    // Missing slot-preference history is uncertainty, never permission: no new automatic choice in this run.
+    if (this.#floorBlock) return this.#takeover(this.#floorBlock);
     this.#setPhase("AWAIT_LIST", "start");
     return [this.#observeCmd("initial", false)];
   }
@@ -431,9 +439,17 @@ export class Engine {
         s.pendingNext = false;
       }
     }
+    const terminals = this.#plan.slotSelection !== undefined ? [...terminalOffers(obs.slots).values()] : null;
+    // Durable before any decision on this list: every group's terminal, so a later omission never authorizes an
+    // earlier sibling, even after restart. The list record then commits the batch with its exact group count.
+    for (const t of terminals ?? []) {
+      this.#raiseFloor(t);
+      this.#j("terminal", { seq: obs.seq, slotKey: t.key });
+    }
     this.#j("list", {
       seq: obs.seq, gen: L.gen, fingerprint: obs.fingerprint, state: obs.state, count: obs.slots.length,
       selectable: obs.slots.filter((s) => s.selectable).length, refTag: shortHash(obs.slots.map((s) => s.ref).join(",")),
+      groups: terminals?.length,
     });
     const dev = contextViolations(this.#plan, obs.context);
     if (dev.length) return this.#takeover(`plan-deviation-${dev.join("+")}`);
@@ -476,9 +492,17 @@ export class Engine {
   }
   #eligibleSorted(L: GenList): ObservedSlot[] {
     const plan = this.#plan;
-    return preferredSlotOffers(plan, L.slots)
+    if (this.#floorBlock) return [];
+    return preferredSlotOffers(plan, L.slots, this.#floor)
       .filter((s) => this.#withinPlanAndCaps(s) && !this.#suppressed(s.key, L.gen))
       .sort((a, b) => compareRank(rankTuple(plan, a), rankTuple(plan, b)));
+  }
+  #raiseFloor(s: SlotFields): boolean {
+    const g = slotGroup(s);
+    const prior = this.#floor.get(g);
+    if (prior && !laterSlot(s, prior)) return false;
+    this.#floor.set(g, { start: s.start, end: s.end });
+    return true;
   }
 
   #decide(): Command[] {
@@ -498,12 +522,15 @@ export class Engine {
       if (pick) this.#tried.add(pick.key);
       else this.#remembered = null;
     } else {
+      if (this.#floorBlock) return this.#takeover(this.#floorBlock);
       const elig = this.#eligibleSorted(L);
       eligible = elig.length;
       pick = elig[0] ?? null;
     }
-    this.#j("decision", { seq: L.seq, gen: L.gen, eligible, slotKey: pick?.key, reason: pick ? "best-ranked-eligible" : "no-eligible" });
-    if (!pick) return this.#requestRefresh(L.state === "CONFIRMED_NONE" ? "confirmed-none" : "no-eligible-slot");
+    // Distinguish "only earlier siblings remain, which the last-slot rule forbids" from no stock / no plan match.
+    const restricted = !pick && this.#plan.slotSelection !== undefined && L.slots.some((s) => this.#withinPlanAndCaps(s) && !this.#suppressed(s.key, L.gen));
+    this.#j("decision", { seq: L.seq, gen: L.gen, eligible, slotKey: pick?.key, reason: pick ? "best-ranked-eligible" : restricted ? "last-slot-restricted" : "no-eligible" });
+    if (!pick) return this.#requestRefresh(L.state === "CONFIRMED_NONE" ? "confirmed-none" : restricted ? "last-slot-restricted" : "no-eligible-slot");
     return this.#prepare("chooseSlot", { slotKey: pick.key, ref: pick.ref, fields: { store: pick.store, date: pick.date, start: pick.start, end: pick.end }, listSeq: L.seq, gen: L.gen });
   }
 
@@ -573,6 +600,9 @@ export class Engine {
       this.#j("blocked-action", { kind, reason: "mutation-in-flight" });
       return [];
     }
+    // Also after reconciliation: an accepted slot from unprovable history may itself be an earlier fallback,
+    // so neither a new choice nor its continuation/submit is automatic.
+    if (this.#floorBlock) return this.#takeover(this.#floorBlock);
     const ctx = this.#lastContext;
     if (!ctx || contextViolations(this.#plan, ctx).length) return this.#takeover("plan-deviation-before-action");
     if (kind === "chooseSlot" && (!d.fields || slotPlanViolation(this.#plan, d.fields))) return this.#takeover("plan-deviation-slot");
@@ -745,6 +775,12 @@ export class Engine {
     type OpTrack = { op: PendingOp; sent: boolean; done: boolean };
     const ops = new Map<string, OpTrack>();
     let lastPhase: Phase | null = null;
+    // Last-slot completeness: every list record must commit a batch of exactly `groups` "terminal" records of the
+    // same epoch/seq written just before it. Older history (no `groups`) that established offers, a truncated
+    // batch or a missing record cannot prove the floor; that is uncertainty, never permission.
+    const lastSlot = this.#plan.slotSelection !== undefined;
+    let incomplete = false;
+    let batch: { key: string; n: number } | null = null;
     if (recs[0] && typeof recs[0].runId === "string") this.#runId = recs[0].runId;
     for (const r of recs) {
       if (typeof r.epoch === "number") this.#epoch = Math.max(this.#epoch, r.epoch);
@@ -756,6 +792,15 @@ export class Engine {
           ops.set(opId, { op: { opId, kind, slotKey: r.slotKey as string | undefined, listSeq: -1, gen: Number(r.gen ?? 0), status: "PREPARED", reconcileAttempts: 0 }, sent: false, done: false });
           this.#opCounter = Math.max(this.#opCounter, Number(opId.split("-")[2] ?? 0));
           if (kind === "chooseSlot" && typeof r.slotKey === "string") this.#attempts.set(r.slotKey, (this.#attempts.get(r.slotKey) ?? 0) + 1);
+          // A chosen offer was its group's terminal when prepared (also covers journals written before "terminal").
+          if (kind === "chooseSlot") this.#replayFloor(r.slotKey);
+          break;
+        }
+        case "terminal": {
+          const b = `${r.epoch}:${r.seq}`;
+          if (batch !== null && batch.key !== b) incomplete = true;
+          batch = { key: b, n: batch?.key === b ? batch.n + 1 : 1 };
+          this.#replayFloor(r.slotKey);
           break;
         }
         case "sent":
@@ -790,6 +835,13 @@ export class Engine {
         case "list":
           this.#gen = Number(r.gen);
           this.#lastFp = String(r.fingerprint);
+          if (lastSlot) {
+            const committed = typeof r.groups === "number"
+              ? (batch?.n ?? 0) === r.groups && (batch === null || batch.key === `${r.epoch}:${r.seq}`)
+              : batch === null && r.count === 0; // older history: only a list without offers established nothing
+            if (!committed) incomplete = true;
+            batch = null;
+          }
           break;
         case "refresh":
           this.#refreshes++;
@@ -799,6 +851,8 @@ export class Engine {
           break;
       }
     }
+    if (batch !== null) incomplete = true; // crash inside a terminal batch, before its list record
+    if (lastSlot) this.#floorBlock = this.#floorUnreadable ? "last-slot-evidence-unreadable" : incomplete ? "last-slot-history-incomplete" : null;
     // Lists from before the restart are invalid; refusal memory is kept and suppressed through the first new list.
     for (const s of this.#suppress.values()) {
       s.gen = Math.max(s.gen, this.#gen);
@@ -815,5 +869,12 @@ export class Engine {
     this.#epoch += 1;
     if (lastPhase && TERMINAL_PHASES.has(lastPhase)) this.#restoredTerminal = lastPhase;
     else if (lastPhase === "PAUSED" || lastPhase === "TAKEOVER") this.#restoredHold = lastPhase;
+  }
+  #replayFloor(key: unknown): void {
+    if (this.#plan.slotSelection === undefined) return;
+    const s = parseSlotKey(key);
+    // Unreadable restriction evidence fails closed: no automatic choice for this plan in this run.
+    if (s) this.#raiseFloor(s);
+    else this.#floorUnreadable = true;
   }
 }

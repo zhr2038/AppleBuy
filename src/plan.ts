@@ -175,20 +175,41 @@ export function slotPlanViolation(plan: Plan, s: SlotFields): string | null {
  * A disabled/refused/out-of-arrival terminal offer excludes earlier siblings; it does not authorize them.
  * Store/date groups stay separate. The caller still enforces every static plan condition and retry bound.
  */
-export function preferredSlotOffers<T extends SlotFields>(plan: Plan, offers: readonly T[]): readonly T[] {
+export function preferredSlotOffers<T extends SlotFields>(plan: Plan, offers: readonly T[], floor?: ReadonlyMap<string, SlotEdge>): readonly T[] {
   if (plan.slotSelection === undefined) return offers;
   if (plan.slotSelection !== "last-offered-per-store-date") throw new Error("InvalidSlotSelectionPlan");
-  const group = (s: SlotFields): string => JSON.stringify([s.store, s.date]);
+  const terminal = terminalOffers(offers);
+  return offers.filter((s) => {
+    const last = terminal.get(slotGroup(s))!;
+    // `floor` is the latest terminal any earlier trustworthy list of this run established for the group:
+    // its later omission (or a shorter same-start offer) never authorizes an earlier sibling.
+    const min = floor?.get(slotGroup(s));
+    return s.start === last.start && s.end === last.end && !(min && laterSlot(min, s));
+  });
+}
+
+export type SlotEdge = { start: string; end: string };
+export function slotGroup(s: { store: string; date: string }): string {
+  return JSON.stringify([s.store, s.date]);
+}
+/** Ordered by start, then end (validated zero-padded HH:MM compares lexically). */
+export function laterSlot(a: SlotEdge, b: SlotEdge): boolean {
+  return a.start > b.start || (a.start === b.start && a.end > b.end);
+}
+/** The terminal (latest) offer of each store/date group, whether or not it is selectable. */
+export function terminalOffers<T extends SlotFields>(offers: readonly T[]): Map<string, T> {
   const terminal = new Map<string, T>();
   for (const s of offers) {
-    const k = group(s);
-    const prior = terminal.get(k);
-    if (!prior || s.start > prior.start || (s.start === prior.start && s.end > prior.end)) terminal.set(k, s);
+    const prior = terminal.get(slotGroup(s));
+    if (!prior || laterSlot(s, prior)) terminal.set(slotGroup(s), s);
   }
-  return offers.filter((s) => {
-    const last = terminal.get(group(s))!;
-    return s.start === last.start && s.end === last.end;
-  });
+  return terminal;
+}
+/** Inverse of slotKey(); null for anything that is not a valid key (journal evidence is untrusted on replay). */
+export function parseSlotKey(key: unknown): SlotFields | null {
+  const m = typeof key === "string" ? /^(.+)\|(\d{4}-\d{2}-\d{2})\|(\d{2}:\d{2})-(\d{2}:\d{2})$/.exec(key) : null;
+  if (!m || !isDate(m[2]) || !isTime(m[3]) || !isTime(m[4]) || m[3] >= m[4]) return null;
+  return { store: m[1], date: m[2], start: m[3], end: m[4] };
 }
 
 /** Context deviations; any entry blocks every action (A06). */

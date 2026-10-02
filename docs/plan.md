@@ -1,5 +1,27 @@
 # Milestones and recovery point
 
+Current October 2 17:50 update: the authorized one-unit Pro pilot actually reached one official unpaid order at 15:40 through Codex's desktop Chrome tools. The final click occurred once at 15:39:31, and authenticated order details independently matched the new phone, CNY 9,999 and Dalian official-store pickup. No payment or second final submit occurred. The payment window may now have expired; the one-order authorization remains consumed. This is merchant-flow evidence, not application one-start readiness or a Duo contract.
+
+The C-006-R1/C-007 offline candidate is runnable and independently checked by Codex, pending actual Claude review: 83-file whole-candidate SHA `6e1d83f904a1c1479d310c4c927a3e189ee2561393e7dc9e2d6cf171f40e13a7`, 77-file runtime scope, 20 documented takeover changes, 225 tests, 29 engine scenarios, 20 AST replay cases and 2 process-lock tests passed. Actual Chrome covered the three-date terminal-refusal vertical and 19 DOM classes, ownership invalidation, two-tab exclusion, pause and pending preservation. An actual 30-minute simulated authorization expiry changed the primary warning while idle; starting afterwards produced zero final submissions/orders.
+
+| Current item | Dependency | Acceptance / state |
+| --- | --- | --- |
+| Historical M1 and bounded C-005-R2 | Actual prior model-verified reports | Accepted only for their exact historical offline/read-only scopes |
+| C-006-R1 / C-007 current candidate | Actual quota takeover, independent checks complete | Runnable; actual Claude cross-review and scoped agreement still required |
+| C-008 real Pro endpoint | Specific one-order and terms authorization | Actual unpaid endpoint verified; authorization consumed; no ongoing order-state claim |
+| Future one-start Chrome adapter | Current merchant contracts, preserved core guards, C-007 agreement | Proposal and implementation still required; Claude chooses technical architecture |
+| Duo real checkout / launch performance | Verified current Duo evidence and separate authorization | Unverified; not approved or enabled |
+
+Next action: preserve the current manifest and test receipts, publish only sanitized output marked pending review, and after the reported 18:10 quota recovery actually dispatch [C-007-CROSS-REVIEW](tasks/C-007-CROSS-REVIEW.md) with the original session, Opus 5.5/xhigh and read-only profile. Check unresolved invocations first and keep the existing heartbeat paused during direct work. No repeat merchant order or unchanged availability probes. Exact private process and Git state is in the local checkpoint.
+
+## Earlier historical updates
+
+Latest October 2 15:12 update: the combined invocation actually hit API 429 session quota at 14:40 after 27 turns; reset reported at 18:10 Asia/Shanghai. Codex takeover is explicitly authorized and a 69-file before snapshot is retained privately. Every new change still requires actual Claude read-only review and agreement before final acceptance. C-007 is unfinished. C-008 is a newly authorized one-unit Pro unpaid-order pilot in the user's desktop Chrome, cap CNY 9,999, only Dalian pickup, initial first at most three offered dates and each terminal slot. Chrome shows a recent cancelled pickup order and the newly prepared bag has one matching unit at CNY 9,999; no new order/slot mutation yet. Never retry a timed-out final submit. Duo real mode remains disabled. The older paragraphs below are historical.
+
+Latest October 2 update: the user explicitly requested completing C-007 together. A single actual `C-006-R1-C-007` invocation started at 14:34 Asia/Shanghai using the exact session and requested Opus 5.5/xhigh. C-006 returned with verified modelUsage and passed independent 201 tests, 29 CLI scenarios and actual browser rehearsal/recovery/ownership/evidence checks; F6-1 holds UI delivery pending capability-warning correction. C-007 partial work is now authorized for repair/integration in the combined call, not a second dispatcher. The OS lease and unresolved-metadata guard are independently process-tested. The new combined source has not been returned, tested or accepted. The paragraph below records the earlier interruption.
+
+Current October 2 continuation: shutdown was explicitly cancelled and development resumed. Actual R1/R2 repair receipts, 198 independent tests and 29 CLI scenarios cover the accepted historical 63-file manifest. Actual English Opus 5.5/xhigh C-005-REVIEW-R2 returned bounded agreement at 14:04 Asia/Shanghai; Codex verified those bytes before further implementation. This does not approve the subsequent worktree, real-date binding, Duo checkout or purchases. The maintenance/reopening concern is recorded in C-007. Its 14:08 dispatch raced with another controller's C-006 dispatch at 14:07:58; Codex stopped its own C-007 at about 14:13, leaving the earlier C-006 running. Three partial C-007 files are retained and unaccepted; no final modelUsage result. Resume C-007 only after C-006 and the other controller finish, with a complete active-invocation check. Historical Pro slot shape remains a reference, not a Duo backend contract. The existing heartbeat remains paused. The older table and quota-reset next action below are historical context.
+
 | Milestone | Scope | State |
 | --- | --- | --- |
 | M0 | Environment, requirement IDs, bounded fact-finding and technical proposal | Complete: actual Opus 5.5 connection and C-001 independent design review passed |

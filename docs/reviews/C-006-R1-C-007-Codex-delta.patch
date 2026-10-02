@@ -1,0 +1,1121 @@
+--- a/README.md
++++ b/README.md
+@@ -1,8 +1,8 @@
+-# Apple 直营店自提购买助手 — 离线演练与官网只读预检候选
++# Apple 直营店自提购买助手 — 自动演练与页面回放候选
+ 
+-> **重要：购买程序当前只有离线演练。** 演练中的商品、门店、日期、价格、时段均为 **FAKE 虚构数据**；界面里的“模拟官网”及其 `mock-v0` 契约是本项目**自行虚构**的，**不是** Apple 的页面或接口。离线程序不访问苹果官网。另有单独、明确执行才联网的**公开入口只读预检**（C-004），仅识别目录与预检阻断；它不是库存监控或真实购买适配器。两者均不能产生真实订单、付款或时段占用。真实结账与时段契约**尚未验证**。**真实正式模式不可用。**
++> **重要：购买程序当前只有离线演练。** 演练中的商品、门店、日期、价格、时段均为 **FAKE 虚构数据**；界面里的“模拟官网”及其 `mock-v0` 契约是本项目**自行虚构**的，**不是** Apple 的页面或接口。离线程序不访问苹果官网。另有单独、明确执行才联网的**公开入口只读预检**（C-004），仅识别目录与预检阻断；它不是库存监控或真实购买适配器。两者均不能产生真实订单、付款或时段占用。程序尚无真实浏览器结账适配器，**真实正式模式不可用**。10 月 2 日另由 Codex 在用户 Chrome 按明确授权完成一张 Pro 未付款订单；那次浏览器工具实跑不等于程序已能一键下单。
+ 
+-离线演练（C-003）、公开入口只读预检（C-004）与每天末档离线规则（C-005）已分别获得有限范围的独立验收；C-006 界面简化为待 Codex 独立验收的候选。本地购买偏好仅为私有开发草稿，不启用真实模式。当前证据与精确恢复点见 [docs/status.md](docs/status.md)。
++离线演练（C-003）、公开入口只读预检（C-004）与每天末档离线规则（C-005）已获得实际双方有限范围同意。C-006/C-007 最新改动由 Codex 在 Claude 额度耗尽后完成，仍需实际 Claude 复审；测试通过不表示双方最终验收。本地购买偏好仅为私有开发草稿，不启用真实模式。当前证据与精确恢复点见 [docs/status.md](docs/status.md)。
+ 
+ ## 它演示了什么
+ 
+@@ -54,7 +54,7 @@
+ 
+ ### 真实购买还缺什么
+ 
+-真实苹果结账尚未接入：Duo 当前公开页面显示暂未发售、继续按钮不可用；时段出现位置、选择/继续的效果、接受与保留、拒绝后的列表、订单与付款确认（U02–U06）都未验证；实际可选日期的绑定也未实现。Pro 页面的 15 分钟时段只是历史观察的形状参考，不代表 Duo 的日期、时段数量、最晚时间或容量。
++真实苹果结账尚未接入程序。10 月 2 日 Pro 实跑看到了自提日期/时段、选择后继续和账户内未付款订单，但没有遇到真实时段拒绝，也未付款。官网明确提示取货日期待付款完成后确定；控件选中和继续成功不能当作时段保留。Duo 的真实列表、拒绝、占用和订单机制仍需独立验证。页面回放仅在完整合成样本中绑定最初至多三个日期；真实列表完整性和年份缺失时仍停止。Pro 的时段形状不代表 Duo 固定日期、数量、间隔或末档。
+ 
+ ### 命令行参数
+ 
+@@ -82,12 +82,23 @@
+ | 旗舰演练（命令行版） | `node src/cli.ts rehearse` |
+ | 运行全部 29 个场景并核对预期 | `node src/cli.ts rehearse --all` （加 `--quiet` 只看结论） |
+ | 三天末档重选演练（全部虚构） | `node src/cli.ts rehearse --scenario last-slot-three-dates --plan examples/plan.last-slot.fake.json` |
++| 开售页面变化回放（合成样本） | `node src/cli.ts launch-replay --task-dir .local/launch-replay` |
+ | 列出场景 | `node src/cli.ts scenarios` |
+ | 开始前检查计划 | `node src/cli.ts check-plan --plan examples/plan.fake.json` |
+ | 决策级基准（模拟） | `node src/cli.ts bench --runs 200 --warmup 20 --seed 1` |
+ | 全部测试（实现测试 + 独立评审测试） | `npm test`，等价于 `node --test "test/*.test.ts" "review/*.test.ts"` |
+ 
+ 需求与测试的对应关系见 [docs/test-matrix.md](docs/test-matrix.md)。
++
++## 开售页面回放（C-007 候选）
++
++从演练页面的高级详情打开“开售页面回放”，或访问同一服务的 `/launch`。选一个合成场景，点“加载样本并观察”：页面从实际 DOM 读取原生/角色控件、选中和禁用状态，再计算离线候选。维护、未开售、加载未完成、网络失败、503、限流、登录和条款分别显示。
++
++最初的至多三个日期和已经看到的末档写入原任务目录；页面改版、暂停和重启不会滚动日期或放宽末档。结果不明时优先核实，恢复后的页面不能触发重发。导入观察的来源未经核验，不产生可执行候选；不要导入账号、证件或付款资料。本页不访问 Apple。
++
++CLI 会回放 20 个合成 AST 场景并验证结果不明状态。实际浏览器 DOM 的检查另行记录，CLI 不冒充浏览器或官网证据。首次执行后保留产生的任务目录；若提示待核实，不要删历史或换目录重试同一购买意图。新测试使用另一个明确标注的虚构测试任务。
++
++详见 [页面回放说明](docs/launch-replay-runbook.md) 与 [真实 Pro 验证](docs/reviews/Pro-Chrome-unpaid-pilot-20261002.md)。
+ 
+ ## 官网公开入口只读预检（C-004）
+ 
+@@ -165,9 +176,9 @@
+ 
+ ## 限制（请务必阅读）
+ 
+-- **购买流程只有离线模拟。** 单独只读预检可识别官方公开入口；真实苹果结账流程、时段数据结构、拒绝/接受信号、预约保留时长、库存与容量均**未经验证**（需求中的 U02–U06 未解决）。界面中的模拟官网、延迟和时段都是虚构的。
++- **程序购买流程只有离线模拟。** Pro 浏览器实跑已确认一张未付款订单，未验证真实拒绝重选、付款后的日期确定、Duo 开售流程或程序端自动执行。界面中的模拟官网、延迟和时段都是虚构的。
+ - 基准数字是模拟数据，**不是**苹果官网性能、真实成功率或人工速度；“渲染时间”是在 Node 中生成状态卡片 HTML 字符串的耗时，不含浏览器排版/绘制。独立 R2 历史成本测量显示状态读取随日志历史增长，发送前也支付该成本；它是本机热缓存样本，不是官网时限或当前版本性能保证，见 [历史成本记录](docs/reviews/C-003-R2.md)。
+ - 跨进程独占已在本机 Windows 验证；代码还包含 Linux 抽象套接字路径，未在 Linux 实机验收。其他系统会拒绝启动（失败即关闭）。
+ - 本地标志无法保证服务端“恰好一次”；结果不明时以人工核验为准。
+ - Codex 已用真实浏览器操作本机模拟页面，验证自动全流程、两个标签页的控制权及在途暂停/恢复。这些证据只适用于本机演练界面。
+-- C-004 有限只读范围已获实际 Claude 同意；C-003 最新额度接手候选仍待实际复审与一致，以 [docs/status.md](docs/status.md) 和验收记录为准。
++- C-003/C-004/C-005 已有实际双方有限范围同意；C-006/C-007 最新额度接手候选仍待实际 Claude 复审与一致，以 [docs/status.md](docs/status.md) 和验收记录为准。
+--- /dev/null
++++ b/examples/plan.launch.fake.json
+@@ -0,0 +1,8 @@
++{
++  "schema":"pickup-plan/v1","fake":true,"label":"FAKE 开售页面回放，四个虚构日期用于验证初始三日限制","timezone":"Asia/Shanghai","fulfillment":"pickup","quantity":1,"maxTotalCny":15999,
++  "products":[{"id":"FAKE-duo","model":"iPhone Duo","capacity":"256GB","color":"星光白色"}],
++  "stores":[{"label":"FAKE 门店甲","role":"primary"}],
++  "dates":["2099-01-01","2099-01-02","2099-01-03","2099-01-04"],
++  "windows":[{"start":"20:00","end":"22:00"}],"arrival":{"earliest":"20:00","latest":"22:00"},"priority":["date","store","window"],"slotSelection":"last-offered-per-store-date",
++  "bounds":{"maxRefusals":8,"maxRefreshes":5,"maxAttemptsPerSlot":2,"minRefreshIntervalMs":2000,"maxQueryFailures":3,"maxReconcileAttempts":2},"paymentMethodLabel":"FAKE 付款方式"
++}
+--- /dev/null
++++ b/src/app/launch-session.ts
+@@ -0,0 +1,78 @@
++// Uses the existing TaskApp OS owner and browser control lease; no second executor and no outbound site port.
++import { appendFileSync, closeSync, existsSync, fsyncSync, openSync, readFileSync } from 'node:fs';
++import { createHash } from 'node:crypto';
++import { join } from 'node:path';
++import { canonicalJson } from '../plan.ts';
++import { LaunchMonitor } from '../launch.ts';
++import type { ObservationSource } from '../launch.ts';
++import type { TaskApp } from './task-app.ts';
++import { atomicWriteJson, currentPlan } from './task-store.ts';
++import { replaySample } from '../../web/launch/replay-samples.js';
++
++const digest = (value:unknown) => createHash('sha256').update(canonicalJson(value)).digest('hex');
++export class LaunchSession {
++  #app:TaskApp; #monitor:LaunchMonitor|null=null; #error:string|null=null; #records=0;
++  #file:string; #marker:string; #journal:string;
++  constructor(app:TaskApp) {
++    this.#app=app; this.#file=join(app.store.dir,'launch-monitor.json');this.#marker=join(app.store.dir,'launch-started.json');this.#journal=join(app.store.dir,'launch-observations.jsonl');
++  }
++  #load() {
++    if(this.#error) throw new Error(this.#error);
++    const doc=this.#app.doc(),cur=currentPlan(doc),options={taskId:doc.taskId,planHash:cur.planHash,plan:cur.plan,relativeDates:3};
++    if(this.#monitor) {
++      if(this.#monitor.state.planHash!==cur.planHash) {
++        // Viewing an empty replay must not freeze a future plan. Once any evidence exists, keep its binding.
++        const s=this.#monitor.state;
++        if(this.#records===0 && s.obsSeq===0 && !s.pending && !s.binding && !s.floors.length && ![this.#file,this.#marker,this.#journal].some(existsSync)) this.#monitor=new LaunchMonitor(options);
++        else throw new Error('LaunchPlanChanged');
++      }
++      return this.#monitor;
++    }
++    const artifacts=[this.#file,this.#marker,this.#journal].map(existsSync);
++    if(artifacts.some(Boolean)&&!artifacts.every(Boolean)) throw new Error('LaunchEvidenceMissing');
++    if(artifacts.every(Boolean)) {
++      const text=readFileSync(this.#file,'utf8');
++      const marker=JSON.parse(readFileSync(this.#marker,'utf8'));
++      if(marker.schema!=='applebuy-launch-started/v1'||marker.taskId!==doc.taskId||marker.planHash!==cur.planHash) throw new Error('LaunchIdentityMismatch');
++      const lines=readFileSync(this.#journal,'utf8').trim().split('\n').map(x=>JSON.parse(x));
++      if(!lines.length||lines.some((x,i)=>x.record!==i+1||x.taskId!==doc.taskId||x.planHash!==cur.planHash||typeof x.hash!=='string'||!/^[0-9a-f]{64}$/.test(x.hash))||lines.at(-1).hash!==digest(JSON.parse(text))) throw new Error('LaunchEvidenceMismatch');
++      this.#records=lines.length;
++      this.#monitor=LaunchMonitor.restore(text,options);
++      this.#save(); // persist restart invalidation; references never survive a process restart
++    } else this.#monitor=new LaunchMonitor(options);
++    return this.#monitor;
++  }
++  #save() {
++    const state=this.#monitor!.state;
++    if(existsSync(this.#journal)) {
++      const records=readFileSync(this.#journal,'utf8').trim().split('\n').map(x=>JSON.parse(x));
++      if(records.length!==this.#records||records.at(-1)?.record!==this.#records) throw new Error('ConcurrentLaunchWriter');
++    } else if(this.#records!==0) throw new Error('LaunchJournalMissing');
++    if(!existsSync(this.#marker)) atomicWriteJson(this.#marker,{schema:'applebuy-launch-started/v1',taskId:state.taskId,planHash:state.planHash});
++    const record={record:++this.#records,taskId:state.taskId,planHash:state.planHash,hash:digest(state)};
++    appendFileSync(this.#journal,JSON.stringify(record)+'\n');
++    const fd=openSync(this.#journal,'r+');try{fsyncSync(fd);}finally{closeSync(fd);}
++    atomicWriteJson(this.#file,state);
++  }
++  #change(f:(m:LaunchMonitor)=>void) {
++    try {const m=this.#load();f(m);this.#save();return {ok:true,message:'已保存离线观察；没有官网选择、订单或付款动作'};}
++    catch {this.#error='LaunchEvidenceUnavailable';return {ok:false,code:'launch-evidence',message:'页面回放记录无法验证，已停止更新并保留原文件；请人工核对，不要删除记录重新开始'};}
++  }
++  ownerChanged() {
++    try {this.#load();if(this.#records===0)return {ok:true};}
++    catch {this.#error='LaunchEvidenceUnavailable';return {ok:false};}
++    return this.#change(m=>m.invalidatePage());
++  }
++  observe(raw:unknown,source:ObservationSource) {return this.#change(m=>m.ingest(raw,new Date().toISOString(),source));}
++  pause(paused:boolean) {return this.#change(m=>m.setPaused(paused));}
++  fixturePending() {return this.#change(m=>{if(!currentPlan(this.#app.doc()).plan.fake)throw new Error('NotFake');m.setPending({opId:'synthetic-unknown-submit',kind:'submitOrder',status:'unknown',epoch:m.state.epoch});});}
++  sample(id:string) {return replaySample(id,currentPlan(this.#app.doc()).plan);}
++  view() {
++    try {
++      const m=this.#load(),state=m.state;
++      const owner=this.#app.ownerStatus(),core=this.#app.state();
++      const externalPending=!!owner.pendingOp||!!core.engine.pendingOp||core.ledger.entries>0||core.engine.needsHuman;
++      return {fake:true,realAdapter:false,taskId:state.taskId,planHash:state.planHash,state,status:m.statusZh(),next:externalPending?{kind:'reconcile',reason:'existing-task-result-must-be-reconciled'}:m.next(),externalPending,blocked:false};
++    } catch {this.#error='LaunchEvidenceUnavailable';return {fake:true,realAdapter:false,blocked:true,status:{step:'页面回放证据或计划绑定无法核对',next:'请人工核对，保留记录，不删除历史',lastValid:'无法核对',binding:'无法核对'},next:{kind:'handoff',reason:'launch-evidence'}};}
++  }
++}
+--- a/src/app/server.ts
++++ b/src/app/server.ts
+@@ -13,6 +13,7 @@
+ import type { SiteScenario } from "../mock/live-site.ts";
+ import type { TaskApp, Result } from "./task-app.ts";
+ import { errorCode } from "../journal.ts";
++import { LaunchSession } from './launch-session.ts';
+ 
+ /** Bounded Chinese text for an unexpected failure: a short code only, never raw exception text or private paths. */
+ export function unexpectedZh(e: unknown, what: string): string {
+@@ -25,6 +26,9 @@
+   "/app.js": ["app.js", "text/javascript; charset=utf-8"],
+   "/render.js": ["render.js", "text/javascript; charset=utf-8"],
+   "/style.css": ["style.css", "text/css; charset=utf-8"],
++  '/launch': ['launch/index.html','text/html; charset=utf-8'],
++  '/launch/replay.js': ['launch/replay.js','text/javascript; charset=utf-8'],
++  '/launch/observer.js': ['launch/observer.js','text/javascript; charset=utf-8'],
+ };
+ const CSP = "default-src 'none'; script-src 'self'; style-src 'self'; connect-src 'self'; img-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'";
+ const CLIENT_RE = /^c-[a-z0-9]{8,32}$/;
+@@ -39,6 +43,7 @@
+ }
+ 
+ export async function startServer(app: TaskApp, o: { port?: number } = {}): Promise<ServerHandle> {
++  const launch = new LaunchSession(app);
+   const token = randomBytes(24).toString("hex");
+   const streams = new Map<string, http.ServerResponse>();
+   let controller: string | null = null;
+@@ -58,7 +63,7 @@
+       // The task file or evidence could not be read: show a bounded blocker, not the raw error (it may hold paths).
+       state = { fatal: e instanceof Error && e.message.startsWith("TaskStateUnavailable") ? "任务文件 task.json 无法读取或校验失败：已停止显示与操作，原文件已保留、不会覆盖。请人工检查任务目录，不要删除历史" : unexpectedZh(e, "无法生成当前状态") };
+     }
+-    return { ...(state as object), control: { you: clientId !== null && clientId === controller, held: controller !== null, clients: streams.size } };
++    return { ...(state as object), launch:launch.view(), control: { you: clientId !== null && clientId === controller, held: controller !== null, clients: streams.size } };
+   };
+   let pending = false;
+   const broadcast = () => {
+@@ -96,7 +101,7 @@
+     const asset = ASSETS[url.pathname];
+     if (req.method === "GET" && asset) {
+       let body = readFileSync(join(WEB_DIR, asset[0]), "utf8");
+-      if (asset[0] === "index.html") body = body.replace("__SESSION_TOKEN__", token);
++      if (asset[0].endsWith('index.html')) body = body.replace("__SESSION_TOKEN__", token);
+       res.writeHead(200, { "content-type": asset[1], "content-security-policy": CSP, "x-content-type-options": "nosniff", "referrer-policy": "no-referrer", "cache-control": "no-store", "x-frame-options": "DENY" });
+       return res.end(body);
+     }
+@@ -105,6 +110,10 @@
+     if (req.method === "GET") {
+       if (!sameToken(String(req.headers["x-session-token"] ?? url.searchParams.get("token") ?? ""), token)) return send(res, 403, { ok: false, code: "token" });
+       if (url.pathname === "/api/state") return send(res, 200, viewFor(CLIENT_RE.test(clientId) ? clientId : null));
++      if (url.pathname === '/api/launch/sample') {
++        try {return send(res,200,launch.sample(url.searchParams.get('id')??''));}
++        catch {return send(res,400,{ok:false,code:'sample',message:'无法使用这个合成场景'});}
++      }
+       if (url.pathname === "/api/events" && CLIENT_RE.test(clientId)) {
+         res.writeHead(200, { "content-type": "text/event-stream; charset=utf-8", "cache-control": "no-store", connection: "keep-alive", "x-content-type-options": "nosniff" });
+         streams.get(clientId)?.end();
+@@ -134,11 +143,14 @@
+     if (url.pathname === "/api/claim") {
+       if (!streams.has(clientId)) return send(res, 409, { ok: false, code: "no-stream", message: "该标签页尚未连接状态推送，不能获取控制权" });
+       if (controller && controller !== clientId && streams.has(controller)) return send(res, 409, { ok: false, code: "controlled-elsewhere", message: "另一个标签页正在控制此任务；关闭那个标签页后才能获取控制权（不会按时间抢占）" });
++      const changedOwner = controller !== clientId;
+       controller = clientId;
++      if (changedOwner) launch.ownerChanged();
+       broadcast();
+       return send(res, 200, { ok: true, message: "本标签页已获得控制权" });
+     }
+     let r: Result;
++    if(url.pathname==='/api/launch/pause'&&b.paused===true) {r=launch.pause(true);broadcast();return send(res,r.ok?200:409,r);}
+     if (url.pathname === "/api/control") {
+       const action = b.action as ControlAction;
+       if (!["pause", "resume", "takeover", "stop"].includes(String(action))) return send(res, 400, { ok: false, code: "action" });
+@@ -151,6 +163,12 @@
+       else if (url.pathname === "/api/plan") r = app.editPlan(b.plan);
+       else if (url.pathname === "/api/preset") r = app.loadPreset(b.preset);
+       else if (url.pathname === "/api/formal") r = app.armFormal(String(b.planHash ?? ""), String(b.phrase ?? ""));
++      else if (url.pathname === '/api/launch/observe') {
++        if(!['synthetic-sample','imported-observation'].includes(String(b.source))) return send(res,400,{ok:false,code:'source'});
++        r=launch.observe(b.observation,b.source as 'synthetic-sample'|'imported-observation');
++      }
++      else if (url.pathname === '/api/launch/pause'&&b.paused===false) r=launch.pause(false);
++      else if (url.pathname === '/api/launch/pending-fixture') r=launch.fixturePending();
+       else return send(res, 404, { ok: false, code: "not-found" });
+     }
+     broadcast();
+--- a/src/cli.ts
++++ b/src/cli.ts
+@@ -13,6 +13,7 @@
+ import { startServer } from "./app/server.ts";
+ import { readOwnerStatus } from "./app/owner-lock.ts";
+ import type { SiteMethod, SiteScenario } from "./mock/live-site.ts";
++import { runLaunchReplay } from './launch-replay.ts';
+ 
+ const BANNER = "【演练模式｜FAKE 虚构数据｜离线模拟，不访问苹果官网，不产生真实订单/付款/时段占用】";
+ const DEFAULT_PLAN = "examples/plan.fake.json";
+@@ -43,7 +44,9 @@
+   node src/cli.ts bench [--runs 200] [--warmup 20] [--seed 1]   决策级基准（模拟）
+   node src/cli.ts app [--task-dir .local/task] [--port 0] [--latency-ms 500] [--plan <文件>] [--recover] [--auto-start <场景>]
+       启动本机浏览器演练界面（只监听 127.0.0.1；同一任务目录只允许一个执行进程）
+-  node src/cli.ts app-status [--task-dir .local/task] [--timeout-ms 800]   只读查询任务执行进程是否存活`);
++  node src/cli.ts app-status [--task-dir .local/task] [--timeout-ms 800]   只读查询任务执行进程是否存活
++  node src/cli.ts launch-replay [--task-dir .local/launch-replay] [--plan examples/plan.launch.fake.json]
++      离线页面转换回放（合成 HTML；实际 DOM 回放请在本机 app 的 /launch 页面操作）`);
+ }
+ 
+ function appFixtures(): { hold: SiteMethod[]; crashAfter: CrashPoint | null; statusDelayMs?: number } {
+@@ -277,6 +280,12 @@
+       return appCmd(opts);
+     case "app-status":
+       return appStatus(opts);
++    case 'launch-replay': {
++      const loaded=loadPlanFile(typeof opts.plan==='string'?opts.plan:'examples/plan.launch.fake.json');
++      if(!loaded.plan){console.error('回放计划校验失败');return 2;}
++      const report=await runLaunchReplay(loaded.plan,resolve(typeof opts['task-dir']==='string'?opts['task-dir']:'.local/launch-replay'));
++      console.log(JSON.stringify(report,null,2));return report.passed?0:1;
++    }
+     case "help":
+     case "--help":
+       help();
+--- /dev/null
++++ b/src/launch-replay.ts
+@@ -0,0 +1,29 @@
++import { TaskApp } from './app/task-app.ts';
++import { LaunchSession } from './app/launch-session.ts';
++import { installNetworkGuard } from './netguard.ts';
++import type { Plan } from './plan.ts';
++import { parseHtml,observePage,classifyTransport } from '../web/launch/observer.js';
++
++/** Offline supported CLI. AST results are labelled separately from Codex's actual local DOM browser checks. */
++export async function runLaunchReplay(plan:Plan,taskDir:string) {
++  const guard=installNetworkGuard();let app:TaskApp|null=null;
++  try {
++    const opened=await TaskApp.open({taskDir,initialPlan:plan,latencyMs:0});
++    if(!opened.ok)throw new Error('LaunchOwnerUnavailable');app=opened.app;
++    const session=new LaunchSession(app),before=session.view();
++    if(before.blocked||before.state?.pending)throw new Error('LaunchNeedsManualReconciliation');
++    const order=['prelaunch','maintenance','partial','entry','entry-reordered','pickup-native','pickup-input-radios','pickup-reordered','terminal-removed','fourth-date','year-missing','unselected-pickup','wrong-product','sign-in','consent','unknown','rate-limit','restricted','service-unavailable','network-failed'];
++    const expected=['PRELAUNCH','MAINTENANCE','RENDERING_INCOMPLETE','ENTRY_AVAILABLE','ENTRY_AVAILABLE','SLOT_SELECTION','SLOT_SELECTION','SLOT_SELECTION','SLOT_SELECTION','SLOT_SELECTION','SLOT_SELECTION','SLOT_SELECTION','PLAN_MISMATCH','SIGN_IN_REQUIRED','CONSENT_REQUIRED','UNKNOWN_STRUCTURE','RATE_LIMITED','ACCESS_RESTRICTED','SERVICE_UNAVAILABLE','TRANSPORT_FAILED'];
++    const results=[];let tick=Date.now();
++    for(const [i,id] of order.entries()) {
++      const sample=session.sample(id),observedAt=new Date(++tick).toISOString();
++      let obs=observePage(parseHtml(sample.html),{observedAt,expect:sample.expect});
++      if(sample.transport)obs={...obs,...classifyTransport(sample.transport)};
++      if(sample.syntheticComplete)obs.listCompleteness='synthetic-complete';
++      const saved=session.observe(obs,'synthetic-sample'),view=session.view();
++      results.push({id,stage:view.state?.stage,next:view.next.kind,candidates:view.next.kind==='candidates'?view.next.offers.length:0,passed:saved.ok&&view.state?.stage===expected[i]});
++    }
++    session.fixturePending();const unknown=session.view();
++    return {schema:'applebuy-launch-replay-report/v1',scope:'SYNTHETIC offline AST replay, not browser/Apple acceptance',results,unknownPreserved:unknown.next.kind==='reconcile',binding:unknown.state?.binding,realRequests:guard.attempts.length,realActions:0,passed:results.every(r=>r.passed)&&unknown.next.kind==='reconcile'&&guard.attempts.length===0};
++  } finally {if(app)await app.close();guard.uninstall();}
++}
+--- a/src/launch.ts
++++ b/src/launch.ts
+@@ -1,22 +1,28 @@
+ // C-007 launch transition monitor: maintenance/recovery epochs, relative-date binding and the observation-to-decision
+ // boundary for real-page observations. It never acts on a page and no real mutation port exists in this build.
+ // Decisions about which slot to choose stay in the core plan/engine rules (preferredSlotOffers, floors, bounds).
+-import type { SlotFields } from "./plan.ts";
+-import { slotKey } from "./plan.ts";
++import type { Plan, SlotFields } from "./plan.ts";
++import { compareRank, contextViolations, isDate, isTime, laterSlot, planHash, preferredSlotOffers, rankTuple, slotGroup, slotKey, slotPlanViolation, terminalOffers, validatePlan } from "./plan.ts";
+ 
+ export type PageStage =
+   | "PRELAUNCH" | "MAINTENANCE" | "RENDERING_INCOMPLETE" | "ENTRY_AVAILABLE" | "ENTRY_BLOCKED" | "SLOT_SELECTION"
+   | "SIGN_IN_REQUIRED" | "CONSENT_REQUIRED" | "RATE_LIMITED" | "ACCESS_RESTRICTED" | "SERVICE_UNAVAILABLE"
+   | "TRANSPORT_FAILED" | "PLAN_MISMATCH" | "UNKNOWN_STRUCTURE" | "RESTORED_UNOBSERVED";
+ 
++export type Fact = { status: 'verified'|'missing'|'ambiguous'; id?: string; text?: string; value?: number|string; provenance?: string };
+ export type PageObservation = {
+-  stage: PageStage; detail: string; observedAt?: string; product?: string | null; store?: string | null;
+-  dates?: { date: string; enabled: boolean; selected: boolean; yearInferred: boolean; ref: string | null }[];
+-  selectedDate?: string | null;
+-  times?: { start: string; end: string; enabled: boolean; selected: boolean; ref: string | null }[];
++  schema: 'applebuy-page-observation/v1'; stage: PageStage; detail: string; observedAt: string;
++  conditions: null | { product: Fact; store: Fact; price: Fact; quantity: Fact; fulfillment: Fact };
++  continue: null | {enabled: boolean; ref: string|null};
++  dates: {label: string; date: string|null; yearShown: boolean; enabled: boolean; selected: boolean; ref: string|null}[];
++  selectedDate: string|null;
++  times: {start: string; end: string; enabled: boolean; selected: boolean; ref: string|null}[];
++  timePlaceholderSelected: boolean|null; listCompleteness: 'unverified'|'synthetic-complete'; anchors: string[];
+ };
+ export type Pending = { opId: string; kind: "chooseSlot" | "advance" | "submitOrder"; status: "in-flight" | "unknown"; epoch: number };
+-export type Binding = { dates: string[]; boundAt: string; source: "synthetic-sample" | "actual-page"; realBindingVerified: false };
++export type Binding = { dates: string[]; boundAt: string; source: "synthetic-sample"; realBindingVerified: false };
++export type ObservationSource = 'synthetic-sample'|'imported-observation';
++type Options = {taskId: string; planHash: string; relativeDates: number; plan: Plan};
+ export type Next =
+   | { kind: "wait"; reason: string }
+   | { kind: "reconcile"; reason: string }
+@@ -24,7 +30,7 @@
+   | { kind: "candidates"; reason: string; epoch: number; obsSeq: number; offers: (SlotFields & { key: string; ref: string; selectable: boolean })[] };
+ 
+ const INTERRUPTED = new Set<PageStage>(["MAINTENANCE", "TRANSPORT_FAILED", "SERVICE_UNAVAILABLE", "RATE_LIMITED", "RENDERING_INCOMPLETE", "UNKNOWN_STRUCTURE", "RESTORED_UNOBSERVED"]);
+-const HANDOFF = new Set<PageStage>(["SIGN_IN_REQUIRED", "CONSENT_REQUIRED", "ACCESS_RESTRICTED", "PLAN_MISMATCH", "UNKNOWN_STRUCTURE"]);
++const HANDOFF = new Set<PageStage>(["SIGN_IN_REQUIRED", "CONSENT_REQUIRED", "RATE_LIMITED", "ACCESS_RESTRICTED", "PLAN_MISMATCH", "UNKNOWN_STRUCTURE"]);
+ export const LIMITS = { renderIncompleteObservations: 5, history: 50 };
+ 
+ export const STAGE_ZH: Record<PageStage, string> = {
+@@ -46,39 +52,90 @@
+ };
+ 
+ export type MonitorState = {
+-  schema: "applebuy-launch-monitor/v1"; taskId: string; planHash: string; relativeDates: number;
++  schema: "applebuy-launch-monitor/v2"; taskId: string; planHash: string; relativeDates: number;
+   epoch: number; obsSeq: number; stage: PageStage; detail: string; lastValid: { at: string; stage: PageStage } | null;
+-  binding: Binding | null; pending: Pending | null; paused: boolean; incomplete: number;
++  binding: Binding | null; pending: Pending | null; paused: boolean; incomplete: number; floors: SlotFields[]; lastObservedAt: string|null;
+   history: { at: string; stage: PageStage; detail: string; epoch: number }[];
+ };
++
++const iso = (v:unknown):v is string => typeof v==='string' && /^\d{4}-\d{2}-\d{2}T[\d:.]+Z$/.test(v) && Number.isFinite(Date.parse(v));
++const DETAIL_CODES = new Set(['not-yet-observed','restart','no-recognized-stage','busy-region','maintenance-anchor-unverified','human-only-consent','human-only-identity','ambiguous-continue','ambiguous-time-control','time-control-not-rendered','unrecognized-time-option','invalid-or-duplicate-time','ambiguous-date-control','date-control-unrecognized','duplicate-date','date-selection-unrecognized','multiple-times-selected','product-missing','product-ambiguous','store-missing','store-ambiguous','pickup-date-time-recognized','product-heading-mismatch','prelaunch-text-with-enabled-continue','prelaunch','continue-not-found','continue-enabled','continue-disabled-without-prelaunch-text','timeout','network','http-429','http-401','http-403','http-503-without-page-evidence','http-status','render-did-not-complete']);
++DETAIL_CODES.add('page-owner-changed');
++const code = (v:unknown):v is string => typeof v==='string' && DETAIL_CODES.has(v);
++const obj = (v:unknown):v is Record<string,any> => !!v && typeof v==='object' && !Array.isArray(v);
++const keys = (v:Record<string,any>, allowed:string[]) => Object.keys(v).every(k=>allowed.includes(k));
++const stage = (v:unknown):v is PageStage => typeof v==='string' && Object.hasOwn(STAGE_ZH,v);
++const validRef = (v:unknown) => v===null || typeof v==='string' && /^(?:n\d+|0(?:\.\d+)*)$/.test(v);
++function validPending(p:unknown,epoch:number):boolean {
++  return p===null || obj(p) && keys(p,['opId','kind','status','epoch']) && typeof p.opId==='string' && /^[a-z0-9-]{1,60}$/.test(p.opId) && ['chooseSlot','advance','submitOrder'].includes(p.kind) && ['in-flight','unknown'].includes(p.status) && Number.isSafeInteger(p.epoch) && p.epoch>=1 && p.epoch<=epoch;
++}
++/** Accept only the small sanitized observer schema. Never persist raw HTML, URLs or arbitrary private fields. */
++export function validateObservation(v:unknown):v is PageObservation {
++  if(!obj(v)||!keys(v,['schema','stage','detail','observedAt','conditions','continue','dates','selectedDate','times','timePlaceholderSelected','listCompleteness','anchors'])||v.schema!=='applebuy-page-observation/v1'||!stage(v.stage)||!code(v.detail)||!iso(v.observedAt)||!['unverified','synthetic-complete'].includes(v.listCompleteness)) return false;
++  if(!Array.isArray(v.anchors)||v.anchors.length>12||v.anchors.some((a:any)=>typeof a!=='string'||a.length>180||/[<>@\r\n]/.test(a))) return false;
++  if(v.conditions!==null) {
++    if(!obj(v.conditions)||!keys(v.conditions,['product','store','price','quantity','fulfillment'])||Object.keys(v.conditions).length!==5) return false;
++    for(const f of Object.values(v.conditions)) {
++      if(!obj(f)||!keys(f,['status','id','text','value','provenance'])||!['verified','missing','ambiguous'].includes(f.status)) return false;
++      for(const x of [f.id,f.text,f.provenance,typeof f.value==='string'?f.value:undefined]) if(x!==undefined&&(typeof x!=='string'||x.length>180||/[<>@\r\n]/.test(x))) return false;
++      if(typeof f.value==='number'&&!Number.isFinite(f.value)) return false;
++      if(f.value!==undefined&&!['string','number'].includes(typeof f.value)) return false;
++    }
++  }
++  if(v.continue!==null&&(!obj(v.continue)||!keys(v.continue,['enabled','ref'])||typeof v.continue.enabled!=='boolean'||!validRef(v.continue.ref))) return false;
++  if(!Array.isArray(v.dates)||v.dates.length>64||!Array.isArray(v.times)||v.times.length>512||!(v.selectedDate===null||isDate(v.selectedDate))||!(v.timePlaceholderSelected===null||typeof v.timePlaceholderSelected==='boolean')) return false;
++  for(const d of v.dates) if(!obj(d)||!keys(d,['label','date','yearShown','enabled','selected','ref'])||typeof d.label!=='string'||d.label.length>80||/[<>@\r\n]/.test(d.label)||!(d.date===null||isDate(d.date))||typeof d.yearShown!=='boolean'||(d.date!==null&&!d.yearShown)||typeof d.enabled!=='boolean'||typeof d.selected!=='boolean'||!validRef(d.ref)) return false;
++  for(const t of v.times) if(!obj(t)||!keys(t,['start','end','enabled','selected','ref'])||!isTime(t.start)||!isTime(t.end)||t.start>=t.end||typeof t.enabled!=='boolean'||typeof t.selected!=='boolean'||!validRef(t.ref)) return false;
++  return new Set(v.dates.map((d:any)=>d.date??d.label)).size===v.dates.length && new Set(v.times.map((t:any)=>`${t.start}-${t.end}`)).size===v.times.length && v.times.filter((t:any)=>t.selected).length<=1;
++}
++function validState(s:MonitorState,o:Options):boolean {
++  if(!keys(s,['schema','taskId','planHash','relativeDates','epoch','obsSeq','stage','detail','lastValid','binding','pending','paused','incomplete','floors','lastObservedAt','history'])||!stage(s.stage)||!code(s.detail)||typeof s.paused!=='boolean'||!(s.lastObservedAt===null||iso(s.lastObservedAt))) return false;
++  if(![s.epoch,s.obsSeq,s.incomplete].every(Number.isSafeInteger)||s.epoch<1||s.obsSeq<0||s.incomplete<0||!validPending(s.pending,s.epoch)) return false;
++  if(s.lastValid!==null&&(!obj(s.lastValid)||!keys(s.lastValid,['at','stage'])||!iso(s.lastValid.at)||!stage(s.lastValid.stage))) return false;
++  if(s.binding!==null) {
++    const b=s.binding;
++    if(!obj(b)||!keys(b,['dates','boundAt','source','realBindingVerified'])||b.source!=='synthetic-sample'||b.realBindingVerified!==false||!o.plan.fake||!iso(b.boundAt)||!Array.isArray(b.dates)||b.dates.length<1||b.dates.length>o.relativeDates||new Set(b.dates).size!==b.dates.length||b.dates.some(d=>!isDate(d)||!o.plan.dates.includes(d))||b.dates.join()!==[...b.dates].sort().join()) return false;
++  }
++  if(!Array.isArray(s.floors)||s.floors.length>64) return false;
++  for(const f of s.floors) if(!obj(f)||!keys(f,['store','date','start','end'])||!o.plan.stores.some(x=>x.label===f.store)||!s.binding?.dates.includes(f.date)||!isTime(f.start)||!isTime(f.end)||f.start>=f.end) return false;
++  if(new Set(s.floors.map(slotGroup)).size!==s.floors.length) return false;
++  return Array.isArray(s.history)&&s.history.length<=LIMITS.history&&!s.history.some(h=>!obj(h)||!keys(h,['at','stage','detail','epoch'])||!iso(h.at)||!stage(h.stage)||!code(h.detail)||!Number.isSafeInteger(h.epoch)||h.epoch<1||h.epoch>s.epoch);
++}
+ 
+ export class LaunchMonitor {
+   #s: MonitorState;
+   #last: PageObservation | null = null;
+-  constructor(o: { taskId: string; planHash: string; relativeDates: number }, restored?: MonitorState) {
+-    if (!Number.isInteger(o.relativeDates) || o.relativeDates < 1 || o.relativeDates > 7) throw new Error("InvalidRelativeDates");
+-    this.#s = restored ?? { schema: "applebuy-launch-monitor/v1", ...o, epoch: 1, obsSeq: 0, stage: "RESTORED_UNOBSERVED", detail: "not-yet-observed",
+-      lastValid: null, binding: null, pending: null, paused: false, incomplete: 0, history: [] };
++  #plan: Plan;
++  #source: ObservationSource|null = null;
++  constructor(o: Options) {
++    if (!/^[a-z0-9-]{1,80}$/.test(o.taskId) || !validatePlan(o.plan).plan || planHash(o.plan)!==o.planHash || !Number.isInteger(o.relativeDates) || o.relativeDates < 1 || o.relativeDates > 3) throw new Error("InvalidLaunchOptions");
++    this.#plan = structuredClone(o.plan);
++    this.#s = { schema: "applebuy-launch-monitor/v2", taskId:o.taskId, planHash:o.planHash, relativeDates:o.relativeDates, epoch: 1, obsSeq: 0, stage: "RESTORED_UNOBSERVED", detail: "not-yet-observed",
++      lastValid: null, binding: null, pending: null, paused: false, incomplete: 0, floors: [], lastObservedAt:null, history: [] };
+   }
+ 
+   /** Restart: identity, binding, pending truth and history survive; every page reference from before is invalid. */
+-  static restore(json: string, o: { taskId: string; planHash: string; relativeDates: number }): LaunchMonitor {
++  static restore(json: string, o: Options): LaunchMonitor {
+     const s = JSON.parse(json) as MonitorState;
+-    if (s?.schema !== "applebuy-launch-monitor/v1" || s.taskId !== o.taskId || s.planHash !== o.planHash || s.relativeDates !== o.relativeDates) {
++    if (s?.schema !== "applebuy-launch-monitor/v2" || s.taskId !== o.taskId || s.planHash !== o.planHash || s.relativeDates !== o.relativeDates || !validState(s,o)) {
+       throw new Error("LaunchStateMismatch");
+     }
+-    if (s.binding && (!Array.isArray(s.binding.dates) || s.binding.dates.length > o.relativeDates)) throw new Error("LaunchStateMismatch");
+-    return new LaunchMonitor(o, { ...s, epoch: s.epoch + 1, obsSeq: 0, stage: "RESTORED_UNOBSERVED", detail: "restart", incomplete: 0 });
++    const monitor = new LaunchMonitor(o);
++    monitor.#s = { ...structuredClone(s), epoch: s.epoch + 1, obsSeq: 0, stage: "RESTORED_UNOBSERVED", detail: "restart", incomplete: 0 };
++    return monitor;
+   }
+   toJSON(): string {
+     return JSON.stringify(this.#s);
+   }
+   get state(): Readonly<MonitorState> {
+-    return this.#s;
++    return structuredClone(this.#s);
+   }
+ 
+   /** Ingest one observation of the CURRENT page (observer output or transport classification). */
+-  ingest(obs: PageObservation, at: string, source: Binding["source"]): Next {
++  ingest(raw: unknown, at: string, source: ObservationSource): Next {
++    if (!validateObservation(raw) || !iso(at) || !['synthetic-sample','imported-observation'].includes(source)) throw new Error('InvalidObservation');
++    if (this.#s.lastObservedAt && Date.parse(raw.observedAt)<=Date.parse(this.#s.lastObservedAt)) throw new Error('StaleObservation');
++    const obs = structuredClone(raw);
+     const s = this.#s;
+     let stage = obs.stage;
+     let detail = obs.detail;
+@@ -88,39 +145,64 @@
+     } else s.incomplete = 0;
+     // Leaving a recognized page (maintenance, failure, partial/unknown render) starts a new page epoch:
+     // every control reference and late result from the old page can no longer initiate an action.
+-    if (INTERRUPTED.has(stage) && !INTERRUPTED.has(s.stage)) s.epoch++;
++    s.epoch++; // every new page observation/redraw invalidates all previous control references
+     s.obsSeq++;
+     s.stage = stage;
+     s.detail = detail;
+     this.#last = { ...obs, stage, detail };
++    this.#source = source;
++    s.lastObservedAt = obs.observedAt;
+     if (!INTERRUPTED.has(stage) && !HANDOFF.has(stage)) s.lastValid = { at, stage };
+-    if (stage === "SLOT_SELECTION" && s.binding === null) this.#bind(obs, at, source);
++    if (stage === "SLOT_SELECTION" && this.#ready()) {
++      if (s.binding===null) this.#bind(obs, at);
++      if(s.binding?.dates.includes(obs.selectedDate!)) for(const f of terminalOffers(this.#offers()).values()) {
++        const old=s.floors.find(x=>slotGroup(x)===slotGroup(f));
++        if(!old) s.floors.push({store:f.store,date:f.date,start:f.start,end:f.end});
++        else if(laterSlot(f,old)) { old.start=f.start; old.end=f.end; }
++      }
++    }
+     s.history.push({ at, stage, detail, epoch: s.epoch });
+     if (s.history.length > LIMITS.history) s.history.splice(0, s.history.length - LIMITS.history);
+     return this.next();
+   }
+ 
+   /** Bind the first N enabled offered dates of the first complete recognized list; never calendar today, never later. */
+-  #bind(obs: PageObservation, at: string, source: Binding["source"]): void {
+-    const offered = (obs.dates ?? []).filter((d) => d.enabled).map((d) => d.date).sort();
+-    if (offered.length === 0) return;
+-    this.#s.binding = { dates: offered.slice(0, this.#s.relativeDates), boundAt: at, source, realBindingVerified: false };
+-  }
+-
+-  setPending(p: Pending | null): void {
+-    this.#s.pending = p;
++  #bind(obs: PageObservation, at: string): void {
++    const dates = obs.dates.filter(d=>d.enabled).map(d=>d.date!).sort().slice(0,this.#s.relativeDates);
++    if (!dates.length || !dates.every(d=>this.#plan.dates.includes(d))) return;
++    this.#s.binding = { dates, boundAt: at, source:'synthetic-sample', realBindingVerified: false };
++  }
++
++  #ready(): boolean {
++    const o=this.#last,c=o?.conditions;
++    return !!o && o.stage==='SLOT_SELECTION' && this.#source==='synthetic-sample' && this.#plan.fake===true && o.listCompleteness==='synthetic-complete' && !!c && Object.values(c).every(f=>f.status==='verified') && typeof c.product.id==='string' && this.#plan.stores.some(s=>s.label===c.store.value) && contextViolations(this.#plan,{productId:c.product.id,quantity:Number(c.quantity.value),totalCny:Number(c.price.value),fulfillment:String(c.fulfillment.value)}).length===0 && o.dates.length>0 && o.dates.every(d=>d.yearShown&&isDate(d.date)) && o.dates.filter(d=>d.selected&&d.enabled).length===1 && o.dates.find(d=>d.selected)?.date===o.selectedDate;
++  }
++  #offers() {
++    const o=this.#last!;
++    return o.times.map(t=>{const f={store:String(o.conditions!.store.value),date:o.selectedDate!,start:t.start,end:t.end};return {...f,key:slotKey(f),ref:`${this.#s.epoch}:${this.#s.obsSeq}:${t.ref??''}`,selectable:t.enabled&&t.ref!==null};});
++  }
++
++  invalidatePage(): void {
++    this.#s.epoch++; this.#s.stage='RESTORED_UNOBSERVED'; this.#s.detail='page-owner-changed';
++    this.#last=null; this.#source=null;
++  }
++
++  setPending(p: Pending): void {
++    if(this.#s.pending || p===null || !validPending(p,this.#s.epoch)) throw new Error('PendingRequiresReconciliation');
++    this.#s.pending = structuredClone(p);
+   }
+   setPaused(paused: boolean): void {
+-    this.#s.paused = paused;
++    if(typeof paused!=='boolean') throw new Error('InvalidPause');
++    this.#s.paused = paused; this.#s.epoch++; this.#last=null;
+   }
+ 
+   /** A result that belongs to an older page epoch is recorded as truth by the engine but may never start an action. */
+   mayInitiateFrom(epoch: number): boolean {
+-    return epoch === this.#s.epoch;
++    const n=this.next();return epoch === this.#s.epoch && n.kind==='candidates' && n.offers.length>0;
+   }
+   /** A control reference is usable only within the exact current observation of the current epoch. */
+-  refValid(ref: { epoch: number; obsSeq: number }): boolean {
+-    return ref.epoch === this.#s.epoch && ref.obsSeq === this.#s.obsSeq && this.#s.stage === "SLOT_SELECTION";
++  refValid(ref: { epoch: number; obsSeq: number; ref:string }): boolean {
++    const n=this.next();return ref.epoch === this.#s.epoch && ref.obsSeq === this.#s.obsSeq && n.kind==='candidates' && n.offers.some(o=>o.ref===ref.ref);
+   }
+ 
+   next(): Next {
+@@ -130,12 +212,11 @@
+     if (s.paused) return { kind: "wait", reason: "paused" };
+     if (s.stage !== "SLOT_SELECTION" || !this.#last) return { kind: "wait", reason: s.stage };
+     const obs = this.#last;
++    if (!this.#ready()) return { kind:'handoff',reason:this.#source==='imported-observation'?'imported-evidence-unverified':'conditions-year-or-list-unverified' };
+     if (!s.binding) return { kind: "handoff", reason: "offered-dates-not-bindable" };
+     if (!obs.selectedDate || !s.binding.dates.includes(obs.selectedDate)) return { kind: "wait", reason: "selected-date-outside-bound-set" };
+-    const offers = (obs.times ?? []).map((t) => {
+-      const f = { store: obs.store!, date: obs.selectedDate!, start: t.start, end: t.end };
+-      return { ...f, key: slotKey(f), ref: `${s.epoch}:${s.obsSeq}:${t.ref ?? ""}`, selectable: t.enabled };
+-    });
++    const floor=new Map(s.floors.map(f=>[slotGroup(f),f]));
++    const offers=preferredSlotOffers(this.#plan,this.#offers(),floor).filter(f=>f.selectable&&slotPlanViolation(this.#plan,f)===null).sort((a,b)=>compareRank(rankTuple(this.#plan,a),rankTuple(this.#plan,b)));
+     return { kind: "candidates", reason: "core-engine-decides", epoch: s.epoch, obsSeq: s.obsSeq, offers };
+   }
+ 
+@@ -145,10 +226,10 @@
+     const n = this.next();
+     const next = n.kind === "reconcile" ? "先只读核实已发送操作的结果，不重发、不刷新结账"
+       : n.kind === "handoff" ? "请人工接管：保留当前页面和已选内容，不清空购物袋、不重新开始结账"
+-      : n.kind === "candidates" ? "交给核心规则按计划选末档（本版本没有真实操作端口）"
++      : n.kind === "candidates" ? n.offers.length ? "已计算离线候选（本页不选择时段或下单）" : "没有符合末档限制的候选，不退到更早时段"
+       : s.paused ? "已暂停：不发起新操作" : "等待下一次有效观察";
+     return {
+-      step: STAGE_ZH[s.stage],
++      step: s.stage==='RESTORED_UNOBSERVED' && s.detail==='not-yet-observed' ? '尚未读取页面：请选择合成样本并观察' : s.detail==='page-owner-changed' ? '控制页面已更换：旧页面控件作废，请重新观察' : STAGE_ZH[s.stage],
+       next,
+       lastValid: s.lastValid ? `${s.lastValid.at}（${STAGE_ZH[s.lastValid.stage].split("：")[0]}）` : "尚无有效观察",
+       binding: s.binding ? `已固定首次提供的 ${s.binding.dates.length} 个日期：${s.binding.dates.join("、")}${s.binding.source === "synthetic-sample" ? "（合成样本，不是真实绑定）" : "（真实绑定尚未验证）"}` : "尚未固定日期",
+--- /dev/null
++++ b/test/launch-boundary.test.ts
+@@ -0,0 +1,92 @@
++import test from 'node:test';
++import assert from 'node:assert/strict';
++import { readFileSync } from 'node:fs';
++import { LaunchMonitor,validateObservation } from '../src/launch.ts';
++import { planHash } from '../src/plan.ts';
++import { parseDateLabel,parseHtml,observePage,classifyTransport } from '../web/launch/observer.js';
++import { replaySample } from '../web/launch/replay-samples.js';
++import { timeRanges } from '../web/launch/samples.js';
++const plan=JSON.parse(readFileSync('examples/plan.launch.fake.json','utf8'));
++const options={taskId:'task-launchtest',plan,planHash:planHash(plan),relativeDates:3};
++let tick=Date.now();
++function observation(id:string,edit?:(s:any)=>void) {
++  const s=replaySample(id,plan);if(edit)edit(s);
++  let o=observePage(parseHtml(s.html),{observedAt:new Date(++tick).toISOString(),expect:s.expect});
++  if(s.transport)o={...o,...classifyTransport(s.transport)};
++  if(s.syntheticComplete)o.listCompleteness='synthetic-complete';return o;
++}
++function ingest(m:LaunchMonitor,id:string,edit?:(s:any)=>void,source:any='synthetic-sample') {return m.ingest(observation(id,edit),new Date().toISOString(),source);}
++test('maintenance, partial and changed-layout recovery invalidate every old reference',()=>{
++  const m=new LaunchMonitor(options),first=ingest(m,'pickup-native');assert.equal(first.kind,'candidates');
++  if(first.kind!=='candidates')return;const r={epoch:first.epoch,obsSeq:first.obsSeq,ref:first.offers[0].ref};assert.equal(m.refValid(r),true);
++  for(const id of ['maintenance','partial','entry-reordered']){ingest(m,id);assert.equal(m.refValid(r),false);assert.equal(m.mayInitiateFrom(r.epoch),false);}
++  const fresh=ingest(m,'pickup-reordered');assert.equal(fresh.kind,'candidates');assert.equal(m.refValid(r),false);assert.deepEqual(m.state.binding?.dates,plan.dates.slice(0,3));
++});
++test('native radios, changed semantic controls and source ordering yield the same allowed terminal',()=>{
++  for(const id of ['pickup-native','pickup-input-radios','pickup-reordered']){const n=ingest(new LaunchMonitor(options),id);assert.equal(n.kind,'candidates');if(n.kind==='candidates')assert.deepEqual(n.offers.map(x=>[x.date,x.start,x.end]),[['2099-01-01','21:45','22:00']]);}
++});
++test('terminal disappearance before any send never permits an earlier sibling, also after restart',()=>{
++  const m=new LaunchMonitor(options);ingest(m,'pickup-native');const restored=LaunchMonitor.restore(m.toJSON(),options);
++  const n=ingest(restored,'terminal-removed');assert.equal(n.kind,'candidates');if(n.kind==='candidates')assert.equal(n.offers.length,0);assert.equal(restored.mayInitiateFrom(restored.state.epoch),false);
++  const later=ingest(restored,'pickup-native');if(later.kind==='candidates')assert.equal(later.offers.length,1);else assert.fail();
++});
++test('initial first-three date set survives reordering/restart and never rolls to a fourth',()=>{
++  const m=new LaunchMonitor(options);ingest(m,'pickup-reordered');const before=m.state.binding;
++  const restored=LaunchMonitor.restore(m.toJSON(),options);assert.deepEqual(restored.state.binding,before);
++  assert.equal(ingest(restored,'fourth-date').kind,'wait');assert.deepEqual(restored.state.binding?.dates,plan.dates.slice(0,3));
++  // A three-date purchasing plan must not turn the fixture labelled fourth date into its third date.
++  const three={...plan,dates:plan.dates.slice(0,3)},m3=new LaunchMonitor({...options,plan:three,planHash:planHash(three)});
++  const first=replaySample('pickup-native',three),fourth=replaySample('fourth-date',three);
++  const read=(s:any)=>({...observePage(parseHtml(s.html),{observedAt:new Date(++tick).toISOString(),expect:s.expect}),listCompleteness:'synthetic-complete' as const});
++  m3.ingest(read(first),new Date().toISOString(),'synthetic-sample');
++  const o4=read(fourth);assert.equal(o4.selectedDate,'2099-01-04');
++  assert.equal(m3.ingest(o4,new Date().toISOString(),'synthetic-sample').kind,'wait');assert.deepEqual(m3.state.binding?.dates,three.dates);
++});
++test('list completeness claims from imports cannot create a binding or recommendation',()=>{
++  const m=new LaunchMonitor(options);assert.equal(ingest(m,'pickup-native',undefined,'imported-observation').kind,'handoff');assert.equal(m.state.binding,null);
++});
++test('missing year, unchecked pickup, quantity two and excessive price all stop recommendations',()=>{
++  for(const id of ['year-missing','unselected-pickup'])assert.equal(ingest(new LaunchMonitor(options),id).kind,'handoff');
++  for(const [a,b] of [['数量: 1','数量: 2'],['RMB 15999','RMB 16999']]){const m=new LaunchMonitor(options);assert.equal(ingest(m,'pickup-native',s=>s.html=s.html.replace(a,b)).kind,'handoff');assert.equal(m.state.binding,null);}
++});
++test('disabled terminal and inherited disabled select cannot permit earlier offers',()=>{
++  const m=new LaunchMonitor(options);const n=ingest(m,'pickup-native',s=>s.html=s.html.replace('<option>21:45','<option disabled>21:45'));if(n.kind==='candidates')assert.equal(n.offers.length,0);else assert.fail();
++  const off=ingest(new LaunchMonitor(options),'pickup-native',s=>s.html=s.html.replace('<select aria-label="取货时段"','<select disabled aria-label="取货时段"'));if(off.kind==='candidates')assert.equal(off.offers.length,0);else assert.fail();
++});
++test('pause survives restart, preserves floor, and resume requires a fresh observation',()=>{
++  const m=new LaunchMonitor(options);ingest(m,'pickup-native');m.setPaused(true);const r=LaunchMonitor.restore(m.toJSON(),options);assert.equal(r.state.paused,true);assert.equal(ingest(r,'terminal-removed').kind,'wait');r.setPaused(false);assert.equal(r.next().kind,'wait');const n=ingest(r,'terminal-removed');if(n.kind==='candidates')assert.equal(n.offers.length,0);else assert.fail();
++});
++
++test('a replacement browser document invalidates references but preserves date scope, terminal floors and pending truth',()=>{
++  const m=new LaunchMonitor(options),n=ingest(m,'pickup-native');assert.equal(n.kind,'candidates');if(n.kind!=='candidates')return;
++  const before=m.state,ref={epoch:n.epoch,obsSeq:n.obsSeq,ref:n.offers[0].ref};
++  m.invalidatePage();assert.equal(m.refValid(ref),false);assert.equal(m.next().kind,'wait');assert.deepEqual(m.state.binding,before.binding);assert.deepEqual(m.state.floors,before.floors);
++  assert.equal(ingest(m,'pickup-native').kind,'candidates');m.setPending({opId:'op-document-unknown',kind:'submitOrder',status:'unknown',epoch:m.state.epoch});
++  m.invalidatePage();assert.equal(m.next().kind,'reconcile');assert.equal(m.state.pending?.status,'unknown');
++});
++test('pending/unknown final submission survives maintenance, old feedback and restart without resubmit permission',()=>{
++  const m=new LaunchMonitor(options);ingest(m,'pickup-native');const old=m.state.epoch;m.setPending({opId:'op-unknown',kind:'submitOrder',status:'unknown',epoch:old});
++  for(const id of ['maintenance','entry','pickup-native'])assert.equal(ingest(m,id).kind,'reconcile');
++  assert.equal(m.mayInitiateFrom(old),false);const r=LaunchMonitor.restore(m.toJSON(),options);assert.equal(r.next().kind,'reconcile');assert.throws(()=>r.setPending(null as any));assert.equal(ingest(r,'pickup-native').kind,'reconcile');
++});
++test('malformed/corrupt identity, state, binding, pending or floor cannot restore',()=>{
++  const m=new LaunchMonitor(options);ingest(m,'pickup-native');const original=JSON.parse(m.toJSON());
++  for(const change of [(x:any)=>x.taskId='task-other',(x:any)=>x.planHash='bad',(x:any)=>x.epoch=null,(x:any)=>x.stage='BUY_NOW',(x:any)=>x.binding.realBindingVerified=true,(x:any)=>x.binding.dates.push('2099-01-04'),(x:any)=>x.pending={opId:'op-bad',kind:'submitOrder',status:'done',epoch:1},(x:any)=>x.floors[0].start='25:00',(x:any)=>x.cookies='private']){const s=structuredClone(original);change(s);assert.throws(()=>LaunchMonitor.restore(JSON.stringify(s),options));}
++});
++test('strict import schema rejects private/unexpected fields and malformed control evidence',()=>{
++  const o=observation('pickup-native');assert.equal(validateObservation(o),true);
++  for(const edit of [(x:any)=>x.cookies='not-accepted',(x:any)=>x.conditions.product.secret='not-accepted',(x:any)=>x.conditions.price.value={private:'not-accepted'},(x:any)=>x.detail='arbitrary-private-text',(x:any)=>x.dates[0].date='2099-02-31',(x:any)=>x.times[0].start='24:00',(x:any)=>x.times[0].ref='https://untrusted.invalid']){const x=structuredClone(o);edit(x);assert.equal(validateObservation(x),false);}
++});
++test('old or duplicate observations cannot regress state; returned state is immutable by callers',()=>{
++  const m=new LaunchMonitor(options),o=observation('pickup-native');m.ingest(o,new Date().toISOString(),'synthetic-sample');const state=m.state;(state.floors[0] as any).start='00:00';assert.equal(m.state.floors[0].start,'21:45');assert.throws(()=>m.ingest(o,new Date().toISOString(),'synthetic-sample'),/StaleObservation/);
++});
++test('bounded partial rendering leads to explicit manual handoff, not an infinite wait',()=>{
++  const m=new LaunchMonitor(options);for(let i=0;i<6;i++)ingest(m,'partial');assert.equal(m.state.stage,'UNKNOWN_STRUCTURE');assert.equal(m.next().kind,'handoff');
++});
++test('transport failure, 503, 429 and auth are distinct; a 200 is not availability',()=>{
++  assert.equal(classifyTransport({status:200}),null);assert.equal(classifyTransport({status:503}).stage,'SERVICE_UNAVAILABLE');assert.equal(classifyTransport({status:429}).stage,'RATE_LIMITED');assert.equal(classifyTransport({status:403}).stage,'ACCESS_RESTRICTED');assert.equal(classifyTransport({status:401}).stage,'SIGN_IN_REQUIRED');assert.equal(classifyTransport({error:'timeout'}).stage,'TRANSPORT_FAILED');
++});
++test('unverified year and impossible calendar/time values are never guessed into a valid date/list',()=>{
++  assert.deepEqual(parseDateLabel('October 2'),{date:null,yearShown:false});assert.equal(parseDateLabel('2026-02-30'),null);assert.equal(parseDateLabel('2026年13月2日'),null);assert.equal(parseDateLabel('10月2日')?.date,null);
++  assert.equal(observation('pickup-native',s=>s.html=s.html.replace('20:00–20:15','24:00–24:15')).stage,'UNKNOWN_STRUCTURE');assert.throws(()=>timeRanges('20:00','22:00',0));
++});
+--- /dev/null
++++ b/test/launch-session.test.ts
+@@ -0,0 +1,57 @@
++import test from 'node:test';
++import assert from 'node:assert/strict';
++import { readFileSync,writeFileSync,unlinkSync } from 'node:fs';
++import { join } from 'node:path';
++import { LaunchSession } from '../src/app/launch-session.ts';
++import { startServer } from '../src/app/server.ts';
++import { parseHtml,observePage } from '../web/launch/observer.js';
++import { Tab,openApp,waitFor } from './app-helpers.ts';
++import { tempDir } from './helpers.ts';
++const plan=JSON.parse(readFileSync('examples/plan.launch.fake.json','utf8'));let tick=Date.now();
++function observe(s:LaunchSession,id='pickup-native',source:any='synthetic-sample') {const sample=s.sample(id),o=observePage(parseHtml(sample.html),{observedAt:new Date(++tick).toISOString(),expect:sample.expect});if(sample.syntheticComplete)o.listCompleteness='synthetic-complete';return s.observe(o,source);}
++test('viewing an empty replay permits a future-plan edit; saved observations never rebind silently',async()=>{
++  const t=tempDir('launch-plan-edit'),app=await openApp(join(t.dir,'task'),{initialPlan:plan});
++  try {
++    const s=new LaunchSession(app),initial=s.view();assert.equal(initial.blocked,false);assert.match(initial.status.step,/尚未读取页面/);
++    assert.ok(app.editPlan({...plan,label:'FAKE revised before observing'}).ok);
++    assert.equal(s.view().blocked,false);assert.notEqual(s.view().planHash,initial.planHash);
++    assert.ok(observe(s).ok);const file=join(app.store.dir,'launch-monitor.json'),saved=readFileSync(file,'utf8');
++    assert.ok(app.editPlan({...plan,label:'FAKE edited after evidence'}).ok);
++    assert.equal(s.view().blocked,true);assert.equal(observe(s).ok,false);assert.equal(readFileSync(file,'utf8'),saved);
++  }finally{await app.close();t.cleanup();}
++});
++
++test('durable replay restart keeps task, initial date set, paused state and terminal evidence',async()=>{
++  const t=tempDir('launch-durable'),dir=join(t.dir,'task');let app=await openApp(dir,{initialPlan:plan});
++  try {const s=new LaunchSession(app);assert.ok(observe(s).ok);s.pause(true);const old=s.view().state!;await app.close();app=await openApp(dir,{initialPlan:plan});const restored=new LaunchSession(app);assert.equal(restored.view().state?.taskId,old.taskId);assert.deepEqual(restored.view().state?.binding,old.binding);assert.equal(restored.view().state?.paused,true);assert.deepEqual(restored.view().state?.floors,old.floors);assert.ok(observe(restored,'terminal-removed').ok);assert.equal(restored.view().next.kind,'wait');restored.pause(false);assert.ok(observe(restored,'terminal-removed').ok);const n=restored.view().next;if(n.kind==='candidates')assert.equal(n.offers.length,0);else assert.fail();}finally{await app.close();t.cleanup();}
++});
++test('state rollback, missing evidence and corrupt journal fail closed without overwriting artifacts',async()=>{
++  for(const fault of ['rollback','missing','journal']) {
++    const t=tempDir(`launch-${fault}`),dir=join(t.dir,'task');let app=await openApp(dir,{initialPlan:plan});
++    try {const s=new LaunchSession(app);observe(s);const file=join(dir,'launch-monitor.json'),first=readFileSync(file,'utf8');observe(s,'terminal-removed');await app.close();
++      if(fault==='rollback')writeFileSync(file,first);if(fault==='missing')unlinkSync(join(dir,'launch-started.json'));if(fault==='journal')writeFileSync(join(dir,'launch-observations.jsonl'),'malformed');
++      const before=readFileSync(file,'utf8');app=await openApp(dir,{initialPlan:plan});const r=new LaunchSession(app);assert.equal(r.view().blocked,true);assert.equal(observe(r).ok,false);assert.equal(readFileSync(file,'utf8'),before);
++    }finally{await app.close();t.cleanup();}
++  }
++});
++test('unknown synthetic submission persists after process owner release and never grants candidates',async()=>{
++  const t=tempDir('launch-unknown'),dir=join(t.dir,'task');let app=await openApp(dir,{initialPlan:plan});
++  try {const s=new LaunchSession(app);observe(s);assert.ok(s.fixturePending().ok);await app.close();app=await openApp(dir,{initialPlan:plan});const r=new LaunchSession(app);assert.equal(r.view().next.kind,'reconcile');assert.ok(observe(r).ok);assert.equal(r.view().next.kind,'reconcile');assert.equal(app.site.view().counts.submitOrder,0);}finally{await app.close();t.cleanup();}
++});
++test('two service objects cannot silently overwrite a newer observation or terminal floor',async()=>{
++  const t=tempDir('launch-writers'),app=await openApp(join(t.dir,'task'),{initialPlan:plan});
++  try {const a=new LaunchSession(app);assert.ok(observe(a).ok);const b=new LaunchSession(app);assert.equal(b.view().blocked,false);const file=join(app.store.dir,'launch-monitor.json'),before=readFileSync(file,'utf8');assert.equal(observe(a,'terminal-removed').ok,false);assert.equal(readFileSync(file,'utf8'),before);assert.equal(b.view().state?.floors[0].start,'21:45');}finally{await app.close();t.cleanup();}
++});
++test('page suggestions cannot bypass the actual existing engine in-flight result',async()=>{
++  const t=tempDir('launch-engine-pending'),app=await openApp(join(t.dir,'task'),{hold:['chooseSlot']});
++  try {app.start();await waitFor(()=>app.site.heldCount===1,'existing engine mutation held');const s=new LaunchSession(app);assert.ok(observe(s).ok);assert.equal(s.view().externalPending,true);assert.equal(s.view().next.kind,'reconcile');assert.equal(app.site.view().counts.chooseSlot,1);assert.equal(app.site.view().counts.submitOrder,0);app.control('pause');app.site.setHold([]);app.site.releaseHeld();await waitFor(()=>app.state().engine.refusals===1,'late result recorded while paused');assert.equal(app.site.view().counts.chooseSlot,1);}finally{await app.close();t.cleanup();}
++});
++test('two observer clients retain one controller and token/origin guards; read-only client cannot mutate',async()=>{
++  const t=tempDir('launch-browser-lease'),app=await openApp(join(t.dir,'task'),{initialPlan:plan}),server=await startServer(app);
++  const a=new Tab(server.port,'c-launchowner123'),b=new Tab(server.port,'c-launchreader123');
++  try {await a.load();await a.connect();await b.load();await b.connect();assert.equal((await a.post('/api/claim')).status,200);assert.equal((await b.post('/api/claim')).status,409);const s=new LaunchSession(app),sample=s.sample('pickup-native');const o=observePage(parseHtml(sample.html),{observedAt:new Date(++tick).toISOString(),expect:sample.expect});o.listCompleteness='synthetic-complete';
++    assert.equal((await b.post('/api/launch/observe',{source:'synthetic-sample',observation:o})).status,409);assert.equal((await a.post('/api/launch/observe',{source:'synthetic-sample',observation:o},{origin:'https://untrusted.invalid'})).status,403);assert.equal((await a.post('/api/launch/observe',{source:'synthetic-sample',observation:o})).status,200);const state=await b.state();assert.equal(state.control.you,false);assert.equal(state.launch.state.binding.realBindingVerified,false);assert.equal(state.site.counts.submitOrder,0);
++    a.disconnect();await waitFor(()=>server.controller()===null,'old document released');assert.equal((await b.post('/api/claim')).status,200);
++    const replacement=await b.state();assert.equal(replacement.launch.next.kind,'wait');assert.ok(replacement.launch.state.epoch>state.launch.state.epoch);assert.deepEqual(replacement.launch.state.binding,state.launch.state.binding);assert.deepEqual(replacement.launch.state.floors,state.launch.state.floors);
++  }finally{a.disconnect();b.disconnect();await server.close();await app.close();t.cleanup();}
++});
+--- /dev/null
++++ b/test/next-run-outcome.test.ts
+@@ -0,0 +1,21 @@
++import test from 'node:test';
++import assert from 'node:assert/strict';
++import { nextRunOutcome,renderStart,renderApp } from '../web/render.js';
++import { openApp } from './app-helpers.ts';
++import { tempDir } from './helpers.ts';
++import { join } from 'node:path';
++
++test('both primary and advanced outcome copy agree with unarmed, armed, expired and changed-plan gates',async()=>{
++  const t=tempDir('outcome-truth'),app=await openApp(join(t.dir,'task'));
++  try {
++    const defaultState=app.state();assert.equal(nextRunOutcome(defaultState).submits,false);assert.match(renderStart(defaultState),/不提交任何订单/);
++    assert.ok(app.armFormal(defaultState.plan.planHash,defaultState.formal.phrase).ok);
++    const armed=app.state(),expiry=armed.formal.expiresAt!;
++    assert.equal(nextRunOutcome(armed,expiry-1).submits,true);assert.match(renderStart(armed),/开始演练（会提交一单模拟订单）/);
++    const expired=structuredClone(armed);expired.formal.expiresAt=Date.now()-1;
++    assert.equal(nextRunOutcome(expired).submits,false);assert.match(renderStart(expired),/已过期/);assert.match(renderApp(expired),/已过期/);
++    assert.doesNotMatch(renderApp(expired),/下一次运行会向本机模拟官网提交一单/);
++    assert.ok(app.editPlan({...armed.plan.plan,label:'FAKE next version'}).ok);
++    const edited=app.state();assert.equal(nextRunOutcome(edited).submits,false);assert.match(renderStart(edited),/另一个计划版本/);assert.match(renderApp(edited),/另一个计划版本/);
++  } finally {await app.close();t.cleanup();}
++});
+--- /dev/null
++++ b/tools/delegation/verify_candidate_manifest.py
+@@ -0,0 +1,42 @@
++"""Read-only whole-candidate verifier, including public README and dispatch utilities. Never imports source."""
++from pathlib import Path, PurePosixPath
++import hashlib
++import json
++import re
++import sys
++
++ROOT = Path(__file__).resolve().parents[2]
++SOURCE_DIRS = {'src', 'entry', 'web', 'test', 'review', 'examples'}
++
++def allowed(name):
++    p = PurePosixPath(name)
++    if '\\' in name or p.is_absolute() or '..' in p.parts or str(p) != name:
++        return False
++    return name in {'README.md', 'package.json'} or len(p.parts) >= 2 and p.parts[0] in SOURCE_DIRS or len(p.parts) == 3 and p.parts[:2] == ('tools', 'delegation') and p.suffix == '.py'
++
++def main():
++    if len(sys.argv) != 2:
++        raise SystemExit('Usage: python tools/delegation/verify_candidate_manifest.py docs/reviews/<candidate-manifest.json>')
++    manifest_path = (ROOT / sys.argv[1]).resolve()
++    if not manifest_path.is_relative_to(ROOT / 'docs/reviews') or not manifest_path.name.endswith('candidate-manifest.json'):
++        raise SystemExit('Manifest must be a project review candidate-manifest.json')
++    m = json.loads(manifest_path.read_text(encoding='utf-8-sig'))
++    files = m.get('files')
++    if not isinstance(files, dict) or not files or len(files) > 500:
++        raise SystemExit('Invalid candidate map')
++    actual = {}
++    for name, expected in files.items():
++        if not isinstance(name, str) or not allowed(name) or not isinstance(expected, str) or not re.fullmatch(r'[a-f0-9]{64}', expected):
++            raise SystemExit('Invalid or out-of-scope candidate entry')
++        path = (ROOT / name).resolve()
++        if not path.is_relative_to(ROOT) or not path.is_file() or not allowed(path.relative_to(ROOT).as_posix()):
++            raise SystemExit('Resolved candidate path is missing or out of scope')
++        actual[name] = hashlib.sha256(path.read_bytes()).hexdigest()
++    mismatches = [n for n in sorted(files) if actual[n] != files[n]]
++    fingerprint = hashlib.sha256(json.dumps(actual, sort_keys=True, separators=(',', ':')).encode()).hexdigest()
++    ok = not mismatches and fingerprint == m.get('sha256')
++    print(json.dumps({'ok': ok, 'files': len(actual), 'sha256': fingerprint, 'mismatches': mismatches}, ensure_ascii=True))
++    return 0 if ok else 1
++
++if __name__ == '__main__':
++    sys.exit(main())
+--- a/web/app.js
++++ b/web/app.js
+@@ -10,6 +10,7 @@
+ let state = null;
+ let planDirty = false;
+ let autoClaimTried = false;
++let displayedOutcome = null;
+ const ui = { example: null };
+ 
+ function msg(text, bad = false) {
+@@ -38,6 +39,7 @@
+   $("details").innerHTML = renderRunDetails(state);
+   if (!state.fatal && state.formal) {
+     const o = nextRunOutcome(state);
++    displayedOutcome = o.text;
+     $("advOutcome").textContent = o.text;
+     $("advOutcome").className = o.cls;
+     $("startAdvanced").textContent = o.submits ? "用当前计划开始此场景（会提交一单模拟订单）" : "用当前计划开始此场景";
+@@ -71,12 +73,28 @@
+ es.onopen = () => msg("已连接本机执行进程。");
+ es.onerror = () => msg("与本机执行进程的连接中断；浏览器会自动重连。", true);
+ 
++// An idle page must still show expiration. Repaint only when the effective outcome changes.
++function refreshOutcome() {
++  if (state?.formal && nextRunOutcome(state).text !== displayedOutcome) paint();
++}
++setInterval(refreshOutcome, 1000);
++window.addEventListener("focus", refreshOutcome);
++document.addEventListener("visibilitychange", () => { if (!document.hidden) refreshOutcome(); });
++function startScenario(scenario) {
++  if (state?.formal && nextRunOutcome(state).text !== displayedOutcome) {
++    paint();
++    msg("授权状态已变化，请核对开始按钮旁的最新说明，再点开始。", true);
++    return null;
++  }
++  return post("/api/start", { scenario });
++}
++
+ // One delegated handler for the re-rendered basic panels.
+ document.addEventListener("click", (ev) => {
+   const b = ev.target.closest?.("button[data-act]");
+   if (!b) return;
+   const act = b.dataset.act;
+-  if (act === "start") void post("/api/start", { scenario: b.dataset.scenario });
++  if (act === "start") void startScenario(b.dataset.scenario);
+   else if (act === "preset") void post("/api/preset", { preset: b.dataset.preset });
+   else if (act === "recover") void post("/api/recover");
+   else if (act === "claim") void post("/api/claim");
+@@ -89,7 +107,7 @@
+   }
+ });
+ $("advanced").addEventListener("toggle", () => paint());
+-$("startAdvanced").onclick = () => post("/api/start", { scenario: $("scenario").value || "refuse-then-accept" });
++$("startAdvanced").onclick = () => startScenario($("scenario").value || "refuse-then-accept");
+ $("plan").oninput = () => {
+   planDirty = true;
+ };
+--- a/web/index.html
++++ b/web/index.html
+@@ -22,6 +22,7 @@
+   <div id="details"></div>
+   <details class="card advanced" id="advanced">
+     <summary>高级详情（技术信息、完整日志、计划 JSON、其他模拟场景、模拟正式授权）</summary>
++    <p><a href="/launch">开售页面回放（仅本机合成样本）</a></p>
+     <div id="advView"></div>
+     <h3>其他模拟官网场景</h3>
+     <p id="advOutcome" class="outcome"></p>
+--- /dev/null
++++ b/web/launch/index.html
+@@ -0,0 +1,8 @@
++<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="session-token" content="__SESSION_TOKEN__"><title>开售页面回放 — 离线演练</title><link rel="stylesheet" href="/style.css"></head><body>
++<main class="wrap"><header><p class="eyebrow">Apple 直营店自提购买助手</p><h1>开售页面回放</h1><p class="notice">合成样本，仅在本机运行。本页不访问官网、不选择真实时段、不创建订单。</p><a href="/">返回购买演练</a></header>
++<section class="panel"><h2>当前进度</h2><p id="control">正在连接…</p><h3 id="step">等待观察</h3><p id="next"></p><p id="binding"></p><p id="last"></p><p id="message" role="status"></p><button id="claim" type="button">获取控制权</button><button id="pause" type="button">暂停回放建议</button><button id="resume" type="button">恢复观察</button></section>
++<section class="panel"><h2>回放一个页面变化</h2><label for="scenario">合成场景</label><select id="scenario">
++<option value="prelaunch">尚未开售</option><option value="maintenance">疑似维护文案</option><option value="partial">尚未加载完整</option><option value="entry">入口恢复</option><option value="entry-reordered">入口改布局</option><option value="pickup-native">日期与原生时段控件</option><option value="pickup-reordered">重排并更换控件</option><option value="pickup-redrawn">更改时段间隔</option><option value="terminal-removed">末档被移除</option><option value="fourth-date">选择第四个日期</option><option value="year-missing">日期缺少年份</option><option value="unselected-pickup">自提控件未选中</option><option value="wrong-product">商品不符</option><option value="sign-in">要求登录</option><option value="consent">要求确认条款</option><option value="unknown">无法识别的改版</option><option value="rate-limit">限流</option><option value="restricted">访问限制</option><option value="service-unavailable">503，无维护证据</option><option value="network-failed">网络失败</option></select>
++<button id="observe" type="button">加载样本并观察</button><p>通过当前实际 DOM 读取角色、选项和选中状态，重新计算离线候选。</p><div id="sample" class="card"></div><p id="candidates"></p></section>
++<details class="panel"><summary>观察导入与异常验证</summary><p>仅导入规定格式的脱敏观察 JSON。来源声明未经独立核验，不会成为真实日期绑定或执行授权。不要填写账号、证件或付款资料。</p><label for="observation">脱敏观察 JSON</label><textarea id="observation" rows="6"></textarea><button id="import" type="button">仅导入观察</button><button id="pending" type="button">模拟提交结果不明</button><pre id="technical"></pre></details>
++</main><script type="module" src="/launch/replay.js"></script></body></html>
+--- a/web/launch/observer.js
++++ b/web/launch/observer.js
+@@ -43,7 +43,7 @@
+     }
+     const attrs = {};
+     for (const a of m[3].matchAll(/([^\s"'>\/=]+)(?:\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'=<>`]+)))?/g)) attrs[a[1].toLowerCase()] = decode(a[2] ?? a[3] ?? a[4] ?? "");
+-    const el = { tag, attrs, kids: [], path: `n${n++}` };
++    const el = { tag, attrs, kids: [], path: `n${n++}`, inheritedDisabled: top.inheritedDisabled || 'disabled' in top.attrs || top.attrs['aria-disabled'] === 'true' };
+     top.kids.push(el);
+     if (!VOID.has(tag) && !/\/\s*$/.test(m[3])) stack.push(el);
+   }
+@@ -64,8 +64,15 @@
+   }
+   // Native option state comes from the live element (the attribute may not reflect the current choice).
+   if (tag === "option") { delete attrs.selected; if (el.selected) attrs.selected = ""; if (el.disabled) attrs.disabled = ""; }
+-  if (typeof el.checkVisibility === "function" && el.isConnected && !el.checkVisibility()) attrs.hidden = "";
+-  const node = { tag, attrs, kids: [], path };
++  if (tag === "input" && /^(radio|checkbox)$/.test(el.type)) {
++    if (el.checked) attrs.checked = "";
++    if (!attrs['aria-label'] && el.labels?.length) attrs['aria-label'] = [...el.labels].map(x => x.textContent ?? '').join(' ');
++  }
++  // Native options do not have visible rectangles while their select is closed. Their parent's visibility
++  // determines whether they are offered; hiding each option would lose the actual list.
++  if (!['option', 'optgroup'].includes(tag) && typeof el.checkVisibility === "function" && el.isConnected && !el.checkVisibility()) attrs.hidden = "";
++  const inheritedDisabled = !!el.parentElement?.closest('[disabled], [aria-disabled="true"]');
++  const node = { tag, attrs, kids: [], path, inheritedDisabled };
+   live.set(path, el);
+   let i = 0;
+   for (const child of el.childNodes) {
+@@ -93,20 +100,25 @@
+ }
+ const label = (n) => norm(n.attrs["aria-label"] ?? textOf(n));
+ const ownText = (n) => norm(textOf(n));
+-const disabled = (n) => "disabled" in n.attrs || n.attrs["aria-disabled"] === "true";
++const disabled = (n) => !!n.inheritedDisabled || "disabled" in n.attrs || n.attrs["aria-disabled"] === "true";
+ const selected = (n) => "selected" in n.attrs || "checked" in n.attrs || n.attrs["aria-selected"] === "true" || n.attrs["aria-checked"] === "true" || n.attrs["aria-pressed"] === "true";
+ const isButton = (n) => n.tag === "button" || n.attrs.role === "button" || (n.tag === "input" && /^(submit|button)$/i.test(n.attrs.type ?? ""));
+-const isChoice = (n) => n.tag === "option" || ["option", "radio", "tab"].includes(n.attrs.role ?? "") || (n.tag === "button" && "aria-pressed" in n.attrs);
++const isChoice = (n) => n.tag === "option" || ["option", "radio", "tab"].includes(n.attrs.role ?? "") || (n.tag === 'input' && n.attrs.type === 'radio') || (n.tag === "button" && "aria-pressed" in n.attrs);
+ const elementKids = (n) => n.kids.filter((k) => k.text === undefined && !hidden(k));
+ 
+ /** A displayed date. The year is never guessed: a label without a year yields date null (cannot be bound). */
+ export function parseDateLabel(text) {
+   const iso = ISO_DATE.exec(text);
+-  if (iso) return { date: text, yearShown: true };
++  const valid = d => { const n = new Date(`${d}T00:00:00Z`); return Number.isFinite(+n) && n.toISOString().slice(0, 10) === d; };
++  if (iso) return valid(text) ? { date: text, yearShown: true } : null;
++  const english = /^(January|February|March|April|May|June|July|August|September|October|November|December) ([1-9]|[12]\d|3[01])$/.exec(text);
++  if (english) return { date: null, yearShown: false };
+   const m = CN_DATE.exec(text);
+   if (!m) return null;
++  if (+m[2] < 1 || +m[2] > 12 || +m[3] < 1 || +m[3] > 31) return null;
+   if (!m[1]) return { date: null, yearShown: false };
+-  return { date: `${m[1]}-${String(Number(m[2])).padStart(2, "0")}-${String(Number(m[3])).padStart(2, "0")}`, yearShown: true };
++  const date = `${m[1]}-${String(Number(m[2])).padStart(2, "0")}-${String(Number(m[3])).padStart(2, "0")}`;
++  return valid(date) ? { date, yearShown: true } : null;
+ }
+ 
+ /** Innermost visible elements whose own text satisfies `pred` (no descendant element satisfies it too). */
+@@ -166,7 +178,9 @@
+   out.conditions = conditions(els, expect);
+ 
+   if (has("pickup")) {
+-    out.conditions.fulfillment = { status: "verified", value: "pickup" };
++    // The mere presence of the pickup tab is not a selected fulfillment method.
++    const picked = els.filter(n => isChoice(n) && label(n) === '我要取货' && selected(n) && !disabled(n));
++    if (picked.length === 1) out.conditions.fulfillment = { status: "verified", value: "pickup" };
+     const groups = els.filter((n) => n.tag === "select" || ["radiogroup", "listbox", "tablist"].includes(n.attrs.role ?? ""))
+       .map((g) => ({ g, opts: [...walk(g)].filter((n) => n !== g && isChoice(n)) }));
+     const timeGroups = groups.filter(({ opts }) => opts.some((o) => TIME_RANGE.test(label(o))));
+@@ -181,7 +195,7 @@
+         continue;
+       }
+       const start = `${m[1]}:${m[2]}`, end = `${m[3]}:${m[4]}`;
+-      if (start >= end || keys.has(start + end)) return { ...out, stage: "UNKNOWN_STRUCTURE", detail: "invalid-or-duplicate-time" };
++      if (![start, end].every(t => /^(?:[01]\d|2[0-3]):[0-5]\d$/.test(t)) || start >= end || keys.has(start + end)) return { ...out, stage: "UNKNOWN_STRUCTURE", detail: "invalid-or-duplicate-time" };
+       keys.add(start + end);
+       out.times.push({ start, end, enabled: !disabled(o), selected: selected(o), ref: o.path ?? null });
+     }
+--- /dev/null
++++ b/web/launch/replay-samples.js
+@@ -0,0 +1,51 @@
++// Explicitly synthetic fixtures, derived from an authorized FAKE plan. This is not an Apple adapter.
++import { samples, timeRanges } from './samples.js';
++const escape = s => String(s).replace(/[&<>"']/g,x=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[x]));
++export const REPLAY_IDS=['prelaunch','maintenance','partial','entry','entry-reordered','pickup-native','pickup-input-radios','pickup-reordered','pickup-redrawn','terminal-removed','fourth-date','year-missing','unselected-pickup','wrong-product','sign-in','consent','unknown','rate-limit','restricted','service-unavailable','network-failed'];
++export function replaySample(id,plan) {
++  if(!REPLAY_IDS.includes(id)||plan.fake!==true) throw new Error('InvalidReplaySample');
++  const p=plan.products[0],expect={products:plan.products,stores:plan.stores.map(s=>s.label)};
++  const htmlDoc=body=>`<!doctype html><html lang="zh-CN"><body><p>合成样本 SYNTHETIC — 不访问 Apple</p>${body}</body></html>`;
++  const line=`${escape(p.model)} ${escape(p.capacity)} ${escape(p.color)}`;
++  const prices=`<p>RMB ${plan.maxTotalCny}</p><p>数量: 1</p>`;
++  const entry=layout=>htmlDoc(layout?`<div role="button" aria-label="继续">继续 ›</div>${prices}<p>${line}</p><h1>${escape(p.model)}</h1>`:`<h1>${escape(p.model)}</h1><p>${line}</p>${prices}<button>继续</button>`);
++  const dates=plan.dates.map(d=>({label:d,enabled:true}));
++  // Changing cadence/ordering is a fixture parameter, never an asserted official slot duration.
++  const w=plan.windows.at(-1),times=timeRanges(w.start,w.end,15);
++  const pickup=(o={})=>samples.pickup({dates,times,product:escape(p.model),capacity:escape(p.capacity),color:escape(p.color),price:plan.maxTotalCny,store:escape(plan.stores[0].label),...o});
++  let html,transport=null;
++  switch(id) {
++    case 'prelaunch':html=htmlDoc(`<h1>${escape(p.model)}</h1><p>${line}</p>${prices}<p>暂未发售</p><button disabled>继续</button>`);break;
++    case 'maintenance':html=samples.maintenance();break;
++    case 'partial':html=samples.partial();break;
++    case 'entry':html=entry(false);break;
++    case 'entry-reordered':html=entry(true);break;
++    case 'pickup-native':html=pickup();break;
++    case 'pickup-input-radios':html=pickup({layout:'input-radios'});break;
++    case 'pickup-reordered':html=pickup({layout:'radios',times:[...times].reverse(),dates:[...dates].reverse(),selected:dates.length-1});break;
++    case 'pickup-redrawn':html=pickup({times:timeRanges(w.start,w.end,20)});break;
++    case 'terminal-removed':html=pickup({times:times.slice(0,-1)});break;
++    case 'fourth-date': {
++      // This negative fixture must contain a fourth offered date even when the plan permits fewer.
++      const offered=[...dates].sort((a,b)=>a.label.localeCompare(b.label));
++      while(offered.length<4) {
++        const later=new Date(`${offered.at(-1).label}T00:00:00Z`);later.setUTCDate(later.getUTCDate()+1);
++        const label=later.toISOString().slice(0,10);
++        if(!/^\d{4}-\d{2}-\d{2}$/.test(label))throw new Error('InvalidSyntheticFourthDate');
++        offered.push({label,enabled:true});
++      }
++      html=pickup({dates:offered,selected:3});break;
++    }
++    case 'year-missing':html=pickup({dates:dates.map(d=>({...d,label:`${Number(d.label.slice(5,7))}月${Number(d.label.slice(8))}日`}))});break;
++    case 'unselected-pickup':html=pickup({pickup:false});break;
++    case 'wrong-product':html=htmlDoc('<h1>iPhone UNAUTHORIZED</h1><button>继续</button>');break;
++    case 'sign-in':html=samples.signIn();break;
++    case 'consent':html=samples.consent();break;
++    case 'unknown':html=samples.unknown();break;
++    case 'rate-limit':transport={status:429};html=htmlDoc('<p>合成限流场景</p>');break;
++    case 'restricted':transport={status:403};html=htmlDoc('<p>合成访问限制</p>');break;
++    case 'service-unavailable':transport={status:503};html=htmlDoc('<p>合成服务不可用</p>');break;
++    case 'network-failed':transport={error:'timeout'};html=htmlDoc('<p>合成网络超时</p>');break;
++  }
++  return {id,html,expect,transport,syntheticComplete:['pickup-native','pickup-input-radios','pickup-reordered','pickup-redrawn','terminal-removed','fourth-date','year-missing','unselected-pickup'].includes(id)};
++}
+--- /dev/null
++++ b/web/launch/replay.js
+@@ -0,0 +1,43 @@
++import { fromDom, observePage, classifyTransport } from './observer.js';
++const $=id=>document.getElementById(id);
++const token=document.querySelector('meta[name="session-token"]').content;
++const client=`c-${crypto.randomUUID().replaceAll('-','').slice(0,20)}`;
++const nativeRadioOption=document.createElement('option');nativeRadioOption.value='pickup-input-radios';nativeRadioOption.textContent='原生日期单选与时段选择';$('scenario').append(nativeRadioOption);
++const headers={'content-type':'application/json','x-session-token':token,'x-client-id':client};
++let current=null,first=true,busy=false;
++async function post(path,body){const r=await fetch(path,{method:'POST',headers,body:JSON.stringify(body)});const data=await r.json();$('message').textContent=data.message??'操作已完成';return data;}
++const events=new EventSource(`/api/events?client=${client}&token=${token}`);
++function render(s){
++  current=s;const l=s.launch;
++  $('control').textContent=s.control.you?'本标签页可更新回放记录':'本标签页只读；另一个标签页持有控制权';
++  $('step').textContent=l.status.step;$('next').textContent=l.externalPending?'现有任务有待核实结果，先核对，不发起新动作':l.status.next;
++  $('binding').textContent=l.status.binding;$('last').textContent=`最后有效观察：${l.status.lastValid}`;
++  $('candidates').textContent=l.next.kind==='candidates'?l.next.offers.length?`离线候选：${l.next.offers.map(x=>`${x.store} ${x.date} ${x.start}–${x.end}`).join('；')}`:'没有符合末档限制的候选':'尚未产生可用候选';
++  $('technical').textContent=JSON.stringify({epoch:l.state?.epoch,obsSeq:l.state?.obsSeq,next:l.next,pending:l.state?.pending,floors:l.state?.floors,realAdapter:false},null,2);
++  for(const id of ['observe','resume','import','pending'])$(id).disabled=!s.control.you||l.blocked||busy;
++  $('claim').disabled=s.control.you;
++}
++events.onmessage=async e=>{const s=JSON.parse(e.data);render(s);if(first){first=false;if(!s.control.held)await post('/api/claim',{});}};
++events.onerror=()=>{$('control').textContent='连接中断；不会发起新操作。请保留记录并核对服务状态';for(const id of ['observe','resume','import','pending'])$(id).disabled=true;};
++$('claim').onclick=()=>post('/api/claim',{});
++$('pause').onclick=()=>post('/api/launch/pause',{paused:true});
++$('resume').onclick=()=>post('/api/launch/pause',{paused:false});
++$('pending').onclick=()=>post('/api/launch/pending-fixture',{});
++$('import').onclick=async()=>{try{await post('/api/launch/observe',{source:'imported-observation',observation:JSON.parse($('observation').value)});}catch{$('message').textContent='观察 JSON 无法解析；没有更新记录';}};
++$('observe').onclick=async()=>{
++  if(busy||!current?.control.you)return;busy=true;render(current);
++  try {
++    const r=await fetch(`/api/launch/sample?id=${encodeURIComponent($('scenario').value)}`,{headers});
++    const sample=await r.json();if(!r.ok)throw new Error('SampleUnavailable');
++    const parsed=new DOMParser().parseFromString(sample.html,'text/html');
++    // The HTML is generated only by our checked fixture builder, never accepted from the import input.
++    $('sample').replaceChildren(...[...parsed.body.childNodes].map(n=>document.importNode(n,true)));
++    const observedAt=new Date().toISOString();
++    let obs=observePage(fromDom($('sample')),{observedAt,expect:sample.expect});
++    const transport=sample.transport?classifyTransport(sample.transport):null;
++    if(transport)obs={...obs,...transport};
++    if(sample.syntheticComplete)obs.listCompleteness='synthetic-complete';
++    await post('/api/launch/observe',{source:'synthetic-sample',observation:obs});
++  } catch {$('message').textContent='观察失败；不能判断有货或无货，没有发起购买动作';}
++  finally{busy=false;if(current)render(current);}
++};
+--- a/web/launch/samples.js
++++ b/web/launch/samples.js
+@@ -7,10 +7,11 @@
+ const BANNER = `<p class="synthetic-banner">合成样本 SYNTHETIC — 非 Apple 页面，仅用于本机回放</p>`;
+ const doc = (body, title = "合成样本") => `<!doctype html><html lang="zh-CN"><head><title>${title}</title></head><body>${BANNER}${body}</body></html>`;
+ 
+-export const FAKE_TARGET = { product: "iPhone Duo", stores: ["FAKE 门店甲"] };
++export const FAKE_TARGET = { products: [{id:'FAKE-duo', model:'iPhone Duo', capacity:'256GB', color:'星光白色'}], stores: ["FAKE 门店甲"] };
+ 
+ /** Synthetic time ranges from start to end with the given step in minutes (all three are test parameters). */
+ export function timeRanges(from, to, minutes) {
++  if (![from, to].every(t => typeof t === 'string' && /^(?:[01]\d|2[0-3]):[0-5]\d$/.test(t)) || !Number.isInteger(minutes) || minutes <= 0 || from >= to) throw new Error('InvalidSyntheticRange');
+   const toMin = (t) => Number(t.slice(0, 2)) * 60 + Number(t.slice(3));
+   const fmt = (m) => `${String(Math.floor(m / 60)).padStart(2, "0")}:${String(m % 60).padStart(2, "0")}`;
+   const out = [];
+@@ -28,7 +29,7 @@
+   /** Recovered entry. layout "a" mirrors the observed order; "b" reorders blocks, renames classes, uses a role=button. */
+   entry: (o = {}) => o.layout === "b"
+     ? doc(`<div class="x9-shell"><section><div role="button" aria-label="继续" tabindex="0" class="cta-v2">继续 ›</div></section>
+-      <section><p>FAKE 价格 RMB 15,999</p></section><header><h1>iPhone Duo</h1></header></div>`)
++      <section><p>iPhone Duo 256GB 星光白色</p><p>FAKE 价格 RMB 15,999</p></section><header><h1>iPhone Duo</h1></header></div>`)
+     : doc(`<main><h1>iPhone Duo</h1><p>256GB 星光白色 RMB 15,999（合成价格）</p><button type="button">继续</button></main>`),
+   wrongProduct: () => doc(`<main><h1>iPhone 18 Pro</h1><button type="button">继续</button></main>`),
+   signIn: () => doc(`<main><h2>登录以结账</h2><button type="button">以游客身份继续</button></main>`),
+@@ -38,19 +39,20 @@
+    * Pickup date/time stage. dates: [{ label, enabled }]; selected: index into dates; times: [[start,end]] for the
+    * selected date; layout "select" mirrors the observed native controls, "radios" uses changed control types/order.
+    */
+-  pickup: ({ dates, selected = 0, times, disabledTimes = [], layout = "select", store = "FAKE 门店甲", product = "iPhone Duo" }) => {
++  pickup: ({ dates, selected = 0, times, disabledTimes = [], layout = "select", store = "FAKE 门店甲", product = "iPhone Duo", capacity='256GB', color='星光白色', price=15999, quantity=1, pickup=true }) => {
+     const opt = ([s, e]) => `${s}–${e}`;
+     if (layout === "radios") {
+       const dateTabs = dates.map((d, i) => `<span role="tab" aria-selected="${i === selected}"${d.enabled ? "" : ' aria-disabled="true"'}>${d.label}</span>`).join("");
+       const timeRadios = times.map((t) => `<label role="radio" aria-checked="false"${disabledTimes.includes(t[0]) ? ' aria-disabled="true"' : ""}>${opt(t)}</label>`).join("");
+       return doc(`<div class="pk-v2"><aside><div role="radiogroup" aria-label="时段">${timeRadios}</div></aside>
+-        <section><div role="tablist">${dateTabs}</div><p>${store}</p><p>${product} 256GB 星光白色</p><p>我要取货</p></section>
++        <section><div role="tablist">${dateTabs}</div><p>${store}</p><p>${product} ${capacity} ${color}</p><p>RMB ${price}</p><p>数量: ${quantity}</p><button role="radio" aria-checked="${pickup}">我要取货</button></section>
+         <div role="button" aria-label="继续填写取货详情">继续填写取货详情</div></div>`);
+     }
+     const dateOpts = dates.map((d, i) => `<option${i === selected ? " selected" : ""}${d.enabled ? "" : " disabled"}>${d.label}</option>`).join("");
++    const dateControl = layout==='input-radios' ? `<div role="radiogroup" aria-label="取货日期">${dates.map((d,i)=>`<label><input type="radio" name="synthetic-date" aria-label="${d.label}"${i===selected?' checked':''}${d.enabled?'':' disabled'}>${d.label}</label>`).join('')}</div>` : `<select aria-label="取货日期">${dateOpts}</select>`;
+     const timeOpts = times.map((t) => `<option${disabledTimes.includes(t[0]) ? " disabled" : ""}>${opt(t)}</option>`).join("");
+-    return doc(`<main><h2>我要取货</h2><p>${store}</p><p>${product} 256GB 星光白色</p><p>需要签到</p>
+-      <select aria-label="取货日期">${dateOpts}</select>
++    return doc(`<main><h2>到店自提</h2><button role="radio" aria-checked="${pickup}">我要取货</button><p>${store}</p><p>${product} ${capacity} ${color}</p><p>RMB ${price}</p><p>数量: ${quantity}</p><p>需要签到</p>
++      ${dateControl}
+       <select aria-label="取货时段"><option disabled selected>可选时段</option>${timeOpts}</select>
+       <button type="button">继续填写取货详情</button></main>`);
+   },
+--- a/web/render.js
++++ b/web/render.js
+@@ -53,7 +53,7 @@
+   if (s.fatal || !s.examples) return "";
+   const running = s.running;
+   const you = s.control?.you ?? true;
+-  const pick = s.examples.find((x) => x.id === ui.example) ?? s.examples[0];
++  const pick = s.examples.find((x) => x.id === ui.example) ?? s.examples.find((x) => x.ready) ?? s.examples[0];
+   const choices = s.examples.map((x) => `<label class="choice ${x.id === pick.id ? "on" : ""}"><input type="radio" name="example" value="${esc(x.id)}" ${x.id === pick.id ? "checked" : ""}> <b>${esc(x.title)}</b><span class="small">${esc(x.summary)}</span></label>`).join("");
+   const outcome = nextRunOutcome(s);
+   let action;
+@@ -186,7 +186,7 @@
+   // A simulated formal authorization changes what a run may do: always visible, never only in advanced details.
+   const f = s.formal;
+   const formal = f.armed
+-    ? `<div class="card formal"><b>${f.used ? `本任务唯一一次“模拟正式授权”已被运行 ${esc(f.used)} 使用（不可再次启用）` : `已启用一次“模拟正式授权”（${fmtTime(f.expiresAt)} 前有效）：下一次运行到达付款前时，会向本机模拟官网提交一单模拟订单`}。</b>只作用于本机模拟官网，不是真实订单；真实正式模式不可用。</div>`
++    ? `<div class="card formal"><b>${f.used ? `本任务唯一一次“模拟正式授权”已被运行 ${esc(f.used)} 使用（不可再次启用）` : esc(nextRunOutcome(s).text)}</b>只作用于本机模拟官网，不是真实订单；真实正式模式不可用。</div>`
+     : "";
+   const history = (s.history ?? []).length
+     ? `<ol class="history">${s.history.map((h) => `<li><span class="small">${fmtTime(h.t)}</span> ${esc(h.text)}</li>`).join("")}</ol>`
+--- a/web/style.css
++++ b/web/style.css
+@@ -3,6 +3,8 @@
+ body { font-family: "Microsoft YaHei", "PingFang SC", system-ui, sans-serif; margin: 0; background: #f5f5f7; color: #1d1d1f; font-size: 14px; line-height: 1.5; overflow-wrap: anywhere; }
+ .banner { background: #b00020; color: #fff; padding: 6px 12px; font-weight: bold; position: sticky; top: 0; z-index: 1; font-size: 13px; }
+ main { max-width: 860px; margin: 0 auto; padding: 8px; }
++.panel { background:#fff; border:1px solid #ddd; border-radius:8px; padding:14px; margin:12px 0; }
++.notice { padding:10px; border-left:3px solid #aa7700; background:#fff9eb; }
+ .card { background: #fff; border-radius: 8px; padding: 10px 12px; margin: 8px 0; box-shadow: 0 1px 3px rgba(0,0,0,.08); min-width: 0; }
+ h1 { font-size: 18px; margin: 4px 0; }
+ .card h2 { font-size: 16px; margin: 4px 0 6px; }
