@@ -1,0 +1,97 @@
+{
+  "schema": "codex-current-contract-verification/v1",
+  "task": "C-013",
+  "checkedAtUtc": "2026-10-02T17:35:46.929256+00:00",
+  "parentCommit": "ffd5a17373bb540bf8ac76ff9c429d727ac0b6fc",
+  "parentManifest": "docs/reviews/C-012-R1-candidate-manifest.json",
+  "parentSha256": "c188ab67d092bbfa04edd56c322ffc1733af8a5f57d362993211e9d413b919ad",
+  "quotaAuthorizationEvidence": "docs/reviews/C-012-R1-verification.json",
+  "newClaudeInvocation": false,
+  "ClaudeAgreement": false,
+  "CodexBusinessChanges": [
+    {
+      "path": "web/checkout-connector/page-program.js",
+      "before": "54084627875ec65119b87c605a9d2faf2eed06a1d3ac9f642e625747efa9a71a",
+      "after": "6c41c0db37393f37543635d218813545757675a0930ad2ef34b73366e44aa672"
+    },
+    {
+      "path": "web/checkout-connector/chrome-port.js",
+      "before": "a102a7c51e3dbc50eb8e6ed00565a35e7b914e722b9210fc485936a2a4b89b2e",
+      "after": "7c091d9a101f0401981336fdf9c986c20786a607f2cc8a96489e32499db4e4e4"
+    }
+  ],
+  "readmeUpdate": {
+    "path": "README.md",
+    "before": "a9613eedeb9975146fa91601f9ae96a50611a799d7da1427b36612d27bd7ed0b",
+    "after": "d7cd8d5fda1caefa684086015832aa5013caa693358e299f55061b7a061e2c78"
+  },
+  "newIndependentCriteria": "review/c013-observed-auth-route.test.ts",
+  "priorReviewFilesUnchanged": 24,
+  "priorOtherSourceFilesUnchanged": 115,
+  "permissionManifestUnchanged": true,
+  "sourceManifest": "docs/reviews/C-013-candidate-manifest.json",
+  "sourceSha256": "6eba42936f8bf86e0a0f7d63e531e7799a5e8b002ea604a06566576065afb950",
+  "sourceFiles": 119,
+  "beforeRepro": {
+    "tests": 3,
+    "pass": 0,
+    "fail": 3
+  },
+  "afterRepro": {
+    "tests": 3,
+    "pass": 3,
+    "fail": 0
+  },
+  "fullTestCommand": "node --test \"test/*.test.ts\" \"review/*.test.ts\"",
+  "tests": {
+    "tests": 351,
+    "pass": 351,
+    "fail": 0,
+    "cancelled": 0,
+    "skipped": 0,
+    "todo": 0
+  },
+  "fullDurationMs": 6167.3316,
+  "actualOfficialObservation": {
+    "entryLink": "https://secure.www.apple.com.cn/shop/order/list",
+    "redirectHost": "secure11.www.apple.com.cn",
+    "redirectPath": "/shop/signIn/orders",
+    "mainPresent": false,
+    "iframeCount": 1,
+    "frameHosts": [
+      "idmsa.apple.com.cn"
+    ],
+    "loginTextFieldCount": 2,
+    "fieldValuesRead": false,
+    "authenticationSubmitted": false,
+    "ordersRead": false
+  },
+  "actualReadOnlyPrefix": {
+    "method": "Supported CUA read-only evaluate, source prefix excludes all mutation branches; not standalone extension transport",
+    "pageProgramSha256": "6c41c0db37393f37543635d218813545757675a0930ad2ef34b73366e44aa672",
+    "checkedAtUtc": "2026-10-02T17:32:09.162Z",
+    "login": {
+      "phase": "AUTH",
+      "reason": "official-order-sign-in-required",
+      "verifiedStep": false
+    },
+    "Pro": {
+      "phase": "VARIANT",
+      "variantVerified": true,
+      "quotedCny": 9999,
+      "configurationComplete": true,
+      "addToBagEnabled": true
+    }
+  },
+  "merchantResourceMutations": 0,
+  "extensionInstalled": false,
+  "realPurchasingReady": false,
+  "verdict": "PASS_CODEX_ONLY_AUTH_GATE_FIX_PENDING_CURRENT_SOURCE_CLAUDE_AGREEMENT",
+  "unverified": [
+    "Actual exact-current-source Claude agreement, including C012-R1 and previously unread scope",
+    "Standalone extension installation and exact-host grant",
+    "Authenticated secure checkout/date/order-detail and refusal contracts",
+    "Protected-profile integration",
+    "Application one-start real merchant latency"
+  ]
+}

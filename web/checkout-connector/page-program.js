@@ -3,10 +3,15 @@
 // C-012-R1 (Claude): exact store proof, separate line counting, observed no-trade-in/no-AppleCare dependency,
 // merchant-only extras evidence and structured untouched failure reports.
 // Codex quota takeover: reject conflicting quantity/store evidence and revalidate after a native slot change.
+// C-013 (Codex, quota fallback): observed order-login path is an explicit human authentication gate.
 export async function merchantDocument(plan,command=null){
   const u=new URL(location.href);
-  const safe=u.protocol==='https:'&&(u.hostname==='www.apple.com.cn'||/^secure(?:\d+)?\.www\.apple\.com\.cn$/.test(u.hostname))&&/^\/shop\/(?:buy-iphone\/(?:iphone-18-pro|iphone-duo)(?:\/[^/]+\/a)?|bag|checkout|order(?:\/[^?#]*)?|signIn)(?:\/)?$/.test(u.pathname);
+  const safe=u.protocol==='https:'&&(u.hostname==='www.apple.com.cn'||/^secure(?:\d+)?\.www\.apple\.com\.cn$/.test(u.hostname))&&/^\/shop\/(?:buy-iphone\/(?:iphone-18-pro|iphone-duo)(?:\/[^/]+\/a)?|bag|checkout|order(?:\/[^?#]*)?|signIn(?:\/orders)?)(?:\/)?$/.test(u.pathname);
   if(!safe)return {schema:'applebuy-merchant-read/v1',phase:'UNKNOWN',reason:'unsupported-official-url'};
+  if(/^\/shop\/signIn\/orders\/?$/.test(u.pathname)){
+    if(command){if(command.structured!==true)throw new Error('AuthenticationRequired');return {delivered:false,touched:false,reason:'AuthenticationRequired'};}
+    return {schema:'applebuy-merchant-read/v1',phase:'AUTH',verifiedStep:false,reason:'official-order-sign-in-required',dates:[],times:[]};
+  }
   const main=document.querySelector('main,[role="main"]');if(!main)return {schema:'applebuy-merchant-read/v1',phase:'UNKNOWN',reason:'main-not-found'};
   const norm=s=>String(s??'').normalize('NFKC').replace(/[\s\u{200B}\u{200C}\u{200D}\u{2060}]+/gu,' ').trim();
   const visible=e=>{if(!e||!e.isConnected)return false;for(let p=e;p;p=p.parentElement){const st=getComputedStyle(p);if(p.hidden||p.hasAttribute('inert')||p.getAttribute('aria-hidden')==='true'||st.display==='none'||['hidden','collapse'].includes(st.visibility))return false;}return true;};
