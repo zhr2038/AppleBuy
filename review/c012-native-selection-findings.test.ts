@@ -19,7 +19,7 @@ function fixture(){
   f.time=new El('可选时段','SELECT');f.time.options=['可选时段','09:00 - 09:15','21:15 - 21:30'].map(s=>new El(s,'OPTION'));f.selects=[f.time];
   const title=new El('结账','H1'),main=new El('');main.querySelector=s=>s==='h1'?title:null;
   main.querySelectorAll=s=>s.startsWith('button')?[f.button]:s.startsWith('input[type="radio"]')?f.radios:s==='select'?f.selects:s==='h1,h2,h3,p,span,div'?[title,...f.texts.map(t=>new El(t))]:[];
-  const context=vm.createContext({document:{querySelector:()=>main,querySelectorAll:()=>[]},location:{href:'https://secure6.www.apple.com.cn/shop/checkout'},URL,TextEncoder,crypto:webcrypto,Date,HTMLInputElement:El,Event:class{constructor(type){this.type=type;}},getComputedStyle:e=>({display:e.hidden?'none':'block',visibility:'visible'})});
+  const context=vm.createContext({document:{querySelector:()=>main,querySelectorAll:()=>[]},location:{href:'https://secure6.www.apple.com.cn/shop/checkout'},URL,TextEncoder,crypto:webcrypto,Date,setTimeout,clearTimeout,HTMLInputElement:El,Event:class{constructor(type){this.type=type;}},getComputedStyle:e=>({display:e.hidden?'none':'block',visibility:'visible'})});
   const fn=vm.runInContext('('+merchantDocument.toString()+')',context);f.read=()=>fn(plan);
   f.choose=async()=>fn(plan,{id:'review-choice',taskId:'review-task',authorized:true,structured:true,expected:JSON.stringify(await f.read()),action:'chooseSlot',ref:'time:2',date:'10月23日',start:'21:15',end:'21:30'});
   return f;

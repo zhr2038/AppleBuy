@@ -1,0 +1,41 @@
+{
+  "task": "C-013-R2-CROSS-REVIEW",
+  "modelRequested": "claude-opus-5-5",
+  "effortRequested": "xhigh",
+  "structuredModels": [
+    "claude-opus-5-5"
+  ],
+  "modelVerified": true,
+  "isError": false,
+  "subtype": "success",
+  "startedAt": "2026-10-02T21:17:59.993532+00:00",
+  "endedAt": "2026-10-02T21:21:15.165484+00:00",
+  "durationSeconds": 195.17,
+  "reportedTurns": 15,
+  "requestedTurns": 32,
+  "permissionDenials": [],
+  "cleanupConfirmed": true,
+  "sourceManifest": "docs/reviews/C-013-R2-candidate-manifest.json",
+  "sourceFiles": 123,
+  "sourceSha256": "dbf68f221619e94d002aadd4c7adb3701dde0f22077ad470fed9703dfcca9732",
+  "ClaudeVerdict": "OFFLINE_REPAIRED_SOURCE_AGREEMENT_AGREE_WITH_READ_SCOPE_CAVEAT",
+  "CodexVerdict": "ACCEPT_ONLY_C013_REPAIRED_OFFLINE_BEHAVIORS_AND_SYNTHETIC_VERTICAL",
+  "independentFullSuite": {
+    "tests": 393,
+    "pass": 393,
+    "fail": 0,
+    "durationMs": 6061.8404
+  },
+  "ClaudeFullSuite": {
+    "tests": 393,
+    "pass": 393,
+    "fail": 0,
+    "durationMs": 5979.1113
+  },
+  "sourceUnchangedAfterReview": true,
+  "wholeRepositoryAudit": false,
+  "wholeDecoderReviewed": false,
+  "realPurchasingReady": false,
+  "nextTask": "docs/tasks/C-013-DECODER-REVIEW.md",
+  "originalSessionRetainedPrivately": true
+}

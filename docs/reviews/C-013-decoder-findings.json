@@ -1,0 +1,22 @@
+{
+  "scope": "FAKE production-program regressions, no real resources",
+  "tests": 6,
+  "pass": 2,
+  "fail": 4,
+  "newCriteria": "review/c013-decoder-findings.test.ts",
+  "wholeInputSuite": {
+    "tests": 399,
+    "pass": 395,
+    "fail": 4,
+    "durationMs": 6010.8856
+  },
+  "reviewerHarnessChanges": [
+    "review/c012-native-selection-findings.test.ts",
+    "test/checkout-page-program.test.ts"
+  ],
+  "allOriginalAssertionsUnchanged": true,
+  "RootProductImplementationChanges": 0,
+  "inputManifest": "docs/reviews/C-013-R3-input-candidate-manifest.json",
+  "inputSha256": "310afe245146223570484a76498898449e7c9414bdc4fc96b8285a6a372f9031",
+  "realPurchasingReady": false
+}

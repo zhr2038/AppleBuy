@@ -1,0 +1,32 @@
+{
+  "createdAt": "2026-10-02T20:46:44.803997+00:00",
+  "scope": "Synthetic independent reproductions; no real merchant action",
+  "inputCandidate": {
+    "manifest": "docs/reviews/C-013-R1-input-candidate-manifest.json",
+    "files": 120,
+    "sha256": "bdc3f674ad5f951a548433909e89a6b76e135512d2db40deebc66014f01d20e5"
+  },
+  "before": {
+    "tests": 8,
+    "pass": 2,
+    "fail": 6,
+    "durationMs": 84.7536,
+    "rawLog": ".local/reviewer/c013-functional-before.txt"
+  },
+  "findingCategories": [
+    "P3-1",
+    "P3-2",
+    "P3-3",
+    "P3-5",
+    "P3-6"
+  ],
+  "protectedCriteria": "review/c013-functional-findings.test.ts",
+  "positiveControls": 2,
+  "realContractHypothesesUnverified": [
+    "P2-1",
+    "P2-2",
+    "P2-3",
+    "P3-4"
+  ],
+  "realPurchasingReady": false
+}

@@ -1,0 +1,40 @@
+{
+  "schema": "actual-claude-cross-review/v1",
+  "task": "C-013-REVIEW",
+  "startedAtUtc": "2026-10-02T20:16:26.410519+00:00",
+  "endedAtUtc": "2026-10-02T20:27:45.390682+00:00",
+  "durationSeconds": 679.0,
+  "requestedModel": "claude-opus-5-5",
+  "requestedEffort": "xhigh",
+  "structuredUsageModels": [
+    "claude-opus-5-5"
+  ],
+  "modelVerified": true,
+  "isError": false,
+  "subtype": "success",
+  "cleanupConfirmed": true,
+  "permissionDenials": [],
+  "requestedTurnBudget": 48,
+  "reportedTurns": 53,
+  "turnCountNote": "Result reports 53 versus requested 48; subtype success, not a cap/quota termination. Do not infer a hard turn guarantee or per-call cost from session accounting.",
+  "sourceManifest": "docs/reviews/C-013-candidate-manifest.json",
+  "sourceSha256": "6eba42936f8bf86e0a0f7d63e531e7799a5e8b002ea604a06566576065afb950",
+  "sourceFiles": 119,
+  "ClaudeVerdict": "BOUNDED_SOURCE_AGREEMENT_NO_P0_P1",
+  "CodexIndependentAfterReviewTests": {
+    "tests": 351,
+    "pass": 351,
+    "fail": 0,
+    "skipped": 0,
+    "cancelled": 0,
+    "todo": 0,
+    "durationMs": 5878.3221
+  },
+  "CodexVerdict": "AGREE_ONLY_BOUNDED_HISTORICAL_OFFLINE_SOURCE_SCOPE_WITH_DISCLOSED_FUNCTIONAL_LIMITS",
+  "selfAuthoredClaudeR1PartsIndependentlyCheckedByCodex": true,
+  "realPurchasingReady": false,
+  "extensionInstalled": false,
+  "unreadScopesDisclosed": true,
+  "nextAction": "Reproduce actionable offline functional issues before installation; resolve fresh findings in same Claude session. No new merchant resource action.",
+  "originalSessionRetainedPrivately": true
+}

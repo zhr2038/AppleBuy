@@ -18,7 +18,7 @@ function fixture({url='https://secure6.www.apple.com.cn/shop/checkout',texts=[],
   const main=el('');main.querySelector=s=>s==='h1'?h1:s.includes('password')&&auth?el(''):s==='[aria-busy="true"]'&&busy?el(''):null;
   main.querySelectorAll=s=>s.startsWith('button')?btn:s.startsWith('input[type="radio"]')?rs:s==='select'?selects:s==='h1,h2,h3,p,span,div'?[h1,...nodes]:s==='input'?inputs:s==='input[required]'?inputs.filter(i=>i.required):s==='a[href]'?links:[];
   const document={querySelector:()=>main,querySelectorAll:s=>s==='a[href]'?links:[]};
-  const context=vm.createContext({location:{href:url},document,URL,TextEncoder,crypto:webcrypto,Date,HTMLInputElement:Input,Event:class{constructor(type){this.type=type;}},getComputedStyle:e=>({display:e.hidden?'none':'block',visibility:'visible'})});
+  const context=vm.createContext({location:{href:url},document,URL,TextEncoder,crypto:webcrypto,Date,setTimeout,clearTimeout,HTMLInputElement:Input,Event:class{constructor(type){this.type=type;}},getComputedStyle:e=>({display:e.hidden?'none':'block',visibility:'visible'})});
   const fn=vm.runInContext('('+merchantDocument.toString()+')',context);
   let serial=0;return {fn,btn,rs,nodes,async read(){return await fn(plan);},async act(action,extra={}){const out=await fn(plan);return await fn(plan,{id:'action-'+(++serial),taskId:'task',authorized:true,expected:JSON.stringify(out),action,...extra});}};
 }

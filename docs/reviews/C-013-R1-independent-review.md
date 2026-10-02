@@ -1,0 +1,15 @@
+# C-013-R1 independent review — returned for R08 repair
+
+The actual same-session implementation returned successfully at October 3 05:04:42 local, after 1,066.28 seconds. Structured modelUsage contains only `claude-opus-5-5`, requested effort `xhigh`, model check passed, is_error=false, no permission denials, process cleanup confirmed. Requested turns were 60; the actual result reports 61 and success, not quota or a cap error. [Implementer report](../claude/C-013-R1-report.md) discloses its partial context reads and implementation limitations; it is not independent acceptance.
+
+Codex inspected the actual three source changes and complete new implementation test. All original input files outside those three sources were unchanged, including protected independent criteria, existing implementation tests and permissions. One new implementation test file was added. Codex reran the original eight criteria: **8/8 passed, 84.8979 ms**. The complete delivered suite then passed **374/374, 5937.2268 ms**, zero skipped/cancelled/todo. These runs precede the new cancellation criteria and do not establish final approval.
+
+## New independently reproduced blocker: R08 preparation cancellation
+
+`review/c013-preflight-cancellation.test.ts` loads actual production `control.js` and `PurchaseJob`; only DOM, Chrome storage, Web Locks and the merchant port are FAKE. It holds one pending asynchronous read, clicks Pause or Stop, then releases the read. The four combinations are the Final handler's record read and the owned run's session read, each with Pause and Stop. All four continued into one FAKE `submitOrder` command, although cancellation occurred before any job/action existed. No merchant request, reservation, mock order or payment is implemented by the fake port.
+
+The new run has **6 tests: 2 pass, 4 fail**. Controls show that a fresh approved explicit Final still sends exactly one synthetic command and an unknown final is never resent; Resume at REVIEW without confirmation sends nothing. This proves the cancellation problem is not a malformed plan or ineffective submit setup.
+
+Required acceptance: cancellation invalidates every older in-progress preparation/lock/grant handler before new job/action creation; it must preserve already-sent/unknown truth. Releasing the outstanding read cannot revive a grant or emit a command. Later Resume cannot reuse it. A later fresh explicit action may proceed after its normal conditions are checked. Cover Start/Resume/Rebind preparations as applicable, lock waits and error cleanup. Existing one-owner and one-purchase rules remain mandatory.
+
+Root made no product implementation changes during this recovered cycle. The new independent criteria extend the candidate from the delivered 121-file source to a 122-file repair input; neither older 119-file agreement nor passing 374 tests approves this extended candidate. Actual source identities and process/model receipts are recorded separately. No real-site action, installation or new purchase authorization exists. REAL_PURCHASING_READY remains false.

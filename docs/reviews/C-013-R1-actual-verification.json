@@ -1,0 +1,58 @@
+{
+  "task": "C-013-R1",
+  "modelRequested": "claude-opus-5-5",
+  "effortRequested": "xhigh",
+  "structuredModels": [
+    "claude-opus-5-5"
+  ],
+  "modelVerified": true,
+  "isError": false,
+  "subtype": "success",
+  "cleanupConfirmed": true,
+  "permissionDenials": [],
+  "startedAt": "2026-10-02T20:46:56.374091+00:00",
+  "endedAt": "2026-10-02T21:04:42.630756+00:00",
+  "durationSeconds": 1066.28,
+  "requestedTurns": 60,
+  "reportedTurns": 61,
+  "turnCountNote": "Returned success with 61 versus requested 60; no cap or quota error",
+  "changedInputFiles": [
+    "web/checkout-connector/control.js",
+    "web/checkout-connector/job.js",
+    "web/checkout-connector/page-program.js"
+  ],
+  "addedImplementationTests": [
+    "test/checkout-c013-continuity.test.ts"
+  ],
+  "allPriorProtectedInputFilesUnchanged": true,
+  "deliveredCandidate": {
+    "files": 121,
+    "sha256": "4623b20238e04d7e37b260b11e291fa851c5692da96130e153456e8606cc4bc9",
+    "manifest": "docs/reviews/C-013-R1-delivery-candidate-manifest.json"
+  },
+  "independentOriginalRepros": {
+    "tests": 8,
+    "pass": 8,
+    "fail": 0,
+    "durationMs": 84.8979
+  },
+  "independentFullDeliveredSuite": {
+    "tests": 374,
+    "pass": 374,
+    "fail": 0,
+    "skipped": 0,
+    "cancelled": 0,
+    "todo": 0,
+    "durationMs": 5937.2268
+  },
+  "newR08Criteria": {
+    "tests": 6,
+    "pass": 2,
+    "fail": 4,
+    "path": "review/c013-preflight-cancellation.test.ts"
+  },
+  "verdict": "RETURNED_FOR_R08_PREPARATION_CANCELLATION_REPAIR",
+  "bilateralAcceptance": false,
+  "realPurchasingReady": false,
+  "originalSessionRetainedPrivately": true
+}

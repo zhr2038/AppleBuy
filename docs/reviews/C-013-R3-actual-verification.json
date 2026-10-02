@@ -1,0 +1,80 @@
+{
+  "task": "C-013-R3",
+  "startedAt": "2026-10-02T21:42:05.615045+00:00",
+  "endedAt": "2026-10-02T21:48:00.798523+00:00",
+  "durationSeconds": 355.19,
+  "requestedModel": "claude-opus-5-5",
+  "requestedEffort": "xhigh",
+  "modelVerified": true,
+  "isError": false,
+  "subtype": "success",
+  "reportedTurns": 27,
+  "requestedTurnCap": 40,
+  "requestedWallCapSeconds": 1200,
+  "requestedCliDollarCap": 5.0,
+  "reportedTotalCostUsd": 68.72541959999995,
+  "usageQualification": "Structured returned usage is retained verbatim. It appears cumulative for the resumed original session; no incremental dollar-cost or billing inference is accepted from the implementer estimate. Successful terminal subtype is not quota or a cap termination.",
+  "permissionDenials": [],
+  "timedOut": false,
+  "cleanupConfirmed": true,
+  "providerQuotaAfterRestoration": false,
+  "changedProductFiles": [
+    "web/checkout-connector/page-program.js"
+  ],
+  "addedTestFiles": [
+    "test/checkout-c013-decoder.test.ts"
+  ],
+  "protectedReviewFilesUnchanged": 28,
+  "existingTestFilesUnchanged": true,
+  "CodexProductImplementationChangesThisRecoveredCycle": 0,
+  "candidateManifest": "docs/reviews/C-013-R3-candidate-manifest.json",
+  "candidateFiles": 125,
+  "candidateSha256": "add8b1c98c7f3cff2fe1b0375c8a80b556c9dce3076af90243e8f6f1b2b496dd",
+  "independentChecks": [
+    {
+      "label": "protected-decoder",
+      "command": [
+        "node",
+        "--test",
+        "review/c013-decoder-findings.test.ts"
+      ],
+      "exitCode": 0,
+      "tests": 6,
+      "pass": 6,
+      "fail": 0,
+      "cancelled": 0,
+      "skipped": 0,
+      "todo": 0,
+      "duration_ms": 98.7889
+    },
+    {
+      "label": "whole-suite",
+      "command": [
+        "node",
+        "--test",
+        "test/*.test.ts",
+        "review/*.test.ts"
+      ],
+      "exitCode": 0,
+      "tests": 407,
+      "pass": 407,
+      "fail": 0,
+      "cancelled": 0,
+      "skipped": 0,
+      "todo": 0,
+      "duration_ms": 5986.3305
+    }
+  ],
+  "bilateralAgreementPending": true,
+  "realPurchasingReady": false,
+  "unverified": [
+    "Chromium cross-world timer ordering",
+    "Real async/server slot validation and refusal contracts",
+    "Formal extension installation and current host grant",
+    "New real application order and latency"
+  ],
+  "structuredModels": [
+    "claude-opus-5-5"
+  ],
+  "completeStructuredModelUsageVerifiedPrivately": true
+}

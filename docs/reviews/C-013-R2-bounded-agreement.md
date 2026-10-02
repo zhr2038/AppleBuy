@@ -1,0 +1,11 @@
+# C-013-R2 exact offline repair milestone
+
+The actual original-session `claude-opus-5-5`/`xhigh` cross-review returned at October 3 05:21:15 local: successful structured result, sole modelUsage, no permission denial or quota/cap error, all owned processes exited. It verified **123 files SHA `dbf68f221619e94d002aadd4c7adb3701dde0f22077ad470fed9703dfcca9732`** and ran **393/393** tests. Its 15 reported turns are within the requested 32. The full actual report preserves its self-authorship and reading-scope limitations.
+
+Codex independently inspected both real repair deltas and test bodies, reproduced failures before repair, then passed **14/14** targeted checks and **393/393** complete cases on those same bytes. The manifest still matches after the read-only call. Codex accepts **only the C013 repaired offline behaviors and existing synthetic vertical flow**, with known safe-stop limitations: per-call grants, preparation cancellation, conservative AUTH delivery truth, bounded progress-sensitive retries, selected-store waiting, and unchanged one-order/condition protections.
+
+This is an independently accepted runnable offline milestone and actual same-source consistency agreement. Claude authored the repairs; it cannot replace Codex's independent review. It is not a whole-repository audit, full merchant decoder approval, standalone extension installation, authenticated contract proof, real refusal proof or real application purchase/speed acceptance. Current REAL_PURCHASING_READY remains false. No new merchant action occurred and the historical Pro authorization remains consumed.
+
+The received report explicitly discloses that the full `page-program.js` decoder was never reviewed in full. That owed scope stays open; it cannot be hidden behind the successful tests or exact file hash. Next narrowly scoped read-only task completes the decoder/transport review before installation. P2 real page shapes, bare sign-in, actual authenticated summaries and payment-dependent pickup dates still need current authorized evidence. Other P3 local-control/validation usability limitations remain disclosed rather than silently promoted to readiness.
+
+This restored cycle has now completed four useful actual Claude calls. None returned a new provider quota error. Success itself does not trigger the user's conditional save/shutdown instruction.

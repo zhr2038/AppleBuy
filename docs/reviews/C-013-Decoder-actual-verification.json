@@ -1,0 +1,30 @@
+{
+  "task": "C-013-DECODER-REVIEW",
+  "requestedModel": "claude-opus-5-5",
+  "requestedEffort": "xhigh",
+  "structuredModels": [
+    "claude-opus-5-5"
+  ],
+  "modelVerified": true,
+  "isError": false,
+  "cleanupConfirmed": true,
+  "startedAt": "2026-10-02T21:25:15.462113+00:00",
+  "endedAt": "2026-10-02T21:31:49.001746+00:00",
+  "durationSeconds": 393.55,
+  "reportedTurns": 18,
+  "permissionDenials": [
+    {
+      "tool_name": "Bash",
+      "tool_use_id": "toolu_01UCiivDERPaTPmnv4amgyUb",
+      "tool_input": {
+        "command": "cd \"/e/Apple Store\" && python tools/delegation/verify_candidate_manifest.py docs/reviews/C-013-R2-candidate-manifest.json",
+        "description": "Verify candidate manifest hashes"
+      }
+    }
+  ],
+  "approvedCommandsActuallyRun": 0,
+  "denialQualification": "Denied cd plus && composition, not the approved exact input; preserve permissions",
+  "fullAssignedParserTransportPermissionAndFiveTestBodiesRead": true,
+  "realPurchasingReady": false,
+  "originalSessionRetainedPrivately": true
+}

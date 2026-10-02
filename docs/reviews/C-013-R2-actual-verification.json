@@ -1,0 +1,49 @@
+{
+  "task": "C-013-R2",
+  "requestedModel": "claude-opus-5-5",
+  "requestedEffort": "xhigh",
+  "modelVerified": true,
+  "structuredModels": [
+    "claude-opus-5-5"
+  ],
+  "isError": false,
+  "subtype": "success",
+  "cleanupConfirmed": true,
+  "permissionDenials": [],
+  "durationSeconds": 283.77,
+  "startedAt": "2026-10-02T21:10:03.803477+00:00",
+  "endedAt": "2026-10-02T21:14:47.572464+00:00",
+  "requestedTurns": 30,
+  "reportedTurns": 26,
+  "changedInputFiles": [
+    "web/checkout-connector/control.js"
+  ],
+  "addedTests": [
+    "test/checkout-c013-cancellation.test.ts"
+  ],
+  "protectedReviewFilesUnchanged": 27,
+  "candidate": {
+    "manifest": "docs/reviews/C-013-R2-candidate-manifest.json",
+    "files": 123,
+    "sha256": "dbf68f221619e94d002aadd4c7adb3701dde0f22077ad470fed9703dfcca9732"
+  },
+  "independentTargeted": {
+    "tests": 14,
+    "pass": 14,
+    "fail": 0,
+    "durationMs": 85.0652
+  },
+  "independentFullSuite": {
+    "tests": 393,
+    "pass": 393,
+    "fail": 0,
+    "skipped": 0,
+    "cancelled": 0,
+    "todo": 0,
+    "durationMs": 6061.8404
+  },
+  "CodexSourceVerdict": "PASS_OFFLINE_CANDIDATE_PENDING_PRECISE_BILATERAL_REVIEW",
+  "bilateralAcceptance": false,
+  "realPurchasingReady": false,
+  "originalSessionRetainedPrivately": true
+}

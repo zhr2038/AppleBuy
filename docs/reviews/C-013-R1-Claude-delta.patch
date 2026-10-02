@@ -1,0 +1,424 @@
+--- a/web/checkout-connector/control.js
++++ b/web/checkout-connector/control.js
+@@ -8,7 +8,7 @@
+ const plan=()=>({schema:'applebuy-intent/v1',product:$('product').value==='duo'?{model:'iPhone Duo',capacity:'256GB',color:'星光白色'}:{model:'iPhone 18 Pro',capacity:'256GB',color:'黑色'},quantity:1,maxTotalCny:$('product').value==='duo'?15999:9999,city:'大连',fulfillment:'pickup',stores:['Apple 大连恒隆广场'],dateRule:'initial-first-three-terminal',paymentMethod:'支付宝',extras:{...NO_EXTRAS}});
+ $('find').onclick=async()=>{const tabs=(await chrome.tabs.query({})).filter(t=>allowedMerchantUrl(t.url));$('tab').replaceChildren(...tabs.map(t=>{const o=document.createElement('option');o.value=t.id;o.textContent=`${new URL(t.url).hostname} · 标签页 ${t.id}`;return o;}));status(tabs.length?'请选择唯一的官网标签页':'没有可访问的官网标签页；先本人打开官网');};
+ $('permission').onclick=async()=>{try{const t=await chrome.tabs.get(Number($('tab').value));if(!allowedMerchantUrl(t.url))throw new Error();const ok=await chrome.permissions.request({origins:[new URL(t.url).origin+'/*']});status(ok?'该官网主机访问已允许；页面跨主机后需本人另行确认':'访问未允许');}catch{status('当前标签页或权限不可用');}};
+-let finalGrant=null,activeGrant=null,prepared=null;
++let prepared=null;
+ async function digestPlan(p){const bytes=new TextEncoder().encode(JSON.stringify(p));return [...new Uint8Array(await crypto.subtle.digest('SHA-256',bytes))].map(b=>b.toString(16).padStart(2,'0')).join('');}
+ // Constrained migration: a preserved task bound before the explicit field keeps its digest only when it is the same
+ // intent without the field (which already meant no extras). Any other digest stays a binding difference.
+@@ -16,21 +16,27 @@
+ $('prepare').onclick=async()=>{try{const p=plan(),tabId=Number($('tab').value),previous=await store.get(TASK_KEY),digest=await boundDigest(p,previous),port=new ChromePort(chrome,tabId,{mode:'observe',initialSequence:previous?.lastRead??0});const o=await port.observe(p);if(!o.termsLinks?.length){prepared=null;status('该页面未识别当前商店条款；可推进到官网复核页后再确认');return;}const reuse=previous&&previous.state!=='RETIRED';prepared={taskId:reuse?previous.taskId:crypto.randomUUID(),planDigest:digest,tabId,entryDocumentId:reuse?previous.entryDocumentId??o.documentId:o.documentId,termsUrl:o.termsLinks[0]};$('terms').href=prepared.termsUrl;status('只读预检完成。核对购买条件和条款后可一键开始；尚未提交任何购买动作');}catch{prepared=null;status('预检未完成；请核实当前标签页和主机授权');}};
+ $('savePrivate').onclick=async()=>{const v={};for(const k of ['firstName','lastName','phone','email','identitySuffix'])if($(k).value)v[k]=$(k).value;if(v.identitySuffix&&!/^\d{4}$/.test(v.identitySuffix)){status('证件后四位格式不正确');return;}await chrome.storage.session.set({applebuyPickupSession:v});status('自提资料已仅保留在本次 Chrome 会话，不进入购买记录或日志');};
+ const onState=s=>status(`状态：${s.state}；页面：${s.phase??'尚未读取'}；${s.reason??''}`);
+-async function run(starting=false,{rebind=false}={}){
++// C-013-R1: grants are local to one run. A final grant exists only as the argument of the run started by its explicit
++// click, an advance grant only inside an owned start. A denial, gate or exception leaves nothing for a later Resume;
++// durable sent/unknown truth stays in the job record.
++async function run(starting=false,{rebind=false,finalGrant=null}={}){
+   if(!rebind&&!$('approve').checked){status('需要本人明确允许本次结账推进；历史授权不能复用');return;}
+   if(!navigator.locks){status('浏览器缺少执行互斥能力，无法安全运行');return;}
+-  const ownership=await withPurchaseOwner(navigator.locks,async()=>{
+-    const p=plan(),tabId=Number($('tab').value),previous=await store.get(TASK_KEY),digest=await boundDigest(p,previous);
+-    if(starting){activeGrant=null;if($('finalReview').checked){if(!prepared||prepared.planDigest!==digest||prepared.tabId!==tabId){status('一键购买前需重新只读预检；当前购买条件已变化或尚未预检');return;}activeGrant={...prepared,id:crypto.randomUUID(),start:true,termsAccepted:true,existingOrdersChecked:true,noExtras:true,expiry:Date.now()+1200000};}}
+-    const useGrant=rebind?null:finalGrant??activeGrant;
+-    const privatePickupData=rebind?{}:(await chrome.storage.session.get('applebuyPickupSession')).applebuyPickupSession??{};
+-    // A rebound tab is read-only reconciliation: the port is not authorized to act.
+-    const port=new ChromePort(chrome,tabId,{authorized:!rebind,initialSequence:previous?.lastRead??0,acceptedSlot:previous?.acceptedSlot??null,pending:previous?.pending??null,privatePickupData,reviewGrant:useGrant});
+-    job=new PurchaseJob({store,port,maxSteps:300,onState});
+-    try{const result=await job.run(p,{tabId,planDigest:digest,grant:useGrant,taskId:useGrant?.taskId??null,rebind});$('final').disabled=result.lastPhase!=='REVIEW'||result.finalIntent?.sent===true||!!result.reconcileOnly;if(result.lastPhase==='REVIEW'&&port.last?.raw.termsLinks?.length){$('terms').href=port.last.raw.termsLinks[0];}}catch{status('执行已停止，请核实当前任务；已发送的动作不会自动重试');}
+-    // Any return is a gate needing a person; advance and final grants never carry across it.
+-    finally{job=null;finalGrant=null;activeGrant=null;}
+-  });
++  let ownership;
++  try{ownership=await withPurchaseOwner(navigator.locks,async()=>{
++    try{
++      const p=plan(),tabId=Number($('tab').value),previous=await store.get(TASK_KEY),digest=await boundDigest(p,previous);
++      let startGrant=null;
++      if(starting&&$('finalReview').checked){if(!prepared||prepared.planDigest!==digest||prepared.tabId!==tabId){status('一键购买前需重新只读预检；当前购买条件已变化或尚未预检');return;}startGrant={...prepared,id:crypto.randomUUID(),start:true,termsAccepted:true,existingOrdersChecked:true,noExtras:true,expiry:Date.now()+1200000};}
++      const useGrant=rebind?null:finalGrant??startGrant;
++      const privatePickupData=rebind?{}:(await chrome.storage.session.get('applebuyPickupSession')).applebuyPickupSession??{};
++      // A rebound tab is read-only reconciliation: the port is not authorized to act.
++      const port=new ChromePort(chrome,tabId,{authorized:!rebind,initialSequence:previous?.lastRead??0,acceptedSlot:previous?.acceptedSlot??null,pending:previous?.pending??null,privatePickupData,reviewGrant:useGrant});
++      job=new PurchaseJob({store,port,maxSteps:300,onState});
++      const result=await job.run(p,{tabId,planDigest:digest,grant:useGrant,taskId:useGrant?.taskId??null,rebind});$('final').disabled=result.lastPhase!=='REVIEW'||result.finalIntent?.sent===true||!!result.reconcileOnly;if(result.lastPhase==='REVIEW'&&port.last?.raw.termsLinks?.length){$('terms').href=port.last.raw.termsLinks[0];}
++    }catch{status('执行已停止，请核实当前任务；已发送的动作不会自动重试');}
++    finally{job=null;}
++  });}catch{status('执行未能安全开始；记录保持不变，已发送的动作不会自动重试');return;}
+   if(!ownership.owned)status('另一控制页正在执行，当前页只读');
+ }
+ // Two bounded validation modes. Neither adds to the bag, reserves a slot, creates an order or pays.
+@@ -44,16 +50,28 @@
+   });
+   if(!ownership.owned)status('另一控制页正在执行，当前页只读');
+ };
++// C-013-R1: without Web Locks retirement is a visible gate; a lock or storage error neither mutates nor erases history.
+ $('retire').onclick=async()=>{
+-  const ownership=await withPurchaseOwner(navigator.locks,async()=>{
+-    const s=await store.get(TASK_KEY);if(!s){status('没有保留的任务');return;}
+-    if(!retirable(s)){status('该任务曾写入官网购物动作或记录不可确认，不能退役；只能核对');return;}
+-    try{await new PurchaseJob({store,port:null}).retire();status('该任务从未写入官网购物动作，已退役并保留记录；可重新预检');}catch{status('退役未完成；记录保持不变');}
+-  });
+-  if(!ownership.owned)status('另一控制页正在执行，当前页只读');
++  if(!navigator.locks){status('浏览器缺少执行互斥能力，无法安全退役；记录保持不变');return;}
++  try{
++    const ownership=await withPurchaseOwner(navigator.locks,async()=>{
++      const s=await store.get(TASK_KEY);if(!s){status('没有保留的任务');return;}
++      if(!retirable(s)){status('该任务曾写入官网购物动作或记录不可确认，不能退役；只能核对');return;}
++      try{await new PurchaseJob({store,port:null}).retire();status('该任务从未写入官网购物动作，已退役并保留记录；可重新预检');}catch{status('退役未完成；记录保持不变');}
++    });
++    if(!ownership.owned)status('另一控制页正在执行，当前页只读');
++  }catch{status('退役未完成；记录保持不变');}
+ };
+ $('rebind').onclick=()=>{if(!$('rebindConfirm').checked){status('改绑标签页需本人确认，仅用于只读核对');return;}run(false,{rebind:true});};
+-$('start').onclick=()=>run(true);$('resume').onclick=()=>run(false);$('pause').onclick=()=>{activeGrant=null;job?.pause();};$('stop').onclick=()=>{activeGrant=null;job?.stop();};
+-$('final').onclick=async()=>{if(!$('finalReview').checked){status('需要本人核对当前官网并确认这一张订单');return;}const s=await store.get(TASK_KEY);if(!s||s.lastPhase!=='REVIEW'||s.finalIntent?.sent===true||s.reconcileOnly||s.state==='RETIRED'){status('当前任务不能发出新的最终订单');return;}finalGrant={id:crypto.randomUUID(),taskId:s.taskId,planDigest:s.planDigest,documentId:s.lastDocumentId,termsUrl:$('terms').href,termsAccepted:true,existingOrdersChecked:true,noExtras:true,expiry:Date.now()+120000};await run();};
++$('start').onclick=()=>run(true);$('resume').onclick=()=>run(false);$('pause').onclick=()=>{job?.pause();};$('stop').onclick=()=>{job?.stop();};
++// The final grant is built per explicit click and handed only to that run; a rejected attempt retains nothing.
++$('final').onclick=async()=>{
++  if(!$('finalReview').checked){status('需要本人核对当前官网并确认这一张订单');return;}
++  let finalGrant;
++  try{const s=await store.get(TASK_KEY);if(!s||s.lastPhase!=='REVIEW'||s.finalIntent?.sent===true||s.reconcileOnly||s.state==='RETIRED'){status('当前任务不能发出新的最终订单');return;}
++    finalGrant={id:crypto.randomUUID(),taskId:s.taskId,planDigest:s.planDigest,documentId:s.lastDocumentId,termsUrl:$('terms').href,termsAccepted:true,existingOrdersChecked:true,noExtras:true,expiry:Date.now()+120000};}
++  catch{status('最终确认未完成；未发出订单');return;}
++  await run(false,{finalGrant});
++};
+ // No delete/reset: completed and unknown purchase history cannot be erased by reopening a control page.
+ const saved=await store.get(TASK_KEY);if(saved)status(`保留的任务：${saved.state}；重新打开不会清除购买或未知记录`);
+--- a/web/checkout-connector/job.js
++++ b/web/checkout-connector/job.js
+@@ -2,6 +2,8 @@
+ // This controller does not make a merchant request; ChromePort supplies normal UI operations.
+ // C-012-R1 (Claude): fixed no-extras intent, durable bag-add record, expiry-safe final lookup, truthful
+ // not-dispatched state, untouched-failure recovery, elapsed-time wait budget, validation modes, retire/rebind.
++// C-013-R1 (Claude): durable consecutive untouched bound reset only by verified progress plus a per-run absolute
++// bound; an already selected exact allowed pickup store waits within a bound instead of being clicked again.
+ export const TASK_KEY='applebuy-single-personal-purchase/v1';
+ // Public-configuration validation never uses the purchase task key, so it cannot consume a purchase task.
+ export const VALIDATION_KEY='applebuy-public-configuration-validation/v1';
+@@ -14,7 +16,9 @@
+ const clone=x=>structuredClone(x);
+ const optBool=v=>v===undefined||typeof v==='boolean';
+ export function validStored(s){return s&&s.schema==='applebuy-purchase-job/v1'&&typeof s.taskId==='string'&&typeof s.planDigest==='string'&&Number.isSafeInteger(s.tabId)&&validIntent(s.plan)&&Number.isSafeInteger(s.lastRead)&&s.lastRead>=0&&Number.isFinite(s.expiresAt)&&Number.isSafeInteger(s.dateCursor)&&s.dateCursor>=0&&s.dateCursor<=3&&Number.isSafeInteger(s.refusals)&&s.refusals>=0&&Array.isArray(s.rejected)&&s.rejected.every(r=>typeof r.date==='string'&&SLOT.test(r.start)&&SLOT.test(r.end)&&Number.isSafeInteger(r.generation))&&s.floors&&typeof s.floors==='object'&&Object.values(s.floors).every(t=>SLOT.test(t))&&(s.initialDates===null||(Array.isArray(s.initialDates)&&s.initialDates.length<=3&&new Set(s.initialDates).size===s.initialDates.length&&s.initialDates.every(d=>typeof d==='string')))&&(s.pending===null||(typeof s.pending.id==='string'&&typeof s.pending.documentId==='string'&&Number.isFinite(s.pending.deadline)&&ACTIONS.includes(s.pending.action)&&(s.pending.dispatched===undefined||s.pending.dispatched===false)))&&(s.finalIntent===null||(typeof s.finalIntent.id==='string'&&typeof s.finalIntent.sent==='boolean'))&&(!s.finalIntent?.sent||s.pending?.action==='submitOrder'||s.state==='CONFIRMED_UNPAID')&&
+-  optBool(s.bagAddStarted)&&optBool(s.resourceWritten)&&optBool(s.reconcileOnly)&&(s.untouchedFailures===undefined||(Number.isSafeInteger(s.untouchedFailures)&&s.untouchedFailures>=0))&&(s.quotedCny===undefined||s.quotedCny===null||Number.isFinite(s.quotedCny))&&
++  optBool(s.bagAddStarted)&&optBool(s.resourceWritten)&&optBool(s.reconcileOnly)&&(s.untouchedFailures===undefined||(Number.isSafeInteger(s.untouchedFailures)&&s.untouchedFailures>=0))&&
++  // The consecutive count is part of the cumulative count; a streak above a recorded total is not a trustworthy record.
++  (s.untouchedStreak===undefined||(Number.isSafeInteger(s.untouchedStreak)&&s.untouchedStreak>=0&&(s.untouchedFailures===undefined||s.untouchedStreak<=s.untouchedFailures)))&&(s.quotedCny===undefined||s.quotedCny===null||Number.isFinite(s.quotedCny))&&
+   (s.revokedGrantIds===undefined||(Array.isArray(s.revokedGrantIds)&&s.revokedGrantIds.every(x=>typeof x==='string')))&&(s.retiredHistory===undefined||(Array.isArray(s.retiredHistory)&&s.retiredHistory.every(r=>r?.schema==='applebuy-purchase-job/v1'&&r.state==='RETIRED')))&&(s.history===undefined||Array.isArray(s.history));}
+ export function validIntent(p){
+   return p?.schema==='applebuy-intent/v1'&&p.quantity===1&&p.fulfillment==='pickup'&&p.city==='大连'&&
+@@ -41,7 +45,7 @@
+   return [...times].sort((a,b)=>a.start.localeCompare(b.start)||a.end.localeCompare(b.end)).at(-1);
+ }
+ export class PurchaseJob {
+-  constructor({store,port,now=()=>Date.now(),id=()=>crypto.randomUUID(),maxSteps=100,maxWaitMs=30000,hydrationMs=3000,maxPolls=2000,maxUntouched=3,onState=()=>{}}){Object.assign(this,{store,port,now,id,maxSteps,maxWaitMs,hydrationMs,maxPolls,maxUntouched,onState});this.paused=false;this.stopped=false;this.key=TASK_KEY;this.runGrant=null;}
++  constructor({store,port,now=()=>Date.now(),id=()=>crypto.randomUUID(),maxSteps=100,maxWaitMs=30000,hydrationMs=3000,maxPolls=2000,maxUntouched=3,maxUntouchedPerRun=12,onState=()=>{}}){Object.assign(this,{store,port,now,id,maxSteps,maxWaitMs,hydrationMs,maxPolls,maxUntouched,maxUntouchedPerRun,onState});this.paused=false;this.stopped=false;this.key=TASK_KEY;this.runGrant=null;}
+   pause(){this.paused=true;} resume(){this.paused=false;} stop(){this.stopped=true;}
+   async save(s){await this.store.put(this.key,clone(s));this.onState({state:s.state,phase:s.lastPhase,reason:s.reason??null,refusals:s.refusals,finalIntent:s.finalIntent!==null});}
+   async gate(s,reason,state='NEEDS_USER'){
+@@ -72,16 +76,20 @@
+     // Validation is bounded, never authorized and stored separately; it cannot use a purchase grant.
+     if(validating||rebind)grant=null;
+     this.runGrant=grant;
+-    const fresh=()=>({schema:'applebuy-purchase-job/v1',taskId:(validating?null:taskId)??this.id(),plan:clone(P),planDigest,tabId,state:'RUNNING',lastPhase:null,lastDocumentId:null,entryDocumentId:null,reason:null,pending:null,finalIntent:null,orderRefHash:null,initialDates:null,dateCursor:0,floors:{},rejected:[],refusals:0,lastRead:0,expiresAt:this.now()+(validating?300000:1800000),bagAddStarted:false,resourceWritten:false,untouchedFailures:0,quotedCny:null,mode});
++    const fresh=()=>({schema:'applebuy-purchase-job/v1',taskId:(validating?null:taskId)??this.id(),plan:clone(P),planDigest,tabId,state:'RUNNING',lastPhase:null,lastDocumentId:null,entryDocumentId:null,reason:null,pending:null,finalIntent:null,orderRefHash:null,initialDates:null,dateCursor:0,floors:{},rejected:[],refusals:0,lastRead:0,expiresAt:this.now()+(validating?300000:1800000),bagAddStarted:false,resourceWritten:false,untouchedFailures:0,untouchedStreak:0,quotedCny:null,mode});
+     let s;
+     if(old?.state==='RETIRED'){if(rebind)throw new Error('NoPreservedTaskToRebind');const {retiredHistory=[],...prev}=old;s={...fresh(),retiredHistory:[...retiredHistory,prev]};}
+     else s=old??fresh();
+     // An unresolved earlier validation choice on the same tab/intent is reconciled first, never blindly clicked again.
+     const prior=validating?await this.store.get(VALIDATION_KEY):null;
+     if(prior&&validStored(prior)&&prior.pending&&prior.pending.dispatched!==false&&prior.tabId===tabId&&prior.planDigest===planDigest){s.pending=clone(prior.pending);s.lastRead=prior.lastRead;}
++    // A new validation run on the same tab/intent keeps the untouched counts: restarting cannot reset the consecutive bound.
++    if(prior&&validStored(prior)&&prior.tabId===tabId&&prior.planDigest===planDigest){s.untouchedFailures=prior.untouchedFailures??0;s.untouchedStreak=prior.untouchedStreak??s.untouchedFailures;}
+     if(rebind&&!old)throw new Error('NoPreservedTaskToRebind');
+     // Constrained migration: legacy records cannot prove they never added to the bag or wrote a mutation.
+-    s.bagAddStarted??=true;s.resourceWritten??=true;s.untouchedFailures??=0;s.quotedCny??=null;
++    // A legacy record cannot prove its untouched failures were separated by progress: all of them count as consecutive.
++    // A missing total is at least the recorded streak.
++    s.bagAddStarted??=true;s.resourceWritten??=true;s.untouchedFailures??=s.untouchedStreak??0;s.untouchedStreak??=s.untouchedFailures;s.quotedCny??=null;
+     if(s.schema!=='applebuy-purchase-job/v1'||s.planDigest!==planDigest||JSON.stringify(normalizeIntent(s.plan))!==JSON.stringify(P)||(s.tabId!==tabId&&!rebind))return this.gate(s,'existing-task-binding-differs','BLOCKED');
+     s.plan=clone(P);
+     if(rebind&&s.tabId!==tabId){s.history=[...(s.history??[]),{event:'human-tab-rebind',fromTabId:s.tabId,toTabId:tabId,at:this.now()}];s.tabId=tabId;}
+@@ -91,11 +99,12 @@
+     if(s.finalIntent&&s.finalIntent.sent&&s.pending?.action!=='submitOrder')return this.gate(s,'final-intent-already-consumed','NEEDS_VERIFICATION');
+     if(grant&&s.revokedGrantIds?.includes(grant.id))return this.gate(s,'advance-authorization-cleared-by-human-intervention','BLOCKED');
+     s.state='RUNNING';s.reason=null;await this.save(s);
+-    let step=0,polls=0,waitSince=null,polling=false;
++    // storeWait marks a wait episode for an already selected store; untouchedRun is this run's absolute untouched count.
++    let step=0,polls=0,waitSince=null,polling=false,storeWait=false,untouchedRun=0;
+     // Waits are bounded by elapsed time per episode and an absolute poll cap; they never consume semantic steps.
+     const poll=async(limit)=>{if(!this.port.wait||polls>=this.maxPolls)return false;waitSince??=this.now();if(this.now()-waitSince>=limit)return false;polls++;await this.port.wait(50);return polling=true;};
+     for(;;){
+-      if(polling)polling=false;else{waitSince=null;if(++step>this.maxSteps)return this.gate(s,'step-bound-reached','NEEDS_VERIFICATION');}
++      if(polling)polling=false;else{waitSince=null;storeWait=false;if(++step>this.maxSteps)return this.gate(s,'step-bound-reached','NEEDS_VERIFICATION');}
+       const finalLookup=s.pending?.action==='submitOrder'&&s.pending.dispatched!==false;
+       // Expiry gates new mutations. Independent final lookup and human-rebound read-only reconciliation remain available.
+       if(s.expiresAt<=this.now()&&!finalLookup&&!s.reconcileOnly)return this.gate(s,'task-window-expired; existing intent preserved','EXPIRED');
+@@ -121,13 +130,13 @@
+             s.rejected.push({date:pending.date,start:pending.start,end:pending.end,generation:pending.generation});s.refusals++;s.pending=null;s.dateCursor++;await this.save(s);
+             if(s.refusals>5)return this.gate(s,'refusal-bound-reached','EXHAUSTED');continue;
+           }
+-          if(['DETAILS','PAYMENT','REVIEW'].includes(o.phase)&&o.acceptedSlot?.verified===true&&purchaseMatches(P,o.purchase)&&o.acceptedSlot.date===pending.date&&o.acceptedSlot.start===pending.start&&o.acceptedSlot.end===pending.end){s.acceptedSlot=clone(o.acceptedSlot);s.pending=null;await this.save(s);continue;}
++          if(['DETAILS','PAYMENT','REVIEW'].includes(o.phase)&&o.acceptedSlot?.verified===true&&purchaseMatches(P,o.purchase)&&o.acceptedSlot.date===pending.date&&o.acceptedSlot.start===pending.start&&o.acceptedSlot.end===pending.end){s.acceptedSlot=clone(o.acceptedSlot);s.pending=null;s.untouchedStreak=0;await this.save(s);continue;}
+           if((o.phase==='PROCESSING'||o.phase===pending.beforePhase)&&this.now()<pending.deadline&&await poll(this.maxWaitMs))continue;
+           return this.gate(s,'slot-result-unconfirmed; no resubmission','NEEDS_VERIFICATION');
+         }
+         const reached={configureProduct:['ENTRY','VARIANT'],continueProduct:['VARIANT'],addBag:['ACCESSORIES','BAG'],viewBag:['BAG'],checkout:['FULFILLMENT','SLOTS'],selectPickup:['FULFILLMENT','SLOTS'],selectStore:['SLOTS'],selectDate:['SLOTS'],fillDetails:['PAYMENT'],selectPayment:['PAYMENT'],continuePayment:['REVIEW']}[pending.action]??[];
+         const conditions=o.phase==='BAG'||o.phase==='FULFILLMENT'?itemMatches(P,o.purchase):!['SLOTS','PAYMENT','REVIEW'].includes(o.phase)||purchaseMatches(P,o.purchase);
+-        if(reached.includes(o.phase)&&o.verifiedStep===true&&conditions&&(pending.action!=='selectPickup'||o.purchase?.fulfillment==='pickup')&&(pending.action!=='selectDate'||o.selectedDate===pending.date)&&(pending.action!=='configureProduct'||o.selectedProductChoices?.includes(pending.choice))&&(pending.action!=='selectPayment'||o.paymentMethod===P.paymentMethod)){s.pending=null;await this.save(s);continue;}
++        if(reached.includes(o.phase)&&o.verifiedStep===true&&conditions&&(pending.action!=='selectPickup'||o.purchase?.fulfillment==='pickup')&&(pending.action!=='selectDate'||o.selectedDate===pending.date)&&(pending.action!=='configureProduct'||o.selectedProductChoices?.includes(pending.choice))&&(pending.action!=='selectPayment'||o.paymentMethod===P.paymentMethod)){s.pending=null;s.untouchedStreak=0;await this.save(s);continue;}
+         if(STOP.has(o.phase))return this.gate(s,o.phase.toLowerCase());
+         if((o.phase===pending.beforePhase||o.phase==='PROCESSING')&&this.now()<pending.deadline&&await poll(this.maxWaitMs))continue;
+         return this.gate(s,'mutation-result-unconfirmed; no automatic repeat','NEEDS_VERIFICATION');
+@@ -156,7 +165,15 @@
+         }
+       }else if(o.phase==='ACCESSORIES')command={action:'viewBag'};
+       else if(o.phase==='BAG'){if(!itemMatches(P,o.purchase)||o.extras===true)return this.gate(s,'bag-conditions-not-verified','BLOCKED');command={action:'checkout'};}
+-      else if(o.phase==='FULFILLMENT'){if(!itemMatches(P,o.purchase)||['conflict','ambiguous','disabled'].includes(o.fulfillmentChoice))return this.gate(s,'pickup-conditions-not-verified','BLOCKED');command=o.purchase.fulfillment!=='pickup'?{action:'selectPickup'}:{action:'selectStore',store:P.stores[0]};}
++      else if(o.phase==='FULFILLMENT'){
++        if(!itemMatches(P,o.purchase)||['conflict','ambiguous','disabled'].includes(o.fulfillmentChoice))return this.gate(s,'pickup-conditions-not-verified','BLOCKED');
++        // An exact verified allowed store with a selected pickup control is not clicked again: its dependent controls
++        // get a bounded wait. Changed evidence during that wait stops. Local selection never implies a held slot.
++        const selected=o.fulfillmentChoice==='pickup'&&purchaseMatches(P,o.purchase);
++        if(storeWait&&!selected)return this.gate(s,'selected-store-evidence-changed-while-loading; not clicked again','NEEDS_VERIFICATION');
++        if(selected){storeWait=true;if(await poll(this.maxWaitMs))continue;return this.gate(s,'selected-store-controls-not-loaded; no slot held, availability not established','NOT_READY');}
++        command=o.purchase.fulfillment!=='pickup'?{action:'selectPickup'}:{action:'selectStore',store:P.stores[0]};
++      }
+       else if(o.phase==='SLOTS'){
+         if(!purchaseMatches(P,o.purchase)||o.listComplete!==true||!Number.isSafeInteger(o.generation)||!Array.isArray(o.dates)||o.dates.length===0||o.dates.some(d=>typeof d.label!=='string'||!d.label||typeof d.ref!=='string')||new Set(o.dates.map(d=>d.label)).size!==o.dates.length)return this.gate(s,'slot-list-or-conditions-not-verified','BLOCKED');
+         // Freeze the first three ENABLED offered labels once, in merchant order. Never invent a year or roll to a fourth date.
+@@ -200,10 +217,12 @@
+       }
+       let reply;try{reply=await this.port.act({...s.pending,plan:clone(P),taskId:s.taskId,planDigest:s.planDigest});}catch{return this.gate(s,'mutation-transport-lost; reconcile before proceeding','NEEDS_VERIFICATION');}
+       if(reply?.delivered===false&&reply.touched===false){
+-        // Positively untouched: no control was written. Clear durably, then re-observe within a bounded count.
+-        const p=s.pending;s.pending=null;s.untouchedFailures++;if(p.action==='addBag')s.bagAddStarted=false;if(p.action==='submitOrder')s.finalIntent.sent=false;
++        // Positively untouched: no control was written. Clear durably, then re-observe within bounded counts. The durable
++        // consecutive count resets only on verified progress of a delivered action; this run's absolute count never resets.
++        const p=s.pending;s.pending=null;s.untouchedFailures++;s.untouchedStreak++;untouchedRun++;if(p.action==='addBag')s.bagAddStarted=false;if(p.action==='submitOrder')s.finalIntent.sent=false;
+         s.history=[...(s.history??[]),{event:'untouched-not-sent',action:p.action,reason:typeof reply.reason==='string'?reply.reason.slice(0,60):null}].slice(-50);await this.save(s);
+-        if(s.untouchedFailures>this.maxUntouched)return this.gate(s,'repeated-untouched-failures; human check required','NEEDS_VERIFICATION');
++        if(s.untouchedStreak>this.maxUntouched)return this.gate(s,'repeated-untouched-failures; human check required','NEEDS_VERIFICATION');
++        if(untouchedRun>this.maxUntouchedPerRun)return this.gate(s,'untouched-failure-run-limit; human check required','NEEDS_VERIFICATION');
+         if(p.action==='submitOrder')return this.gate(s,'final-not-dispatched; fresh confirmation required');
+         continue;
+       }
+--- a/web/checkout-connector/page-program.js
++++ b/web/checkout-connector/page-program.js
+@@ -9,7 +9,11 @@
+   const safe=u.protocol==='https:'&&(u.hostname==='www.apple.com.cn'||/^secure(?:\d+)?\.www\.apple\.com\.cn$/.test(u.hostname))&&/^\/shop\/(?:buy-iphone\/(?:iphone-18-pro|iphone-duo)(?:\/[^/]+\/a)?|bag|checkout|order(?:\/[^?#]*)?|signIn(?:\/orders)?)(?:\/)?$/.test(u.pathname);
+   if(!safe)return {schema:'applebuy-merchant-read/v1',phase:'UNKNOWN',reason:'unsupported-official-url'};
+   if(/^\/shop\/signIn\/orders\/?$/.test(u.pathname)){
+-    if(command){if(command.structured!==true)throw new Error('AuthenticationRequired');return {delivered:false,touched:false,reason:'AuthenticationRequired'};}
++    // C-013-R1: same-document delivery evidence survives the AUTH route. A memoized command is never positively
++    // untouched. Only the memo is consulted: no authentication DOM or field is read and no action is taken.
++    if(command){const memo=globalThis.__applebuyExecuted,prior=typeof memo?.has==='function'&&memo.has(command.id)===true;
++      if(command.structured!==true)throw new Error(prior?'OperationAlreadyDelivered':'AuthenticationRequired');
++      return {delivered:false,touched:prior,reason:prior?'OperationAlreadyDelivered':'AuthenticationRequired'};}
+     return {schema:'applebuy-merchant-read/v1',phase:'AUTH',verifiedStep:false,reason:'official-order-sign-in-required',dates:[],times:[]};
+   }
+   const main=document.querySelector('main,[role="main"]');if(!main)return {schema:'applebuy-merchant-read/v1',phase:'UNKNOWN',reason:'main-not-found'};
+--- a/test/checkout-c013-continuity.test.ts
++++ b/test/checkout-c013-continuity.test.ts
+@@ -0,0 +1,199 @@
++// C-013-R1 implementation tests (Claude). Every browser API, document, store, choice and merchant observation here is
++// explicitly FAKE/synthetic. Nothing establishes a live Apple contract, and no real or mock merchant order is submitted.
++import test from 'node:test';
++import assert from 'node:assert/strict';
++import vm from 'node:vm';
++import {readFileSync} from 'node:fs';
++import {createHash,webcrypto} from 'node:crypto';
++import {PurchaseJob,TASK_KEY,VALIDATION_KEY,NO_EXTRAS,retirable,validStored} from '../web/checkout-connector/job.js';
++import {withPurchaseOwner} from '../web/checkout-connector/owner.js';
++import {merchantDocument} from '../web/checkout-connector/page-program.js';
++
++const plan={schema:'applebuy-intent/v1',product:{model:'iPhone Duo',capacity:'256GB',color:'星光白色'},quantity:1,maxTotalCny:15999,city:'大连',fulfillment:'pickup',stores:['Apple 大连恒隆广场'],dateRule:'initial-first-three-terminal',paymentMethod:'支付宝',extras:{...NO_EXTRAS}};
++const purchase={itemVerified:true,verified:true,...plan.product,quantity:1,totalCny:15999,store:plan.stores[0],fulfillment:'pickup'};
++const terms='https://www.apple.com.cn/shop/open/salespolicies';
++// Monotonic across harnesses so a restarted job sees fresh observation sequences.
++let clock=100000,seq=0,serial=0;
++
++// ---------- control page harness (FAKE DOM, storage and Web Locks; the job is a facade that only records its grant) ----------
++async function control(){
++  const nodes=new Map(),calls=[];
++  const node=id=>{if(!nodes.has(id))nodes.set(id,{value:'',checked:false,disabled:false,href:'',textContent:''});return nodes.get(id);};
++  node('product').value='duo';node('tab').value='7';node('approve').checked=true;node('finalReview').checked=true;node('terms').href=terms;
++  const row={schema:'applebuy-purchase-job/v1',taskId:'FAKE-task',planDigest:createHash('sha256').update(JSON.stringify(plan)).digest('hex'),lastPhase:'REVIEW',lastDocumentId:'FAKE-doc',finalIntent:null,resourceWritten:false,bagAddStarted:false,pending:null};
++  const h={nodes,calls,row,lock:'ok',localThrows:false,sessionThrows:false,retireCalls:0,writes:0,state:()=>nodes.get('state').textContent,click:id=>nodes.get(id).onclick()};
++  class JobFacade{
++    constructor(){this.port={last:null};}
++    async run(p,options){calls.push(structuredClone(options));return {state:'NEEDS_USER',lastPhase:'REVIEW',finalIntent:null};}
++    async retire(){h.retireCalls++;}
++    pause(){} stop(){}
++  }
++  const lockApi={async request(name,options,fn){if(h.lock==='error')throw new Error('FAKE lock failure');return fn(h.lock==='busy'?null:{});}};
++  const chrome={storage:{local:{async get(){if(h.localThrows)throw new Error('FAKE storage failure');return {[TASK_KEY]:structuredClone(h.row)};},async set(){h.writes++;}},session:{async get(){if(h.sessionThrows)throw new Error('FAKE session failure');return {};},async set(){h.writes++;}}}};
++  const navigator={get locks(){return h.lock==='absent'?null:lockApi;}};
++  const context=vm.createContext({document:{getElementById:node},chrome,navigator,crypto:webcrypto,TextEncoder,Date,URL,structuredClone,PurchaseJob:JobFacade,ChromePort:class {},allowedMerchantUrl:()=>true,withPurchaseOwner,TASK_KEY,VALIDATION_KEY,NO_EXTRAS,retirable});
++  const source=readFileSync(new URL('../web/checkout-connector/control.js',import.meta.url),'utf8').replace(/^import .*;\r?$/gm,'');
++  await vm.runInContext('(async()=>{'+source+'\n})()',context);return h;
++}
++
++test('C013-R1 P3-1: a storage failure while building a final grant is a visible gate and arms nothing',async()=>{
++  const h=await control();h.localThrows=true;
++  await assert.doesNotReject(h.click('final'));assert.equal(h.calls.length,0);assert.match(h.state(),/最终确认未完成/);
++  h.localThrows=false;await h.click('resume');assert.equal(h.calls.length,1);assert.equal(h.calls[0].grant,null);
++});
++test('C013-R1 P3-1: missing Web Locks or a lock error during final confirmation arms nothing',async()=>{
++  const h=await control();h.lock='absent';
++  await h.click('final');assert.equal(h.calls.length,0);assert.match(h.state(),/互斥/);
++  h.lock='error';await assert.doesNotReject(h.click('final'));assert.equal(h.calls.length,0);assert.match(h.state(),/未能安全开始/);
++  h.lock='ok';await h.click('resume');assert.equal(h.calls.length,1);assert.equal(h.calls[0].grant,null);
++});
++test('C013-R1 P3-1: an exception inside the owned run is caught and the next Resume has no grant',async()=>{
++  const h=await control();h.sessionThrows=true;
++  await assert.doesNotReject(h.click('final'));assert.equal(h.calls.length,0);assert.match(h.state(),/执行已停止/);
++  h.sessionThrows=false;await h.click('resume');assert.equal(h.calls[0].grant,null);
++});
++test('C013-R1 P3-1: a Start refused for a missing read-only preflight carries no advance grant',async()=>{
++  const h=await control();await h.click('start');assert.equal(h.calls.length,0);assert.match(h.state(),/重新只读预检/);
++  await h.click('resume');assert.equal(h.calls.length,1);assert.equal(h.calls[0].grant,null);
++});
++test('C013-R1 P3-1: each explicit approved confirmation hands off exactly one distinct grant; durable sent truth refuses a new one',async()=>{
++  const h=await control();const before=Date.now();
++  await h.click('final');await h.click('resume');await h.click('final');
++  assert.equal(h.calls.length,3);assert.equal(h.calls[1].grant,null);
++  const [a,b]=[h.calls[0].grant,h.calls[2].grant];
++  for(const g of [a,b]){assert.equal(g.taskId,'FAKE-task');assert.equal(g.documentId,'FAKE-doc');assert.equal(g.termsUrl,terms);assert.ok(g.expiry>before&&g.expiry<=Date.now()+120000);}
++  assert.notEqual(a.id,b.id);
++  h.row.finalIntent={id:'FAKE-intent',sent:true};await h.click('final');assert.equal(h.calls.length,3);assert.match(h.state(),/不能发出新的最终订单/);
++  await h.click('resume');assert.equal(h.calls[3].grant,null);assert.equal(h.writes,0,'the control page never rewrites the durable record');
++});
++test('C013-R1 P3-2: retirement lock errors, busy owner and storage failures change nothing; a retirable task still retires',async()=>{
++  const h=await control();
++  h.lock='error';await assert.doesNotReject(h.click('retire'));assert.equal(h.state(),'退役未完成；记录保持不变');
++  h.lock='busy';await h.click('retire');assert.match(h.state(),/另一控制页/);
++  h.lock='ok';h.localThrows=true;await assert.doesNotReject(h.click('retire'));assert.equal(h.state(),'退役未完成；记录保持不变');
++  assert.equal(h.retireCalls,0);assert.equal(h.writes,0);
++  h.localThrows=false;await h.click('retire');assert.equal(h.retireCalls,1);
++});
++
++// ---------- page program at the observed AUTH route (FAKE document memo; the DOM must never be read) ----------
++function authProgram(memo){
++  const deny=()=>{throw new Error('AUTH must not read DOM');};
++  const context=vm.createContext({location:{href:'https://secure11.www.apple.com.cn/shop/signIn/orders'},URL,document:{querySelector:deny,querySelectorAll:deny},...(memo===undefined?{}:{__applebuyExecuted:memo})});
++  const fn=vm.runInContext('('+merchantDocument.toString()+')',context);return async(...args)=>structuredClone(await fn(...args));
++}
++const command=id=>({id,taskId:'FAKE-task',authorized:true,structured:true,action:'selectStore'});
++test('C013-R1 P3-3: AUTH keeps memoized delivery conservative, reports only a fresh command untouched and never extends the memo',async()=>{
++  const memo=new Set(['FAKE-delivered']);const run=authProgram(memo);
++  await assert.rejects(run(plan,{...command('FAKE-delivered'),structured:false}),/OperationAlreadyDelivered/);
++  assert.deepEqual(await run(plan,command('FAKE-delivered')),{delivered:false,touched:true,reason:'OperationAlreadyDelivered'});
++  assert.deepEqual(await run(plan,command('FAKE-fresh')),{delivered:false,touched:false,reason:'AuthenticationRequired'});
++  await assert.rejects(run(plan,{...command('FAKE-fresh'),structured:false}),/AuthenticationRequired/);
++  assert.deepEqual([...memo],['FAKE-delivered']);
++  assert.deepEqual(await authProgram()(plan,command('FAKE-fresh')),{delivered:false,touched:false,reason:'AuthenticationRequired'});
++  const o=await run(plan);assert.equal(o.phase,'AUTH');assert.equal(o.verifiedStep,false);
++});
++
++// ---------- job harness (FAKE merchant observations; act records commands only) ----------
++function memoryStore(){const s={rows:{},async get(k){return structuredClone(s.rows[k]??null);},async put(k,v){s.rows[k]=structuredClone(v);}};return s;}
++function harness(current,{store=memoryStore(),act=()=>({delivered:true}),onWait=()=>{},options={}}={}){
++  const h={store,current,actions:[],waits:0};
++  const port={
++    async observe(){const o=typeof h.current==='function'?h.current(h):h.current;return {schema:'applebuy-merchant-read/v1',documentId:'FAKE-doc',verifiedStep:true,...structuredClone(o),seq:++seq};},
++    async act(c){h.actions.push(structuredClone(c));return act(c,h);},
++    async wait(n){clock+=n;h.waits++;onWait(h);}
++  };
++  h.job=new PurchaseJob({store,port,now:()=>clock,id:()=>`FAKE-${++serial}`,...options});
++  h.run=(mode='purchase')=>h.job.run(plan,{tabId:7,planDigest:'FAKE-digest',mode});return h;
++}
++const untouched=()=>({delivered:false,touched:false,reason:'FAKEEvidenceChanged'});
++
++test('C013-R1 P3-3: a touched report never counts as untouched; the pending action is kept and AUTH stops for a person',async()=>{
++  const h=harness({phase:'FULFILLMENT',purchase:{...purchase,verified:false,store:null},fulfillmentChoice:'pickup'},{act:(c,x)=>{x.current={phase:'AUTH',verifiedStep:false};return {delivered:false,touched:true,reason:'OperationAlreadyDelivered'};}});
++  const r=await h.run();
++  assert.equal(r.reason,'auth');assert.equal(r.state,'NEEDS_USER');assert.equal(h.actions.length,1);assert.equal(r.pending.action,'selectStore');
++  assert.equal(r.untouchedFailures,0);assert.equal(r.untouchedStreak,0);assert.equal((r.history??[]).length,0);
++});
++
++test('C013-R1 P3-5: restart, touched/unproven results and repeated lists never reset the consecutive bound; verified progress does',async()=>{
++  const store=memoryStore();let selected=[],next='FAKE-choice-a';
++  const page=()=>({phase:'ENTRY',nextChoice:{choice:next,state:'enabled'},selectedProductChoices:[...selected]});
++  // Three untouched failures, then the step bound: the durable streak is 3.
++  let r=await harness(page,{store,act:untouched,options:{maxSteps:3}}).run();
++  assert.equal(r.reason,'step-bound-reached');assert.equal(r.untouchedStreak,3);assert.equal(r.untouchedFailures,3);
++  // A touched (unknown) report is not untouched; its effect is never proven, so it is not repeated and resets nothing.
++  const t=harness(page,{store,act:()=>({delivered:false,touched:true})});r=await t.run();
++  assert.equal(r.reason,'mutation-result-unconfirmed; no automatic repeat');assert.equal(t.actions.length,1);assert.equal(r.untouchedStreak,3);assert.equal(r.pending.choice,'FAKE-choice-a');
++  // Restart with the same unproven page: reconciliation only, no repeat, no reset.
++  const u=harness(page,{store,act:untouched});r=await u.run();
++  assert.equal(r.reason,'mutation-result-unconfirmed; no automatic repeat');assert.equal(u.actions.length,0);assert.equal(r.untouchedStreak,3);
++  // Verified progress of the delivered choice resets the streak; a full consecutive allowance follows, then the bound stops.
++  selected=['FAKE-choice-a'];next='FAKE-choice-b';
++  const v=harness(page,{store,act:untouched});r=await v.run();
++  assert.equal(r.reason,'repeated-untouched-failures; human check required');assert.equal(v.actions.length,4);
++  assert.ok(v.actions.every(c=>c.choice==='FAKE-choice-b'));assert.equal(r.untouchedStreak,4);assert.equal(r.untouchedFailures,7);assert.equal(r.pending,null);
++  // Once exhausted, a restart without progress allows exactly one further attempt before stopping again.
++  const w=harness(page,{store,act:untouched});r=await w.run();assert.equal(w.actions.length,1);assert.equal(r.untouchedStreak,5);
++});
++
++test('C013-R1 P3-5: a public-configuration restart on the same tab and intent keeps the consecutive count',async()=>{
++  const store=memoryStore(),page={phase:'ENTRY',nextChoice:{choice:'FAKE-choice',state:'enabled'},selectedProductChoices:[]};
++  let r=await harness(page,{store,act:untouched,options:{maxSteps:3}}).run('public-config');assert.equal(r.untouchedStreak,3);
++  const h=harness(page,{store,act:untouched});r=await h.run('public-config');
++  assert.equal(r.reason,'repeated-untouched-failures; human check required');assert.equal(h.actions.length,1);assert.equal(store.rows[TASK_KEY],undefined);
++});
++
++test('C013-R1 P3-5: legacy records count every untouched failure as consecutive; malformed streaks are rejected',async()=>{
++  const store=memoryStore();await harness({phase:'AUTH',verifiedStep:false},{store}).run();
++  const row=store.rows[TASK_KEY];delete row.untouchedStreak;row.untouchedFailures=3;assert.equal(validStored(row),true);
++  const h=harness({phase:'ENTRY',nextChoice:{choice:'FAKE-choice',state:'enabled'}},{store,act:untouched});const r=await h.run();
++  assert.equal(r.reason,'repeated-untouched-failures; human check required');assert.equal(h.actions.length,1);assert.equal(r.untouchedStreak,4);
++  for(const bad of [-1,1.5,'1',null,4]){assert.equal(validStored({...row,untouchedFailures:3,untouchedStreak:bad}),false);}
++  assert.equal(validStored({...row,untouchedFailures:3,untouchedStreak:2}),true);
++  // A streak without a recorded total migrates conservatively: the total is at least the streak.
++  const {untouchedFailures,...noTotal}=store.rows[TASK_KEY];store.rows[TASK_KEY]={...noTotal,untouchedStreak:3};assert.equal(validStored(store.rows[TASK_KEY]),true);
++  const m=harness({phase:'ENTRY',nextChoice:{choice:'FAKE-choice',state:'enabled'}},{store,act:untouched});const out=await m.run();
++  assert.equal(m.actions.length,1);assert.equal(out.untouchedStreak,4);assert.equal(out.untouchedFailures,4);assert.equal(out.reason,'repeated-untouched-failures; human check required');
++});
++
++test('C013-R1 P3-5: alternating progress cannot loop; the per-run absolute untouched bound stops it',async()=>{
++  const selected=[];let stage=0;const tried=new Set();
++  const page=()=>({phase:'ENTRY',nextChoice:{choice:'FAKE-choice-'+stage,state:'enabled'},selectedProductChoices:[...selected]});
++  const h=harness(page,{act:c=>{if(!tried.has(stage)){tried.add(stage);return untouched();}selected.push(c.choice);stage++;return {delivered:true};},options:{maxSteps:100}});
++  const r=await h.run('public-config');
++  assert.equal(r.state,'NEEDS_VERIFICATION');assert.equal(r.reason,'untouched-failure-run-limit; human check required');
++  assert.equal(h.actions.length,25);assert.equal(r.untouchedFailures,13);assert.equal(r.untouchedStreak,1);
++});
++
++const fulfillment=(extra={})=>({phase:'FULFILLMENT',purchase:structuredClone(purchase),fulfillmentChoice:'pickup',...extra});
++test('C013-R1 P3-6: never-ending loading of a selected store is a bounded NOT_READY gate with no click and no implied slot',async()=>{
++  const h=harness(fulfillment());const r=await h.run();
++  assert.equal(r.state,'NOT_READY');assert.match(r.reason,/selected-store-controls-not-loaded/);assert.match(r.reason,/no slot held/);
++  assert.equal(h.actions.length,0);assert.ok(h.waits>0&&h.waits<=601,'elapsed-time bounded');assert.equal(r.pending,null);assert.equal(r.acceptedSlot,undefined);
++});
++test('C013-R1 P3-6: an unselected, unverified or disallowed store still receives one normal selection',async()=>{
++  const cases=[
++    [fulfillment({purchase:{...purchase,verified:false,store:null}}),'selectStore'],
++    [fulfillment({purchase:{...purchase,store:'Apple 合成其他门店'}}),'selectStore'],
++    [fulfillment({fulfillmentChoice:undefined}),'selectStore'],
++    [fulfillment({fulfillmentChoice:'unselected',purchase:{...purchase,verified:false,store:null,fulfillment:null}}),'selectPickup']
++  ];
++  for(const [page,action] of cases){
++    const h=harness(page,{act:(c,x)=>{x.current={phase:'AUTH',verifiedStep:false};return {delivered:true};}});await h.run();
++    assert.deepEqual(h.actions.map(c=>c.action),[action]);if(action==='selectStore')assert.equal(h.actions[0].store,'Apple 大连恒隆广场');
++  }
++});
++test('C013-R1 P3-6: contradictory evidence or authentication during the wait stops without clicking',async()=>{
++  const changes=[
++    [{...fulfillment({purchase:{...purchase,verified:false,store:null}})},'NEEDS_VERIFICATION',/selected-store-evidence-changed-while-loading/],
++    [{...fulfillment({fulfillmentChoice:'delivery',purchase:{...purchase,verified:false,fulfillment:null}})},'NEEDS_VERIFICATION',/selected-store-evidence-changed-while-loading/],
++    [{...fulfillment({purchase:{...purchase,totalCny:16999}})},'BLOCKED',/pickup-conditions-not-verified/],
++    [{phase:'AUTH',verifiedStep:false},'NEEDS_USER',/^auth$/]
++  ];
++  for(const [later,state,reason] of changes){
++    const h=harness(fulfillment(),{onWait:x=>{if(x.waits===2)x.current=later;}});const r=await h.run();
++    assert.equal(r.state,state);assert.match(r.reason,reason);assert.equal(h.actions.length,0);assert.equal(h.waits,2);
++  }
++  // A processing interval belongs to the same wait episode: a store changed after it still stops.
++  const p=harness(fulfillment(),{onWait:x=>{if(x.waits===1)x.current={phase:'PROCESSING',verifiedStep:false};if(x.waits===2)x.current=fulfillment({purchase:{...purchase,verified:false,store:null}});}});
++  const r=await p.run();assert.match(r.reason,/selected-store-evidence-changed-while-loading/);assert.equal(p.actions.length,0);
++});

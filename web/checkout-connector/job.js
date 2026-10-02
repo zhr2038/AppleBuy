@@ -2,6 +2,8 @@
 // This controller does not make a merchant request; ChromePort supplies normal UI operations.
 // C-012-R1 (Claude): fixed no-extras intent, durable bag-add record, expiry-safe final lookup, truthful
 // not-dispatched state, untouched-failure recovery, elapsed-time wait budget, validation modes, retire/rebind.
+// C-013-R1 (Claude): durable consecutive untouched bound reset only by verified progress plus a per-run absolute
+// bound; an already selected exact allowed pickup store waits within a bound instead of being clicked again.
 export const TASK_KEY='applebuy-single-personal-purchase/v1';
 // Public-configuration validation never uses the purchase task key, so it cannot consume a purchase task.
 export const VALIDATION_KEY='applebuy-public-configuration-validation/v1';
@@ -14,7 +16,9 @@ const SLOT=/^(?:[01]\d|2[0-3]):[0-5]\d$/;
 const clone=x=>structuredClone(x);
 const optBool=v=>v===undefined||typeof v==='boolean';
 export function validStored(s){return s&&s.schema==='applebuy-purchase-job/v1'&&typeof s.taskId==='string'&&typeof s.planDigest==='string'&&Number.isSafeInteger(s.tabId)&&validIntent(s.plan)&&Number.isSafeInteger(s.lastRead)&&s.lastRead>=0&&Number.isFinite(s.expiresAt)&&Number.isSafeInteger(s.dateCursor)&&s.dateCursor>=0&&s.dateCursor<=3&&Number.isSafeInteger(s.refusals)&&s.refusals>=0&&Array.isArray(s.rejected)&&s.rejected.every(r=>typeof r.date==='string'&&SLOT.test(r.start)&&SLOT.test(r.end)&&Number.isSafeInteger(r.generation))&&s.floors&&typeof s.floors==='object'&&Object.values(s.floors).every(t=>SLOT.test(t))&&(s.initialDates===null||(Array.isArray(s.initialDates)&&s.initialDates.length<=3&&new Set(s.initialDates).size===s.initialDates.length&&s.initialDates.every(d=>typeof d==='string')))&&(s.pending===null||(typeof s.pending.id==='string'&&typeof s.pending.documentId==='string'&&Number.isFinite(s.pending.deadline)&&ACTIONS.includes(s.pending.action)&&(s.pending.dispatched===undefined||s.pending.dispatched===false)))&&(s.finalIntent===null||(typeof s.finalIntent.id==='string'&&typeof s.finalIntent.sent==='boolean'))&&(!s.finalIntent?.sent||s.pending?.action==='submitOrder'||s.state==='CONFIRMED_UNPAID')&&
-  optBool(s.bagAddStarted)&&optBool(s.resourceWritten)&&optBool(s.reconcileOnly)&&(s.untouchedFailures===undefined||(Number.isSafeInteger(s.untouchedFailures)&&s.untouchedFailures>=0))&&(s.quotedCny===undefined||s.quotedCny===null||Number.isFinite(s.quotedCny))&&
+  optBool(s.bagAddStarted)&&optBool(s.resourceWritten)&&optBool(s.reconcileOnly)&&(s.untouchedFailures===undefined||(Number.isSafeInteger(s.untouchedFailures)&&s.untouchedFailures>=0))&&
+  // The consecutive count is part of the cumulative count; a streak above a recorded total is not a trustworthy record.
+  (s.untouchedStreak===undefined||(Number.isSafeInteger(s.untouchedStreak)&&s.untouchedStreak>=0&&(s.untouchedFailures===undefined||s.untouchedStreak<=s.untouchedFailures)))&&(s.quotedCny===undefined||s.quotedCny===null||Number.isFinite(s.quotedCny))&&
   (s.revokedGrantIds===undefined||(Array.isArray(s.revokedGrantIds)&&s.revokedGrantIds.every(x=>typeof x==='string')))&&(s.retiredHistory===undefined||(Array.isArray(s.retiredHistory)&&s.retiredHistory.every(r=>r?.schema==='applebuy-purchase-job/v1'&&r.state==='RETIRED')))&&(s.history===undefined||Array.isArray(s.history));}
 export function validIntent(p){
   return p?.schema==='applebuy-intent/v1'&&p.quantity===1&&p.fulfillment==='pickup'&&p.city==='大连'&&
@@ -41,7 +45,7 @@ function terminal(times){
   return [...times].sort((a,b)=>a.start.localeCompare(b.start)||a.end.localeCompare(b.end)).at(-1);
 }
 export class PurchaseJob {
-  constructor({store,port,now=()=>Date.now(),id=()=>crypto.randomUUID(),maxSteps=100,maxWaitMs=30000,hydrationMs=3000,maxPolls=2000,maxUntouched=3,onState=()=>{}}){Object.assign(this,{store,port,now,id,maxSteps,maxWaitMs,hydrationMs,maxPolls,maxUntouched,onState});this.paused=false;this.stopped=false;this.key=TASK_KEY;this.runGrant=null;}
+  constructor({store,port,now=()=>Date.now(),id=()=>crypto.randomUUID(),maxSteps=100,maxWaitMs=30000,hydrationMs=3000,maxPolls=2000,maxUntouched=3,maxUntouchedPerRun=12,onState=()=>{}}){Object.assign(this,{store,port,now,id,maxSteps,maxWaitMs,hydrationMs,maxPolls,maxUntouched,maxUntouchedPerRun,onState});this.paused=false;this.stopped=false;this.key=TASK_KEY;this.runGrant=null;}
   pause(){this.paused=true;} resume(){this.paused=false;} stop(){this.stopped=true;}
   async save(s){await this.store.put(this.key,clone(s));this.onState({state:s.state,phase:s.lastPhase,reason:s.reason??null,refusals:s.refusals,finalIntent:s.finalIntent!==null});}
   async gate(s,reason,state='NEEDS_USER'){
@@ -72,16 +76,20 @@ export class PurchaseJob {
     // Validation is bounded, never authorized and stored separately; it cannot use a purchase grant.
     if(validating||rebind)grant=null;
     this.runGrant=grant;
-    const fresh=()=>({schema:'applebuy-purchase-job/v1',taskId:(validating?null:taskId)??this.id(),plan:clone(P),planDigest,tabId,state:'RUNNING',lastPhase:null,lastDocumentId:null,entryDocumentId:null,reason:null,pending:null,finalIntent:null,orderRefHash:null,initialDates:null,dateCursor:0,floors:{},rejected:[],refusals:0,lastRead:0,expiresAt:this.now()+(validating?300000:1800000),bagAddStarted:false,resourceWritten:false,untouchedFailures:0,quotedCny:null,mode});
+    const fresh=()=>({schema:'applebuy-purchase-job/v1',taskId:(validating?null:taskId)??this.id(),plan:clone(P),planDigest,tabId,state:'RUNNING',lastPhase:null,lastDocumentId:null,entryDocumentId:null,reason:null,pending:null,finalIntent:null,orderRefHash:null,initialDates:null,dateCursor:0,floors:{},rejected:[],refusals:0,lastRead:0,expiresAt:this.now()+(validating?300000:1800000),bagAddStarted:false,resourceWritten:false,untouchedFailures:0,untouchedStreak:0,quotedCny:null,mode});
     let s;
     if(old?.state==='RETIRED'){if(rebind)throw new Error('NoPreservedTaskToRebind');const {retiredHistory=[],...prev}=old;s={...fresh(),retiredHistory:[...retiredHistory,prev]};}
     else s=old??fresh();
     // An unresolved earlier validation choice on the same tab/intent is reconciled first, never blindly clicked again.
     const prior=validating?await this.store.get(VALIDATION_KEY):null;
     if(prior&&validStored(prior)&&prior.pending&&prior.pending.dispatched!==false&&prior.tabId===tabId&&prior.planDigest===planDigest){s.pending=clone(prior.pending);s.lastRead=prior.lastRead;}
+    // A new validation run on the same tab/intent keeps the untouched counts: restarting cannot reset the consecutive bound.
+    if(prior&&validStored(prior)&&prior.tabId===tabId&&prior.planDigest===planDigest){s.untouchedFailures=prior.untouchedFailures??0;s.untouchedStreak=prior.untouchedStreak??s.untouchedFailures;}
     if(rebind&&!old)throw new Error('NoPreservedTaskToRebind');
     // Constrained migration: legacy records cannot prove they never added to the bag or wrote a mutation.
-    s.bagAddStarted??=true;s.resourceWritten??=true;s.untouchedFailures??=0;s.quotedCny??=null;
+    // A legacy record cannot prove its untouched failures were separated by progress: all of them count as consecutive.
+    // A missing total is at least the recorded streak.
+    s.bagAddStarted??=true;s.resourceWritten??=true;s.untouchedFailures??=s.untouchedStreak??0;s.untouchedStreak??=s.untouchedFailures;s.quotedCny??=null;
     if(s.schema!=='applebuy-purchase-job/v1'||s.planDigest!==planDigest||JSON.stringify(normalizeIntent(s.plan))!==JSON.stringify(P)||(s.tabId!==tabId&&!rebind))return this.gate(s,'existing-task-binding-differs','BLOCKED');
     s.plan=clone(P);
     if(rebind&&s.tabId!==tabId){s.history=[...(s.history??[]),{event:'human-tab-rebind',fromTabId:s.tabId,toTabId:tabId,at:this.now()}];s.tabId=tabId;}
@@ -91,11 +99,12 @@ export class PurchaseJob {
     if(s.finalIntent&&s.finalIntent.sent&&s.pending?.action!=='submitOrder')return this.gate(s,'final-intent-already-consumed','NEEDS_VERIFICATION');
     if(grant&&s.revokedGrantIds?.includes(grant.id))return this.gate(s,'advance-authorization-cleared-by-human-intervention','BLOCKED');
     s.state='RUNNING';s.reason=null;await this.save(s);
-    let step=0,polls=0,waitSince=null,polling=false;
+    // storeWait marks a wait episode for an already selected store; untouchedRun is this run's absolute untouched count.
+    let step=0,polls=0,waitSince=null,polling=false,storeWait=false,untouchedRun=0;
     // Waits are bounded by elapsed time per episode and an absolute poll cap; they never consume semantic steps.
     const poll=async(limit)=>{if(!this.port.wait||polls>=this.maxPolls)return false;waitSince??=this.now();if(this.now()-waitSince>=limit)return false;polls++;await this.port.wait(50);return polling=true;};
     for(;;){
-      if(polling)polling=false;else{waitSince=null;if(++step>this.maxSteps)return this.gate(s,'step-bound-reached','NEEDS_VERIFICATION');}
+      if(polling)polling=false;else{waitSince=null;storeWait=false;if(++step>this.maxSteps)return this.gate(s,'step-bound-reached','NEEDS_VERIFICATION');}
       const finalLookup=s.pending?.action==='submitOrder'&&s.pending.dispatched!==false;
       // Expiry gates new mutations. Independent final lookup and human-rebound read-only reconciliation remain available.
       if(s.expiresAt<=this.now()&&!finalLookup&&!s.reconcileOnly)return this.gate(s,'task-window-expired; existing intent preserved','EXPIRED');
@@ -121,13 +130,13 @@ export class PurchaseJob {
             s.rejected.push({date:pending.date,start:pending.start,end:pending.end,generation:pending.generation});s.refusals++;s.pending=null;s.dateCursor++;await this.save(s);
             if(s.refusals>5)return this.gate(s,'refusal-bound-reached','EXHAUSTED');continue;
           }
-          if(['DETAILS','PAYMENT','REVIEW'].includes(o.phase)&&o.acceptedSlot?.verified===true&&purchaseMatches(P,o.purchase)&&o.acceptedSlot.date===pending.date&&o.acceptedSlot.start===pending.start&&o.acceptedSlot.end===pending.end){s.acceptedSlot=clone(o.acceptedSlot);s.pending=null;await this.save(s);continue;}
+          if(['DETAILS','PAYMENT','REVIEW'].includes(o.phase)&&o.acceptedSlot?.verified===true&&purchaseMatches(P,o.purchase)&&o.acceptedSlot.date===pending.date&&o.acceptedSlot.start===pending.start&&o.acceptedSlot.end===pending.end){s.acceptedSlot=clone(o.acceptedSlot);s.pending=null;s.untouchedStreak=0;await this.save(s);continue;}
           if((o.phase==='PROCESSING'||o.phase===pending.beforePhase)&&this.now()<pending.deadline&&await poll(this.maxWaitMs))continue;
           return this.gate(s,'slot-result-unconfirmed; no resubmission','NEEDS_VERIFICATION');
         }
         const reached={configureProduct:['ENTRY','VARIANT'],continueProduct:['VARIANT'],addBag:['ACCESSORIES','BAG'],viewBag:['BAG'],checkout:['FULFILLMENT','SLOTS'],selectPickup:['FULFILLMENT','SLOTS'],selectStore:['SLOTS'],selectDate:['SLOTS'],fillDetails:['PAYMENT'],selectPayment:['PAYMENT'],continuePayment:['REVIEW']}[pending.action]??[];
         const conditions=o.phase==='BAG'||o.phase==='FULFILLMENT'?itemMatches(P,o.purchase):!['SLOTS','PAYMENT','REVIEW'].includes(o.phase)||purchaseMatches(P,o.purchase);
-        if(reached.includes(o.phase)&&o.verifiedStep===true&&conditions&&(pending.action!=='selectPickup'||o.purchase?.fulfillment==='pickup')&&(pending.action!=='selectDate'||o.selectedDate===pending.date)&&(pending.action!=='configureProduct'||o.selectedProductChoices?.includes(pending.choice))&&(pending.action!=='selectPayment'||o.paymentMethod===P.paymentMethod)){s.pending=null;await this.save(s);continue;}
+        if(reached.includes(o.phase)&&o.verifiedStep===true&&conditions&&(pending.action!=='selectPickup'||o.purchase?.fulfillment==='pickup')&&(pending.action!=='selectDate'||o.selectedDate===pending.date)&&(pending.action!=='configureProduct'||o.selectedProductChoices?.includes(pending.choice))&&(pending.action!=='selectPayment'||o.paymentMethod===P.paymentMethod)){s.pending=null;s.untouchedStreak=0;await this.save(s);continue;}
         if(STOP.has(o.phase))return this.gate(s,o.phase.toLowerCase());
         if((o.phase===pending.beforePhase||o.phase==='PROCESSING')&&this.now()<pending.deadline&&await poll(this.maxWaitMs))continue;
         return this.gate(s,'mutation-result-unconfirmed; no automatic repeat','NEEDS_VERIFICATION');
@@ -156,7 +165,15 @@ export class PurchaseJob {
         }
       }else if(o.phase==='ACCESSORIES')command={action:'viewBag'};
       else if(o.phase==='BAG'){if(!itemMatches(P,o.purchase)||o.extras===true)return this.gate(s,'bag-conditions-not-verified','BLOCKED');command={action:'checkout'};}
-      else if(o.phase==='FULFILLMENT'){if(!itemMatches(P,o.purchase)||['conflict','ambiguous','disabled'].includes(o.fulfillmentChoice))return this.gate(s,'pickup-conditions-not-verified','BLOCKED');command=o.purchase.fulfillment!=='pickup'?{action:'selectPickup'}:{action:'selectStore',store:P.stores[0]};}
+      else if(o.phase==='FULFILLMENT'){
+        if(!itemMatches(P,o.purchase)||['conflict','ambiguous','disabled'].includes(o.fulfillmentChoice))return this.gate(s,'pickup-conditions-not-verified','BLOCKED');
+        // An exact verified allowed store with a selected pickup control is not clicked again: its dependent controls
+        // get a bounded wait. Changed evidence during that wait stops. Local selection never implies a held slot.
+        const selected=o.fulfillmentChoice==='pickup'&&purchaseMatches(P,o.purchase);
+        if(storeWait&&!selected)return this.gate(s,'selected-store-evidence-changed-while-loading; not clicked again','NEEDS_VERIFICATION');
+        if(selected){storeWait=true;if(await poll(this.maxWaitMs))continue;return this.gate(s,'selected-store-controls-not-loaded; no slot held, availability not established','NOT_READY');}
+        command=o.purchase.fulfillment!=='pickup'?{action:'selectPickup'}:{action:'selectStore',store:P.stores[0]};
+      }
       else if(o.phase==='SLOTS'){
         if(!purchaseMatches(P,o.purchase)||o.listComplete!==true||!Number.isSafeInteger(o.generation)||!Array.isArray(o.dates)||o.dates.length===0||o.dates.some(d=>typeof d.label!=='string'||!d.label||typeof d.ref!=='string')||new Set(o.dates.map(d=>d.label)).size!==o.dates.length)return this.gate(s,'slot-list-or-conditions-not-verified','BLOCKED');
         // Freeze the first three ENABLED offered labels once, in merchant order. Never invent a year or roll to a fourth date.
@@ -200,10 +217,12 @@ export class PurchaseJob {
       }
       let reply;try{reply=await this.port.act({...s.pending,plan:clone(P),taskId:s.taskId,planDigest:s.planDigest});}catch{return this.gate(s,'mutation-transport-lost; reconcile before proceeding','NEEDS_VERIFICATION');}
       if(reply?.delivered===false&&reply.touched===false){
-        // Positively untouched: no control was written. Clear durably, then re-observe within a bounded count.
-        const p=s.pending;s.pending=null;s.untouchedFailures++;if(p.action==='addBag')s.bagAddStarted=false;if(p.action==='submitOrder')s.finalIntent.sent=false;
+        // Positively untouched: no control was written. Clear durably, then re-observe within bounded counts. The durable
+        // consecutive count resets only on verified progress of a delivered action; this run's absolute count never resets.
+        const p=s.pending;s.pending=null;s.untouchedFailures++;s.untouchedStreak++;untouchedRun++;if(p.action==='addBag')s.bagAddStarted=false;if(p.action==='submitOrder')s.finalIntent.sent=false;
         s.history=[...(s.history??[]),{event:'untouched-not-sent',action:p.action,reason:typeof reply.reason==='string'?reply.reason.slice(0,60):null}].slice(-50);await this.save(s);
-        if(s.untouchedFailures>this.maxUntouched)return this.gate(s,'repeated-untouched-failures; human check required','NEEDS_VERIFICATION');
+        if(s.untouchedStreak>this.maxUntouched)return this.gate(s,'repeated-untouched-failures; human check required','NEEDS_VERIFICATION');
+        if(untouchedRun>this.maxUntouchedPerRun)return this.gate(s,'untouched-failure-run-limit; human check required','NEEDS_VERIFICATION');
         if(p.action==='submitOrder')return this.gate(s,'final-not-dispatched; fresh confirmation required');
         continue;
       }

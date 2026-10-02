@@ -1,0 +1,11 @@
+# C-013 bounded source agreement
+
+Actual original-session Opus 5.5/xhigh review returned at October 3 04:27:45 local, with verified sole structured modelUsage, no error or denial, and confirmed process cleanup. [Actual report](C-013-Claude-cross-review.md) and [receipt](C-013-Claude-cross-review.json) preserve its precise scope and disclosures. Result reports 53 turns despite a requested 48; it returned success, not a cap or quota error. No per-call billing claim is made.
+
+Codex agrees only to the historical **119-file / 6eba42936f8bf86e0a0f7d63e531e7799a5e8b002ea604a06566576065afb950** offline source, synthetic API and public read-only collector scope. Codex independently revalidated the unchanged exact manifest and reran **351/351** tests, including prior wrong-store/duplicate-add/quantity/fulfillment/slot-drift/unknown-result regressions. Codex's independent check governs Claude's self-authored R1 parts. This is not agreement on any future source change or standalone/merchant runtime.
+
+Three P2 real-contract limitations and six P3 findings remain disclosed. Original patch-body and historical document reads were incomplete; current changed implementation/test bodies were read. Source-only agreement is therefore bounded, not whole-repository approval or completion of every task-reading requirement. No extension was installed, no authenticated contract was captured, and no merchant action was authorized. REAL_PURCHASING_READY remains **false**; the Duo goal is incomplete.
+
+Next priority: independently reproduce the unexpected retained final grant and missing-lock UI failures, duplicate AUTH reporting, bounded retry and already-selected-store behavior; dispatch a constrained same-session repair for verified offline issues. P2 date/upsell/asynchronous merchant shapes remain hypotheses until actual authorized evidence. The payment-dependent unpaid pickup-date question and continuing a retained existing bag need explicit business decisions/evidence, not an implementer weakening checks.
+
+The genuine recovered productive cycle is now recorded privately. Only a new genuine provider-quota exhaustion during this cycle triggers the user's save/sync/normal-shutdown instruction; this successful review alone does not.
