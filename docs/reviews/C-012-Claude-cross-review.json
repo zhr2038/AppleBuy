@@ -1,0 +1,39 @@
+{
+  "schema": "actual-claude-cross-review/v1",
+  "task": "C-012-REVIEW",
+  "sessionId": "11941a88-4609-4e7f-a2f8-78c5b5837285",
+  "requestedModel": "claude-opus-5-5",
+  "requestedEffort": "xhigh",
+  "modelsActual": [
+    "claude-opus-5-5"
+  ],
+  "modelUsageVerified": true,
+  "subtype": "success",
+  "isError": false,
+  "returnedTurns": 38,
+  "durationSeconds": 731.22,
+  "permissionDenials": [],
+  "ownedCleanupConfirmed": true,
+  "sourceFiles": 115,
+  "sourceSha256": "6932a7a5fb3858c93ef566c4403690860aed13081d5f9239919dd5dfb17c1df0",
+  "verdicts": {
+    "C010": "BOUNDED_PARTIAL_OFFLINE_AGREEMENT",
+    "C011": "BOUNDED_PARTIAL_PUBLIC_COLLECTOR_AGREEMENT",
+    "C012": "REJECTED_P1_F_A_F_B",
+    "realPurchasingReady": false
+  },
+  "actualCommandsReported": [
+    "python tools/delegation/verify_candidate_manifest.py docs/reviews/C-012-candidate-manifest.json",
+    "node --test \"test/*.test.ts\" \"review/*.test.ts\""
+  ],
+  "testsReported": {
+    "tests": 312,
+    "pass": 312,
+    "fail": 0
+  },
+  "reviewCoverage": "Actual report discloses unread fixture/html/README/delta/test bodies; do not call it complete repository acceptance",
+  "report": "docs/reviews/C-012-Claude-cross-review.md",
+  "CodexReproduction": "review/c012-checkout-findings.test.ts; independent pre-fix run pending",
+  "latestPublicObservation": "docs/reviews/C-012-public-required-options.md",
+  "noNewMerchantResourceMutations": true
+}

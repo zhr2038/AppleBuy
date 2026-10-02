@@ -1,0 +1,112 @@
+{
+  "schema": "codex-quota-completion-verification/v1",
+  "task": "C-012-R1",
+  "checkedAtUtc": "2026-10-02T17:05:25.801690+00:00",
+  "actualClaudeReview": "docs/reviews/C-012-Claude-cross-review.json",
+  "priorVerdict": "REJECTED_P1_F_A_F_B",
+  "quota": {
+    "task": "C-012-R1-CONTINUE",
+    "sessionId": "11941a88-4609-4e7f-a2f8-78c5b5837285",
+    "requestedModel": "claude-opus-5-5",
+    "requestedEffort": "xhigh",
+    "status": "failed",
+    "isError": true,
+    "subtype": "success",
+    "reportedTurns": 15,
+    "durationSeconds": 386.59,
+    "structuredUsageModels": [
+      "claude-opus-5-5"
+    ],
+    "dispatcherSuccessfulDeliveryModelGate": false,
+    "syntheticErrorEvent": true,
+    "cleanupConfirmed": true,
+    "timedOut": false,
+    "reportedResetLocal": "2026-10-03 04:10 Asia/Shanghai",
+    "message": "Session limit reached; no completed repair report or final agreement"
+  },
+  "ClaudeSavedPartialChanges": [
+    "web/checkout-connector/page-program.js",
+    "web/checkout-connector/job.js",
+    "web/checkout-connector/chrome-port.js",
+    "web/checkout-connector/control.js",
+    "web/checkout-connector/control.html",
+    "test/checkout-r1-public-configuration.test.ts"
+  ],
+  "CodexCompletionChanges": [
+    {
+      "path": "web/checkout-connector/page-program.js",
+      "before": "cc5211bb74168c73cfd0daad9b084c78030d964731a77644efad4c653028d512",
+      "after": "54084627875ec65119b87c605a9d2faf2eed06a1d3ac9f642e625747efa9a71a"
+    },
+    {
+      "path": "test/checkout-r1-public-configuration.test.ts",
+      "before": "eb7ef66306f0dcfc907d6e40deb97eac33097e57c443469493de2b65911e25c2",
+      "after": "f484c746b4c61417a685f3dd8b3d994917585932a5df98c4e3502cea1251ba18"
+    }
+  ],
+  "CodexIndependentCriteria": [
+    "review/c012-checkout-findings.test.ts",
+    "review/c012-native-selection-findings.test.ts"
+  ],
+  "protectedBeforeTakeoverUnchanged": 23,
+  "manifestPermissionsUnchanged": true,
+  "sourceManifest": "docs/reviews/C-012-R1-candidate-manifest.json",
+  "sourceSha256": "c188ab67d092bbfa04edd56c322ffc1733af8a5f57d362993211e9d413b919ad",
+  "sourceFiles": 118,
+  "tests": {
+    "tests": 348,
+    "pass": 348,
+    "fail": 0,
+    "skipped": 0,
+    "cancelled": 0,
+    "todo": 0
+  },
+  "fullTestCommand": "node --test --test-reporter=tap \"test/*.test.ts\" \"review/*.test.ts\"",
+  "fullDurationMs": 5875.2081,
+  "beforeCodexCompletion": {
+    "ClaudePartialFullSuite": {
+      "tests": 342,
+      "pass": 339,
+      "fail": 3,
+      "cause": "VM-realm prototype assertions in new emulated-transport tests"
+    },
+    "newNativeFaultRepros": {
+      "tests": 5,
+      "pass": 1,
+      "fail": 4
+    },
+    "microtaskCaseAddedAfterRepair": true
+  },
+  "nativeOfflinePublicConfiguration": {
+    "verdict": "PASS_NATIVE_CONFIG_ONLY",
+    "state": "VALIDATED",
+    "reason": "public-configuration-validated; stopped before Add to Bag",
+    "noTrade": true,
+    "noCare": true,
+    "addButtonEnabled": true,
+    "resourceAttempts": 0,
+    "localMs": 13,
+    "scope": "Actual native DOM with production controller/program; fake Chrome API/official location; not standalone extension proof"
+  },
+  "offlineVertical": {
+    "scenario": "refuse-then-accept",
+    "fakeData": true,
+    "phase": "REHEARSAL_ENDPOINT",
+    "allChecksPass": true,
+    "finalSubmitCount": 0,
+    "contract": "Project mock-v0; not Apple"
+  },
+  "realPublicControls": "Normal manual Chrome selection verified no trade-in -> no AppleCare -> enabled Add to Bag; no resource action",
+  "verdict": "PASS_CODEX_ONLY_OFFLINE_REPAIR_VERIFICATION_PENDING_CLAUDE_AGREEMENT",
+  "bilateralAcceptance": false,
+  "standaloneExtensionVerified": false,
+  "realPurchasingReady": false,
+  "newMerchantResourceMutations": 0,
+  "remaining": [
+    "Exact-current-source Claude agreement including Codex completion and earlier unread review scope",
+    "User-confirmed standalone extension installation and exact-host permission",
+    "Current secure merchant DOM/order-detail/date and refusal contracts",
+    "Protected-profile integration",
+    "Actual application one-start Apple purchase latency"
+  ]
+}

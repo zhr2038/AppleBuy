@@ -1,0 +1,78 @@
+--- a/web/checkout-connector/page-program.js
++++ b/web/checkout-connector/page-program.js
+@@ -2,6 +2,7 @@
+ // Unsupported/ambiguous evidence stops. Refusal text catalog is deliberately EMPTY for real Apple.
+ // C-012-R1 (Claude): exact store proof, separate line counting, observed no-trade-in/no-AppleCare dependency,
+ // merchant-only extras evidence and structured untouched failure reports.
++// Codex quota takeover: reject conflicting quantity/store evidence and revalidate after a native slot change.
+ export async function merchantDocument(plan,command=null){
+   const u=new URL(location.href);
+   const safe=u.protocol==='https:'&&(u.hostname==='www.apple.com.cn'||/^secure(?:\d+)?\.www\.apple\.com\.cn$/.test(u.hostname))&&/^\/shop\/(?:buy-iphone\/(?:iphone-18-pro|iphone-duo)(?:\/[^/]+\/a)?|bag|checkout|order(?:\/[^?#]*)?|signIn)(?:\/)?$/.test(u.pathname);
+@@ -30,12 +31,14 @@
+   const exactProduct=productLines.some(t=>t===fullVariant)&&productLines.every(t=>t===fullVariant);
+   const quantityLines=lines(/^数量\s*[:：]?\s*\d+$/);
+   const qtyControls=selects.filter(e=>/数量/.test(name(e)));
+-  const qty=qtyControls.length>1?null:qtyControls.length===1?Number(norm(qtyControls[0].selectedOptions[0]?.textContent)):quantityLines.length===1?Number(quantityLines[0].t.match(/\d+/)[0]):null;
++  const controlQty=qtyControls.length===1&&qtyControls[0].selectedOptions.length===1?Number(norm(qtyControls[0].selectedOptions[0]?.textContent)):null;
++  const lineQty=quantityLines.length===1?Number(quantityLines[0].t.match(/\d+/)[0]):null;
++  const qty=qtyControls.length>1||quantityLines.length>1||(qtyControls.length===1&&quantityLines.length===1&&controlQty!==lineQty)?null:qtyControls.length===1?controlQty:lineQty;
+   const totalLines=[...new Set(texts.filter(t=>/^(?:总计|合计|应付总额)(?:\s*\(含税\))?\s*[:：]?\s*(?:RMB|¥|￥)\s*[\d,]+(?:\.\d{2})?$/.test(t)))];
+   const total=totalLines.length===1?Number(totalLines[0].match(/(?:RMB|¥|￥)\s*([\d,]+(?:\.\d{2})?)/)[1].replaceAll(',','')):null;
+   // Store proof: one enabled checked store choice or one exact labelled value. Any other checked store,
+   // store-like labelled value, container listing several stores or disagreement leaves the store unproven.
+-  const planStore=n=>plan.stores.find(s=>n===norm(s)||n.startsWith(norm(s)+' '))??null;
++  const planStore=n=>plan.stores.find(s=>n===norm(s))??null;
+   const storeRadios=radios.filter(e=>/^Apple\s/.test(name(e))),checkedStores=storeRadios.filter(checked);
+   const radioStore=checkedStores.length===1&&!disabled(checkedStores[0])?planStore(name(checkedStores[0])):null;
+   const fieldValues=[...new Set(texts.flatMap(t=>{const m=/^(?:取货地点|取货门店|自提门店|店内取货地点)\s*[:：]?\s*(.*)$/.exec(t);return m&&/Apple\s/.test(m[1])?[m[1]]:[];}))];
+@@ -141,14 +144,34 @@
+     else if(command.action==='viewBag'&&phase==='ACCESSORIES')click('查看购物袋');
+     else if(command.action==='checkout'&&phase==='BAG'&&purchase.itemVerified){if(exact('安全结账').length===1)click('安全结账');else click('结账');}
+     else if(command.action==='selectPickup'&&phase==='FULFILLMENT'&&purchase.itemVerified&&['unselected','delivery'].includes(fulfillmentChoice))pick('我要取货');
+-    else if(command.action==='selectStore'&&phase==='FULFILLMENT'&&purchase.itemVerified&&pickupShown&&plan.stores.includes(command.store))pick(command.store);
++    else if(command.action==='selectStore'&&phase==='FULFILLMENT'&&purchase.itemVerified&&pickupShown&&plan.stores.includes(command.store)){
++      const choices=storeRadios.filter(e=>name(e)===norm(command.store)&&!disabled(e));
++      if(choices.length!==1||!choices[0].isConnected)throw new Error('CurrentChoiceUnrecognized');touched=true;choices[0].click();
++    }
+     else if(command.action==='selectDate'&&phase==='SLOTS'){
+       const index=Number(command.ref?.split(':')[1]),d=out.dates[index];if(!d||d.label!==command.date||!d.enabled)throw new Error('DateEvidenceChanged');
+       touched=true;if(dateChoices.length)dateChoices[index].click();else{const s=dateSelects[0];s.selectedIndex=index;s.dispatchEvent(new Event('change',{bubbles:true}));}
+     }else if(command.action==='chooseSlot'&&phase==='SLOTS'&&purchase.verified&&out.listComplete){
+       const t=out.times.find(t=>t.ref===command.ref);if(!t||!t.enabled||t.start!==command.start||t.end!==command.end||out.selectedDate!==command.date)throw new Error('SlotEvidenceChanged');
+       const s=timeSelects[0];touched=true;s.selectedIndex=Number(command.ref.split(':')[1]);s.dispatchEvent(new Event('change',{bubbles:true}));
+-      if(!s.isConnected)throw new Error('SlotControlRedrawn');click('继续填写取货详情');
++      if(!s.isConnected)throw new Error('SlotControlRedrawn');
++      // A change handler may reset the choice, disable it, redraw controls, or change purchase conditions.
++      // Re-read production evidence before continuation. The local fingerprint stays private and detects
++      // any asynchronous DOM drift while that read is awaited. It never reads input values or leaves document memory.
++      const snapshot=()=>JSON.stringify([location.href,document.querySelector('main,[role="main"]')===main,
++        [...main.querySelectorAll('h1,h2,h3,p,span,div')].filter(visible).map(e=>norm(e.textContent)).filter(t=>t.length>0&&t.length<=180),
++        [...main.querySelectorAll('input[type="radio"],[role="radio"]')].filter(visible).map(e=>[name(e),checked(e),disabled(e)]),
++        [...main.querySelectorAll('select')].filter(visible).map(e=>[name(e),disabled(e),e.selectedIndex,[...e.options].map(o=>[name(o),disabled(o)])]),
++        [...main.querySelectorAll('button,a[role="button"],input[type="submit"]')].filter(visible).map(e=>[name(e),disabled(e)])]);
++      const afterChange=snapshot(),current=await merchantDocument(plan);
++      const liveSelectors=[...main.querySelectorAll('select')].filter(visible).filter(e=>[...e.options].some(o=>/^\d{2}:\d{2}\s*[-–—至]\s*\d{2}:\d{2}$/.test(norm(o.textContent))));
++      const selected=s.selectedOptions.length===1?s.selectedOptions[0]:null;
++      const m=selected?/^(\d{2}:\d{2})\s*[-–—至]\s*(\d{2}:\d{2})$/.exec(norm(selected.textContent)):null;
++      if(snapshot()!==afterChange||!s.isConnected||liveSelectors.length!==1||liveSelectors[0]!==s||disabled(s)||!selected||disabled(selected)||
++        s.selectedIndex!==Number(command.ref.split(':')[1])||!m||m[1]!==command.start||m[2]!==command.end||
++        current.phase!=='SLOTS'||current.listComplete!==true||current.selectedDate!==command.date||!current.purchase?.verified||
++        JSON.stringify(current.purchase)!==JSON.stringify(out.purchase)||JSON.stringify(current.dates)!==JSON.stringify(out.dates)||JSON.stringify(current.times)!==JSON.stringify(out.times))throw new Error('SlotEvidenceChangedAfterSelection');
++      click('继续填写取货详情');
+     }else if(command.action==='fillDetails'&&phase==='DETAILS'&&purchase.verified){
+       const rules={firstName:['名字'],lastName:['姓氏'],phone:['手机号码','电话号码'],email:['电子邮件地址'],identitySuffix:['身份证件号码最后4位','身份证件号码后四位']};
+       const supplied=command.privatePickupData??{};if(Object.keys(supplied).some(k=>!Object.hasOwn(rules,k)))throw new Error('PrivateFieldNotAllowed');
+--- a/test/checkout-r1-public-configuration.test.ts
++++ b/test/checkout-r1-public-configuration.test.ts
+@@ -33,7 +33,10 @@
+   main.querySelectorAll=s=>s.startsWith('button')?page.buttons:s.startsWith('input[type="radio"]')?page.radios:s==='select'?(page.selects??[]):s==='h1,h2,h3,p,span,div'?[page.title,...page.texts.map(t=>new El(t))]:[];
+   const location={get href(){return page.url;}};
+   const context=vm.createContext({document:{querySelector:()=>main,querySelectorAll:()=>[]},location,URL,TextEncoder,crypto:webcrypto,Date,HTMLInputElement:El,Event:class {constructor(t){this.type=t;}},getComputedStyle:e=>({display:e.hidden?'none':'block',visibility:'visible'})});
+-  return vm.runInContext('('+merchantDocument.toString()+')',context);
++  const fn=vm.runInContext('('+merchantDocument.toString()+')',context);
++  // Codex quota repair: Chrome returns structured-cloned values across the document boundary.
++  // Keep strict assertions while removing VM-realm prototype artifacts from the emulated transport.
++  return async(...args)=>structuredClone(await fn(...args));
+ }
+ // The exact observed initial dependency on the public Pro page.
+ function publicPage({hydrated=true}={}){

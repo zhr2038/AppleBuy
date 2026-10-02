@@ -1,0 +1,24 @@
+# C-012-R1-REVIEW — exact repaired-source agreement after actual quota recovery
+
+READ-ONLY review. Resume only `11941a88-4609-4e7f-a2f8-78c5b5837285`, `E:\Apple Store`, English, exact `claude-opus-5-5`, `xhigh`. Do not write source/reports, invoke another agent, use browser/network, inspect `.local`/private data, load extensions, operate Apple or publish. Return the actual full verdict directly; Codex saves a sanitized public report. Approved fake tests may create isolated `.local/test-runs` state without reading customer data.
+
+Read `CLAUDE.md`, `docs/requirements.md`, `docs/reviews/C-012-R1-quota-takeover.md`, `docs/reviews/C-012-R1-verification.json`, `docs/reviews/C-012-R1-candidate-manifest.json`, the exact additional `docs/reviews/C-012-R1-Codex-completion.patch`, original `docs/reviews/C-012-Claude-cross-review.md` and `docs/reviews/C-012-Codex-findings.md`. The current **118 files / c188ab67d092bbfa04edd56c322ffc1733af8a5f57d362993211e9d413b919ad** supersede the historical rejected 115-file identity for CURRENT review. Do not run the old manifest against changed source and imply acceptance.
+
+Your R1 continuation genuinely stopped at provider session quota, reporting October 3 04:10 Asia/Shanghai, after saving the explicit fulfillment fix and new implementation tests but before a final report. The original wall-cap run was not quota. Codex completed only `page-program.js` and the emulated test transport under the user's quota exception; exact attribution/diff is in the new report. Codex's new independent native fault reproductions returned 1/5 pass before repair. The original eleven protected cases were not weakened. After repair, the entire **348** tests pass, including the new microtask case. This is evidence to inspect, not a request to rubber-stamp your own prior fixes or Codex's completion.
+
+Read all nine `web/checkout-connector` file bodies and all five checkout implementation test bodies, both `review/c012*.test.ts` bodies, original C-012 Codex delta and current completion patch. Check store/quantity proof, normal no-extras dependency, product quote/condition binding, single durable bag add, date/terminal freeze, actual post-change selected time and current conditions, asynchronous drift, touched-vs-untouched truth, final unknown/expired reconciliation, grant invalidation, pause/restart, retire/rebind restrictions, separate validation key and read-only mode, entire-task Web Locks, exact current-host/document transport and private-field isolation.
+
+Close the explicitly unread earlier C-010/C-011 scopes: `web/desktop/fixture.js`, `web/desktop/index.html`, `src/dom-demo.ts`, `web/chrome-connector/popup.html`, relevant README delta, C-010/C-011 delta patch bodies, and actual dom-bridge/chrome-connector test bodies previously read only by test name. The collector's legacy Pro-SKU URL gap remains disclosed; do not call it fixed. Do not re-review unrelated accepted core merely to fill quota. Report any remaining unread scope precisely.
+
+Approved exact commands, review profile 48 turns / 1,800 seconds / USD10 CLI cap:
+
+```text
+python tools/delegation/verify_candidate_manifest.py docs/reviews/C-012-R1-candidate-manifest.json
+node --test "test/*.test.ts" "review/*.test.ts"
+```
+
+Return separate scoped verdicts for C-010 offline DOM, C-011 public collector, repaired C-012 source/controller/API and REAL_PURCHASING_READY. Any P0/P1 wrong purchase condition, duplicate addition/order, credential exposure, false confirmation, unknown-result resubmission or broken reselection blocks bounded source acceptance. Findings need exact files/lines, concrete fake reproduction and expected acceptance. Codex independently reproduces, returns same-session repairs and performs final acceptance. Disclose denied commands, quota/caps and missing coverage; successful tests or a scheduled review are not bilateral agreement.
+
+The actual Chrome native-DOM public configuration harness passed with production code, two selections, `VALIDATED`, no Add to Bag/resource attempt and no purchase task. API/storage/permissions/location are emulated. The normal official Pro two-option dependency was observed separately. No standalone extension, current secure checkout/date/order-detail contract, real refusal catalog, protected-profile connection, Duo purchase mechanism or actual Apple latency is verified. The earlier Pro authorization is consumed. Do not invent merchant signals, force disabled controls, treat unpaid status as a held slot, or claim another order is permitted.
+
+After an actual scoped agreement, propose and continue the next small functional validation within existing authority: original Chrome, current public controls and necessary secure contracts, desktop-only usable UI. New extension installation/host access requires its own action-time human confirmation. Missing live permission must not stop independent offline repairs, but it cannot be bypassed.

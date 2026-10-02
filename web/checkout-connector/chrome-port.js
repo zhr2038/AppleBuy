@@ -1,7 +1,8 @@
 import {merchantDocument} from './page-program.js';
 export function allowedMerchantUrl(raw){try{const u=new URL(raw);return u.protocol==='https:'&&(u.hostname==='www.apple.com.cn'||/^secure(?:\d+)?\.www\.apple\.com\.cn$/.test(u.hostname))&&/^\/shop\/(?:buy-iphone\/(?:iphone-18-pro|iphone-duo)(?:\/[^/]+\/a)?|bag|checkout|order(?:\/[^?#]*)?|signIn)(?:\/)?$/.test(u.pathname);}catch{return false;}}
 export class ChromePort {
-  constructor(api,tabId,{authorized=false,privatePickupData={},initialSequence=0,acceptedSlot=null,pending=null,reviewGrant=null}={}){this.api=api;this.tabId=tabId;this.authorized=authorized;this.seq=initialSequence;this.generation=pending?.generation??0;this.last=null;this.privatePickupData=privatePickupData;this.acceptedSlot=acceptedSlot;this.reviewGrant=reviewGrant;this.lastChoice=pending?.action==='chooseSlot'?{date:pending.date,start:pending.start,end:pending.end}:null;}
+  // mode 'observe': act can never run. mode 'public-config': only public product choices, never Add to Bag or later.
+  constructor(api,tabId,{authorized=false,mode='purchase',privatePickupData={},initialSequence=0,acceptedSlot=null,pending=null,reviewGrant=null}={}){this.api=api;this.tabId=tabId;this.mode=mode;this.authorized=authorized&&mode!=='observe';this.seq=initialSequence;this.generation=pending?.generation??0;this.last=null;this.privatePickupData=privatePickupData;this.acceptedSlot=acceptedSlot;this.reviewGrant=reviewGrant;this.lastChoice=pending?.action==='chooseSlot'?{date:pending.date,start:pending.start,end:pending.end}:null;}
   async permission(){const t=await this.api.tabs.get(this.tabId);if(!allowedMerchantUrl(t.url))throw new Error('UnsupportedMerchantPage');const u=new URL(t.url);return await this.api.permissions.contains({origins:[u.origin+'/*']});}
   async observe(plan){
     if(!await this.permission())throw new Error('CurrentHostPermissionMissing');
@@ -11,12 +12,16 @@ export class ChromePort {
     this.last={raw:structuredClone(raw),fingerprint,documentId:r[0].documentId};
     if(this.lastChoice&&['DETAILS','PAYMENT','REVIEW'].includes(raw.phase)&&raw.verifiedStep&&raw.purchase?.verified){this.acceptedSlot={date:this.lastChoice.date,start:this.lastChoice.start,end:this.lastChoice.end,verified:true,basis:'normal-checkout-progression; not a hold guarantee'};this.lastChoice=null;}
     const humanReview=this.reviewGrant?.expiry>Date.now()&&(this.reviewGrant.documentId===r[0].documentId||(this.reviewGrant.start===true&&raw.termsLinks?.includes(this.reviewGrant.termsUrl)));
-    return {...raw,acceptedSlot:this.acceptedSlot,extras:humanReview&&this.reviewGrant.noExtras?false:raw.extras,existingOrdersChecked:humanReview&&this.reviewGrant.existingOrdersChecked===true,documentId:r[0].documentId,seq:++this.seq,generation:this.generation};
+    // Existing-order check is a human confirmation by design. No-extras proof comes ONLY from merchant page evidence.
+    return {...raw,acceptedSlot:this.acceptedSlot,extras:raw.extras,existingOrdersChecked:humanReview&&this.reviewGrant.existingOrdersChecked===true,documentId:r[0].documentId,seq:++this.seq,generation:this.generation};
   }
   async act(command){
-    if(!this.authorized||!this.last||command.documentId!==this.last.documentId||!await this.permission())throw new Error('CurrentOperationNotAuthorized');
-    if(command.action==='chooseSlot')this.lastChoice={date:command.date,start:command.start,end:command.end};
-    const r=await this.api.scripting.executeScript({target:{tabId:this.tabId,documentIds:[command.documentId]},world:'ISOLATED',func:merchantDocument,args:[command.plan,{...command,privatePickupData:command.action==='fillDetails'?this.privatePickupData:undefined,authorized:true,expected:JSON.stringify(this.last.raw)}]});
+    if(!this.authorized||this.mode==='observe'||!this.last||command.documentId!==this.last.documentId||!await this.permission())throw new Error('CurrentOperationNotAuthorized');
+    if(this.mode==='public-config'&&!['configureProduct','continueProduct'].includes(command.action))throw new Error('ValidationModeCannotMutate');
+    const previousChoice=this.lastChoice;if(command.action==='chooseSlot')this.lastChoice={date:command.date,start:command.start,end:command.end};
+    const r=await this.api.scripting.executeScript({target:{tabId:this.tabId,documentIds:[command.documentId]},world:'ISOLATED',func:merchantDocument,args:[command.plan,{...command,privatePickupData:command.action==='fillDetails'?this.privatePickupData:undefined,authorized:true,structured:true,expected:JSON.stringify(this.last.raw)}]});
+    // Only a structured page report made before the first DOM write is positively untouched; everything else is unknown.
+    if(r.length===1&&r[0].documentId===command.documentId&&!r[0].error&&r[0].result?.delivered===false&&r[0].result.touched===false){this.lastChoice=previousChoice;return {delivered:false,touched:false,reason:String(r[0].result.reason??'').slice(0,60)};}
     if(r.length!==1||r[0].documentId!==command.documentId||r[0].error||r[0].result?.delivered!==true)throw new Error('MutationResultUnknown');return r[0].result;
   }
   async lookupOrder(plan,expectedRef){

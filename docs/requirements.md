@@ -25,6 +25,8 @@ The user requests design based on actual official checkout and expects the Pro a
 
 October 2 C-008 result: the authorized one-unit Pro unpaid order was actually created once in the user's desktop Chrome and independently verified on its authenticated order-detail page. No payment was attempted. This consumes that one-order authorization even if the payment window expires. This was Codex browser-tool operation, not the application's one-click adapter. Current Pro evidence establishes slot-control shape and progression after one selected terminal, but not rejection, occupancy, payment-completed pickup date or Duo checkout behavior. The official review explicitly states that the pickup date will be determined after payment. No broader real-order authorization follows from this pilot.
 
+October 2 late evening: the user expressly requires the normal official public options `不折抵换购` and `不加 AppleCare+ 服务计划`. Codex's actual Chrome observation confirms the dependency on the Pro page: no-trade-in enables no-AppleCare, and selecting no-AppleCare enables Add to Bag. The configured executor must perform and verify those prerequisites; missing selections are not no stock. The user asks to inspect subsequent flow rather than create another order. No new bag/slot/order/payment authorization follows. Normal configuration validation must stop at its declared endpoint and cannot force disabled controls or bypass merchant validation. The user also asks to resume actual Claude collaboration; the exact-model original-session review did return and rejected current C-012 source for independently reproduced wrong-store and repeated-addition defects.
+
 ## Functional requirements
 
 | ID | Required behavior |
