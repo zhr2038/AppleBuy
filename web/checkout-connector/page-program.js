@@ -93,9 +93,12 @@ export async function merchantDocument(plan,command=null,internal=null){
     options?.tagName==='FIELDSET'&&within(group,options)&&header?.tagName==='H2'&&copy?.tagName==='SPAN'&&within(header,copy)&&
     visible(copy)&&norm(copy.textContent)===fullVariant);
   const groupLine=!!(group&&strip&&strip.tagName==='DIV'&&visible(strip)&&within(group,strip)&&norm(strip.textContent)===fullVariant&&knownLegend&&
-    textEls.filter(x=>productRe.test(x.t)).every(x=>related(x.e,strip)||related(x.e,legend)));
+    textEls.filter(x=>productRe.test(x.t)).every(x=>related(x.e,strip)||related(x.e,copy)));
   const oneLine=groups.length===0?lines(productRe).length===1:groupLine;
-  const exactProduct=bag?!!bag.title&&norm(bag.title.textContent)===fullVariant&&!bag.stray:!bagScoped&&oneLine&&productLines.some(t=>t===fullVariant)&&productLines.every(t=>t===fullVariant);
+  // C027 (Codex quota completion): the recognized strip/copy supply exact titles. Their real-DOM ancestors also contain
+  // native option labels; that aggregate is not another title. Generic pages retain the strict textual proof.
+  const exactProduct=bag?!!bag.title&&norm(bag.title.textContent)===fullVariant&&!bag.stray:!bagScoped&&oneLine&&
+    (groups.length>0?groupLine:productLines.some(t=>t===fullVariant)&&productLines.every(t=>t===fullVariant));
   // C022 (Codex quota takeover): wrapper text includes every option, even hidden native clones (observed 数量121).
   // Remove descendant select text only; literal quantity outside those controls still conflicts with selected values.
   // Strip outermost controls once, before the length bound, so long/nested option lists cannot hide a real contradiction.

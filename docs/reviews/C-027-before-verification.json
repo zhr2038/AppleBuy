@@ -1,0 +1,30 @@
+{
+  "recordedAtUtc": "2026-10-03T15:41:10.433190+00:00",
+  "inputFiles": 154,
+  "inputSha256": "4fc4c0dc03f7840f16ad603b2935f5e3201a3896bea1d089fe044520f6444b51",
+  "unchangedC026Files": 151,
+  "protectedTestFiles": 80,
+  "targetedBefore": {
+    "tests": 3,
+    "pass": 2,
+    "fail": 1
+  },
+  "actualBrowserBefore": {
+    "cases": 2,
+    "passedCases": 1,
+    "passed": false,
+    "failure": "synthetic explicit1 accessible-title positive is rejected in an actual HTML DOM because an ancestor includes option labels"
+  },
+  "actualBrowserModel": "fresh headless Chrome, owned loopback-only pages, explicitly fake lexical location for page-program unit rendering, no real Apple access or personal profile",
+  "newSourceFiles": [
+    "review/browser-self-check.mjs",
+    "review/fixtures/current-public-checkout.html",
+    "review/c027-renderer-aggregate.test.ts"
+  ],
+  "businessSourceChangedBeforeRepro": false,
+  "existingC026AcceptedByClaude": false,
+  "codexQuotaTakeoverStillAuthorized": true,
+  "protectedInputTestReviewFixtureFiles": 87,
+  "testTsFileCount": 80,
+  "protectedTestFilesMeaning": ".test.ts-only initial count; final whole input test/review/fixture byte protection is87, excluding the editable new runner"
+}

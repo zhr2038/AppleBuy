@@ -1,0 +1,128 @@
+{
+  "scope": "FAKE isolated-headless-browser-only",
+  "playwrightVersion": "1.62.1",
+  "personalProfileUsed": false,
+  "actualApplePageVisited": false,
+  "actualAppleAccountUsed": false,
+  "actualExtensionInstalledOrGranted": false,
+  "officialQuantityContractProven": false,
+  "realOrderCreated": false,
+  "checks": [
+    {
+      "name": "current-public-shape-quantity-absent-stops-with-zero-pickup",
+      "passed": true,
+      "durationMs": 137.06,
+      "quantity": null,
+      "actions": 0,
+      "fakeLocation": true
+    },
+    {
+      "name": "rendered-accessible-title-pair-with-synthetic-explicit1-selects-pickup-once",
+      "passed": true,
+      "durationMs": 135.48,
+      "quantity": 1,
+      "quantityIsSynthetic": true,
+      "fakeLocation": true
+    },
+    {
+      "name": "rendered-two-product-groups-cannot-pass-one-unit",
+      "passed": true,
+      "durationMs": 124.37,
+      "actions": 0,
+      "fakeLocation": true
+    },
+    {
+      "name": "rendered-quantity2-and-fake-login-gates-stop",
+      "passed": true,
+      "durationMs": 131.35,
+      "actions": 0,
+      "actualCredentialsUsed": false,
+      "fakeLocation": true
+    },
+    {
+      "name": "one-click-full-fake-journey-two-refusals-one-unpaid-order-and-restart-no-repeat",
+      "passed": true,
+      "durationMs": 612.92,
+      "fakePhase": "ORDER_CONFIRMED_MOCK",
+      "refusals": 2,
+      "finalClicks": 1,
+      "fakeOrders": 1,
+      "bagAdds": 1,
+      "secondTab": true,
+      "reload": true,
+      "restart": true
+    },
+    {
+      "name": "lost-final-reply-reconciles-without-second-submit",
+      "passed": true,
+      "durationMs": 1652.13,
+      "fakePhase": "ORDER_CONFIRMED_MOCK",
+      "refusals": 2,
+      "finalClicks": 1,
+      "fakeOrders": 1,
+      "bagAdds": 1,
+      "secondTab": false,
+      "reload": false,
+      "restart": false
+    },
+    {
+      "name": "unknown-final-result-stops-without-resubmission",
+      "passed": true,
+      "durationMs": 503.91,
+      "fakePhase": "MANUAL_VERIFICATION",
+      "refusals": 2,
+      "finalClicks": 1,
+      "fakeOrders": 1,
+      "bagAdds": 1,
+      "secondTab": false,
+      "reload": true,
+      "restart": true
+    },
+    {
+      "name": "wrong-order-colour-cannot-be-confirmed",
+      "passed": true,
+      "durationMs": 455.04,
+      "fakePhase": "MANUAL_VERIFICATION",
+      "refusals": 2,
+      "finalClicks": 1,
+      "fakeOrders": 1,
+      "bagAdds": 1,
+      "secondTab": false,
+      "reload": false,
+      "restart": false
+    },
+    {
+      "name": "over-cap-stops-before-add-bag",
+      "passed": true,
+      "durationMs": 240.95,
+      "fakePhase": "INIT",
+      "refusals": 0,
+      "finalClicks": 0,
+      "fakeOrders": 0,
+      "bagAdds": 0,
+      "secondTab": false,
+      "reload": false,
+      "restart": false
+    },
+    {
+      "name": "redrawn-slot-control-stops-before-stale-continue",
+      "passed": true,
+      "durationMs": 334.94,
+      "fakePhase": "MANUAL_VERIFICATION",
+      "refusals": 0,
+      "finalClicks": 0,
+      "fakeOrders": 0,
+      "bagAdds": 1,
+      "secondTab": false,
+      "reload": false,
+      "restart": false
+    }
+  ],
+  "browserVersion": "154.0.8037.93",
+  "passed": true,
+  "durationMs": 4605.24,
+  "blockedExternalOriginCount": 0,
+  "allowedNetwork": "owned loopback fixture origins only; all other HTTP(S) aborted; WebSockets closed",
+  "allOwnedBrowsersContextsServersClosed": true,
+  "candidateMainSourceSha256": "3c8839f9ad4566753bf315487b1ed586580d1080e250ae87453b599fcbf3d474"
+}

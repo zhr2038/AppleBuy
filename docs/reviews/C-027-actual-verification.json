@@ -1,0 +1,65 @@
+{
+  "recordedAtUtc": "2026-10-03T16:14:43.151637+00:00",
+  "task": "C026/C027 combined quota completion",
+  "candidateFiles": 154,
+  "candidateSha256": "086fda31b3ff2150c6ee89f196d5eb11c279d2ddf64fe4592645cf06b6ec0ff4",
+  "codexImplementationChangesSinceC026": [
+    "current scoped product anchors no longer reject their real DOM ancestor option labels",
+    "merge ancestry binds to the exact accessibility copy rather than any content inside its legend",
+    "new unattended browser runner with bounded fresh output and isolated loopback pages",
+    "new limited public structural HTML fixture and3 independent renderer cases",
+    "runner waitForFunction argument placement corrected"
+  ],
+  "changedInputFiles": [
+    "review/browser-self-check.mjs",
+    "web/checkout-connector/page-program.js"
+  ],
+  "newSourceFiles": [
+    "review/browser-self-check.mjs",
+    "review/fixtures/current-public-checkout.html",
+    "review/c027-renderer-aggregate.test.ts"
+  ],
+  "allInputTestReviewFixtureBytesUnchanged": 87,
+  "oldC026726CasesStillPass": true,
+  "independentRendererBefore": {
+    "tests": 3,
+    "pass": 2,
+    "fail": 1
+  },
+  "nodeActual": {
+    "command": "node --test \"test/*.test.ts\" \"review/*.test.ts\"",
+    "tests": 729,
+    "pass": 729,
+    "fail": 0,
+    "cancelled": 0,
+    "skipped": 0,
+    "todo": 0,
+    "exitCode": 0,
+    "durationMs": 6254.4837
+  },
+  "browserActual": {
+    "command": "node review/browser-self-check.mjs --output .local/reviewer/c027-browser-selfcheck-complete",
+    "cases": 10,
+    "pass": 10,
+    "durationMs": 4605.24,
+    "normalSingleLocalFakePageChainMs": 334,
+    "normalCheckIncludingSetupExtraTabReloadRestartMs": 612.92,
+    "scope": "isolated headless Chrome over owned loopback FAKE pages; no personal profile/Apple site/installed extension",
+    "firstRunFailedSyntheticExplicit1Positive": true
+  },
+  "noHumanTestInteractionRequired": true,
+  "actualClaudeCrossReviewOccurred": false,
+  "preciseBilateralAgreement": false,
+  "finalAcceptanceByCodex": false,
+  "lastAcceptedFiles": 149,
+  "lastAcceptedSha256": "7d53716433beafb078cef2184f68470f2c60a323a0e57d28a063923920e6bfd4",
+  "nativeQuantityContractEstablished": false,
+  "realOneClickOrderReady": false,
+  "realSlotRefusalAndDuoVerified": false,
+  "noNewRealResourceOrderPay": true,
+  "noPersonalDesktopBrowserInputAfterPolicyStop": true,
+  "currentActiveClaudeCalls": 0,
+  "providerResetReportedAsiaShanghai": "2026-10-04 00:20",
+  "nextExactReviewTask": "docs/tasks/C-027-CROSS-REVIEW.md",
+  "shutdownCancelled": true
+}
