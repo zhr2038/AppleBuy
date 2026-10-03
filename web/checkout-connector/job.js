@@ -97,6 +97,9 @@ export class PurchaseJob {
     // A legacy record cannot prove its untouched failures were separated by progress: all of them count as consecutive.
     // A missing total is at least the recorded streak.
     s.bagAddStarted??=true;s.resourceWritten??=true;s.untouchedFailures??=s.untouchedStreak??0;s.untouchedStreak??=s.untouchedFailures;s.quotedCny??=null;
+    // C-022-R1 (Claude): page currentness is run-local. A persisted flag is never a fresh read, so every early gate/save of
+    // this run names only the last read page; only a valid read below sets it again.
+    s.observationCurrent=false;
     // The exact digest and tab still bind; the normalized stored plan must equal the current one apart from member order.
     if(s.schema!=='applebuy-purchase-job/v1'||s.planDigest!==planDigest||canonicalJson(normalizeIntent(s.plan))!==canonicalJson(P)||(s.tabId!==tabId&&!rebind))return this.gate(s,'existing-task-binding-differs','BLOCKED');
     s.plan=clone(P);
@@ -223,6 +226,8 @@ export class PurchaseJob {
       // C-019 (Claude): checkout leaves a bag that already holds the item; this task never adds afterwards (kept if untouched).
       if(command.action==='checkout')s.bagAddStarted=true;
       if(!PUBLIC.has(command.action))s.resourceWritten=true;
+      // C-022-R1 (Claude): a committed command may change the page; until the next valid read it is no longer current.
+      s.observationCurrent=false;
       await this.save(s);
       if(this.paused||this.stopped){
         // Known pre-send control change: act was never called, so record not dispatched truthfully.

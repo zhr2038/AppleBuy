@@ -1,0 +1,266 @@
+{
+  "recordedAtUtc": "2026-10-03T12:08:50.564892+00:00",
+  "task": "C-022-R1-CROSS-REVIEW",
+  "candidateFiles": 145,
+  "candidateSha256": "1881005394febf0f2ed1f3635d8b4a92e3559e28c4419b9572b5635c7df6ecf9",
+  "verdict": "AGREE",
+  "actualReviewEvidenceVerified": true,
+  "checks": {
+    "terminalSuccess": true,
+    "exactModelAndEffort": true,
+    "zeroPermissionDenials": true,
+    "onlyReadonlyTools": true,
+    "onlyApprovedCommands": true,
+    "noPrivateRead": true,
+    "all15RequiredFilesActuallyRead": true,
+    "manifestActuallyVerified": true,
+    "actual654TestPass": true,
+    "ownedCleanupConfirmed": true,
+    "actualExplicitVerdict": true
+  },
+  "missingFullReads": [],
+  "tools": {
+    "Read": 17,
+    "Bash": 2,
+    "Grep": 3
+  },
+  "reads": [
+    {
+      "path": "docs/tasks/C-022-R1-CROSS-REVIEW.md",
+      "offset": 1,
+      "limit": null,
+      "returnedLineCount": 27,
+      "expectedLineCount": 27,
+      "completeRequestedRange": true,
+      "fullFileInOneRead": true,
+      "error": false
+    },
+    {
+      "path": "docs/requirements.md",
+      "offset": 1,
+      "limit": null,
+      "returnedLineCount": 88,
+      "expectedLineCount": 88,
+      "completeRequestedRange": true,
+      "fullFileInOneRead": true,
+      "error": false
+    },
+    {
+      "path": "docs/reviews/C-022-Claude-actual-review.md",
+      "offset": 1,
+      "limit": null,
+      "returnedLineCount": 78,
+      "expectedLineCount": 78,
+      "completeRequestedRange": true,
+      "fullFileInOneRead": true,
+      "error": false
+    },
+    {
+      "path": "docs/reviews/C-022-actual-review-verification.json",
+      "offset": 1,
+      "limit": null,
+      "returnedLineCount": 296,
+      "expectedLineCount": 296,
+      "completeRequestedRange": true,
+      "fullFileInOneRead": true,
+      "error": false
+    },
+    {
+      "path": "docs/reviews/C-022-R1-before-verification.json",
+      "offset": 1,
+      "limit": null,
+      "returnedLineCount": 22,
+      "expectedLineCount": 22,
+      "completeRequestedRange": true,
+      "fullFileInOneRead": true,
+      "error": false
+    },
+    {
+      "path": "docs/reviews/C-022-R1-actual-verification.json",
+      "offset": 1,
+      "limit": null,
+      "returnedLineCount": 200,
+      "expectedLineCount": 200,
+      "completeRequestedRange": true,
+      "fullFileInOneRead": true,
+      "error": false
+    },
+    {
+      "path": "docs/reviews/C-022-R1-candidate-manifest.json",
+      "offset": 1,
+      "limit": null,
+      "returnedLineCount": 152,
+      "expectedLineCount": 152,
+      "completeRequestedRange": true,
+      "fullFileInOneRead": true,
+      "error": false
+    },
+    {
+      "path": "docs/claude/C-022-R1-report.md",
+      "offset": 1,
+      "limit": null,
+      "returnedLineCount": 61,
+      "expectedLineCount": 61,
+      "completeRequestedRange": true,
+      "fullFileInOneRead": true,
+      "error": false
+    },
+    {
+      "path": "web/checkout-connector/job.js",
+      "offset": 1,
+      "limit": null,
+      "returnedLineCount": 254,
+      "expectedLineCount": 254,
+      "completeRequestedRange": true,
+      "fullFileInOneRead": true,
+      "error": false
+    },
+    {
+      "path": "web/checkout-connector/control.js",
+      "offset": 1,
+      "limit": null,
+      "returnedLineCount": 125,
+      "expectedLineCount": 125,
+      "completeRequestedRange": true,
+      "fullFileInOneRead": true,
+      "error": false
+    },
+    {
+      "path": "review/c022-status-truth.test.ts",
+      "offset": 1,
+      "limit": null,
+      "returnedLineCount": 39,
+      "expectedLineCount": 39,
+      "completeRequestedRange": true,
+      "fullFileInOneRead": true,
+      "error": false
+    },
+    {
+      "path": "test/checkout-c022-status-truth.test.ts",
+      "offset": 1,
+      "limit": null,
+      "returnedLineCount": 76,
+      "expectedLineCount": 76,
+      "completeRequestedRange": true,
+      "fullFileInOneRead": true,
+      "error": false
+    },
+    {
+      "path": "docs/reviews/C-022-R1-input-candidate-manifest.json",
+      "offset": 1,
+      "limit": null,
+      "returnedLineCount": 151,
+      "expectedLineCount": 151,
+      "completeRequestedRange": true,
+      "fullFileInOneRead": true,
+      "error": false
+    },
+    {
+      "path": "web/checkout-connector/page-program.js",
+      "offset": 1,
+      "limit": null,
+      "returnedLineCount": 322,
+      "expectedLineCount": 322,
+      "completeRequestedRange": true,
+      "fullFileInOneRead": true,
+      "error": false
+    },
+    {
+      "path": "review/c022-quantity-wrapper.test.ts",
+      "offset": 1,
+      "limit": null,
+      "returnedLineCount": 137,
+      "expectedLineCount": 137,
+      "completeRequestedRange": true,
+      "fullFileInOneRead": true,
+      "error": false
+    },
+    {
+      "path": "test/checkout-c022-quantity.test.ts",
+      "offset": 1,
+      "limit": null,
+      "returnedLineCount": 110,
+      "expectedLineCount": 110,
+      "completeRequestedRange": true,
+      "fullFileInOneRead": true,
+      "error": false
+    },
+    {
+      "path": "web/checkout-connector/chrome-port.js",
+      "offset": 1,
+      "limit": null,
+      "returnedLineCount": 43,
+      "expectedLineCount": 43,
+      "completeRequestedRange": true,
+      "fullFileInOneRead": true,
+      "error": false
+    }
+  ],
+  "commands": [
+    {
+      "command": "python tools/delegation/verify_candidate_manifest.py docs/reviews/C-022-R1-candidate-manifest.json",
+      "error": false,
+      "actualStats": {},
+      "manifestReceipts": [
+        {
+          "ok": true,
+          "files": 145,
+          "sha256": "1881005394febf0f2ed1f3635d8b4a92e3559e28c4419b9572b5635c7df6ecf9",
+          "mismatches": []
+        }
+      ],
+      "persistedFullOutputInspected": false
+    },
+    {
+      "command": "node --test \"test/*.test.ts\" \"review/*.test.ts\"",
+      "error": false,
+      "actualStats": {
+        "tests": 654,
+        "pass": 654,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "manifestReceipts": [],
+      "persistedFullOutputInspected": true
+    }
+  ],
+  "structuredModelUsage": {
+    "claude-opus-5-5": {
+      "inputTokens": 240645,
+      "outputTokens": 2039518,
+      "thinkingTokens": 1150697,
+      "cacheReadInputTokens": 96218336,
+      "cacheCreationInputTokens": 6474443,
+      "webSearchRequests": 0,
+      "costUSD": 112.57936419999992,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 128000,
+      "canonicalModel": "claude-opus-5-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "usageScope": "reported resumed-session counters; not incremental task billing",
+  "status": "returned_for_review",
+  "isError": false,
+  "subtype": "success",
+  "timedOut": false,
+  "permissionDenials": [],
+  "cliLimits": {
+    "turns": 48,
+    "wallSeconds": 1800,
+    "usd": 10.0
+  },
+  "reportedTurns": 24,
+  "durationSeconds": 305.55,
+  "ownedRootAbsentOrExited": true,
+  "leaseAvailable": true,
+  "sourceAndInventoryUnchanged": true,
+  "finalAcceptanceByCodex": true,
+  "preciseBilateralAgreement": true,
+  "wholeRepoReviewed": false,
+  "nativeOneClickOrderReady": false,
+  "acceptedScope": "C021+C022 quantity, host/login same-tab readonly handoff, early-run and committed-command currentness; limited offline/decoder correctness, not native purchase readiness"
+}

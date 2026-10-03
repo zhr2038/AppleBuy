@@ -1,0 +1,21 @@
+{
+  "recordedAtUtc": "2026-10-03T11:42:48.616089+00:00",
+  "fullTests": {
+    "tests": 648,
+    "pass": 638,
+    "fail": 10,
+    "cancelled": 0,
+    "skipped": 0,
+    "todo": 0,
+    "exitCode": 1
+  },
+  "allPrior636Passed": true,
+  "all143PriorBytesUnchanged": true,
+  "newIndependentCases": 12,
+  "candidateFiles": 144,
+  "candidateSha256": "f8ac61e923be803777fe13a929d217064e55ad47d4fa22b96236794c29565349",
+  "protectedTestReviewFiles": 78,
+  "genuineReviewVerdict": "DISAGREE",
+  "actualReviewModelVerified": true,
+  "nativeOneClickOrderReady": false
+}
