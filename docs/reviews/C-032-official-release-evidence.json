@@ -1,0 +1,18 @@
+{
+  "method": "supported personal Chrome, normal read-only official marketing page",
+  "capturedAtUtc": "2026-10-03T21:08:25.106Z",
+  "sourceUrl": "https://www.apple.com.cn/iphone-duo/",
+  "pageTitle": "iPhone Duo - Apple (中国大陆)",
+  "visiblePreorderNotice": "10 月 16 日晚 8 点接受预购。10 月 23 日发售。",
+  "visibleReleaseYearStatement": "iPhone Duo 于 2026 年 10 月 23 日发售",
+  "interpretedPreorderAt": "2026-10-16T20:00:00+08:00",
+  "interpretation": "Year follows the same-page explicit 2026 release cycle; timezone follows the mainland China page and Asia/Shanghai task context. No checkout opening experiment was performed.",
+  "releaseDate": "2026-10-23",
+  "retailWalkInMentioned": true,
+  "retailWalkInMentionDoesNotProveOnlinePickup": true,
+  "onlinePickupDatesOrSlotsVerified": false,
+  "refusalReselectionContractVerified": false,
+  "realMutationPerformed": false,
+  "realOrderOrPaymentAuthorized": false,
+  "screenshotsIgnoredNotModelInput": true
+}

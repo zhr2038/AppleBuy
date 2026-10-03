@@ -1,5 +1,18 @@
 # Milestones and recovery point
 
+CURRENT — October4: last accepted software is C028156 /751+16, source agreement9a82 and main43de5c8b. The current **pending161** candidate9d8ac4ee49a3332806085bbbf370d57b0269b58a7c718b17c990db1992adf91a is self-tested861 plus retained12 rendered cases; its latest checkpoint is documented by C031 publication receipts, not accepted main. C029 summary→pickup was independently verified800/8; actual final original Opus review then hit provider session quota. Codex completed C030 resolved read-only cart lifecycle and C031 normal public prelaunch configuration under the user's quota takeover authorization. All changes require genuine original-session exact review and agreement. [Current task](tasks/C-031-CROSS-REVIEW.md) and [status](status.md) supersede every old LATEST below.
+
+Current dependencies:
+
+| Work | Authoritative remaining evidence |
+| --- | --- |
+| Original Opus5.5/xhigh review | Actual provider recovery at scheduled05:25 after the reported05:20 reset; current161 map, full fresh scope, real AGREE/DISAGREE, no source edits, errors/denials/caps/process cleanup audit |
+| Pro native store/date/time observation | Pending explicit normal pickup/store preview permission; existing one-Pro real-order authority was consumed; no new slot submission/order/payment |
+| Duo release preparation | Current public white25615999 URL identifier and gate observed; official marketing announces October16 20:00 preorder / October23 release in the2026 cycle; no actual opening trial or online-pickup promise |
+| Automatic real slot refusal and order | Current authorized contracts and runtime evidence; old local engine/DOM tests do not prove live acceptance/refusal, installed execution or real speed |
+
+The ordinary public choices can now be prepared without crossing the disabled Continue gate. Preserve initial first at most3 actually offered pickup dates and each day's terminal; do not substitute the calendar release date for an offered pickup set. Standalone SKU collector limits, human-only challenges and installed-extension verification remain disclosed. Goal stays active, no shutdown. All old task/status values below are historical.
+
 LATEST — C020 is actually accepted for the bounded offline anchored-cart repair:139 files SHA `6e2acb69c981c4676c267ff311ae564012e3c4f28c2a0d09250a7d14a2ffe331`, Codex553/553 and genuine original-session first-party Opus5.5/xhigh AGREE553/553.72 input tests/reviews preserved. [Accepted scope](reviews/C-020-bounded-agreement.md). Both calls are terminal. Publication is pending its real receipt. Next native human reload/Observe remains pending; C014 is not dispatched, full one-click/Duo/live contracts and timings are unverified. No merchant/quota/shutdown event. All later current/dispatched wording is historical.
 
 LATEST — October3 C020: the C019-R2 bounded offline milestone was actually accepted and published at source507279e6/receipt d3753a17 (137 files, exact SHA `12c6eeae9220e8e08e610650685e67689897d54d77874b7dbd4e25c91276da41`, Codex515/515 and actual original-session Opus5.5/xhigh AGREE515/515). The human reported deleting the cart. Native reload/Observe is still pending and cannot establish live purchase readiness by itself.
