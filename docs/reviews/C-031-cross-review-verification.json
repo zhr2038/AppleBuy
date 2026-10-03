@@ -1,0 +1,219 @@
+{
+  "task": "C-031-CROSS-REVIEW",
+  "status": "returned_for_review",
+  "model_requested": "claude-opus-5-5",
+  "effort_requested": "xhigh",
+  "models_actual": [
+    "claude-opus-5-5"
+  ],
+  "model_verified": true,
+  "exit_code": 0,
+  "subtype": "success",
+  "is_error": false,
+  "timed_out": false,
+  "duration_seconds": 481.0,
+  "cleanup_confirmed": true,
+  "verdict": "DISAGREE",
+  "candidateFiles": 161,
+  "candidateSha256": "5b323fa3c52dae4a56a290140b378c85fe10f3bba1103accb3a0b1b78f93ff0b",
+  "candidateUnchanged": true,
+  "provider": "firstParty",
+  "permissionDenialCount": 0,
+  "privateReadAttempts": [],
+  "writes": [],
+  "toolCounts": {
+    "Read": 36,
+    "Bash": 5,
+    "Grep": 8
+  },
+  "readCalls": [
+    {
+      "file": "docs/tasks/C-031-CROSS-REVIEW.md",
+      "offset": null,
+      "limit": null
+    },
+    {
+      "file": "README.md",
+      "offset": null,
+      "limit": null
+    },
+    {
+      "file": "docs/requirements.md",
+      "offset": null,
+      "limit": null
+    },
+    {
+      "file": "docs/reviews/C-028-bounded-agreement.md",
+      "offset": null,
+      "limit": null
+    },
+    {
+      "file": "docs/reviews/C-029-independent-review.md",
+      "offset": null,
+      "limit": null
+    },
+    {
+      "file": "docs/reviews/C-029-native-summary-evidence.json",
+      "offset": null,
+      "limit": null
+    },
+    {
+      "file": "docs/reviews/C-029-R1-actual-verification.json",
+      "offset": null,
+      "limit": null
+    },
+    {
+      "file": "docs/reviews/C-029-cross-quota.json",
+      "offset": null,
+      "limit": null
+    },
+    {
+      "file": "docs/claude/C-029-R1-report.md",
+      "offset": null,
+      "limit": null
+    },
+    {
+      "file": "docs/reviews/C-030-codex-takeover-report.md",
+      "offset": null,
+      "limit": null
+    },
+    {
+      "file": "docs/reviews/C-030-self-verification.json",
+      "offset": null,
+      "limit": null
+    },
+    {
+      "file": "docs/reviews/C-030-browser-verification.json",
+      "offset": null,
+      "limit": null
+    },
+    {
+      "file": "docs/reviews/C-031-codex-takeover-report.md",
+      "offset": null,
+      "limit": null
+    },
+    {
+      "file": "docs/reviews/C-031-duo-public-evidence.json",
+      "offset": null,
+      "limit": null
+    },
+    {
+      "file": "docs/reviews/C-031-self-verification.json",
+      "offset": null,
+      "limit": null
+    },
+    {
+      "file": "docs/reviews/C-032-official-release-evidence.json",
+      "offset": null,
+      "limit": null
+    },
+    {
+      "file": "docs/tasks/C-031-PUBLIC-PREPARATION.md",
+      "offset": null,
+      "limit": null
+    },
+    {
+      "file": "web/checkout-connector/page-program.js",
+      "offset": null,
+      "limit": null
+    },
+    {
+      "file": "web/checkout-connector/job.js",
+      "offset": null,
+      "limit": null
+    },
+    {
+      "file": "web/checkout-connector/chrome-port.js",
+      "offset": null,
+      "limit": null
+    },
+    {
+      "file": "web/checkout-connector/control.js",
+      "offset": null,
+      "limit": null
+    },
+    {
+      "file": "web/checkout-connector/control.html",
+      "offset": null,
+      "limit": null
+    },
+    {
+      "file": "tools/delegation/invoke_claude.py",
+      "offset": null,
+      "limit": null
+    },
+    {
+      "file": "test/checkout-c030-retirement.test.ts",
+      "offset": null,
+      "limit": null
+    },
+    {
+      "file": "test/checkout-c031-preparation.test.ts",
+      "offset": null,
+      "limit": null
+    },
+    {
+      "file": "review/browser-retirement-self-check.mjs",
+      "offset": null,
+      "limit": null
+    },
+    {
+      "file": "review/browser-summary-self-check.mjs",
+      "offset": null,
+      "limit": null
+    },
+    {
+      "file": "review/fixtures/current-public-checkout.html",
+      "offset": null,
+      "limit": null
+    },
+    {
+      "file": "docs/reviews/C-031-candidate-manifest.json",
+      "offset": null,
+      "limit": null
+    },
+    {
+      "file": "test/checkout-c029-summary.test.ts",
+      "offset": null,
+      "limit": null
+    },
+    {
+      "file": "web/checkout-connector/job.js",
+      "offset": 100,
+      "limit": 135
+    },
+    {
+      "file": "web/checkout-connector/control.js",
+      "offset": 28,
+      "limit": 1
+    },
+    {
+      "file": "test/checkout-c030-retirement.test.ts",
+      "offset": 10,
+      "limit": 24
+    },
+    {
+      "file": "web/checkout-connector/control.html",
+      "offset": 16,
+      "limit": 1
+    },
+    {
+      "file": "web/checkout-connector/job.js",
+      "offset": 234,
+      "limit": 40
+    },
+    {
+      "file": "web/checkout-connector/job.js",
+      "offset": 273,
+      "limit": 6
+    }
+  ],
+  "bashCommands": [
+    "python tools/delegation/verify_candidate_manifest.py docs/reviews/C-031-candidate-manifest.json",
+    "node --test --test-reporter=dot \"test/*.test.ts\" \"review/*.test.ts\"",
+    "node review/browser-summary-self-check.mjs",
+    "node review/browser-retirement-self-check.mjs",
+    "python tools/delegation/verify_candidate_manifest.py docs/reviews/C-031-candidate-manifest.json"
+  ],
+  "boundedAgreementNotObtained": true
+}

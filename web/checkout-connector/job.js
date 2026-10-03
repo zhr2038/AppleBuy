@@ -22,7 +22,8 @@ export function validStored(s){return s&&s.schema==='applebuy-purchase-job/v1'&&
   optBool(s.bagAddStarted)&&optBool(s.resourceWritten)&&optBool(s.reconcileOnly)&&(s.untouchedFailures===undefined||(Number.isSafeInteger(s.untouchedFailures)&&s.untouchedFailures>=0))&&
   // The consecutive count is part of the cumulative count; a streak above a recorded total is not a trustworthy record.
   (s.untouchedStreak===undefined||(Number.isSafeInteger(s.untouchedStreak)&&s.untouchedStreak>=0&&(s.untouchedFailures===undefined||s.untouchedStreak<=s.untouchedFailures)))&&(s.quotedCny===undefined||s.quotedCny===null||Number.isFinite(s.quotedCny))&&(s.bagTotalCny===undefined||s.bagTotalCny===null||Number.isFinite(s.bagTotalCny))&&
-  (s.revokedGrantIds===undefined||(Array.isArray(s.revokedGrantIds)&&s.revokedGrantIds.every(x=>typeof x==='string')))&&(s.retiredHistory===undefined||(Array.isArray(s.retiredHistory)&&s.retiredHistory.every(r=>r?.schema==='applebuy-purchase-job/v1'&&r.state==='RETIRED')))&&(s.history===undefined||Array.isArray(s.history));}
+  (s.revokedGrantIds===undefined||(Array.isArray(s.revokedGrantIds)&&s.revokedGrantIds.every(x=>typeof x==='string')))&&(s.retiredHistory===undefined||(Array.isArray(s.retiredHistory)&&s.retiredHistory.every(r=>r?.schema==='applebuy-purchase-job/v1'&&r.state==='RETIRED')))&&(s.history===undefined||Array.isArray(s.history))&&
+  (s.retiredCart===undefined||(s.retiredCart!==null&&typeof s.retiredCart==='object'&&!Array.isArray(s.retiredCart)));}
 export function validIntent(p){
   return p?.schema==='applebuy-intent/v1'&&p.quantity===1&&p.fulfillment==='pickup'&&p.city==='大连'&&
     ['iPhone Duo','iPhone 18 Pro'].includes(p.product?.model)&&p.product?.capacity==='256GB'&&
@@ -51,6 +52,15 @@ function resolvedReadOnlyBag(s){
   return validStored(s)&&s.reconcileOnly===true&&s.lastPhase==='BAG'&&s.resourceWritten===true&&s.bagAddStarted===true&&!unsafe(s)&&
     (s.retiredHistory??[]).every(r=>validStored(r)&&!unsafe(r));
 }
+// C034 (Claude): retirement never empties the real cart. The newest resolved read-only BAG retirement in a retired chain (or the
+// fact a later task carried forward) is the last verified cart content. Nothing observed can clear it: no empty-bag contract exists.
+export function retiredCartFact(history){
+  for(const r of [...(history??[])].reverse()){
+    if(r?.readOnlyRetirement?.kind==='resolved-pre-slot-bag'){const p=r.plan?.product;return {kind:'resolved-pre-slot-bag',fromTaskId:r.taskId,product:{model:p?.model,capacity:p?.capacity,color:p?.color},quantity:1,totalCny:r.bagTotalCny??r.quotedCny??null,readSequence:r.readOnlyRetirement.readSequence??null,retiredAt:r.retiredAt??null};}
+    if(r?.retiredCart)return clone(r.retiredCart);
+  }
+  return null;
+}
 function terminal(times){
   if(!Array.isArray(times)||times.length===0||times.some(t=>!SLOT.test(t.start)||!SLOT.test(t.end)||t.start>=t.end||typeof t.ref!=='string'))return null;
   const keys=times.map(t=>t.start+'-'+t.end);if(new Set(keys).size!==keys.length)return null;
@@ -59,7 +69,7 @@ function terminal(times){
 export class PurchaseJob {
   constructor({store,port,now=()=>Date.now(),id=()=>crypto.randomUUID(),maxSteps=100,maxWaitMs=30000,hydrationMs=3000,maxPolls=2000,maxUntouched=3,maxUntouchedPerRun=12,maxSummaryReads=30,onState=()=>{}}){Object.assign(this,{store,port,now,id,maxSteps,maxWaitMs,hydrationMs,maxPolls,maxUntouched,maxUntouchedPerRun,maxSummaryReads,onState});this.paused=false;this.stopped=false;this.key=TASK_KEY;this.runGrant=null;}
   pause(){this.paused=true;} resume(){this.paused=false;} stop(){this.stopped=true;}
-  async save(s){await this.store.put(this.key,clone(s));this.onState({state:s.state,phase:s.lastPhase,reason:s.reason??null,refusals:s.refusals,finalIntent:s.finalIntent!==null,pendingAction:ACTIONS.includes(s.pending?.action)?s.pending.action:null,permissionOrigin:safePermissionOrigin(s.permissionOrigin),observationCurrent:s.observationCurrent===true});}
+  async save(s){await this.store.put(this.key,clone(s));this.onState({state:s.state,phase:s.lastPhase,reason:s.reason??null,refusals:s.refusals,finalIntent:s.finalIntent!==null,pendingAction:ACTIONS.includes(s.pending?.action)?s.pending.action:null,permissionOrigin:safePermissionOrigin(s.permissionOrigin),observationCurrent:s.observationCurrent===true,retiredCart:!!s.retiredCart});}
   async gate(s,reason,state='NEEDS_USER'){
     s.state=state;s.reason=reason;
     // Human intervention invalidates an advance start authorization; it cannot carry across a gate.
@@ -135,6 +145,8 @@ export class PurchaseJob {
     // The exact digest and tab still bind; the normalized stored plan must equal the current one apart from member order.
     if(s.schema!=='applebuy-purchase-job/v1'||s.planDigest!==planDigest||canonicalJson(normalizeIntent(s.plan))!==canonicalJson(P)||(s.tabId!==tabId&&!rebind))return this.gate(s,'existing-task-binding-differs','BLOCKED');
     s.plan=clone(P);
+    // C034 (Claude): a successor (and its restarts) keeps the retired chain's verified cart item; its own markers stay its own.
+    if(!s.retiredCart){const cart=retiredCartFact(s.retiredHistory);if(cart)s.retiredCart=cart;}
     if(rebind&&s.tabId!==tabId){s.history=[...(s.history??[]),{event:'human-tab-rebind',fromTabId:s.tabId,toTabId:tabId,at:this.now()}];s.tabId=tabId;}
     // A human rebind permanently limits this task to read-only reconciliation; it never adds purchase authority.
     if(rebind)s.reconcileOnly=true;
@@ -227,10 +239,13 @@ export class PurchaseJob {
         else{
           if(!o.variantVerified||o.quotedCny>P.maxTotalCny||!Number.isFinite(o.quotedCny)||o.quotedCny<=0)return this.gate(s,'variant-or-price-not-verified','BLOCKED');
           if(validating)return this.gate(s,'public-configuration-validated; stopped before Add to Bag','VALIDATED');
+          // C034 (Claude): the cart still holds the earlier task's item, so public choices above remain but Add to Bag does not.
+          // Only a fresh bag read of exactly this plan's one item continues, by Checkout.
+          if(s.retiredCart)return this.gate(s,'retired-cart-holds-earlier-item; no second addition; open the bag page for a fresh read','NEEDS_USER');
           command={action:'addBag'};
         }
       }else if(o.phase==='ACCESSORIES')command={action:'viewBag'};
-      else if(o.phase==='BAG'){if(!itemMatches(P,o.purchase)||o.extras===true)return this.gate(s,'bag-conditions-not-verified','BLOCKED');command={action:'checkout'};}
+      else if(o.phase==='BAG'){if(!itemMatches(P,o.purchase)||o.extras===true)return this.gate(s,s.retiredCart?'retired-cart-bag-not-exactly-this-plan; nothing removed, bought or added':'bag-conditions-not-verified','BLOCKED');command={action:'checkout'};}
       else if(o.phase==='FULFILLMENT'){
         if(!itemMatches(P,o.purchase)||['conflict','ambiguous','disabled'].includes(o.fulfillmentChoice))return this.gate(s,'pickup-conditions-not-verified','BLOCKED');
         // An exact verified allowed store with a selected pickup control is not clicked again: its dependent controls

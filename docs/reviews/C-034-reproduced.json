@@ -1,0 +1,11 @@
+{
+  "source": "actual C031 Claude DISAGREE independently reproduced by Codex",
+  "repro": "node --test review/c034-successor-cart.test.ts",
+  "total": 7,
+  "failed": 6,
+  "positive": 1,
+  "syntheticOnly": true,
+  "actualCartMutation": false,
+  "old161SourceBytesUnchanged": true,
+  "firstReviewerHarnessCorrection": "Initial PRELAUNCH fake omitted the selected-choice acknowledgement, which hid two negative paths; corrected before final6/1 result, no product code changed."
+}

@@ -13,5 +13,5 @@
 <button id="start">一键开始本次官网购买</button><button id="pause">暂停</button><button id="resume">恢复本任务</button><button id="stop">停止</button><button id="final" disabled>复核页确认后自动提交并查单</button>
 <p>校验（不会加入购物袋、占用时段、创建订单或付款）：</p><button id="observe">只读观察当前页面</button><button id="validate">公开配置校验（止于加入购物袋前）</button>
 <button id="reconcile">登录后核对原任务（只读）</button><p>登录／授权完成后选择原标签页并点此按钮，核对待确认动作；保留旧记录，不再次加购或结账。核对不延长购买期限，也不会自动恢复购买。</p>
-<p>任务管理（保留全部记录，不删除）：</p><button id="retire">结束已核对的旧任务</button><p>从未写入官网购物动作的任务可退役。已永久只读且没有待确认动作、取货时段或订单记录的旧任务，可在原计划绑定的购物袋页核对后结束；保留全部历史，新的购买须重新预检确认。</p><label><input id="rebindConfirm" type="checkbox">本人确认改用当前所选标签页，仅做只读核对，不增加购买权限</label><button id="rebind">改绑标签页并只读核对</button>
+<p>任务管理（保留全部记录，不删除）：</p><button id="retire">结束已核对的旧任务</button><p>从未写入官网购物动作的任务可退役。已永久只读且没有待确认动作、取货时段或订单记录的旧任务，可在原计划绑定的购物袋页核对后结束；保留全部历史，新的购买须重新预检确认。结束不会清空购物袋：那一件商品仍在官网购物袋中，之后的任务不会再加入购物袋，只在购物袋页读到与当前计划一致的唯一一件商品时结账；改选型号也不会移除或购买旧商品。</p><label><input id="rebindConfirm" type="checkbox">本人确认改用当前所选标签页，仅做只读核对，不增加购买权限</label><button id="rebind">改绑标签页并只读核对</button>
 <p role="status" id="state">尚未运行。开发授权不能代替一次真实购买授权。</p><script type="module" src="control.js"></script></main></body></html>

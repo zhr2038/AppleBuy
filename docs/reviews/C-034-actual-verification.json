@@ -1,0 +1,127 @@
+{
+  "task": "C-034-SUCCESSOR-CART",
+  "status": "returned_for_review",
+  "model_requested": "claude-opus-5-5",
+  "effort_requested": "xhigh",
+  "models_actual": [
+    "claude-opus-5-5"
+  ],
+  "model_verified": true,
+  "exit_code": 0,
+  "subtype": "success",
+  "is_error": false,
+  "timed_out": false,
+  "duration_seconds": 694.64,
+  "cleanup_confirmed": true,
+  "provider": "firstParty",
+  "permissionDenialCount": 0,
+  "privateReads": [],
+  "writtenFiles": [
+    "README.md",
+    "docs/claude/C-034-report.md",
+    "test/checkout-c034-successor.test.ts",
+    "web/checkout-connector/control.html",
+    "web/checkout-connector/control.js",
+    "web/checkout-connector/job.js"
+  ],
+  "readCalls": [
+    {
+      "file": "docs/tasks/C-034-SUCCESSOR-CART.md",
+      "offset": null,
+      "limit": null
+    },
+    {
+      "file": "review/c034-successor-cart.test.ts",
+      "offset": null,
+      "limit": null
+    },
+    {
+      "file": "docs/reviews/C-034-reproduced.json",
+      "offset": null,
+      "limit": null
+    },
+    {
+      "file": "docs/reviews/C-031-actual-cross-review.md",
+      "offset": null,
+      "limit": null
+    },
+    {
+      "file": "docs/reviews/C-031-cross-review-verification.json",
+      "offset": null,
+      "limit": null
+    },
+    {
+      "file": "web/checkout-connector/job.js",
+      "offset": null,
+      "limit": null
+    },
+    {
+      "file": "web/checkout-connector/control.js",
+      "offset": null,
+      "limit": null
+    },
+    {
+      "file": "web/checkout-connector/control.html",
+      "offset": null,
+      "limit": null
+    },
+    {
+      "file": "README.md",
+      "offset": null,
+      "limit": null
+    },
+    {
+      "file": "test/checkout-c030-retirement.test.ts",
+      "offset": null,
+      "limit": null
+    },
+    {
+      "file": "docs/reviews/C-030-codex-takeover-report.md",
+      "offset": null,
+      "limit": null
+    },
+    {
+      "file": "docs/requirements.md",
+      "offset": null,
+      "limit": null
+    },
+    {
+      "file": "review/browser-retirement-self-check.mjs",
+      "offset": null,
+      "limit": null
+    },
+    {
+      "file": "docs/reviews/C-034-input-candidate-manifest.json",
+      "offset": null,
+      "limit": null
+    }
+  ],
+  "commands": [
+    "python tools/delegation/verify_candidate_manifest.py docs/reviews/C-034-input-candidate-manifest.json",
+    "node --test review/c034-successor-cart.test.ts",
+    "node --test test/checkout-c034-successor.test.ts",
+    "node --test --test-reporter=dot \"test/*.test.ts\" \"review/*.test.ts\"",
+    "node review/browser-retirement-self-check.mjs",
+    "python tools/delegation/verify_candidate_manifest.py docs/reviews/C-034-input-candidate-manifest.json"
+  ],
+  "protectedInputFiles": 96,
+  "changedProtectedFiles": [],
+  "independentFullNodeExitCode": 0,
+  "independentFullNodeSummary": [
+    "✔ A05: duplicate/old observations and late/duplicate results are ignored without a second mutation (0.5559ms)",
+    "✔ A07: unknown select outcome is reconciled read-only and never resent (1.6235ms)",
+    "✔ A09: pause/takeover stop new actions and preserve the truth of the sent action (0.8497ms)",
+    "✔ A10: challenge, throttle and expired login yield with clear reasons (0.7386ms)",
+    "ℹ tests 882",
+    "ℹ suites 0",
+    "ℹ pass 882",
+    "ℹ fail 0",
+    "ℹ cancelled 0",
+    "ℹ skipped 0",
+    "ℹ todo 0",
+    "ℹ duration_ms 8319.3459"
+  ],
+  "originalSevenReprosIndependentlyPassed": true,
+  "accepted": false,
+  "knownResidual": "No trusted empty-cart contract: a successor with a retired cart fact cannot add after a user-cleared cart. This is a disclosed next live-adaptation dependency, not whole-goal completion."
+}

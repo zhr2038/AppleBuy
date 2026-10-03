@@ -1,0 +1,161 @@
+{
+  "task": "C-034-CROSS-REVIEW",
+  "status": "returned_for_review",
+  "model_requested": "claude-opus-5-5",
+  "effort_requested": "xhigh",
+  "models_actual": [
+    "claude-opus-5-5"
+  ],
+  "model_verified": true,
+  "exit_code": 0,
+  "subtype": "success",
+  "is_error": false,
+  "timed_out": false,
+  "duration_seconds": 242.05,
+  "cleanup_confirmed": true,
+  "actualVerdict": "AGREE",
+  "provider": "firstParty",
+  "candidateFiles": 163,
+  "candidateSha256": "5a91251632361f60e5986b1da71936b732c50b6747a53de0342093a01336df04",
+  "candidateUnchanged": true,
+  "freshFullReads": [
+    {
+      "file": "docs/tasks/C-034-CROSS-REVIEW.md",
+      "offset": null,
+      "limit": null
+    },
+    {
+      "file": "web/checkout-connector/job.js",
+      "offset": null,
+      "limit": null
+    },
+    {
+      "file": "web/checkout-connector/control.js",
+      "offset": null,
+      "limit": null
+    },
+    {
+      "file": "docs/reviews/C-034-actual-verification.json",
+      "offset": null,
+      "limit": null
+    },
+    {
+      "file": "README.md",
+      "offset": null,
+      "limit": null
+    },
+    {
+      "file": "docs/requirements.md",
+      "offset": null,
+      "limit": null
+    },
+    {
+      "file": "web/checkout-connector/control.html",
+      "offset": null,
+      "limit": null
+    },
+    {
+      "file": "review/c034-successor-cart.test.ts",
+      "offset": null,
+      "limit": null
+    },
+    {
+      "file": "docs/reviews/C-034-reproduced.json",
+      "offset": null,
+      "limit": null
+    },
+    {
+      "file": "docs/reviews/C-031-cross-review-verification.json",
+      "offset": null,
+      "limit": null
+    },
+    {
+      "file": "docs/reviews/C-031-actual-cross-review.md",
+      "offset": null,
+      "limit": null
+    },
+    {
+      "file": "docs/reviews/C-034-candidate-manifest.json",
+      "offset": null,
+      "limit": null
+    },
+    {
+      "file": "docs/claude/C-034-report.md",
+      "offset": null,
+      "limit": null
+    },
+    {
+      "file": "test/checkout-c034-successor.test.ts",
+      "offset": null,
+      "limit": null
+    },
+    {
+      "file": "docs/reviews/C-032-official-release-evidence.json",
+      "offset": null,
+      "limit": null
+    },
+    {
+      "file": "web/checkout-connector/page-program.js",
+      "offset": null,
+      "limit": null
+    },
+    {
+      "file": "web/checkout-connector/chrome-port.js",
+      "offset": null,
+      "limit": null
+    },
+    {
+      "file": "test/checkout-c030-retirement.test.ts",
+      "offset": null,
+      "limit": null
+    },
+    {
+      "file": "test/checkout-c031-preparation.test.ts",
+      "offset": null,
+      "limit": null
+    },
+    {
+      "file": "review/browser-retirement-self-check.mjs",
+      "offset": null,
+      "limit": null
+    },
+    {
+      "file": "review/browser-summary-self-check.mjs",
+      "offset": null,
+      "limit": null
+    },
+    {
+      "file": "tools/delegation/invoke_claude.py",
+      "offset": null,
+      "limit": null
+    },
+    {
+      "file": "docs/reviews/C-031-codex-takeover-report.md",
+      "offset": null,
+      "limit": null
+    },
+    {
+      "file": "docs/reviews/C-030-codex-takeover-report.md",
+      "offset": null,
+      "limit": null
+    },
+    {
+      "file": "docs/reviews/C-029-independent-review.md",
+      "offset": null,
+      "limit": null
+    }
+  ],
+  "permissionDenials": 0,
+  "privateReadAttempts": [],
+  "sourceWrites": [],
+  "actualCommands": [
+    "python tools/delegation/verify_candidate_manifest.py docs/reviews/C-034-candidate-manifest.json",
+    "node --test --test-reporter=dot \"test/*.test.ts\" \"review/*.test.ts\"",
+    "node review/browser-summary-self-check.mjs",
+    "node review/browser-retirement-self-check.mjs",
+    "python tools/delegation/verify_candidate_manifest.py docs/reviews/C-034-candidate-manifest.json"
+  ],
+  "sameAuthorClaudeConsistencyReview": true,
+  "independentReviewer": "Codex, separate code/repro/full-regression and native-rendered regression checks",
+  "fullGoalComplete": false
+}
