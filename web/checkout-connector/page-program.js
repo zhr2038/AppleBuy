@@ -225,7 +225,14 @@ export async function merchantDocument(plan,command=null,internal=null){
   const quoteRadio=findRadio(plan.product.capacity).filter(checked);
   const quote=quoteRadio.length===1?/\bRMB\s*([\d,]+(?:\.\d{2})?)/.exec(name(quoteRadio[0])):null;
   if(configured&&quote){out.variantVerified=true;out.quotedCny=Number(quote[1].replaceAll(',',''));}
-  if(texts.some(t=>t.includes('暂未发售')||t.includes('机型将在获得批准后发售'))&&buttons.some(b=>name(b)==='继续'&&disabled(b))&&!buttons.some(b=>name(b)==='继续'&&!disabled(b)))out.phase=phase='PRELAUNCH';
+  if(texts.some(t=>t.includes('暂未发售')||t.includes('机型将在获得批准后发售'))&&buttons.some(b=>name(b)==='继续'&&disabled(b))&&!buttons.some(b=>name(b)==='继续'&&!disabled(b))){
+    // C031 Codex quota takeover: the normally observed Duo page permits public spec choices before release.
+    // Only this public product scope may configure; the release gate never permits Continue/Add or checkout actions.
+    const slug=plan.product.model==='iPhone Duo'?'iphone-duo':'iphone-18-pro';
+    out.prelaunchConfigurable=u.hostname==='www.apple.com.cn'&&new RegExp('^/shop/buy-iphone/'+slug+'(?:/[^/]+/a)?/?$').test(u.pathname)&&modelShown&&['ENTRY','VARIANT'].includes(phase)&&
+      texts.includes('暂未发售')&&texts.includes('目前暂不提供 Apple Store 零售店取货服务')&&!texts.some(t=>t.includes('机型将在获得批准后发售'));
+    out.phase=phase='PRELAUNCH';
+  }
   // Merchant no-extra evidence (bag/review): one separate product line, no extra marker. Human consent never substitutes.
   // C-019: only the observed bag (phase BAG) excludes recognized unselected offers; REVIEW and every other page are unchanged.
   if(phase==='REVIEW'||phase==='BAG'){
@@ -368,7 +375,7 @@ export async function merchantDocument(plan,command=null,internal=null){
     if(!same)throw new Error('OperationEvidenceChanged');memo.add(command.id);
     const click=t=>{const b=exact(t);if(b.length!==1||!b[0].isConnected)throw new Error('CurrentControlUnrecognized');touched=true;b[0].click();};
     const pick=t=>{const r=findRadio(t).filter(e=>!disabled(e));if(r.length!==1||!r[0].isConnected)throw new Error('CurrentChoiceUnrecognized');touched=true;r[0].click();};
-    if(command.action==='configureProduct'&&(phase==='ENTRY'||phase==='VARIANT')){
+    if(command.action==='configureProduct'&&(phase==='ENTRY'||phase==='VARIANT'||phase==='PRELAUNCH'&&out.prelaunchConfigurable===true)){
       // Observe again after every individual public selection; only the current next enabled choice may be clicked.
       if(out.nextChoice?.choice!==command.choice||out.nextChoice.state!=='enabled'||out.extrasConflict)throw new Error('ProductChoiceChanged');pick(command.choice);
     }else if(command.action==='continueProduct'&&phase==='ENTRY'&&specSelected&&!out.extrasConflict&&!out.nextChoice){click('继续');

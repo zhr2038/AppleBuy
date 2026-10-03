@@ -1,0 +1,35 @@
+{
+  "method": "supported personal Chrome, observed official catalog link and ordinary enabled public configuration only",
+  "sourceOrigin": "https://www.apple.com.cn",
+  "catalogPath": "/iphone/",
+  "initialProductPath": "/shop/buy-iphone/iphone-duo",
+  "configuredProductPath": "/shop/buy-iphone/iphone-duo/mk2m4ch/a",
+  "configuredTitle": "购买 iPhone Duo 256GB 星光白色 - Apple (中国大陆)",
+  "capturedAtUtc": "2026-10-03T20:35:13.137Z",
+  "model": "iPhone Duo",
+  "capacity": "256GB",
+  "officialColour": "星光白色",
+  "publicPriceCny": 15999,
+  "publicUrlIdentifier": "mk2m4ch/a",
+  "publicUrlIdentifierIsNotCheckoutStockBinding": true,
+  "normalSelections": [
+    "星光白色",
+    "256GB",
+    "不折抵换购",
+    "不加 AppleCare+ 服务计划"
+  ],
+  "observedDependency": "colour enables capacity; capacity enables no-trade-in; no-trade-in enables no-AppleCare",
+  "visibleNotices": [
+    "暂未发售",
+    "目前暂不提供 Apple Store 零售店取货服务"
+  ],
+  "continueDisabled": true,
+  "releaseDateTimeObserved": false,
+  "pickupSlotMechanismObserved": false,
+  "realInstalledExecutorExecuted": false,
+  "continuedOrAddedBag": false,
+  "storeDateSlotChosen": false,
+  "orderOrPaymentAttempted": false,
+  "disabledControlsForced": false,
+  "screenshotsIgnoredNotModelInput": true
+}

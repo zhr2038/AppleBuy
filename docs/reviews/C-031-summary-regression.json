@@ -1,0 +1,63 @@
+{
+  "scope": "FAKE isolated rendered C029 summary integration",
+  "personalProfileUsed": false,
+  "actualApplePageVisited": false,
+  "actualExtensionInstalledOrGranted": false,
+  "officialQuantityContractProven": false,
+  "realOrderCreated": false,
+  "checks": [
+    {
+      "name": "real-renderer-open-read-close-one-piece-summary-then-pickup-once",
+      "passed": true,
+      "fakeChromeApi": false,
+      "quantitySource": "explicit-piece-label"
+    },
+    {
+      "name": "synthetic-two-pieces-never-inferred-one-from-same-money",
+      "passed": true,
+      "twoPieceLabelAndSamePriceSynthetic": true
+    },
+    {
+      "name": "auth-challenge-prevents-summary-and-pickup",
+      "passed": true,
+      "authenticationFieldEmptySynthetic": true
+    },
+    {
+      "name": "summary-closing-control-must-be-exact-observed-close-not-close-order",
+      "passed": true,
+      "nonObservedCloseOrderLabelSynthetic": true
+    },
+    {
+      "name": "current-order-change-between-read-and-pickup-prevents-action",
+      "passed": true,
+      "colourChangeSynthetic": true
+    },
+    {
+      "name": "fresh-port-masks-previous-port-summary-until-its-own-current-read",
+      "passed": true,
+      "ChromeApiAndDocumentIdSynthetic": true
+    },
+    {
+      "name": "pending-checkout-reconciles-and-next-pickup-one-no-checkout-repeat",
+      "passed": true,
+      "ChromeApiStorageAuthoritySynthetic": true
+    },
+    {
+      "name": "read-only-port-has-zero-disclosure-and-pickup",
+      "passed": true,
+      "ChromeApiSynthetic": true
+    }
+  ],
+  "network": {
+    "allowedPageRequests": 8,
+    "blockedPageRequests": 0
+  },
+  "cleanup": {
+    "contextsClosed": 8,
+    "browserClosed": true,
+    "serverClosed": true,
+    "errors": []
+  },
+  "browserVersion": "154.0.8037.93",
+  "passed": true
+}

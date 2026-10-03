@@ -198,9 +198,9 @@ export class PurchaseJob {
           if(!readOnly&&(o.phase==='PROCESSING'||o.phase===pending.beforePhase)&&this.now()<pending.deadline&&await poll(this.maxWaitMs))continue;
           return this.gate(s,'slot-result-unconfirmed; no resubmission','NEEDS_VERIFICATION');
         }
-        const reached={configureProduct:['ENTRY','VARIANT'],continueProduct:['VARIANT'],addBag:['ACCESSORIES','BAG'],viewBag:['BAG'],checkout:['FULFILLMENT','SLOTS'],selectPickup:['FULFILLMENT','SLOTS'],selectStore:['SLOTS'],selectDate:['SLOTS'],fillDetails:['PAYMENT'],selectPayment:['PAYMENT'],continuePayment:['REVIEW']}[pending.action]??[];
+        const reached={configureProduct:['ENTRY','VARIANT','PRELAUNCH'],continueProduct:['VARIANT'],addBag:['ACCESSORIES','BAG'],viewBag:['BAG'],checkout:['FULFILLMENT','SLOTS'],selectPickup:['FULFILLMENT','SLOTS'],selectStore:['SLOTS'],selectDate:['SLOTS'],fillDetails:['PAYMENT'],selectPayment:['PAYMENT'],continuePayment:['REVIEW']}[pending.action]??[];
         const conditions=o.phase==='BAG'||o.phase==='FULFILLMENT'?itemMatches(P,o.purchase):!['SLOTS','PAYMENT','REVIEW'].includes(o.phase)||purchaseMatches(P,o.purchase);
-        if(reached.includes(o.phase)&&o.verifiedStep===true&&conditions&&(!readOnly||o.extras!==true)&&(pending.action!=='selectPickup'||o.purchase?.fulfillment==='pickup')&&(pending.action!=='selectDate'||o.selectedDate===pending.date)&&(pending.action!=='configureProduct'||o.selectedProductChoices?.includes(pending.choice))&&(pending.action!=='selectPayment'||o.paymentMethod===P.paymentMethod)){s.pending=null;s.untouchedStreak=0;await this.save(s);if(readOnly)return this.gate(s,'same-tab-read-only-reconciliation-complete; no new purchase action','NEEDS_USER');continue;}
+        if(reached.includes(o.phase)&&o.verifiedStep===true&&conditions&&(!readOnly||o.extras!==true)&&(pending.action!=='selectPickup'||o.purchase?.fulfillment==='pickup')&&(pending.action!=='selectDate'||o.selectedDate===pending.date)&&(pending.action!=='configureProduct'||o.selectedProductChoices?.includes(pending.choice)&&(o.phase!=='PRELAUNCH'||o.prelaunchConfigurable===true))&&(pending.action!=='selectPayment'||o.paymentMethod===P.paymentMethod)){s.pending=null;s.untouchedStreak=0;await this.save(s);if(readOnly)return this.gate(s,'same-tab-read-only-reconciliation-complete; no new purchase action','NEEDS_USER');continue;}
         if(STOP.has(o.phase))return this.gate(s,o.phase.toLowerCase());
         if(!readOnly&&(o.phase===pending.beforePhase||o.phase==='PROCESSING')&&this.now()<pending.deadline&&await poll(this.maxWaitMs))continue;
         return this.gate(s,'mutation-result-unconfirmed; no automatic repeat','NEEDS_VERIFICATION');
@@ -209,10 +209,11 @@ export class PurchaseJob {
       if(STOP.has(o.phase))return this.gate(s,o.phase.toLowerCase());
       if(readOnly)return this.gate(s,'same-tab-read-only-reconciliation-complete; no new purchase action','NEEDS_USER');
       if(o.phase==='PROCESSING'){if(await poll(this.maxWaitMs))continue;return this.gate(s,'merchant-processing-time-bound-reached','NEEDS_VERIFICATION');}
-      if(o.phase==='PRELAUNCH')return this.gate(s,'official-entry-not-released','NOT_RELEASED');
-      if(validating&&!['ENTRY','VARIANT'].includes(o.phase))return this.gate(s,'validation-endpoint-is-public-configuration; no checkout action','VALIDATION_STOPPED');
+      const preparePrelaunch=o.phase==='PRELAUNCH'&&o.prelaunchConfigurable===true&&o.nextChoice!=null;
+      if(o.phase==='PRELAUNCH'&&!preparePrelaunch)return this.gate(s,'official-entry-not-released','NOT_RELEASED');
+      if(validating&&!['ENTRY','VARIANT'].includes(o.phase)&&!preparePrelaunch)return this.gate(s,'validation-endpoint-is-public-configuration; no checkout action','VALIDATION_STOPPED');
       let command;
-      if(o.phase==='ENTRY'||o.phase==='VARIANT'){
+      if(o.phase==='ENTRY'||o.phase==='VARIANT'||preparePrelaunch){
         // A started bag addition is durable: any return to product configuration cannot add again.
         if(s.bagAddStarted)return this.gate(s,'bag-addition-already-started; no second addition','NEEDS_VERIFICATION');
         if(o.extrasConflict===true)return this.gate(s,'trade-in-or-applecare-selected-on-page; not changed automatically','BLOCKED');
