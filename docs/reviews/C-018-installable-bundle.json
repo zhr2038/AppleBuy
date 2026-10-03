@@ -1,0 +1,38 @@
+{
+  "scope": "Exact current9-file C018 connector; bounded offline agreement only; controlled human reload and native public validation pending",
+  "candidateManifest": "docs/reviews/C-018-candidate-manifest.json",
+  "candidateFiles": 133,
+  "candidateSha256": "4ead4c58aa4e9551db8b1c631fedec39a3a53e98ca3ee99f33d9e5fcff2e8fa5",
+  "files": {
+    "web/checkout-connector/chrome-port.js": "247010e9d458a56b3fdd4c91b6024018fd5e81f20e77df38c47ae8fa8553c8fd",
+    "web/checkout-connector/control.html": "78b3907a64163b156b781483d6ea2b749e5b02033115f23a5b72a56b349ca570",
+    "web/checkout-connector/control.js": "08dbd7cfe0170862cddfd0f788f3e8a585ba12ed4cf9369f4f14f2beee405edf",
+    "web/checkout-connector/job.js": "462524601da3cb3b5b3e2b8f98a39f404a2805a6c609ccaba6fd3752df0d4bec",
+    "web/checkout-connector/manifest.json": "872e16c3a19ffd24c2b84213ec079463e97872af58ad424153ae35a8c60c1d0d",
+    "web/checkout-connector/open.html": "ff5010007a6bd18358606f60f16aed96a0304dc6669db7cbe1271597027c149e",
+    "web/checkout-connector/open.js": "1e50610d766d92e5bd4271a3746b2667485fa5bd9cae7121b02f06bb95add1b8",
+    "web/checkout-connector/owner.js": "2aa17b6b1666dabe757c56e620a29b8c2f62130d6993b8ff988665bd262577ed",
+    "web/checkout-connector/page-program.js": "0fe383d35f383cecd0059e130fbc0719458a325926229de18c6dcf94687c9648"
+  },
+  "zipSha256": "94da9c7c9821a9c638bce444651431d8146f9523fd66b5517ee91f77300173e5",
+  "permissions": [
+    "scripting",
+    "storage",
+    "activeTab"
+  ],
+  "optionalHostPermissions": [
+    "https://www.apple.com.cn/*",
+    "https://*.www.apple.com.cn/*"
+  ],
+  "offlineSourceScopeAgreement": true,
+  "installationConsentReceived": true,
+  "currentHostConsentReceived": true,
+  "currentHostOrigin": "https://www.apple.com.cn/*",
+  "currentC018ReloadConfirmed": false,
+  "installedSourceIdentityVerified": false,
+  "actualHostGrantVerified": false,
+  "nativeApiExecutionVerified": false,
+  "nativePublicValidationPassed": false,
+  "newMerchantMutationsAuthorized": false,
+  "realPurchasingReady": false
+}

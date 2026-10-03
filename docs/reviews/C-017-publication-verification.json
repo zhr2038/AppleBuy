@@ -1,0 +1,20 @@
+{
+  "schema": "applebuy-publication-verification/v1",
+  "verifiedAtUtc": "2026-10-03T04:27:24.031538+00:00",
+  "sourceCommit": "1e32d67c4d5359f2cfe18318dd32b4a7509834e4",
+  "acceptedManifest": "docs/reviews/C-017-candidate-manifest.json",
+  "acceptedFiles": 131,
+  "acceptedSourceSha256": "5386e64d1c2e63050ebfb1a94cf7fe47e014e2a974864711cfbef549c3575223",
+  "allSourceGitHashesMatch": true,
+  "pushSucceeded": true,
+  "atomicNonForcePush": true,
+  "remoteRefsVerified": {
+    "refs/heads/codex/c015-quota-checkpoint-20261003": "1e32d67c4d5359f2cfe18318dd32b4a7509834e4",
+    "refs/heads/main": "1e32d67c4d5359f2cfe18318dd32b4a7509834e4"
+  },
+  "sanitizedPublicFiles": 22,
+  "privateOrCredentialFilesPublished": false,
+  "nativeConfigurationPassed": false,
+  "nativeHumanFailureReport": "docs/reviews/C-014-human-readonly-feedback.json",
+  "realPurchasingReady": false
+}

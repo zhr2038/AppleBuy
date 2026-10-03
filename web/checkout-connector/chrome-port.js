@@ -1,4 +1,5 @@
 import {merchantDocument} from './page-program.js';
+import {canonicalJson} from './job.js';
 export function allowedMerchantUrl(raw){try{const u=new URL(raw);return u.protocol==='https:'&&(u.hostname==='www.apple.com.cn'||/^secure(?:\d+)?\.www\.apple\.com\.cn$/.test(u.hostname))&&/^\/shop\/(?:buy-iphone\/(?:iphone-18-pro|iphone-duo)(?:\/[^/]+\/a)?|bag|checkout|order(?:\/[^?#]*)?|signIn(?:\/orders)?)(?:\/)?$/.test(u.pathname);}catch{return false;}}
 export class ChromePort {
   // mode 'observe': act can never run. mode 'public-config': only public product choices, never Add to Bag or later.
@@ -8,7 +9,8 @@ export class ChromePort {
     if(!await this.permission())throw new Error('CurrentHostPermissionMissing');
     const r=await this.api.scripting.executeScript({target:{tabId:this.tabId,frameIds:[0]},world:'ISOLATED',func:merchantDocument,args:[plan]});
     if(r.length!==1||r[0].frameId!==0||!r[0].documentId||r[0].error||!r[0].result)throw new Error('CurrentDocumentUnrecognized');
-    const raw=r[0].result;const fingerprint=JSON.stringify([raw.dates,raw.times,raw.selectedDate]);if(!this.last||fingerprint!==this.last.fingerprint)this.generation++;
+    // C-018: a list generation advances only on a changed date/time fact or order, never on reordered object members alone.
+    const raw=r[0].result;const fingerprint=canonicalJson([raw.dates,raw.times,raw.selectedDate]);if(!this.last||fingerprint!==this.last.fingerprint)this.generation++;
     this.last={raw:structuredClone(raw),fingerprint,documentId:r[0].documentId};
     if(this.lastChoice&&['DETAILS','PAYMENT','REVIEW'].includes(raw.phase)&&raw.verifiedStep&&raw.purchase?.verified){this.acceptedSlot={date:this.lastChoice.date,start:this.lastChoice.start,end:this.lastChoice.end,verified:true,basis:'normal-checkout-progression; not a hold guarantee'};this.lastChoice=null;}
     const humanReview=this.reviewGrant?.expiry>Date.now()&&(this.reviewGrant.documentId===r[0].documentId||(this.reviewGrant.start===true&&raw.termsLinks?.includes(this.reviewGrant.termsUrl)));

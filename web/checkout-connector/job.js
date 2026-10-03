@@ -4,6 +4,7 @@
 // not-dispatched state, untouched-failure recovery, elapsed-time wait budget, validation modes, retire/rebind.
 // C-013-R1 (Claude): durable consecutive untouched bound reset only by verified progress plus a per-run absolute
 // bound; an already selected exact allowed pickup store waits within a bound instead of being clicked again.
+// C-018 (Claude): a persisted plan is compared independent of object-member order only.
 export const TASK_KEY='applebuy-single-personal-purchase/v1';
 // Public-configuration validation never uses the purchase task key, so it cannot consume a purchase task.
 export const VALIDATION_KEY='applebuy-public-configuration-validation/v1';
@@ -32,6 +33,9 @@ export function validIntent(p){
 }
 // Canonical bound intent. Different extras are invalid, so normalization can only make the fixed condition explicit.
 export function normalizeIntent(p){const {extras,...rest}=clone(p);return {...rest,extras:{...NO_EXTRAS}};}
+// C-018: JSON text with object members sorted, recursively. Storage/transport may reorder members; only that order is
+// ignored. Values, types, array order and member presence stay exact. (page-program.js keeps its own serialized copy.)
+export function canonicalJson(v){return JSON.stringify(v,(k,x)=>x!==null&&typeof x==='object'&&!Array.isArray(x)?Object.fromEntries(Object.keys(x).sort().map(n=>[n,x[n]])):x);}
 export function purchaseMatches(p,c){
   return !!c&&c.verified===true&&c.model===p.product.model&&c.capacity===p.product.capacity&&c.color===p.product.color&&
     c.quantity===1&&c.fulfillment==='pickup'&&p.stores.includes(c.store)&&Number.isFinite(c.totalCny)&&c.totalCny>0&&c.totalCny<=p.maxTotalCny;
@@ -90,7 +94,8 @@ export class PurchaseJob {
     // A legacy record cannot prove its untouched failures were separated by progress: all of them count as consecutive.
     // A missing total is at least the recorded streak.
     s.bagAddStarted??=true;s.resourceWritten??=true;s.untouchedFailures??=s.untouchedStreak??0;s.untouchedStreak??=s.untouchedFailures;s.quotedCny??=null;
-    if(s.schema!=='applebuy-purchase-job/v1'||s.planDigest!==planDigest||JSON.stringify(normalizeIntent(s.plan))!==JSON.stringify(P)||(s.tabId!==tabId&&!rebind))return this.gate(s,'existing-task-binding-differs','BLOCKED');
+    // The exact digest and tab still bind; the normalized stored plan must equal the current one apart from member order.
+    if(s.schema!=='applebuy-purchase-job/v1'||s.planDigest!==planDigest||canonicalJson(normalizeIntent(s.plan))!==canonicalJson(P)||(s.tabId!==tabId&&!rebind))return this.gate(s,'existing-task-binding-differs','BLOCKED');
     s.plan=clone(P);
     if(rebind&&s.tabId!==tabId){s.history=[...(s.history??[]),{event:'human-tab-rebind',fromTabId:s.tabId,toTabId:tabId,at:this.now()}];s.tabId=tabId;}
     // A human rebind permanently limits this task to read-only reconciliation; it never adds purchase authority.

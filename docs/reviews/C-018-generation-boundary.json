@@ -1,0 +1,25 @@
+{
+  "schema": "applebuy-independent-offline-boundary-check/v1",
+  "checkedAtUtc": "2026-10-03T04:43:37.691Z",
+  "method": "actual current and frozen132-input ChromePort over independent FAKE result queue, no browser or network",
+  "before": [
+    1,
+    2,
+    3,
+    4,
+    5
+  ],
+  "after": [
+    1,
+    1,
+    2,
+    2,
+    3
+  ],
+  "assertionsPassed": true,
+  "keyOrderCreatesNoFreshness": true,
+  "enabledFactStillCreatesFreshness": true,
+  "dateArrayOrderStillCreatesFreshness": true,
+  "merchantActions": 0,
+  "nativeApiEvidence": false
+}

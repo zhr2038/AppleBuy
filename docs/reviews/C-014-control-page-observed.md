@@ -1,5 +1,9 @@
 # C014 — actual Chrome control-page discovery, read-only execution pending
 
+## Current recovery after C018 precise agreement
+
+C018's133-file SHA `4ead4c58aa4e9551db8b1c631fedec39a3a53e98ca3ee99f33d9e5fcff2e8fa5` is accepted only for its bounded offline evidence/binding/generation repair. Codex independent481/481 and actual specified-model original-session consistency review481/481 passed. Existing native causes/loaded identity remain unknown. The human has now been asked for one controlled reload and public Pro configuration validation ending before Add to Bag, without clearing either record or clicking Start/Resume/Submit. Current supported HTTPS observation still shows the same generic public Pro tab with no model selected and Continue disabled. Its human final result remains pending. No internal extension page was read or operated, and no new merchant resource action occurred. C014 is still not dispatched. Earlier steps/baselines below are historical; see [current precise agreement](C-018-bounded-agreement.md).
+
 ## Latest human feedback, 2026-10-03
 
 The next human **public-configuration validation** returned `公开配置校验停止：NEEDS_VERIFICATION；repeated-untouched-failures; human check required`. Codex independently re-read the same ordinary HTTPS Pro page after that report: no model choice selected and Continue still disabled. Do not retry or clear the retained task/validation state to suppress the bound. This is an actual human-reported failure, not a successful native milestone or a no-stock result. The specific per-action native failure reason and installed byte identity remain unavailable; root will reproduce transport/persistence evidence differences offline before a precise Claude repair task. No official-page controls were clicked by Codex.

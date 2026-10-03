@@ -8,6 +8,7 @@
 // C-015 (Claude): the order-reference digest is the only awaited decoding step. After it the program re-enters and decodes
 // the whole current document again; every action decides synchronously from that final decode. Slot continuation re-enters too.
 // C-016 (Claude): pickup details are sent one value per pass; each next value and Continue are decided only after re-entry.
+// C-018 (Claude): transported expected evidence is compared independent of object-member order only.
 export async function merchantDocument(plan,command=null,internal=null){
   // `internal` is set only by this program's own re-entry; ChromePort passes plan and command only.
   // A structured command always receives a structured report. Nothing was written unless this id was already delivered.
@@ -211,7 +212,12 @@ export async function merchantDocument(plan,command=null,internal=null){
     // C-013-R3: delivery truth first. A known id stays touched even when its own delivery changed the evidence;
     // only a never-seen id with stale evidence is positively untouched.
     const memo=globalThis.__applebuyExecuted??=(new Set());if(memo.has(command.id)){touched=true;throw new Error('OperationAlreadyDelivered');}
-    if(command.expected!==JSON.stringify(out))throw new Error('OperationEvidenceChanged');memo.add(command.id);
+    // C-018: the expected evidence crossed a structured-clone/JSON boundary that may reorder object members. Both sides are
+    // compared with members sorted, recursively; values, types, array order and member presence must still match exactly.
+    // Defined inside this function so the serialized program stays self-contained. Unparsable expected evidence is changed.
+    const canon=v=>JSON.stringify(v,(k,x)=>x!==null&&typeof x==='object'&&!Array.isArray(x)?Object.fromEntries(Object.keys(x).sort().map(n=>[n,x[n]])):x);
+    let same=false;try{same=typeof command.expected==='string'&&canon(JSON.parse(command.expected))===canon(out);}catch{}
+    if(!same)throw new Error('OperationEvidenceChanged');memo.add(command.id);
     const click=t=>{const b=exact(t);if(b.length!==1||!b[0].isConnected)throw new Error('CurrentControlUnrecognized');touched=true;b[0].click();};
     const pick=t=>{const r=findRadio(t).filter(e=>!disabled(e));if(r.length!==1||!r[0].isConnected)throw new Error('CurrentChoiceUnrecognized');touched=true;r[0].click();};
     if(command.action==='configureProduct'&&(phase==='ENTRY'||phase==='VARIANT')){

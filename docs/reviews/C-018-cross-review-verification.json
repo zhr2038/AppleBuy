@@ -1,0 +1,130 @@
+{
+  "verifiedAtUtc": "2026-10-03T04:59:45.071055+00:00",
+  "candidateFiles": 133,
+  "candidateSha256": "4ead4c58aa4e9551db8b1c631fedec39a3a53e98ca3ee99f33d9e5fcff2e8fa5",
+  "sourceUnchangedAfterReview": true,
+  "completeSourceInventoryVerifiedByCodex": true,
+  "rootIndependentTests": {
+    "tests": 481,
+    "pass": 481,
+    "fail": 0,
+    "cancelled": 0,
+    "skipped": 0,
+    "todo": 0,
+    "durationMs": 6160.1735,
+    "exitCode": 0,
+    "verifiedAtUtc": "2026-10-03T04:40:32.719851+00:00"
+  },
+  "actualAuthorConsistencyReview": {
+    "task": "C-018-CROSS-REVIEW",
+    "profile": "review",
+    "status": "returned_for_review",
+    "startedAtUtc": "2026-10-03T04:52:34.031509+00:00",
+    "endedAtUtc": "2026-10-03T04:55:39.333173+00:00",
+    "durationSeconds": 185.25,
+    "modelRequested": "claude-opus-5-5",
+    "effortRequested": "xhigh",
+    "structuredModelUsage": {
+      "claude-opus-5-5": {
+        "inputTokens": 104071,
+        "outputTokens": 1624042,
+        "thinkingTokens": 915180,
+        "cacheReadInputTokens": 82371361,
+        "cacheCreationInputTokens": 4624957,
+        "webSearchRequests": 0,
+        "costUSD": 86.1654141999999,
+        "contextWindow": 1000000,
+        "maxOutputTokens": 128000,
+        "canonicalModel": "claude-opus-5-5",
+        "provider": "firstParty",
+        "costBasis": "list"
+      }
+    },
+    "modelUsageScope": "Cumulative original-session counters; not incremental task billing",
+    "primaryModelsActual": [
+      "claude-opus-5-5"
+    ],
+    "auxiliaryModelsActual": [],
+    "subtype": "success",
+    "isError": false,
+    "permissionDenials": [],
+    "cliCaps": {
+      "turns": 24,
+      "wallSeconds": 900,
+      "dollars": 5.0
+    },
+    "numTurnsReported": 29,
+    "capOrProviderQuotaError": false,
+    "toolCounts": {
+      "Read": 20,
+      "Bash": 2,
+      "Grep": 2,
+      "Glob": 4
+    },
+    "freshCompleteReadPaths": [
+      "docs/tasks/C-018-CROSS-REVIEW.md",
+      "docs/requirements.md",
+      "web/checkout-connector/page-program.js",
+      "web/checkout-connector/job.js",
+      "web/checkout-connector/chrome-port.js",
+      "web/checkout-connector/control.js",
+      "review/c018-evidence-order.test.ts",
+      "test/checkout-c018-evidence-order.test.ts",
+      "test/checkout-r1-public-configuration.test.ts",
+      "test/checkout-job.test.ts",
+      "test/checkout-c013-continuity.test.ts",
+      "docs/claude/C-018-report.md",
+      "docs/reviews/C-018-evidence-order-findings.md",
+      "docs/reviews/C-018-independent-review.md",
+      "docs/reviews/C-018-actual-verification.json",
+      "docs/reviews/C-018-generation-boundary.json",
+      "docs/reviews/C-018-candidate-manifest.json",
+      "docs/reviews/C-014-human-readonly-feedback.json",
+      "docs/reviews/C-017-bounded-agreement.md",
+      "tools/delegation/verify_candidate_manifest.py"
+    ],
+    "partialReads": 0,
+    "privateOrBrowserOrNetworkOrAgentReads": 0,
+    "writeCalls": 0,
+    "actualCommands": [
+      {
+        "command": "python tools/delegation/verify_candidate_manifest.py docs/reviews/C-018-candidate-manifest.json",
+        "testSummary": null,
+        "manifestVerified": true,
+        "completeOwnedToolOutputVerified": false
+      },
+      {
+        "command": "node --test \"test/*.test.ts\" \"review/*.test.ts\"",
+        "testSummary": {
+          "tests": 481,
+          "pass": 481,
+          "fail": 0,
+          "cancelled": 0,
+          "skipped": 0,
+          "todo": 0
+        },
+        "manifestVerified": null,
+        "completeOwnedToolOutputVerified": true
+      }
+    ],
+    "explicitVerdict": "AGREE only on exact133-file bounded offline C018 repair",
+    "completeSourceInventoryClaimedByClaude": false,
+    "implementationReportDiscrepanciesAcknowledged": true,
+    "nativeSerializationHypothesisIsUnverified": true
+  },
+  "processCleanup": {
+    "confirmedByOwnedJobObject": true,
+    "ownedPrimaryPidAbsentAtAudit": true,
+    "osLeaseAcquiredAndReleased": true,
+    "activeOrUnknownCalls": 0,
+    "unifiedExecSessionClosed": true
+  },
+  "bilateralExactAgreement": true,
+  "independentAcceptanceBy": "Codex",
+  "scope": "Only C018 offline semantic equality and generation repair; no installation/native/whole-repository/real purchase acceptance",
+  "nativePublicValidationPassed": false,
+  "nativeCauseEstablished": false,
+  "installedSourceIdentityVerified": false,
+  "newMerchantActions": 0,
+  "realPurchasingReady": false
+}

@@ -1,0 +1,220 @@
+{
+  "verifiedAtUtc": "2026-10-03T04:50:24.712495+00:00",
+  "candidate": {
+    "files": 133,
+    "sha256": "4ead4c58aa4e9551db8b1c631fedec39a3a53e98ca3ee99f33d9e5fcff2e8fa5",
+    "manifest": "docs/reviews/C-018-candidate-manifest.json"
+  },
+  "input": {
+    "files": 132,
+    "sha256": "7c3ab1049bed5c08d2c77f2679e83c5044c549aa770885ca895f66ae065c13aa"
+  },
+  "scope": {
+    "sourceChanges": [
+      "web/checkout-connector/chrome-port.js",
+      "web/checkout-connector/job.js",
+      "web/checkout-connector/page-program.js"
+    ],
+    "newImplementationTest": "test/checkout-c018-evidence-order.test.ts",
+    "protectedInputFiles": 66,
+    "protectedInputFilesUnchanged": true,
+    "inventoryExact": true,
+    "noNewRuntimeHelper": true,
+    "controlHtmlManifestUnchanged": true,
+    "dispatchAndSettingsChanged": false
+  },
+  "independentTests": {
+    "tests": 481,
+    "pass": 481,
+    "fail": 0,
+    "cancelled": 0,
+    "skipped": 0,
+    "todo": 0,
+    "durationMs": 6160.1735,
+    "exitCode": 0,
+    "verifiedAtUtc": "2026-10-03T04:40:32.719851+00:00"
+  },
+  "independentBefore": {
+    "tests": 471,
+    "pass": 467,
+    "fail": 4,
+    "exitCode": 1
+  },
+  "independentGenerationBoundary": {
+    "schema": "applebuy-independent-offline-boundary-check/v1",
+    "checkedAtUtc": "2026-10-03T04:43:37.691Z",
+    "method": "actual current and frozen132-input ChromePort over independent FAKE result queue, no browser or network",
+    "before": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "after": [
+      1,
+      1,
+      2,
+      2,
+      3
+    ],
+    "assertionsPassed": true,
+    "keyOrderCreatesNoFreshness": true,
+    "enabledFactStillCreatesFreshness": true,
+    "dateArrayOrderStillCreatesFreshness": true,
+    "merchantActions": 0,
+    "nativeApiEvidence": false
+  },
+  "actualClaudeImplementation": {
+    "task": "C-018-EVIDENCE-ORDER",
+    "status": "returned_for_review",
+    "startedAtUtc": "2026-10-03T04:28:16.407223+00:00",
+    "endedAtUtc": "2026-10-03T04:37:34.366832+00:00",
+    "durationSeconds": 557.95,
+    "requestedModel": "claude-opus-5-5",
+    "requestedEffort": "xhigh",
+    "structuredModelUsage": {
+      "claude-opus-5-5": {
+        "inputTokens": 104051,
+        "outputTokens": 1606448,
+        "thinkingTokens": 902695,
+        "cacheReadInputTokens": 81270861,
+        "cacheCreationInputTokens": 4495320,
+        "webSearchRequests": 0,
+        "costUSD": 84.55625819999992,
+        "contextWindow": 1000000,
+        "maxOutputTokens": 128000,
+        "canonicalModel": "claude-opus-5-5",
+        "provider": "firstParty",
+        "costBasis": "list"
+      }
+    },
+    "modelUsageScope": "Cumulative original-session counters; not incremental task billing",
+    "primaryModelsActual": [
+      "claude-opus-5-5"
+    ],
+    "auxiliaryModelsActual": [],
+    "subtype": "success",
+    "isError": false,
+    "permissionDenials": [],
+    "numTurnsReported": 36,
+    "cliTurnCap": 30,
+    "cliDollarCap": 7.0,
+    "wallCapSeconds": 1200,
+    "capOrProviderQuotaError": false,
+    "timedOut": false,
+    "exitCode": 0,
+    "toolCounts": {
+      "Read": 14,
+      "Bash": 5,
+      "Glob": 1,
+      "Grep": 5,
+      "Edit": 7,
+      "Write": 2
+    },
+    "actualShellResults": [
+      {
+        "command": "python tools/delegation/verify_candidate_manifest.py docs/reviews/C-018-input-candidate-manifest.json",
+        "testSummary": null,
+        "manifestVerified": true,
+        "completeOwnedToolOutputVerified": false
+      },
+      {
+        "command": "node --test review/c018-evidence-order.test.ts",
+        "testSummary": {
+          "tests": 16,
+          "pass": 12,
+          "fail": 4,
+          "cancelled": 0,
+          "skipped": 0,
+          "todo": 0
+        },
+        "manifestVerified": null,
+        "completeOwnedToolOutputVerified": false
+      },
+      {
+        "command": "node --test review/c018-evidence-order.test.ts",
+        "testSummary": {
+          "tests": 16,
+          "pass": 16,
+          "fail": 0,
+          "cancelled": 0,
+          "skipped": 0,
+          "todo": 0
+        },
+        "manifestVerified": null,
+        "completeOwnedToolOutputVerified": false
+      },
+      {
+        "command": "node --test test/checkout-c018-evidence-order.test.ts",
+        "testSummary": {
+          "tests": 10,
+          "pass": 10,
+          "fail": 0,
+          "cancelled": 0,
+          "skipped": 0,
+          "todo": 0
+        },
+        "manifestVerified": null,
+        "completeOwnedToolOutputVerified": false
+      },
+      {
+        "command": "node --test \"test/*.test.ts\" \"review/*.test.ts\"",
+        "testSummary": {
+          "tests": 481,
+          "pass": 481,
+          "fail": 0,
+          "cancelled": 0,
+          "skipped": 0,
+          "todo": 0
+        },
+        "manifestVerified": null,
+        "completeOwnedToolOutputVerified": true
+      }
+    ],
+    "writtenPaths": [
+      "docs/claude/C-018-report.md",
+      "test/checkout-c018-evidence-order.test.ts",
+      "web/checkout-connector/chrome-port.js",
+      "web/checkout-connector/job.js",
+      "web/checkout-connector/page-program.js"
+    ],
+    "freshCompleteReadPaths": [
+      "docs/tasks/C-018-EVIDENCE-ORDER.md",
+      "docs/requirements.md",
+      "docs/reviews/C-018-evidence-order-findings.md",
+      "docs/reviews/C-014-human-readonly-feedback.json",
+      "review/c018-evidence-order.test.ts",
+      "web/checkout-connector/page-program.js",
+      "web/checkout-connector/job.js",
+      "web/checkout-connector/chrome-port.js",
+      "web/checkout-connector/control.js",
+      "test/checkout-r1-public-configuration.test.ts",
+      "test/checkout-job.test.ts",
+      "test/checkout-c013-continuity.test.ts",
+      "docs/reviews/C-017-bounded-agreement.md"
+    ],
+    "partialReadPaths": [
+      {
+        "path": "web/checkout-connector/page-program.js",
+        "offset": 210,
+        "limit": 12
+      }
+    ],
+    "readClaimQualification": "The actual trace verifies initial13 full Reads and one partial page-program re-read. The report also claims later full task/port re-reads; no second full Read is present, so those repeats receive no verified-read credit. A fresh precise review is still required.",
+    "ownedProcessCleanupConfirmed": true,
+    "ownedPrimaryPidAbsentAtAudit": true
+  },
+  "dispatchAudit": {
+    "existingRecords": 42,
+    "activeOrUnknown": 0,
+    "osLeaseAcquiredAndReleased": true
+  },
+  "authorConsistencyReviewPending": true,
+  "bilateralExactAgreement": false,
+  "nativeCauseEstablished": false,
+  "nativeInstalledSourceVerified": false,
+  "nativePublicValidationPassed": false,
+  "merchantResourceActions": 0,
+  "realPurchasingReady": false
+}
