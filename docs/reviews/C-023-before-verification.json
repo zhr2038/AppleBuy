@@ -1,0 +1,19 @@
+{
+  "recordedAtUtc": "2026-10-03T12:40:16.576239+00:00",
+  "tests": {
+    "tests": 659,
+    "pass": 655,
+    "fail": 4,
+    "cancelled": 0,
+    "skipped": 0,
+    "todo": 0,
+    "exitCode": 1
+  },
+  "allPrior654Passed": true,
+  "accepted145BytesUnchanged": true,
+  "newIndependentCases": 5,
+  "protectedTestReviewFiles": 80,
+  "candidateFiles": 146,
+  "candidateSha256": "2ca8210ad75346aed31336e79d88d3d3eed05feb028a40e6f60dc0dd06b6f26c",
+  "basis": "Actual Opus review O4 independently reproduced with real ChromePort/PurchaseJob over fully FAKE APIs; no native final-order claim or new resource authority."
+}

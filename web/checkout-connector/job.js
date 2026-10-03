@@ -135,6 +135,9 @@ export class PurchaseJob {
         if(pending.action==='submitOrder'){
           if(readOnly)return this.gate(s,'final-result-unconfirmed; no resubmission','NEEDS_VERIFICATION');
           if(!s.orderRefHash&&o.phase==='ORDER_RECEIPT'&&o.receiptVerified===true&&purchaseMatches(P,o.purchase)&&o.orderRefHash){s.orderRefHash=o.orderRefHash;await this.save(s);}
+          // C-023 (Claude): the lookup may follow the receipt's own detail link and read pages this job never validates or
+          // records, so from here the last validated read is named only as the last read page, never the current one.
+          s.observationCurrent=false;
           let order;try{order=await this.port.lookupOrder(P,s.orderRefHash);}catch{}
           if(order?.independent===true&&order.state==='unpaid'&&s.orderRefHash&&order.orderRefHash===s.orderRefHash&&purchaseMatches(P,order.purchase)&&order.acceptedSlot?.date===s.acceptedSlot?.date&&order.acceptedSlot?.start===s.acceptedSlot?.start&&order.acceptedSlot?.end===s.acceptedSlot?.end){s.pending=null;s.state='CONFIRMED_UNPAID';s.reason=null;await this.save(s);return clone(s);}
           return this.gate(s,'final-result-unconfirmed; no resubmission','NEEDS_VERIFICATION');

@@ -1,0 +1,20 @@
+# C023-CROSS-REVIEW — precise final-result lookup consistency
+
+English, same `E:\Apple Store`, exact first-party `claude-opus-5-5` / `xhigh`, unique original private session. Read-only consistency review; no writes, additional agent, private/history/account access, network/browser/extension activity, publishing, shutdown or new purchase authority.
+
+Codex accepted the exact prior145-file C021+C022+R1 limited scope after actual review and independently654/654, then independently reproduced your O4 final lookup issue with actual ChromePort/PurchaseJob over fully FAKE APIs (659/655/4). You implemented one job.js reset plus11 FAKE cases; Codex inspected actual diff/files and independently670/670 exit0. All80 input test/review files remain byte-identical. Delivery/self-review/test success does not approve the new output.
+
+Precise147-file candidate SHA `45182bf07f5144130b6c15d5b5e484066dfa5b48ad054c26781f90e5b88cf326` in `docs/reviews/C-023-candidate-manifest.json`. Relative to146-file input only job.js changes and the new test file is added. Old145 agreement cannot approve new code; source drift needs a complete new manifest/task.
+
+Read fully this task, `docs/requirements.md`, `docs/tasks/C-023-FINAL-LOOKUP.md`; `docs/reviews/C-023-before-verification.json`, `C-023-actual-verification.json`, `C-023-input-candidate-manifest.json`, `C-023-candidate-manifest.json`, `C-022-R1-bounded-agreement.md`; `docs/claude/C-023-report.md`; full current `web/checkout-connector/job.js`, `chrome-port.js`, `control.js`; full `review/c023-final-lookup-truth.test.ts`, `test/checkout-c023-final-lookup.test.ts`. Separate actual fresh reading scope from earlier identical-hash reads, without whole-repo extrapolation.
+
+Verify one-statement change before non-readonly `lookupOrder` correctly qualifies the job's older recorded page after confirmed unpaid, unknown/auth/mismatch/read-loss/exception/permission-denial outcomes. It must not add navigation or lookup to same-tab readonly reconcile, which returns earlier and retains truthful fresh-read positives. No purchase decision can change: exact hashed receipt identity, independent unpaid/detail route, one unit/cap/store/slot match, sent-final/pending/history/expiry, no-resubmit and no new grants. Preserve the success that independently verifies one unpaid order; no blanket failure to pass negative tests. Test role/phase text through actual control.js on fake APIs. The prior quantity121/0/1/2/hidden/nested/conflict, early-run/write-ahead freshness, ownership, slot terminal/refusal/fresh-reselection chain remain intact. Quantity/freshness acceptance is still limited to tested code; native result is pending.
+
+Known unchanged: O1 stale manual-origin priority; O2 confirmed early return emits no status; O3 mismatched job-level readonly call writes BLOCKED while UI refuses earlier; stale permissionOrigin help. Their actual disclosed scope is not an implicit fix. External gaps remain: human native BAG reload result, Chrome control extension update, FULFILLMENT missing explicit quantity/split-money, real refusal/reselection, Duo actual contract, native one-click order/speed. Old human-rebound task permanently readonly; prior one Pro order authorization consumed, no new bag/slot/order/pay authority. Never shut down.
+
+Review48 turns/1800s/USD10 cap. Only exact unchained Bash:
+
+1. `python tools/delegation/verify_candidate_manifest.py docs/reviews/C-023-candidate-manifest.json`
+2. `node --test "test/*.test.ts" "review/*.test.ts"`
+
+Return explicit `Verdict: AGREE` or `Verdict: DISAGREE` for this bounded147/SHA, actual command/count evidence, full/partial fresh reads versus reused hashes, findings with file/line/repro/acceptance, denials/cap/provider/unrun limits. You authored the new line/tests: your later check is consistency review, not independent implementation review; Codex's prewritten5 cases/diff/full670 supply the separate check. Codex verifies actual return and determines bounded acceptance. Complete user goal remains unproven.

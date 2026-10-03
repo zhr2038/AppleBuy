@@ -1,0 +1,236 @@
+{
+  "recordedAtUtc": "2026-10-03T12:53:44.329048+00:00",
+  "task": "C-023-CROSS-REVIEW",
+  "candidateFiles": 147,
+  "candidateSha256": "45182bf07f5144130b6c15d5b5e484066dfa5b48ad054c26781f90e5b88cf326",
+  "verdict": "AGREE",
+  "actualReviewEvidenceVerified": true,
+  "checks": {
+    "terminalSuccess": true,
+    "exactModelAndEffort": true,
+    "zeroPermissionDenials": true,
+    "onlyReadonlyTools": true,
+    "onlyApprovedCommands": true,
+    "noPrivateRead": true,
+    "all14RequiredFilesActuallyRead": true,
+    "manifestActuallyVerified": true,
+    "actual670TestPass": true,
+    "ownedCleanupConfirmed": true,
+    "actualExplicitVerdict": true
+  },
+  "missingFullReads": [],
+  "tools": {
+    "Read": 14,
+    "Bash": 2,
+    "Grep": 4
+  },
+  "reads": [
+    {
+      "path": "docs/tasks/C-023-CROSS-REVIEW.md",
+      "offset": 1,
+      "limit": null,
+      "returnedLineCount": 21,
+      "expectedLineCount": 21,
+      "completeRequestedRange": true,
+      "fullFileInOneRead": true,
+      "error": false
+    },
+    {
+      "path": "docs/requirements.md",
+      "offset": 1,
+      "limit": null,
+      "returnedLineCount": 88,
+      "expectedLineCount": 88,
+      "completeRequestedRange": true,
+      "fullFileInOneRead": true,
+      "error": false
+    },
+    {
+      "path": "docs/tasks/C-023-FINAL-LOOKUP.md",
+      "offset": 1,
+      "limit": null,
+      "returnedLineCount": 23,
+      "expectedLineCount": 23,
+      "completeRequestedRange": true,
+      "fullFileInOneRead": true,
+      "error": false
+    },
+    {
+      "path": "docs/reviews/C-023-before-verification.json",
+      "offset": 1,
+      "limit": null,
+      "returnedLineCount": 20,
+      "expectedLineCount": 20,
+      "completeRequestedRange": true,
+      "fullFileInOneRead": true,
+      "error": false
+    },
+    {
+      "path": "docs/reviews/C-023-actual-verification.json",
+      "offset": 1,
+      "limit": null,
+      "returnedLineCount": 200,
+      "expectedLineCount": 200,
+      "completeRequestedRange": true,
+      "fullFileInOneRead": true,
+      "error": false
+    },
+    {
+      "path": "docs/reviews/C-023-input-candidate-manifest.json",
+      "offset": 1,
+      "limit": null,
+      "returnedLineCount": 153,
+      "expectedLineCount": 153,
+      "completeRequestedRange": true,
+      "fullFileInOneRead": true,
+      "error": false
+    },
+    {
+      "path": "docs/reviews/C-023-candidate-manifest.json",
+      "offset": 1,
+      "limit": null,
+      "returnedLineCount": 154,
+      "expectedLineCount": 154,
+      "completeRequestedRange": true,
+      "fullFileInOneRead": true,
+      "error": false
+    },
+    {
+      "path": "docs/reviews/C-022-R1-bounded-agreement.md",
+      "offset": 1,
+      "limit": null,
+      "returnedLineCount": 14,
+      "expectedLineCount": 14,
+      "completeRequestedRange": true,
+      "fullFileInOneRead": true,
+      "error": false
+    },
+    {
+      "path": "docs/claude/C-023-report.md",
+      "offset": 1,
+      "limit": null,
+      "returnedLineCount": 95,
+      "expectedLineCount": 95,
+      "completeRequestedRange": true,
+      "fullFileInOneRead": true,
+      "error": false
+    },
+    {
+      "path": "web/checkout-connector/job.js",
+      "offset": 1,
+      "limit": null,
+      "returnedLineCount": 257,
+      "expectedLineCount": 257,
+      "completeRequestedRange": true,
+      "fullFileInOneRead": true,
+      "error": false
+    },
+    {
+      "path": "web/checkout-connector/control.js",
+      "offset": 1,
+      "limit": null,
+      "returnedLineCount": 125,
+      "expectedLineCount": 125,
+      "completeRequestedRange": true,
+      "fullFileInOneRead": true,
+      "error": false
+    },
+    {
+      "path": "web/checkout-connector/chrome-port.js",
+      "offset": 1,
+      "limit": null,
+      "returnedLineCount": 43,
+      "expectedLineCount": 43,
+      "completeRequestedRange": true,
+      "fullFileInOneRead": true,
+      "error": false
+    },
+    {
+      "path": "review/c023-final-lookup-truth.test.ts",
+      "offset": 1,
+      "limit": null,
+      "returnedLineCount": 32,
+      "expectedLineCount": 32,
+      "completeRequestedRange": true,
+      "fullFileInOneRead": true,
+      "error": false
+    },
+    {
+      "path": "test/checkout-c023-final-lookup.test.ts",
+      "offset": 1,
+      "limit": null,
+      "returnedLineCount": 89,
+      "expectedLineCount": 89,
+      "completeRequestedRange": true,
+      "fullFileInOneRead": true,
+      "error": false
+    }
+  ],
+  "commands": [
+    {
+      "command": "python tools/delegation/verify_candidate_manifest.py docs/reviews/C-023-candidate-manifest.json",
+      "error": false,
+      "actualStats": {},
+      "manifestReceipts": [
+        {
+          "ok": true,
+          "files": 147,
+          "sha256": "45182bf07f5144130b6c15d5b5e484066dfa5b48ad054c26781f90e5b88cf326",
+          "mismatches": []
+        }
+      ],
+      "persistedFullOutputInspected": false
+    },
+    {
+      "command": "node --test \"test/*.test.ts\" \"review/*.test.ts\"",
+      "error": false,
+      "actualStats": {
+        "tests": 670,
+        "pass": 670,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "manifestReceipts": [],
+      "persistedFullOutputInspected": true
+    }
+  ],
+  "structuredModelUsage": {
+    "claude-opus-5-5": {
+      "inputTokens": 244311,
+      "outputTokens": 2090423,
+      "thinkingTokens": 1174811,
+      "cacheReadInputTokens": 98892226,
+      "cacheCreationInputTokens": 6664797,
+      "webSearchRequests": 0,
+      "costUSD": 115.66949519999993,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 128000,
+      "canonicalModel": "claude-opus-5-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "usageScope": "reported resumed-session counters; not incremental task billing",
+  "status": "returned_for_review",
+  "isError": false,
+  "subtype": "success",
+  "timedOut": false,
+  "permissionDenials": [],
+  "cliLimits": {
+    "turns": 48,
+    "wallSeconds": 1800,
+    "usd": 10.0
+  },
+  "reportedTurns": 22,
+  "durationSeconds": 189.78,
+  "ownedRootAbsentOrExited": true,
+  "leaseAvailable": true,
+  "sourceAndInventoryUnchanged": true,
+  "finalAcceptanceByCodex": true,
+  "preciseBilateralAgreement": true,
+  "wholeRepoReviewed": false,
+  "nativeOneClickOrderReady": false,
+  "acceptedScope": "C023 truthful job-recorded page labels after final-result lookup; prior exact C021/C022 agreement remains historical, full native purchase not approved"
+}
