@@ -1,0 +1,267 @@
+{
+  "recordedAtUtc": "2026-10-03T17:51:01.881944+00:00",
+  "task": "C028R1 + independent Codex acceptance tests",
+  "candidateFiles": 156,
+  "candidateSha256": "9a82d72ba377812d3f4e2bf55c28ad8ddd26f1ebee48389ad7d116cef3c57ff6",
+  "implementationAuthors": {
+    "pageProgramF1": "actual Claude Opus5.5/xhigh",
+    "reviewHarnessF2": "Codex, owner of independent tests; no Claude permission change or write retry"
+  },
+  "actualClaude": {
+    "status": "returned_for_review",
+    "isError": false,
+    "timedOut": false,
+    "durationSeconds": 828.81,
+    "firstPartyModel": "claude-opus-5-5",
+    "effortRequestedVerified": "xhigh",
+    "fullDeliveryModelGate": true,
+    "permissionDenial": {
+      "tool": "Write",
+      "path": "review/browser-self-check.mjs",
+      "reason": "directory denied by permission settings",
+      "F2UndeliveredByClaude": true,
+      "noAlternativeWriteAttempt": true
+    },
+    "tools": {
+      "Read": 28,
+      "Bash": 12,
+      "Grep": 18,
+      "Edit": 3,
+      "Write": 3
+    },
+    "sourceWrites": [
+      "web/checkout-connector/page-program.js",
+      "test/checkout-c028-extra-text.test.ts",
+      "test/checkout-c028-extra-text.test.ts",
+      "test/checkout-c028-extra-text.test.ts",
+      "docs/claude/C-028-report.md"
+    ],
+    "commands": [
+      {
+        "command": "python tools/delegation/verify_candidate_manifest.py docs/reviews/C-028-input-candidate-manifest.json",
+        "exactTaskApprovedCommand": true,
+        "scopeDeviationOwnStdoutTail": false,
+        "reportedToolError": false,
+        "actualStats": {}
+      },
+      {
+        "command": "node --check web/checkout-connector/page-program.js",
+        "exactTaskApprovedCommand": true,
+        "scopeDeviationOwnStdoutTail": false,
+        "reportedToolError": false,
+        "actualStats": {}
+      },
+      {
+        "command": "node --test review/c028-extra-text.test.ts",
+        "exactTaskApprovedCommand": true,
+        "scopeDeviationOwnStdoutTail": false,
+        "reportedToolError": false,
+        "actualStats": {
+          "tests": 4,
+          "pass": 4,
+          "fail": 0
+        }
+      },
+      {
+        "command": "node --test \"test/*.test.ts\" \"review/*.test.ts\"",
+        "exactTaskApprovedCommand": true,
+        "scopeDeviationOwnStdoutTail": false,
+        "reportedToolError": false,
+        "actualStats": {
+          "tests": 733,
+          "pass": 733,
+          "fail": 0
+        }
+      },
+      {
+        "command": "tail of own linked FAKE test stdout",
+        "exactTaskApprovedCommand": false,
+        "scopeDeviationOwnStdoutTail": true,
+        "reportedToolError": false,
+        "actualStats": {
+          "tests": 733,
+          "pass": 733,
+          "fail": 0
+        }
+      },
+      {
+        "command": "node --test test/checkout-c028-extra-text.test.ts",
+        "exactTaskApprovedCommand": true,
+        "scopeDeviationOwnStdoutTail": false,
+        "reportedToolError": true,
+        "actualStats": {
+          "tests": 18,
+          "pass": 17,
+          "fail": 1
+        }
+      },
+      {
+        "command": "node --test test/checkout-c028-extra-text.test.ts",
+        "exactTaskApprovedCommand": true,
+        "scopeDeviationOwnStdoutTail": false,
+        "reportedToolError": false,
+        "actualStats": {
+          "tests": 18,
+          "pass": 18,
+          "fail": 0
+        }
+      },
+      {
+        "command": "node review/browser-self-check.mjs",
+        "exactTaskApprovedCommand": true,
+        "scopeDeviationOwnStdoutTail": false,
+        "reportedToolError": false,
+        "actualStats": {}
+      },
+      {
+        "command": "node --test \"test/*.test.ts\" \"review/*.test.ts\"",
+        "exactTaskApprovedCommand": true,
+        "scopeDeviationOwnStdoutTail": false,
+        "reportedToolError": false,
+        "actualStats": {
+          "tests": 751,
+          "pass": 751,
+          "fail": 0
+        }
+      },
+      {
+        "command": "node --check web/checkout-connector/page-program.js",
+        "exactTaskApprovedCommand": true,
+        "scopeDeviationOwnStdoutTail": false,
+        "reportedToolError": false,
+        "actualStats": {}
+      },
+      {
+        "command": "python tools/delegation/verify_candidate_manifest.py docs/reviews/C-028-input-candidate-manifest.json",
+        "exactTaskApprovedCommand": true,
+        "scopeDeviationOwnStdoutTail": false,
+        "reportedToolError": true,
+        "actualStats": {}
+      },
+      {
+        "command": "tail of own linked FAKE test stdout",
+        "exactTaskApprovedCommand": false,
+        "scopeDeviationOwnStdoutTail": true,
+        "reportedToolError": false,
+        "actualStats": {
+          "pass": 751,
+          "fail": 0
+        }
+      }
+    ],
+    "partialRequiredReads": [
+      {
+        "path": "docs/requirements.md",
+        "uncoveredLines": 87
+      },
+      {
+        "path": "docs/reviews/C-028-input-candidate-manifest.json",
+        "uncoveredLines": 161
+      },
+      {
+        "path": "review/browser-self-check.mjs",
+        "uncoveredLines": 20
+      },
+      {
+        "path": "review/c026-purchased-groups.test.ts",
+        "uncoveredLines": 97
+      },
+      {
+        "path": "test/checkout-c026-lines.test.ts",
+        "uncoveredLines": 114
+      }
+    ],
+    "scopeDeviation": "two tail reads of own linked FAKE stdout beyond the six exact task commands; disclosed, no private user data/source mutation",
+    "ownStdoutReads": 0,
+    "ownedRootExited": true,
+    "cleanupConfirmed": true,
+    "leaseAvailable": true,
+    "reportedIntermediateNewTestFailure": {
+      "tests": 18,
+      "pass": 17,
+      "fail": 1,
+      "resolution": "new own synthetic nested-anchor fixture corrected, no source or protected test change"
+    }
+  },
+  "independent": {
+    "nodeFull": {
+      "tests": 751,
+      "pass": 751,
+      "fail": 0,
+      "cancelled": 0,
+      "skipped": 0,
+      "todo": 0,
+      "exitCode": 0,
+      "durationMs": 6215.9488
+    },
+    "actualRenderedF1ReprosStopped": 4,
+    "renderedBrowserCases": 16,
+    "browserPass": true,
+    "pageNetwork": {
+      "scope": "owned BrowserContext page requests only; not Chrome-internal/browser-process/OS traffic",
+      "policy": "owned HTTP127.0.0.1 origins only; other page requests aborted; WebSockets closed",
+      "allowedPageRequests": 112,
+      "blockedPageRequests": 0,
+      "webSocketsClosed": 0,
+      "blockedOrigins": []
+    },
+    "cleanup": {
+      "contextsClosed": 15,
+      "demosClosed": 8,
+      "fixtureClosed": true,
+      "browserClosed": true,
+      "errors": [],
+      "contextsOpen": 0,
+      "demosOpen": 0
+    },
+    "directNormalOrderProof": {
+      "name": "one-click-full-fake-journey-two-refusals-one-unpaid-order-and-restart-no-repeat",
+      "passed": true,
+      "durationMs": 580.34,
+      "fakePhase": "ORDER_CONFIRMED_MOCK",
+      "refusals": 2,
+      "finalClicks": 1,
+      "fakeOrders": 1,
+      "bagAdds": 1,
+      "chooses": 3,
+      "lookups": 1,
+      "orderFields": {
+        "status": "unpaid",
+        "productId": "FAKE-PRO-256-BLACK",
+        "model": "iPhone 18 Pro",
+        "capacity": "256GB",
+        "color": "黑色",
+        "quantity": 1,
+        "total": 9999,
+        "store": "FAKE 大连直营店",
+        "fulfillment": "pickup",
+        "date": "2099-01-03",
+        "start": "21:15",
+        "end": "21:30",
+        "fakeId": true
+      },
+      "secondTab": true,
+      "reload": true,
+      "restart": true
+    },
+    "cleanupFaultInjection": {
+      "all16CasesPass": true,
+      "reportPassed": false,
+      "cleanupProved": false,
+      "exitCode": 1,
+      "failureArtifactPreserved": true,
+      "fault": "own test shim called actual browser.close then threw FAKE error, so actual process closed",
+      "noPersonalProfileOrRealResource": true
+    }
+  },
+  "protectedInputBytesUnchanged": 88,
+  "F1Fixed": true,
+  "F2DirectProofAndCleanupCompleted": true,
+  "actualCurrentCandidateCrossReviewOccurred": true,
+  "preciseBilateralAgreement": true,
+  "finalAcceptanceByCodex": true,
+  "nativeQuantityContractEstablished": false,
+  "realOneClickOrderReady": false,
+  "noShutdown": true,
+  "acceptanceScope": "C026/C027/C028 bounded fake-isolated software logic/autonomous proof only; not all repo or live purchase readiness"
+}

@@ -95,9 +95,17 @@ export async function merchantDocument(plan,command=null,internal=null){
   const groupLine=!!(group&&strip&&strip.tagName==='DIV'&&visible(strip)&&within(group,strip)&&norm(strip.textContent)===fullVariant&&knownLegend&&
     textEls.filter(x=>productRe.test(x.t)).every(x=>related(x.e,strip)||related(x.e,copy)));
   const oneLine=groups.length===0?lines(productRe).length===1:groupLine;
+  // C028-R1 (Claude): the line rules above see only visible h1-h3/p/span/div text of at most 180 characters. Outside the observed
+  // bag (which keeps its own structural purchased-line count), every iPhone mention in main's whole text - hidden, bare text,
+  // any element type or long text - must be an accepted anchor's own mention: the recognized strip/copy pair, or the single
+  // generic title line. Nested anchors count once. An ancestor holding the known copy lends no identity to further product
+  // text. Only a count is derived; no page text is returned or kept.
+  const mentions=e=>(norm(e?.textContent).match(/iphone/gi)??[]).length;
+  const anchors=[...new Set(groups.length>0?[strip,copy]:lines(productRe).map(x=>x.e))].filter(Boolean);
+  const soleMentions=mentions(main)<=anchors.filter(e=>!anchors.some(o=>o!==e&&within(o,e))).reduce((n,e)=>n+mentions(e),0);
   // C027 (Codex quota completion): the recognized strip/copy supply exact titles. Their real-DOM ancestors also contain
   // native option labels; that aggregate is not another title. Generic pages retain the strict textual proof.
-  const exactProduct=bag?!!bag.title&&norm(bag.title.textContent)===fullVariant&&!bag.stray:!bagScoped&&oneLine&&
+  const exactProduct=bag?!!bag.title&&norm(bag.title.textContent)===fullVariant&&!bag.stray:!bagScoped&&oneLine&&soleMentions&&
     (groups.length>0?groupLine:productLines.some(t=>t===fullVariant)&&productLines.every(t=>t===fullVariant));
   // C022 (Codex quota takeover): wrapper text includes every option, even hidden native clones (observed 数量121).
   // Remove descendant select text only; literal quantity outside those controls still conflicts with selected values.

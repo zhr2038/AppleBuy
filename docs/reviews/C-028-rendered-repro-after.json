@@ -1,0 +1,38 @@
+{
+  "scope": "FAKE isolated loopback actual-DOM repro",
+  "checks": [
+    {
+      "name": "bare-header",
+      "itemVerified": false,
+      "delivered": false,
+      "touched": false,
+      "pickupChecked": false,
+      "expectedUnverifiedUntouched": true
+    },
+    {
+      "name": "strong-header",
+      "itemVerified": false,
+      "delivered": false,
+      "touched": false,
+      "pickupChecked": false,
+      "expectedUnverifiedUntouched": true
+    },
+    {
+      "name": "li-main",
+      "itemVerified": false,
+      "delivered": false,
+      "touched": false,
+      "pickupChecked": false,
+      "expectedUnverifiedUntouched": true
+    },
+    {
+      "name": "long-main",
+      "itemVerified": false,
+      "delivered": false,
+      "touched": false,
+      "pickupChecked": false,
+      "expectedUnverifiedUntouched": true
+    }
+  ],
+  "realOrderCreated": false
+}

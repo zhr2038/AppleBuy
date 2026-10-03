@@ -1,0 +1,368 @@
+{
+  "verdict": "AGREE with unexecuted high-priority F1; Codex acceptance withheld",
+  "finalAcceptanceByCodex": false,
+  "preciseBilateralAgreement": false,
+  "F1IndependentReproPending": true,
+  "recordedAtUtc": "2026-10-03T17:07:55.031430+00:00",
+  "task": "C-027-CROSS-REVIEW",
+  "candidateFiles": 154,
+  "candidateSha256": "086fda31b3ff2150c6ee89f196d5eb11c279d2ddf64fe4592645cf06b6ec0ff4",
+  "actualEvidenceVerified": true,
+  "checks": {
+    "terminalSuccess": true,
+    "exactModelAndEffort": true,
+    "onlyDisclosedOwnFakeResultDenial": true,
+    "onlyReadonlyTools": true,
+    "onlyApprovedCommands": true,
+    "noPrivateRead": true,
+    "all28RequiredFilesActuallyRead": true,
+    "manifestActuallyVerified": true,
+    "actual729TestPass": true,
+    "ownedCleanupConfirmed": true,
+    "sourceAndInventoryUnchanged": true,
+    "approvedBrowserCommandActuallyRan": true
+  },
+  "missingFullReads": [],
+  "tools": {
+    "Read": 33,
+    "Bash": 3,
+    "Grep": 2,
+    "Glob": 1
+  },
+  "reads": [
+    {
+      "path": "docs/tasks/C-027-CROSS-REVIEW.md",
+      "offset": 1,
+      "limit": null,
+      "returnedLineCount": 20,
+      "completeRequestedRange": true,
+      "error": false
+    },
+    {
+      "path": "docs/reviews/C-026-quota-takeover.json",
+      "offset": 1,
+      "limit": null,
+      "returnedLineCount": 54,
+      "completeRequestedRange": true,
+      "error": false
+    },
+    {
+      "path": "docs/reviews/C-026-Codex-completion.md",
+      "offset": 1,
+      "limit": null,
+      "returnedLineCount": 21,
+      "completeRequestedRange": true,
+      "error": false
+    },
+    {
+      "path": "docs/reviews/C-026-actual-verification.json",
+      "offset": 1,
+      "limit": null,
+      "returnedLineCount": 76,
+      "completeRequestedRange": true,
+      "error": false
+    },
+    {
+      "path": "docs/reviews/C-027-autonomous-browser-check.md",
+      "offset": 1,
+      "limit": null,
+      "returnedLineCount": 23,
+      "completeRequestedRange": true,
+      "error": false
+    },
+    {
+      "path": "docs/reviews/C-027-before-verification.json",
+      "offset": 1,
+      "limit": null,
+      "returnedLineCount": 31,
+      "completeRequestedRange": true,
+      "error": false
+    },
+    {
+      "path": "web/checkout-connector/page-program.js",
+      "offset": 1,
+      "limit": 140,
+      "returnedLineCount": 140,
+      "completeRequestedRange": true,
+      "error": false
+    },
+    {
+      "path": "test/checkout-c026-lines.test.ts",
+      "offset": 1,
+      "limit": null,
+      "returnedLineCount": 115,
+      "completeRequestedRange": true,
+      "error": false
+    },
+    {
+      "path": "review/c027-renderer-aggregate.test.ts",
+      "offset": 1,
+      "limit": null,
+      "returnedLineCount": 96,
+      "completeRequestedRange": true,
+      "error": false
+    },
+    {
+      "path": "docs/reviews/C-027-browser-verification.json",
+      "offset": 1,
+      "limit": null,
+      "returnedLineCount": 129,
+      "completeRequestedRange": true,
+      "error": false
+    },
+    {
+      "path": "docs/reviews/C-027-actual-verification.json",
+      "offset": 1,
+      "limit": null,
+      "returnedLineCount": 66,
+      "completeRequestedRange": true,
+      "error": false
+    },
+    {
+      "path": "review/browser-self-check.mjs",
+      "offset": 1,
+      "limit": null,
+      "returnedLineCount": 109,
+      "completeRequestedRange": true,
+      "error": false
+    },
+    {
+      "path": "review/fixtures/current-public-checkout.html",
+      "offset": 1,
+      "limit": null,
+      "returnedLineCount": 15,
+      "completeRequestedRange": true,
+      "error": false
+    },
+    {
+      "path": "web/checkout-connector/page-program.js",
+      "offset": 140,
+      "limit": null,
+      "returnedLineCount": 216,
+      "completeRequestedRange": true,
+      "error": false
+    },
+    {
+      "path": "src/app/dom-bridge.ts",
+      "offset": 1,
+      "limit": null,
+      "returnedLineCount": 141,
+      "completeRequestedRange": true,
+      "error": false
+    },
+    {
+      "path": "web/desktop/motor.js",
+      "offset": 1,
+      "limit": null,
+      "returnedLineCount": 70,
+      "completeRequestedRange": true,
+      "error": false
+    },
+    {
+      "path": "web/desktop/fixture.js",
+      "offset": 1,
+      "limit": null,
+      "returnedLineCount": 64,
+      "completeRequestedRange": true,
+      "error": false
+    },
+    {
+      "path": "web/desktop/app.js",
+      "offset": 1,
+      "limit": null,
+      "returnedLineCount": 36,
+      "completeRequestedRange": true,
+      "error": false
+    },
+    {
+      "path": "web/desktop/index.html",
+      "offset": 1,
+      "limit": null,
+      "returnedLineCount": 8,
+      "completeRequestedRange": true,
+      "error": false
+    },
+    {
+      "path": "web/checkout-connector/chrome-port.js",
+      "offset": 1,
+      "limit": null,
+      "returnedLineCount": 43,
+      "completeRequestedRange": true,
+      "error": false
+    },
+    {
+      "path": "docs/reviews/C-027-candidate-manifest.json",
+      "offset": 1,
+      "limit": null,
+      "returnedLineCount": 161,
+      "completeRequestedRange": true,
+      "error": false
+    },
+    {
+      "path": "docs/reviews/C-027-input-candidate-manifest.json",
+      "offset": 1,
+      "limit": null,
+      "returnedLineCount": 161,
+      "completeRequestedRange": true,
+      "error": false
+    },
+    {
+      "path": "docs/reviews/C-026-candidate-manifest.json",
+      "offset": 1,
+      "limit": null,
+      "returnedLineCount": 158,
+      "completeRequestedRange": true,
+      "error": false
+    },
+    {
+      "path": "web/checkout-connector/job.js",
+      "offset": 1,
+      "limit": null,
+      "returnedLineCount": 257,
+      "completeRequestedRange": true,
+      "error": false
+    },
+    {
+      "path": "review/c026-purchased-groups.test.ts",
+      "offset": 1,
+      "limit": null,
+      "returnedLineCount": 120,
+      "completeRequestedRange": true,
+      "error": false
+    },
+    {
+      "path": "docs/tasks/C-026-SINGLE-PURCHASED-LINE.md",
+      "offset": 1,
+      "limit": null,
+      "returnedLineCount": 29,
+      "completeRequestedRange": true,
+      "error": false
+    },
+    {
+      "path": "docs/reviews/C-025-native-checkout-observation.json",
+      "offset": 1,
+      "limit": null,
+      "returnedLineCount": 423,
+      "completeRequestedRange": true,
+      "error": false
+    },
+    {
+      "path": "docs/requirements.md",
+      "offset": 1,
+      "limit": null,
+      "returnedLineCount": 88,
+      "completeRequestedRange": true,
+      "error": false
+    },
+    {
+      "path": "codex_claude_pickup_project_prompt.md",
+      "offset": 1,
+      "limit": null,
+      "returnedLineCount": 181,
+      "completeRequestedRange": true,
+      "error": false
+    },
+    {
+      "path": "web/checkout-connector/page-program.js",
+      "offset": 40,
+      "limit": 90,
+      "returnedLineCount": 90,
+      "completeRequestedRange": true,
+      "error": false
+    },
+    {
+      "path": "review/browser-self-check.mjs",
+      "offset": 1,
+      "limit": null,
+      "returnedLineCount": 109,
+      "completeRequestedRange": true,
+      "error": false
+    }
+  ],
+  "commands": [
+    {
+      "command": "python tools/delegation/verify_candidate_manifest.py docs/reviews/C-027-candidate-manifest.json",
+      "error": false,
+      "actualStats": {},
+      "manifestReceipts": [
+        {
+          "ok": true,
+          "files": 154,
+          "sha256": "086fda31b3ff2150c6ee89f196d5eb11c279d2ddf64fe4592645cf06b6ec0ff4",
+          "mismatches": []
+        }
+      ],
+      "persistedFullOutputInspected": false,
+      "actualBrowserReceipt": null
+    },
+    {
+      "command": "node --test \"test/*.test.ts\" \"review/*.test.ts\"",
+      "error": false,
+      "actualStats": {
+        "tests": 729,
+        "pass": 729,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "manifestReceipts": [],
+      "persistedFullOutputInspected": true,
+      "actualBrowserReceipt": null
+    },
+    {
+      "command": "node review/browser-self-check.mjs",
+      "error": false,
+      "actualStats": {},
+      "manifestReceipts": [],
+      "persistedFullOutputInspected": true,
+      "actualBrowserReceipt": {
+        "passed": true,
+        "cases": 10,
+        "passedCases": 10,
+        "realOrderCreated": false
+      }
+    }
+  ],
+  "structuredModelUsage": {
+    "claude-opus-5-5": {
+      "inputTokens": 287251,
+      "outputTokens": 2323447,
+      "thinkingTokens": 1312756,
+      "cacheReadInputTokens": 105957712,
+      "cacheCreationInputTokens": 7411164,
+      "webSearchRequests": 0,
+      "costUSD": 127.88160439999993,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 128000,
+      "canonicalModel": "claude-opus-5-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "usageScope": "reported resumed-session counters; not incremental task billing",
+  "status": "returned_for_review",
+  "isError": false,
+  "subtype": "success",
+  "timedOut": false,
+  "permissionDenials": [
+    {
+      "tool": "Read",
+      "scope": "own newly generated FAKE test result.json",
+      "reason": "directory denied by permission settings; no workaround attempted"
+    }
+  ],
+  "cliLimits": {
+    "turns": 64,
+    "wallSeconds": 1800,
+    "usd": 10.0
+  },
+  "reportedTurns": 41,
+  "durationSeconds": 876.42,
+  "ownedRootAbsentOrExited": true,
+  "leaseAvailable": true,
+  "implementationExecuted": false,
+  "nativeCaptureExecuted": false,
+  "quantityContractEstablished": false,
+  "nativeOneClickOrderReady": false
+}

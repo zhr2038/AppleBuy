@@ -1,3 +1,9 @@
+**C028软件限定里程碑已通过双方实际验收：156文件／751项＋16自主浏览器场景**。Codex独立复现4个错误商品通过，Claude实际修复后4个真实渲染repro均untouched；Codex完成自己的独立验收工具，再由原会话Opus5.5/xhigh真正复审AGREE、20必读全读／3命令／751+16／零拒绝／进程互斥已核验。SHA `9a82d72ba377812d3f4e2bf55c28ad8ddd26f1ebee48389ad7d116cef3c57ff6`。[限定验收](reviews/C-028-bounded-agreement.md) · [实际复审](reviews/C-028-cross-review-verification.json)。
+
+**主链可以自主验证**：`node review/browser-self-check.mjs`，无须本人逐步配合。程序在全新隔离Chrome／本机FAKE控件实际加购1次→初始前三日各末档／前两次明确拒绝→第三日接受→虚构资料／支付宝→1张未付款模拟订单→字段和独立查单直接核对；刷新／第二标签页／重启不重复。未知结果／错单／超价／redraw仍正确停或只读查单。实际页网络与关闭计数、cleanup失败也有验证。
+
+**官网自动下单仍未通过**：这是离线／隔离软件验收，非已安装扩展API或Apple实单证据。官网当前量契约、真实拒绝列表／Duo／real speed仍缺，当前不推断qty；严格文本计数对laterpage可能safe stop、非iPhone extras／变形文字等限制保留。旧唯一Pro授权已用，原task永久readonly，无新官网时段／订单／付款。个人桌面工具本轮URL权限校验stop后无更多个人输入。用户要求主链优先、不做外观、不关机。[下一准确证据点](tasks/C-029-checkout-contract-evidence.md)。main同步身份以真实发布回执为准；以下历史不代表当前。
+
 **C027：已完成无需本人配合的浏览器自动验收，候选154文件／729项＋10浏览器场景，待实际Claude复审**。本轮自主用全新headless Chrome在本机虚构页面完成一次加购、前两天末档拒绝→第三天末档接受、资料→模拟支付宝→1张未付款模拟订单→独立查单；刷新／第二标签页／重启不重复。单次页面模拟主链334ms，10场景4.6秒，均不是官网速度。还真实复现并修正了普通Node假DOM没有暴露的取货选项祖先文字误判。87输入测试／review／fixture文件字节未改。[自动验收说明](reviews/C-027-autonomous-browser-check.md) · [实际结果](reviews/C-027-browser-verification.json)。
 
 本机执行：`node review/browser-self-check.mjs`，自动创建隔离的虚构任务与测试报告，结束后关闭所属浏览器／服务。它复用现有模拟执行器；当前官方解析器用真实HTML渲染＋明确FAKE位置输入验证，未安装或授予真实扩展权限，不是官网自动订单／实际Chrome API证据。SHA `086fda31b3ff2150c6ee89f196d5eb11c279d2ddf64fe4592645cf06b6ec0ff4`。[准确复审任务](tasks/C-027-CROSS-REVIEW.md) 覆盖C026+C027，两者仍待原Opus5.5/xhigh额度恢复后实际同意。最后接受main仍C024149；新的待审检查点发布以回执为准。

@@ -1,0 +1,233 @@
+{
+  "scope": "FAKE isolated-headless-browser-only",
+  "playwrightVersion": "1.62.1",
+  "personalProfileUsed": false,
+  "actualApplePageVisited": false,
+  "actualAppleAccountUsed": false,
+  "actualExtensionInstalledOrGranted": false,
+  "officialQuantityContractProven": false,
+  "realOrderCreated": false,
+  "checks": [
+    {
+      "name": "current-public-shape-quantity-absent-stops-with-zero-pickup",
+      "passed": true,
+      "durationMs": 142.53,
+      "quantity": null,
+      "actions": 0,
+      "fakeLocation": true
+    },
+    {
+      "name": "rendered-accessible-title-pair-with-synthetic-explicit1-selects-pickup-once",
+      "passed": true,
+      "durationMs": 126.17,
+      "quantity": 1,
+      "quantityIsSynthetic": true,
+      "fakeLocation": true
+    },
+    {
+      "name": "rendered-two-product-groups-cannot-pass-one-unit",
+      "passed": true,
+      "durationMs": 117.36,
+      "actions": 0,
+      "fakeLocation": true
+    },
+    {
+      "name": "rendered-quantity2-and-fake-login-gates-stop",
+      "passed": true,
+      "durationMs": 125.89,
+      "actions": 0,
+      "actualCredentialsUsed": false,
+      "fakeLocation": true
+    },
+    {
+      "name": "one-click-full-fake-journey-two-refusals-one-unpaid-order-and-restart-no-repeat",
+      "passed": true,
+      "durationMs": 580.34,
+      "fakePhase": "ORDER_CONFIRMED_MOCK",
+      "refusals": 2,
+      "finalClicks": 1,
+      "fakeOrders": 1,
+      "bagAdds": 1,
+      "chooses": 3,
+      "lookups": 1,
+      "orderFields": {
+        "status": "unpaid",
+        "productId": "FAKE-PRO-256-BLACK",
+        "model": "iPhone 18 Pro",
+        "capacity": "256GB",
+        "color": "黑色",
+        "quantity": 1,
+        "total": 9999,
+        "store": "FAKE 大连直营店",
+        "fulfillment": "pickup",
+        "date": "2099-01-03",
+        "start": "21:15",
+        "end": "21:30",
+        "fakeId": true
+      },
+      "secondTab": true,
+      "reload": true,
+      "restart": true
+    },
+    {
+      "name": "lost-final-reply-reconciles-without-second-submit",
+      "passed": true,
+      "durationMs": 1641.15,
+      "fakePhase": "ORDER_CONFIRMED_MOCK",
+      "refusals": 2,
+      "finalClicks": 1,
+      "fakeOrders": 1,
+      "bagAdds": 1,
+      "chooses": 3,
+      "lookups": 1,
+      "orderFields": {
+        "status": "unpaid",
+        "productId": "FAKE-PRO-256-BLACK",
+        "model": "iPhone 18 Pro",
+        "capacity": "256GB",
+        "color": "黑色",
+        "quantity": 1,
+        "total": 9999,
+        "store": "FAKE 大连直营店",
+        "fulfillment": "pickup",
+        "date": "2099-01-03",
+        "start": "21:15",
+        "end": "21:30",
+        "fakeId": true
+      },
+      "secondTab": false,
+      "reload": false,
+      "restart": false
+    },
+    {
+      "name": "unknown-final-result-stops-without-resubmission",
+      "passed": true,
+      "durationMs": 500.84,
+      "fakePhase": "MANUAL_VERIFICATION",
+      "refusals": 2,
+      "finalClicks": 1,
+      "fakeOrders": 1,
+      "bagAdds": 1,
+      "chooses": 3,
+      "lookups": 2,
+      "orderFields": null,
+      "secondTab": false,
+      "reload": true,
+      "restart": true
+    },
+    {
+      "name": "wrong-order-colour-cannot-be-confirmed",
+      "passed": true,
+      "durationMs": 456.97,
+      "fakePhase": "MANUAL_VERIFICATION",
+      "refusals": 2,
+      "finalClicks": 1,
+      "fakeOrders": 1,
+      "bagAdds": 1,
+      "chooses": 3,
+      "lookups": 2,
+      "orderFields": null,
+      "secondTab": false,
+      "reload": false,
+      "restart": false
+    },
+    {
+      "name": "over-cap-stops-before-add-bag",
+      "passed": true,
+      "durationMs": 236.02,
+      "fakePhase": "INIT",
+      "refusals": 0,
+      "finalClicks": 0,
+      "fakeOrders": 0,
+      "bagAdds": 0,
+      "chooses": 0,
+      "lookups": 0,
+      "orderFields": null,
+      "secondTab": false,
+      "reload": false,
+      "restart": false
+    },
+    {
+      "name": "redrawn-slot-control-stops-before-stale-continue",
+      "passed": true,
+      "durationMs": 348.99,
+      "fakePhase": "MANUAL_VERIFICATION",
+      "refusals": 0,
+      "finalClicks": 0,
+      "fakeOrders": 0,
+      "bagAdds": 1,
+      "chooses": 0,
+      "lookups": 0,
+      "orderFields": null,
+      "secondTab": false,
+      "reload": false,
+      "restart": false
+    },
+    {
+      "name": "fresh-valid-explicit1-authentication-gate-is-independent-of-quantity-and-old-command",
+      "passed": true,
+      "durationMs": 122.86,
+      "fakeEmptyAuthenticationField": true,
+      "actualCredentialsUsed": false
+    },
+    {
+      "name": "rendered-extra-text-is-unverified-untouched-bare-header",
+      "passed": true,
+      "durationMs": 134.27,
+      "actions": 0,
+      "fakeLocation": true
+    },
+    {
+      "name": "rendered-extra-text-is-unverified-untouched-strong-header",
+      "passed": true,
+      "durationMs": 133.36,
+      "actions": 0,
+      "fakeLocation": true
+    },
+    {
+      "name": "rendered-extra-text-is-unverified-untouched-li-main",
+      "passed": true,
+      "durationMs": 130.37,
+      "actions": 0,
+      "fakeLocation": true
+    },
+    {
+      "name": "rendered-extra-text-is-unverified-untouched-long-main",
+      "passed": true,
+      "durationMs": 128.33,
+      "actions": 0,
+      "fakeLocation": true
+    },
+    {
+      "name": "page-network-policy-counters-are-observed",
+      "passed": true,
+      "durationMs": 0.07,
+      "allowedPageRequests": 112,
+      "blockedPageRequests": 0,
+      "webSocketsClosed": 0
+    }
+  ],
+  "browserVersion": "154.0.8037.93",
+  "passed": true,
+  "durationMs": 5198.53,
+  "blockedExternalOriginCount": 0,
+  "network": {
+    "scope": "owned BrowserContext page requests only; not Chrome-internal/browser-process/OS traffic",
+    "policy": "owned HTTP127.0.0.1 origins only; other page requests aborted; WebSockets closed",
+    "allowedPageRequests": 112,
+    "blockedPageRequests": 0,
+    "webSocketsClosed": 0,
+    "blockedOrigins": []
+  },
+  "cleanup": {
+    "contextsClosed": 15,
+    "demosClosed": 8,
+    "fixtureClosed": true,
+    "browserClosed": true,
+    "errors": [],
+    "contextsOpen": 0,
+    "demosOpen": 0
+  },
+  "allOwnedBrowsersContextsServersClosed": true,
+  "candidateMainSourceSha256": "46d75c1e3de3efcc7dae90c0ccfff652bc13d73c4c59d7ba77a550355e723a81"
+}

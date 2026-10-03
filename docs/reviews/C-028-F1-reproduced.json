@@ -1,0 +1,44 @@
+{
+  "scope": "FAKE isolated loopback actual-DOM repro",
+  "checks": [
+    {
+      "name": "bare-header",
+      "itemVerified": true,
+      "delivered": true,
+      "touched": null,
+      "pickupChecked": true,
+      "expectedUnverifiedUntouched": true
+    },
+    {
+      "name": "strong-header",
+      "itemVerified": true,
+      "delivered": true,
+      "touched": null,
+      "pickupChecked": true,
+      "expectedUnverifiedUntouched": true
+    },
+    {
+      "name": "li-main",
+      "itemVerified": true,
+      "delivered": true,
+      "touched": null,
+      "pickupChecked": true,
+      "expectedUnverifiedUntouched": true
+    },
+    {
+      "name": "long-main",
+      "itemVerified": true,
+      "delivered": true,
+      "touched": null,
+      "pickupChecked": true,
+      "expectedUnverifiedUntouched": true
+    }
+  ],
+  "realOrderCreated": false,
+  "recordedAtUtc": "2026-10-03T17:07:56.178076+00:00",
+  "candidateFiles": 154,
+  "candidateSha256": "086fda31b3ff2150c6ee89f196d5eb11c279d2ddf64fe4592645cf06b6ec0ff4",
+  "F1ActuallyReproducedByCodex": true,
+  "codexFinalAcceptanceWithheld": true,
+  "sourceChangedDuringRepro": false
+}
