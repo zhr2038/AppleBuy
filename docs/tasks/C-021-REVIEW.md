@@ -5,7 +5,7 @@ You are the independent second reviewer of Codex's C021 implementation after you
 Read completely before issuing a verdict:
 
 - this task and `docs/requirements.md`;
-- `docs/reviews/C-021-auth-handoff-findings.md`, `C-021-quota-verification.json`, `C-021-Codex-takeover.md`, `C-021-Codex-takeover-verification.json`, `C-021-current-auth-observation.json`, `C-021-candidate-manifest.json`;
+- `docs/reviews/C-021-auth-handoff-findings.md`, `C-021-quota-verification.json`, `C-021-Codex-takeover.md`, `C-021-Codex-takeover-verification.json`, `C-021-current-auth-observation.json`, `C-021-latest-native-handoff.json`, `C-021-candidate-manifest.json`;
 - all four changed business files `web/checkout-connector/chrome-port.js`, `job.js`, `control.js`, `control.html`, plus unchanged `page-program.js` for the action/recognition boundary;
 - unchanged12-case `review/c021-auth-handoff.test.ts`, new54-case `test/checkout-c021-auth-handoff.test.ts`, and the full amended `test/checkout-c017-discovery.test.ts`.
 
@@ -27,3 +27,5 @@ Read-only profile48 CLI turns/1800 seconds/USD10 CLI cap. No writes, network, br
 Return an actual English report with **AGREE** or **DISAGREE** for this precise bounded candidate, exact SHA/file count, actual tests and counts, exact full/partial reading scope, findings with file/line/repro/acceptance, and any denied/unrun/cap/provider limitations. Recommend fixes without editing. Agreement is only for the described tested C021 functionality; it cannot approve uninspected legacy collectors or assert full project/live readiness. Codex will independently reproduce findings and perform final acceptance. Source drift requires a new exact manifest/task rather than approving old bytes.
 
 Native feedback addendum: human reports owner-lock rejection, then after pause/close/reopen the old task purchase-condition/tab binding differs. Both attempts stopped before any merchant read or click. The latest control refines only whitelist-safe old/current model and tab diagnostics, separates condition versus tab mismatch and never switches model or silently rebinds. Review its three new FAKE cases and private-string non-disclosure. Older616 candidate/publication are historical bytes; do not approve latest source with that olderSHA.
+
+Latest observation: the new diagnostic confirms both bindings target Pro; only the tab differs. Fresh Chrome inventory confirms the old tab is closed. On the new tab the driver connection works again and authorized routine login reaches receipt-method choices. Current pending action/bundle/native grants remain unverified; human explicit readonly rebind is pending and its permanent readonly consequence is explained. The previous debugger-connection limitation is historical; a fresh supported screenshot call timed out and no workaround/retry occurred. Neither observation approves a new purchase or makes this a native one-click success.

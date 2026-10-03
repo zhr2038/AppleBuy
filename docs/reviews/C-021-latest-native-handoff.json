@@ -1,0 +1,34 @@
+{
+  "recordedAtUtc": "2026-10-03T10:12:53.677067+00:00",
+  "candidateManifest": "docs/reviews/C-021-candidate-manifest.json",
+  "candidateSha256": "2eb2758eed247a88430b413d309ddd8809a654ee13f4fe4caaf46ea780755208",
+  "sourceIndependentTests": 619,
+  "humanNativeResults": [
+    "owner lock prevented read/click",
+    "after pause/close/reopen: binding differs",
+    "latest diagnostic: original and current models are both Pro; tab binding differs"
+  ],
+  "originalTaskModel": "iPhone 18 Pro",
+  "originalTaskTabClosedVerifiedByFreshChromeInventory": true,
+  "currentNewOfficialTab": {
+    "origin": "https://secure6.www.apple.com.cn",
+    "initialPath": "/shop/signIn",
+    "afterAuthorizedDriverLoginPath": "/shop/checkout",
+    "headings": [
+      "你希望如何收到订单商品？",
+      "为我送货",
+      "我要取货"
+    ]
+  },
+  "routineLoginDriverSucceeded": true,
+  "nativeHostPermissionVerified": false,
+  "nativePendingKindVerified": false,
+  "nativeBundleHashIdentityVerified": false,
+  "nativeReconciliationComplete": false,
+  "humanExplicitReadonlyRebindPending": true,
+  "permanentRebindReadonlyRestrictionExplained": true,
+  "orderOrSlotOrPaymentByCodex": false,
+  "sourceAgreementPending": true,
+  "screenshotSaved": false,
+  "screenshotQualification": "Supported Page.captureScreenshot timed out after5s; no alternate mechanism or retry was used. Available proof is fresh DOM heading/path after authorized routine login."
+}
