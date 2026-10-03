@@ -1,0 +1,41 @@
+{
+  "scope": "Actual C018 accepted source publication; subsequent receipt-only commits do not change133-file source identity",
+  "sourceCommit": "6c0e8207d61fd04dda0ef602577a567df3c07999",
+  "sourcePublicationVerifiedAtUtc": "2026-10-03T05:04:44.977069+00:00",
+  "sourceCommitPushed": true,
+  "publicRefsVerifiedAtSourcePublication": {
+    "refs/heads/codex/c015-quota-checkpoint-20261003": "6c0e8207d61fd04dda0ef602577a567df3c07999",
+    "refs/heads/main": "6c0e8207d61fd04dda0ef602577a567df3c07999"
+  },
+  "candidateFiles": 133,
+  "candidateSha256": "4ead4c58aa4e9551db8b1c631fedec39a3a53e98ca3ee99f33d9e5fcff2e8fa5",
+  "allSourceGitHashesMatch": true,
+  "publicFiles": [
+    "docs/checkout-chrome-runbook.md",
+    "docs/reviews/C-014-control-page-observed.md",
+    "docs/status.md",
+    "docs/tasks/C-014-CHROME-VERIFY.md",
+    "web/checkout-connector/chrome-port.js",
+    "web/checkout-connector/job.js",
+    "web/checkout-connector/page-program.js",
+    "docs/claude/C-018-report.md",
+    "docs/reviews/C-017-publication-verification.json",
+    "docs/reviews/C-018-Claude-cross-review.md",
+    "docs/reviews/C-018-actual-verification.json",
+    "docs/reviews/C-018-bounded-agreement.md",
+    "docs/reviews/C-018-candidate-manifest.json",
+    "docs/reviews/C-018-cross-review-verification.json",
+    "docs/reviews/C-018-evidence-order-findings.md",
+    "docs/reviews/C-018-generation-boundary.json",
+    "docs/reviews/C-018-independent-review.md",
+    "docs/reviews/C-018-input-candidate-manifest.json",
+    "docs/reviews/C-018-installable-bundle.json",
+    "docs/tasks/C-018-CROSS-REVIEW.md",
+    "docs/tasks/C-018-EVIDENCE-ORDER.md",
+    "review/c018-evidence-order.test.ts",
+    "test/checkout-c018-evidence-order.test.ts"
+  ],
+  "privateFilesPublished": false,
+  "nativePublicValidationPassed": false,
+  "realPurchasingReady": false
+}
