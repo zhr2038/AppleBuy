@@ -1,0 +1,15 @@
+# C-016 — independently reproduced details input-event race
+
+The actual C015 cross-review disclosed an unchanged synchronous `fillDetails` write-then-click pattern outside its hash-await repair. Codex now independently tested that path with synthetic native input events. This is functional purchase/private-receiver work, not appearance work or a quota probe.
+
+Accepted C015 baseline:127 files SHA `f4036ec0385cecbd07ab4fe9887f6926b316115bb8c50c4d8cd57481692d78e6`. Every byte is unchanged. Codex adds only a protected reviewer file, making the input128 files SHA `ea7de818c4c3be1b9023c3b0bd75f609eaf56b06b431a351a396ff259b9f94cc`. Earlier bounded C015 agreement remains historical and does not approve the new criteria or future C016 code.
+
+Initial private probe: **10 tests,2 pass,8 fail**,90.487ms. Four first-input handlers change price to99999, quantity to2, store outside plan or URL to the official order-login route; each still sends one Continue. Separate handlers disable or relabel/type-change the next receiver to a password field; it still receives its later synthetic value. A disconnected next receiver is also written. Actual ChromePort with a FAKE API treats the price-drift operation as successful delivery instead of touched unknown.
+
+Severity: changed private-data receiver is **P1**; invalid details continuation is **P2**. No real secret, authentication, request, browser, order or hold occurred. Everything, including values, element contracts, event effects and clicks, is FAKE. This proves the production program's behavior under its current recognized contract, not that a real Apple page has these exact shapes or effects.
+
+Positive controls pass: stable recognized fields each receive one value and Continue runs once, values never enter observations and a delivered id cannot repeat; an initially unrecognised second binding stops before either write. All four injected purchase changes and all three receiver changes actually run. The protected public copy changes only relative import paths from the private probe.
+
+Acceptance: validate current allowed receivers at each transmission boundary, not only before the first value. A disabled/disconnected/hidden/renamed/type-changed receiver, authentication/route/document change, changed purchase/slot evidence or changed continuation must stop any subsequent unsafe write or Continue. Already written input means touched/unknown, never safe resend. Retain untouched truth before the first write and known delivered-id protection. Stable one-phone details flow, including already-filled fields with no supplied data, must continue once; a blanket manual-only refusal is not a repair. No values in observation, history, errors or reports. Claude chooses the technical method and bounded event handling; later network/server validation remains an explicit unknown.
+
+Complete independent input regression: **430 tests,422 pass,8 fail**,5955.8325ms. All420 prior cases and both new positive controls pass; only the eight new C016 cases fail.

@@ -1,6 +1,6 @@
 # C-014 — installed Chrome connector verification (not yet dispatched)
 
-LATEST EXACT BASELINE (2026-10-03 09:44 Asia/Shanghai): C015 repair now has actual bilateral bounded offline agreement:127 files SHA `f4036ec0385cecbd07ab4fe9887f6926b316115bb8c50c4d8cd57481692d78e6`, Codex420/420 and actualClaude420/420. Read `docs/reviews/C-015-bounded-agreement.md`, `C-015-cross-review-verification.json`, `C-015-candidate-manifest.json`, `C-015-installable-bundle.json` and `C-015-current-public-observation.json`. The prior quota-partial126/409-of413 identity below is historical only. Current source may be loaded for the already-consented installed read-only verification; loading/control-page confirmation is still absent and the current host needs separate approval. This task has NOT been dispatched. No live resource mutation follows.
+LATEST EXACT BASELINE (2026-10-03, after actual C016 cross-review): C016 details-event repair has actual bilateral bounded offline agreement:129 files SHA `69970b51edab3be858d312a77c2e8b42e258c9dc56a79f96a182e7003fd33708`, Codex440/440 and actualClaude440/440. Read `docs/reviews/C-016-bounded-agreement.md`, `C-016-cross-review-verification.json`, `C-016-candidate-manifest.json`, `C-016-installable-bundle.json`; dated public observations remain in `C-015-current-public-observation.json`. Historical C015127/420 and earlier quota-partial126/409-of413 identities cannot approve this current bundle. Current source may be loaded for the already-consented installed read-only verification; loading/control-page confirmation is still absent and the current host needs separate approval. This task has NOT been dispatched. No live resource mutation follows.
 
 Priority is the user's actual one-phone purchase execution, native terminal selection and conservative re-selection, not appearance work. This task is currently blocked on manual Chrome installation and action-time host-access confirmation. It has NOT been dispatched and there is no actual delivery to claim.
 
@@ -8,7 +8,7 @@ The user has now explicitly authorized installation and read-only verification o
 
 Baseline: `docs/requirements.md`, same `E:\Apple Store`, exact `claude-opus-5-5` / `xhigh`, English collaboration and concise Chinese end-user text. Codex owns requirements, independent verification and acceptance; Claude chooses the technical verification approach and any implementation needed in a later bounded dispatch. Do not dictate or silently substitute another stack or a hidden Apple API.
 
-Use the current C015 documents listed above and `docs/checkout-chrome-runbook.md`. Earlier C013125-file/407-test and nine-file archive are preserved historical acceptance, not the current installed target. Whole-repository and real-purchasing approval are NOT implied.
+Use the current C016 documents listed above and `docs/checkout-chrome-runbook.md`. Earlier C015127/420 and C013125/407 nine-file archives are preserved historical acceptance, not the current installed target. Whole-repository and real-purchasing approval are NOT implied.
 
 Prerequisites before an actual run:
 
@@ -19,6 +19,7 @@ Prerequisites before an actual run:
 Acceptance for the next small runnable milestone:
 
 - Actual extension API execution, observed supported frame/document identity and ISOLATED-world result handling, distinguished from the prior FAKE Chrome API shim.
+- Native details-field label/type recognition is still unknown; observe only if a legitimately available current page is within this explicit read-only scope, without private input-value capture. Do not enter checkout, reserve a slot or invent a details contract to make it reachable. C016 offline receiver/continuation evidence does not prove live compatibility.
 - Explicit authorized offline evidence for queued nested microtasks/zero-delay timers and the final native selection/Continue guard across page and extension worlds. Unchanged terminal proceeds once; drift becomes touched/unknown and a restart cannot repeat. If this cannot be exercised with current permissions and URL rules, propose the scoped test approach and permission impact before changing them; do not silently widen access or spoof official authority.
 - Official Pro public-page read-only preflight on current evidence, including exact configured item/quote and explicit unsupported/auth states; zero bag additions, holds, new orders or payment. Public no-trade-in/no-AppleCare configuration is a separate already-described non-resource check; stop before Add.
 - Preserve plan → offered slots → terminal selection → explicit FAKE first rejection → refreshed-list re-selection → accepted FAKE endpoint tests. Unknown is not refusal or none. Keep the initial merchant date scope and per-date terminal floors.

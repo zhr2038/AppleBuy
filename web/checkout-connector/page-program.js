@@ -7,6 +7,7 @@
 // C-013-R3 (Claude): delivery memo before stale-evidence handling; slot continuation decided after the change task boundary.
 // C-015 (Claude): the order-reference digest is the only awaited decoding step. After it the program re-enters and decodes
 // the whole current document again; every action decides synchronously from that final decode. Slot continuation re-enters too.
+// C-016 (Claude): pickup details are sent one value per pass; each next value and Continue are decided only after re-entry.
 export async function merchantDocument(plan,command=null,internal=null){
   // `internal` is set only by this program's own re-entry; ChromePort passes plan and command only.
   // A structured command always receives a structured report. Nothing was written unless this id was already delivered.
@@ -159,6 +160,25 @@ export async function merchantDocument(plan,command=null,internal=null){
   // touched becomes true immediately before the first DOM write. A structured caller learns whether a failure
   // happened before any control was touched; otherwise the original exception propagates.
   let touched=false;
+  // C-016: a pickup value goes only to the ONLY visible input carrying one of its key's labels, and only when that input is
+  // a native, enabled, writable text/tel/email field that is not an authentication field.
+  const rules={firstName:['名字'],lastName:['姓氏'],phone:['手机号码','电话号码'],email:['电子邮件地址'],identitySuffix:['身份证件号码最后4位','身份证件号码后四位']};
+  const bind=key=>{const m=[...main.querySelectorAll('input')].filter(e=>visible(e)&&rules[key].includes(name(e))),e=m.length===1?m[0]:null;
+    return e&&e instanceof HTMLInputElement&&!disabled(e)&&e.readOnly!==true&&['','text','tel','email'].includes(norm(e.getAttribute('type')).toLowerCase())&&!/password|one-time-code/.test(norm(e.getAttribute('autocomplete')).toLowerCase())?e:null;};
+  // Labels and states of the visible inputs, never their values.
+  const inputSig=l=>JSON.stringify(l.map(e=>[name(e),norm(e.getAttribute('type')).toLowerCase(),norm(e.getAttribute('autocomplete')).toLowerCase(),disabled(e),e.required===true,e.readOnly===true]));
+  const requiredInvalid=()=>[...main.querySelectorAll('input[required]')].filter(visible).some(e=>!e.checkValidity());
+  // One value per pass, to its original receiver while it is still the current binding, then a task boundary and re-entry.
+  // Synchronous handlers, every microtask they queue and zero-delay timers queued earlier have run before the next decision.
+  // Longer timers, network/server validation and any merchant-side effect of the written value remain unknown.
+  const fillDetail=async c=>{
+    const [key,...rest]=c.keys,e=c.bound[key],setter=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value')?.set;
+    if(!setter)throw new Error('NativeInputSetterMissing');if(bind(key)!==e)throw new Error('PrivateFieldReceiverChanged');
+    touched=true;setter.call(e,command.privatePickupData[key]);e.dispatchEvent(new Event('input',{bubbles:true}));
+    if(bind(key)!==e)throw new Error('PrivateFieldReceiverChanged');e.dispatchEvent(new Event('change',{bubbles:true}));
+    const writtenAt=Date.now();await new Promise(r=>setTimeout(r,0));
+    return await merchantDocument(plan,command,{hashes:internal?.hashes??new Map(),details:{...c,keys:rest,writtenAt}});
+  };
   try{
     if(internal?.slot){
       // C-015: slot continuation, re-entered after the change task boundary. The selection was already written, so any
@@ -175,6 +195,17 @@ export async function merchantDocument(plan,command=null,internal=null){
         JSON.stringify(purchase)!==JSON.stringify(c.out.purchase)||JSON.stringify(out.dates)!==JSON.stringify(c.out.dates)||JSON.stringify(out.times)!==JSON.stringify(c.out.times)||
         liveNext.length!==1||liveNext[0]!==c.next||!c.next.isConnected||disabled(c.next))throw new Error('SlotEvidenceChangedAfterSelection');
       c.next.click();return {delivered:true};
+    }
+    if(internal?.details){
+      // C-016: details continuation, re-entered after the task boundary that follows the previous value's input/change events.
+      // A value was already written, so every failure is touched. THIS synchronous decode must equal the verified details
+      // evidence (URL, same main, phase, purchase, slot summary), keep the identical visible input set and the same live
+      // Continue. Only then is the next value sent to its original, still unique allowed receiver, or Continue clicked.
+      const c=internal.details,live=exact('继续选择付款方式'),now=[...main.querySelectorAll('input')].filter(visible);touched=true;
+      if(Date.now()-c.writtenAt>c.limit||u.href!==c.href||main!==c.main||phase!=='DETAILS'||!purchase.verified||JSON.stringify(out)!==c.expected||
+        now.length!==c.inputs.length||now.some((e,i)=>e!==c.inputs[i])||inputSig(now)!==c.inputSig||live.length!==1||live[0]!==c.next||!c.next.isConnected)throw new Error('DetailsEvidenceChangedAfterInput');
+      if(c.keys.length)return await fillDetail(c);
+      if(requiredInvalid())throw new Error('PickupDetailsRequireHuman');c.next.click();return {delivered:true};
     }
     if(command.authorized!==true||!command.id||!command.taskId)throw new Error('OperationEvidenceChanged');
     // C-013-R3: delivery truth first. A known id stays touched even when its own delivery changed the evidence;
@@ -213,13 +244,13 @@ export async function merchantDocument(plan,command=null,internal=null){
       await new Promise(r=>setTimeout(r,0));
       return await merchantDocument(plan,command,{hashes:internal?.hashes??new Map(),slot:{select:s,next:next[0],main,out,afterChange,changedAt,limit:SETTLE_LIMIT_MS}});
     }else if(command.action==='fillDetails'&&phase==='DETAILS'&&purchase.verified){
-      const rules={firstName:['名字'],lastName:['姓氏'],phone:['手机号码','电话号码'],email:['电子邮件地址'],identitySuffix:['身份证件号码最后4位','身份证件号码后四位']};
       const supplied=command.privatePickupData??{};if(Object.keys(supplied).some(k=>!Object.hasOwn(rules,k)))throw new Error('PrivateFieldNotAllowed');
-      const targets=[];for(const [key,value] of Object.entries(supplied)){if(typeof value!=='string'||value.length>100||(key==='identitySuffix'&&!/^\d{4}$/.test(value)))throw new Error('PrivateFieldInvalid');const matches=[...main.querySelectorAll('input')].filter(e=>visible(e)&&!disabled(e)&&rules[key].includes(name(e)));if(matches.length!==1)throw new Error('PrivateFieldContractUnrecognized');targets.push([matches[0],value]);}
+      const bound={};for(const [key,value] of Object.entries(supplied)){if(typeof value!=='string'||value.length>100||(key==='identitySuffix'&&!/^\d{4}$/.test(value)))throw new Error('PrivateFieldInvalid');bound[key]=bind(key);if(!bound[key])throw new Error('PrivateFieldContractUnrecognized');}
       // Validate all field bindings BEFORE transmitting the first value. Never return or persist values.
-      const setter=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value')?.set;if(targets.length&&!setter)throw new Error('NativeInputSetterMissing');
-      for(const [e,v] of targets){touched=true;setter.call(e,v);e.dispatchEvent(new Event('input',{bubbles:true}));e.dispatchEvent(new Event('change',{bubbles:true}));}
-      if([...main.querySelectorAll('input[required]')].filter(visible).some(e=>!e.checkValidity()))throw new Error('PickupDetailsRequireHuman');click('继续选择付款方式');
+      // Nothing supplied: nothing is written, so this synchronous decode is still current for Continue.
+      if(!Object.keys(bound).length){if(requiredInvalid())throw new Error('PickupDetailsRequireHuman');click('继续选择付款方式');}
+      else{const next=exact('继续选择付款方式'),inputs=[...main.querySelectorAll('input')].filter(visible);if(next.length!==1||!next[0].isConnected)throw new Error('CurrentControlUnrecognized');
+        return await fillDetail({keys:Object.keys(bound),bound,main,href:u.href,expected:JSON.stringify(out),next:next[0],inputs,inputSig:inputSig(inputs),limit:2000});}
     }else if(command.action==='selectPayment'&&phase==='PAYMENT'&&purchase.verified){pick('支付宝');}
     else if(command.action==='continuePayment'&&phase==='PAYMENT'&&purchase.verified&&out.paymentMethod==='支付宝'){if(exact('继续查看订单').length===1)click('继续查看订单');else click('继续');}
     else if(command.action==='submitOrder'&&phase==='REVIEW'&&purchase.verified&&out.paymentMethod==='支付宝'){

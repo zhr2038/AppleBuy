@@ -1,6 +1,6 @@
 # 电脑 Chrome 官网执行器候选
 
-**当前可做安装后的只读验证**：C015异步证据修复已取得真实Claude与Codex对准确127文件源码的限定离线同意，双方分别 **420/420** 通过。安装目录仍是 `E:\Apple Store\web\checkout-connector`，[准确安装文件](reviews/C-015-installable-bundle.json)已保存。安装/只读同意已收到，实际加载与控制页未确认；当前主机访问另行确认。**仍未验收一键官网下单或实际速度，不要启动购买模式。** [验收范围](reviews/C-015-bounded-agreement.md) · [最新状态](status.md)
+**当前可做安装后的只读验证**：C016资料填写事件修复已取得真实Claude与Codex对准确129文件源码的限定离线同意，双方分别 **440/440** 通过。安装目录仍是 `E:\Apple Store\web\checkout-connector`，[准确安装文件](reviews/C-016-installable-bundle.json)已保存。每次资料写入后重新检查当前控件和购买条件，变化后保留已写入的未知状态。安装/只读同意已收到，实际加载与控制页未确认；当前主机访问另行确认。**仍未验收一键官网下单或实际速度，不要启动购买模式。** [验收范围](reviews/C-016-bounded-agreement.md) · [最新状态](status.md)
 
 目录：`E:\Apple Store\web\checkout-connector`。不要把旧 `web/chrome-connector` 公共只读探针当成这个购买执行器。
 
