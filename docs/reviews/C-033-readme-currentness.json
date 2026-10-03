@@ -1,0 +1,14 @@
+{
+  "scope": "README currentness only, no new business code or tests",
+  "sourceFiles": 161,
+  "previousSha256": "9d8ac4ee49a3332806085bbbf370d57b0269b58a7c718b17c990db1992adf91a",
+  "currentSha256": "5b323fa3c52dae4a56a290140b378c85fe10f3bba1103accb3a0b1b78f93ff0b",
+  "changedFiles": [
+    "README.md"
+  ],
+  "allOther160FileBytesUnchanged": true,
+  "previous861NodeAnd12RenderedEvidenceStillSameBusinessBytes": true,
+  "noTestsRepeatedForDocumentationOnly": true,
+  "claudeBilateralAgreement": false,
+  "timestampUtc": "2026-10-03T21:17:30.976465+00:00"
+}

@@ -3,7 +3,7 @@
   "schema": "applebuy-candidate-manifest/v1",
   "scope": "pending exact C029+C030+C031 source and Codex dispatch/review; not live acceptance",
   "files": {
-    "README.md": "d7cd8d5fda1caefa684086015832aa5013caa693358e299f55061b7a061e2c78",
+    "README.md": "849b50c62f39ddcffb83d5d98a81d0bdfaf174834ce5f0c0fe0fadb4f4220120",
     "entry/cli.ts": "4920de497a622e6587532511f7f93bc178e02b9c0b1d1bfac1bfae1203c53a76",
     "entry/public-entry.ts": "2b09067cde5a979d20742c59aa57489fc935c08c13ce2ec7cc22ab4b1c88ef63",
     "examples/plan.fake.json": "698ebd80243167a2871fb7ccbb5c85504a5e18bfa1b65657d5a927f311cae9aa",
@@ -165,5 +165,6 @@
     "web/render.js": "0b1e1785621f81c010891de845db81ff481e06b11b5f28c4335ff51524940385",
     "web/style.css": "329e476f6c3deb2cfc88088e0b5c2751e97729bd38cd880e4857d87e532a1772"
   },
-  "sha256": "9d8ac4ee49a3332806085bbbf370d57b0269b58a7c718b17c990db1992adf91a"
+  "sha256": "5b323fa3c52dae4a56a290140b378c85fe10f3bba1103accb3a0b1b78f93ff0b",
+  "documentationCurrentness": "README only; business/test bytes identical to861 plus12 verified source"
 }
