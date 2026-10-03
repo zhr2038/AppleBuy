@@ -117,7 +117,7 @@ export async function merchantDocument(plan,command=null,internal=null){
   const lineQty=quantityLines.length===1?Number(quantityLines[0].t.match(/\d+/)[0]):null;
   const pageQty=qtyControls.length>1||quantityLines.length>1||(qtyControls.length===1&&quantityLines.length===1&&controlQty!==lineQty)?null:qtyControls.length===1?controlQty:lineQty;
   // C-019: in the observed bag the single quantity control must belong to the single purchased line.
-  const qty=bag?(bag.line&&qtyControls.length===1&&within(bag.line,qtyControls[0])?pageQty:null):bagScoped?null:pageQty;
+  const mainQty=bag?(bag.line&&qtyControls.length===1&&within(bag.line,qtyControls[0])?pageQty:null):bagScoped?null:pageQty;
   const totalLines=[...new Set(texts.filter(t=>/^(?:总计|合计|应付总额)(?:\s*\(含税\))?\s*[:：]?\s*(?:RMB|¥|￥)\s*[\d,]+(?:\.\d{2})?$/.test(t)))];
   const labelledTotal=totalLines.length===1?Number(totalLines[0].match(/(?:RMB|¥|￥)\s*([\d,]+(?:\.\d{2})?)/)[1].replaceAll(',','')):null;
   // C-024 (Claude): the observed official checkout (secure host, /shop/checkout; October 3 supported read-only observation) shows
@@ -125,11 +125,33 @@ export async function merchantDocument(plan,command=null,internal=null){
   // exactly one such control in main (hidden ones counted), a visible BUTTON, with exactly that caption form and a positive amount.
   // Any other widget count (even equal), hidden widget, other caption/currency or zero leaves the checkout total unknown, and a
   // labelled total there must agree with it. Nothing outside main is read. It never supplies quantity; the summary dialogue is
-  // never read.
+  // read only by the C029 readOrderSummary step below.
   const bars=checkoutScope?[...main.querySelectorAll('button,a[role="button"],input[type="submit"]')].filter(b=>b.getAttribute('data-autom')==='companionbar-button'):[];
   const barMoney=bars.length===1&&bars[0].tagName==='BUTTON'&&visible(bars[0])?/^显示订单摘要\s*[:：]?\s*RMB\s*(\d{1,3}(?:,\d{3})*|\d+)(\.\d{2})?$/.exec(norm(bars[0].textContent)):null;
   const barTotal=barMoney?Number(barMoney[1].replaceAll(',','')+(barMoney[2]??'')):null;
   const total=bars.length===0?labelledTotal:barTotal>0&&(totalLines.length===0||labelledTotal===barTotal)?barTotal:null;
+  // C029 (Claude): the observed current checkout (October 3 supported normal observation) states its whole-order goods count only
+  // OUTSIDE main, in the ordinary order-summary disclosure: a visible DIV role=dialog aria-modal=true with a visuallyhidden 订单摘要
+  // title and one SPAN.rs-companionbar-items 「1 件商品」 in P.rs-companionbar-bagitemrow within .rs-order-item-details,
+  // .rs-companionbar-ordertotal and .rs-companionbar-ordersummary-section, beside subtotal/shipping/total rows. Nothing here opens or
+  // reads it: only this program's own readOrderSummary step does (below), and keeps the sanitized count/money in this document's
+  // isolated world. That record supplies quantity only while it is current: same main element and URL, unchanged order context
+  // (companion caption and total, product anchors and lines, iPhone mention count, no main quantity evidence), no visible dialog
+  // anywhere, within SUMMARY_TTL_MS. Main quantity evidence keeps priority and must agree. Hidden or pre-rendered summary text is
+  // never read. C029-R1: the current self-label 「N 件商品」 in this observed shape is read as an explicit piece count and is the
+  // quantity source (bounded management interpretation). Money comparisons only detect a changed order; quantity is never derived
+  // from money, titles or group counts. No general Apple count contract, quantity-2 behaviour or later-stage shape is claimed.
+  const SUMMARY_TTL_MS=15000;
+  const mainQtyShown=qtyControls.length>0||quantityLines.length>0;
+  const shownDialogs=()=>{try{return [...new Set(document.querySelectorAll('[role="dialog"],[role="alertdialog"],[aria-modal="true"],dialog'))].filter(visible);}catch{return null;}};
+  const orderContext=()=>JSON.stringify([u.href,bars.map(b=>[b.tagName,norm(b.textContent),visible(b),disabled(b)]),total,groups.length,strips.length,norm(strip?.textContent),norm(copy?.textContent),lines(productRe).map(x=>x.t),mentions(main),mainQtyShown]);
+  const summaryMemo=checkoutScope&&!bagScoped?globalThis.__applebuySummary??null:null,dialogs=checkoutScope?shownDialogs():null;
+  const summaryAge=summaryMemo?Date.now()-summaryMemo.at:-1;
+  const summaryCurrent=!!summaryMemo&&summaryMemo.main===main&&summaryMemo.href===u.href&&summaryAge>=0&&summaryAge<=SUMMARY_TTL_MS&&dialogs?.length===0&&
+    summaryMemo.total===total&&summaryMemo.context===orderContext();
+  const summaryQty=summaryCurrent?summaryMemo.count:null;
+  const qty=summaryQty===null?mainQty:!mainQtyShown||mainQty===summaryQty?summaryQty:null;
+  const quantitySource=qty===null?null:summaryQty===null?'main':mainQtyShown?'main+order-summary':'order-summary';
   // Store proof: one enabled checked store choice or one exact labelled value. Any other checked store,
   // store-like labelled value, container listing several stores or disagreement leaves the store unproven.
   const planStore=n=>plan.stores.find(s=>n===norm(s))??null;
@@ -171,6 +193,12 @@ export async function merchantDocument(plan,command=null,internal=null){
   else if(u.pathname.startsWith('/shop/buy-iphone/'))phase='ENTRY';
   const out={schema:'applebuy-merchant-read/v1',phase,purchase,verifiedStep:!['UNKNOWN','AUTH','CONSENT','PROCESSING'].includes(phase),path:u.pathname,feedback:null,acceptedSlot:null,slotSummary:null,continueAvailable:exact('继续').length===1,variantVerified:false,quotedCny:null,listComplete:false,dates:[],times:[],selectedDate:null,paymentMethod:findRadio('支付宝').some(checked)?'支付宝':null,extras:null,existingOrdersChecked:false,orderRefHash:null,orderDetailLink:null};
   out.fulfillmentChoice=fulfillmentChoice;
+  // C029: sanitized summary facts only (a count, money and the reading port's random key); never page text, IDs or URLs.
+  out.quantitySource=quantitySource;
+  out.orderSummary=summaryCurrent?{state:'current',goodsCount:summaryMemo.count,subtotalCny:summaryMemo.subtotal,totalCny:summaryMemo.total,shipping:'免费',readBy:summaryMemo.readBy}:{state:summaryMemo?'not-current':'not-read'};
+  // A disclosure read could supply the only missing fact: exact product, positive capped companion total, no main quantity, no dialog.
+  out.summaryReadable=checkoutScope&&!bagScoped&&!mainQtyShown&&['FULFILLMENT','SLOTS','DETAILS','PAYMENT','REVIEW'].includes(phase)&&exactProduct&&
+    dialogs?.length===0&&bars.length===1&&bars[0].tagName==='BUTTON'&&visible(bars[0])&&!disabled(bars[0])&&barTotal>0&&total===barTotal&&total<=plan.maxTotalCny;
   const title=norm(main.querySelector('h1')?.textContent);
   const modelShown=title===plan.product.model||title==='购买 '+plan.product.model;
   const modelChoices=findRadio(plan.product.model);
@@ -254,6 +282,41 @@ export async function merchantDocument(plan,command=null,internal=null){
   // Labels and states of the visible inputs, never their values.
   const inputSig=l=>JSON.stringify(l.map(e=>[name(e),norm(e.getAttribute('type')).toLowerCase(),norm(e.getAttribute('autocomplete')).toLowerCase(),disabled(e),e.required===true,e.readOnly===true]));
   const requiredInvalid=()=>[...main.querySelectorAll('input[required]')].filter(visible).some(e=>!e.checkValidity());
+  // C029 (Claude): ordinary order-summary disclosure: open the single companion-bar control, read the one newly shown summary
+  // dialog, close it with its single close control, and keep the facts only if main is exactly as before. No merchant resource
+  // step; any old record is dropped first, so a failure leaves no proof. C029-R1: the normal close control was observed with the
+  // accessible name 关闭. Only that exact name is used: one visible enabled BUTTON named 关闭 and no other visible close-like
+  // control in the dialog. Any other label (关闭订单, Close, ...) or ambiguity is never clicked; the opened summary is reported
+  // truthfully as touched and left for a human.
+  const readSummary=async()=>{
+    const sig=()=>JSON.stringify([snapshot(),norm(main.textContent)]),before=sig(),context=orderContext(),bar=bars[0];
+    const settle=async ok=>{const t0=Date.now();for(let i=0;i<200;i++){await new Promise(r=>setTimeout(r,16));const v=ok();if(v)return v;if(Date.now()-t0>1500)break;}return null;};
+    const one=(root,s)=>{const m=[...root.querySelectorAll(s)];return m.length===1?m[0]:null;};
+    const money=t=>{const m=/^RMB\s*(\d{1,3}(?:,\d{3})*|\d+)(\.\d{2})?$/.exec(t);return m?Number(m[1].replaceAll(',','')+(m[2]??'')):null;};
+    delete globalThis.__applebuySummary;touched=true;bar.click();
+    const dialog=await settle(()=>{const d=shownDialogs();return d?.length===1?d[0]:null;});if(!dialog)throw new Error('OrderSummaryNotShown');
+    const facts=(()=>{
+      if(dialog.tagName!=='DIV'||dialog.getAttribute('role')!=='dialog'||dialog.getAttribute('aria-modal')!=='true'||within(dialog,main)||within(main,dialog))return null;
+      const titles=[...dialog.querySelectorAll('span.visuallyhidden')].filter(e=>norm(e.textContent)==='订单摘要');
+      const section=one(dialog,'.rs-companionbar-ordersummary-section'),item=one(dialog,'.rs-companionbar-items');
+      const row=item?.closest('.rs-companionbar-bagitemrow'),details=item?.closest('.rs-order-item-details'),orderTotal=item?.closest('.rs-companionbar-ordertotal');
+      if(titles.length!==1||!section||item?.tagName!=='SPAN'||!visible(item)||row?.tagName!=='P'||!details||!orderTotal||!within(section,orderTotal)||!within(orderTotal,details)||!within(details,row))return null;
+      const count=/^(\d{1,2}) ?件商品$/.exec(norm(item.textContent));if(!count||(norm(dialog.textContent).match(/件商品/g)??[]).length!==1)return null;
+      const rows=['rs-companionbar-summary-subtotal','rs-companionbar-summary-shipping','rs-companionbar-total-row'].map(c=>one(dialog,'.'+c));
+      if(rows.some(r=>r?.tagName!=='DIV'||!visible(r)))return null;
+      const sub=/^小计\s*(.+)$/.exec(norm(rows[0].textContent)),tot=/^总计\s*(.+)$/.exec(norm(rows[2].textContent));
+      const subtotal=sub?money(sub[1]):null,sum=tot?money(tot[1]):null;
+      return /^运费\s*免费$/.test(norm(rows[1].textContent))&&subtotal!==null&&sum!==null?{count:Number(count[1]),subtotal,total:sum}:null;
+    })();
+    const closers=[...dialog.querySelectorAll('button,[role="button"]')].filter(b=>visible(b)&&/关闭|close/i.test(name(b)));
+    if(closers.length!==1||closers[0].tagName!=='BUTTON'||name(closers[0])!=='关闭'||disabled(closers[0]))throw new Error('OrderSummaryCloseUnrecognized');closers[0].click();
+    if(!await settle(()=>shownDialogs()?.length===0&&visible(main)))throw new Error('OrderSummaryNotClosed');
+    if(!facts)throw new Error('OrderSummaryUnrecognized');
+    if(facts.subtotal!==facts.total||facts.total!==total)throw new Error('OrderSummaryMoneyDiffers');
+    if(document.querySelector('main,[role="main"]')!==main||new URL(location.href).href!==u.href||sig()!==before)throw new Error('OrderSummaryContextChanged');
+    globalThis.__applebuySummary={readBy:command.summaryKey,main,href:u.href,context,at:Date.now(),count:facts.count,subtotal:facts.subtotal,total:facts.total};
+    return {delivered:true,summary:{goodsCount:facts.count,subtotalCny:facts.subtotal,totalCny:facts.total,shipping:'免费'}};
+  };
   // One value per pass, to its original receiver while it is still the current binding, then a task boundary and re-entry.
   // Synchronous handlers, every microtask they queue and zero-delay timers queued earlier have run before the next decision.
   // Longer timers, network/server validation and any merchant-side effect of the written value remain unknown.
@@ -353,6 +416,7 @@ export async function merchantDocument(plan,command=null,internal=null){
     else if(command.action==='submitOrder'&&phase==='REVIEW'&&purchase.verified&&out.paymentMethod==='支付宝'){
       const g=command.finalGrant;if(!g||g.termsAccepted!==true||g.taskId!==command.taskId||g.planDigest!==command.planDigest||g.expiry<=Date.now()||g.existingOrdersChecked!==true||g.noExtras!==true||!out.termsLinks.includes(g.termsUrl)||!out.slotSummary)throw new Error('CurrentFinalGrantMissing');click('立即下单');
     }
+    else if(command.action==='readOrderSummary'&&out.summaryReadable===true&&typeof command.summaryKey==='string'&&command.summaryKey.length>0)return await readSummary();
     else throw new Error('ActionNotRecognizedForCurrentStage');
   }catch(e){
     if(command.structured!==true)throw e;

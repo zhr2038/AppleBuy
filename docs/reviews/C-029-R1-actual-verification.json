@@ -1,0 +1,138 @@
+{
+  "task": "C-029-R1",
+  "status": "returned_for_review",
+  "model_requested": "claude-opus-5-5",
+  "effort_requested": "xhigh",
+  "models_actual": [
+    "claude-opus-5-5"
+  ],
+  "model_verified": true,
+  "cleanup_confirmed": true,
+  "timed_out": false,
+  "duration_seconds": 311.77,
+  "is_error": false,
+  "subtype": "success",
+  "exit_code": 0,
+  "provider": "firstParty",
+  "canonicalModel": "claude-opus-5-5",
+  "denialCount": 0,
+  "toolCounts": {
+    "Read": 17,
+    "Bash": 7,
+    "Edit": 10,
+    "Write": 1
+  },
+  "privatePathAttempts": [],
+  "writtenFiles": [
+    "docs/claude/C-029-R1-report.md",
+    "test/checkout-c029-summary.test.ts",
+    "web/checkout-connector/page-program.js"
+  ],
+  "fullReadCalls": [
+    {
+      "file": "docs/tasks/C-029-R1.md",
+      "offset": null,
+      "limit": null
+    },
+    {
+      "file": "docs/reviews/C-029-independent-review.md",
+      "offset": null,
+      "limit": null
+    },
+    {
+      "file": "review/browser-summary-self-check.mjs",
+      "offset": null,
+      "limit": null
+    },
+    {
+      "file": "docs/requirements.md",
+      "offset": null,
+      "limit": null
+    },
+    {
+      "file": "docs/tasks/C-029-SUMMARY-INTEGRATION.md",
+      "offset": null,
+      "limit": null
+    },
+    {
+      "file": "docs/reviews/C-029-native-summary-evidence.json",
+      "offset": null,
+      "limit": null
+    },
+    {
+      "file": "docs/reviews/C-029-R1-candidate-manifest.json",
+      "offset": null,
+      "limit": null
+    },
+    {
+      "file": "web/checkout-connector/page-program.js",
+      "offset": null,
+      "limit": null
+    },
+    {
+      "file": "web/checkout-connector/chrome-port.js",
+      "offset": null,
+      "limit": null
+    },
+    {
+      "file": "web/checkout-connector/job.js",
+      "offset": null,
+      "limit": null
+    },
+    {
+      "file": "web/checkout-connector/control.js",
+      "offset": null,
+      "limit": null
+    },
+    {
+      "file": "web/checkout-connector/control.html",
+      "offset": null,
+      "limit": null
+    },
+    {
+      "file": "test/checkout-c029-summary.test.ts",
+      "offset": null,
+      "limit": null
+    },
+    {
+      "file": "docs/claude/C-029-report.md",
+      "offset": null,
+      "limit": null
+    },
+    {
+      "file": "review/browser-self-check.mjs",
+      "offset": null,
+      "limit": null
+    },
+    {
+      "file": "review/fixtures/current-public-checkout.html",
+      "offset": null,
+      "limit": null
+    },
+    {
+      "file": "tools/delegation/invoke_claude.py",
+      "offset": null,
+      "limit": null
+    }
+  ],
+  "protectedFiles": 91,
+  "changedProtectedFiles": [],
+  "cliPrivateReadDeniesPresent": true,
+  "independentFullNode": {
+    "exitCode": 0,
+    "summary": [
+      "✔ A05: duplicate/old observations and late/duplicate results are ignored without a second mutation (0.6316ms)",
+      "✔ A07: unknown select outcome is reconciled read-only and never resent (1.0695ms)",
+      "✔ A09: pause/takeover stop new actions and preserve the truth of the sent action (0.7557ms)",
+      "✔ A10: challenge, throttle and expired login yield with clear reasons (0.5532ms)",
+      "ℹ tests 800",
+      "ℹ suites 0",
+      "ℹ pass 800",
+      "ℹ fail 0",
+      "ℹ cancelled 0",
+      "ℹ skipped 0",
+      "ℹ todo 0",
+      "ℹ duration_ms 8285.0173"
+    ]
+  }
+}

@@ -1,0 +1,245 @@
+{
+  "recordedAtUtc": "2026-10-03T18:32:25.223710+00:00",
+  "task": "C029 normal official checkout evidence",
+  "method": "supported personal Chrome extension API, normal native page navigation/login/disclosure, sanitized DOM fields only",
+  "bagBeforeCheckout": {
+    "capturedAtUtc": "2026-10-03T18:18:08.688Z",
+    "expiredNotice": false,
+    "origin": "https://www.apple.com.cn",
+    "path": "/shop/bag",
+    "purchasedLines": 1,
+    "purchasedLists": 1,
+    "quantityControls": [
+      {
+        "label": "数量",
+        "selected": [
+          1
+        ]
+      }
+    ],
+    "titles": [
+      "iPhone 18 Pro 256GB 黑色"
+    ],
+    "totalCny": 9999
+  },
+  "normalLoginResult": {
+    "capturedAtUtc": "2026-10-03T18:21:34.351Z",
+    "fulfillmentHeadingPresent": true,
+    "origin": "https://secure6.www.apple.com.cn",
+    "path": "/shop/checkout",
+    "processing": 0,
+    "signInHeadingPresent": false
+  },
+  "normalCheckoutEntryClickedOnce": true,
+  "normalExistingAccountLoginSubmittedOnce": true,
+  "priorHumanStepNotNeededThisObservation": true,
+  "fieldInventory": {
+    "capturedAtUtc": "2026-10-03T18:22:27.394Z",
+    "controlCounts": {
+      "button": 15,
+      "input": 1,
+      "select": 0,
+      "textarea": 0
+    },
+    "forms": 0,
+    "inputTypes": [
+      "radio"
+    ],
+    "mainTag": "DIV",
+    "origin": "https://secure6.www.apple.com.cn",
+    "path": "/shop/checkout",
+    "productGroups": 1,
+    "productStrips": 1,
+    "quantitySemanticControls": [],
+    "quantitySemanticElements": []
+  },
+  "quantityAttributeAndPhraseSearchBeforeSummary": {
+    "capturedAtUtc": "2026-10-03T18:23:38.279Z",
+    "groupCount": 1,
+    "mainSummaryCaptions": [
+      "显示订单摘要: RMB 9,999"
+    ],
+    "origin": "https://secure6.www.apple.com.cn",
+    "path": "/shop/checkout",
+    "publicQuantityPhrases": [],
+    "quantityOrProductAttributeNames": []
+  },
+  "openMoneyPanel": {
+    "capturedAtUtc": "2026-10-03T18:25:37.203Z",
+    "dialogPresent": true,
+    "iPhoneTitlePresent": false,
+    "numericLeafCount": 0,
+    "quantityPhrases": [
+      "1 件商品"
+    ],
+    "rows": [
+      {
+        "amounts": [
+          "RMB 9,999"
+        ],
+        "label": "小计"
+      },
+      {
+        "amounts": [
+          "免费"
+        ],
+        "label": "运费"
+      },
+      {
+        "amounts": [
+          "RMB 9,999"
+        ],
+        "label": "总计"
+      }
+    ]
+  },
+  "openSummaryDetails": {
+    "capturedAtUtc": "2026-10-03T18:27:09.370Z",
+    "closeControlCount": 1,
+    "dialog": {
+      "ariaModal": "true",
+      "classes": [],
+      "display": "block",
+      "role": "dialog",
+      "tag": "DIV",
+      "visibility": "visible"
+    },
+    "mainAriaHidden": null,
+    "mainInert": false,
+    "money": [
+      {
+        "label": "小计",
+        "parentClasses": [
+          "row",
+          "rs-companionbar-summary-subtotal"
+        ],
+        "parentTag": "DIV",
+        "values": [
+          "RMB 9,999"
+        ]
+      },
+      {
+        "label": "运费",
+        "parentClasses": [
+          "row",
+          "rs-companionbar-summary-shipping"
+        ],
+        "parentTag": "DIV",
+        "values": [
+          "免费"
+        ]
+      },
+      {
+        "label": "总计",
+        "parentClasses": [
+          "row",
+          "rs-companionbar-total-row"
+        ],
+        "parentTag": "DIV",
+        "values": [
+          "RMB 9,999"
+        ]
+      }
+    ],
+    "present": true,
+    "quantityFields": [
+      {
+        "ancestors": [
+          {
+            "classes": [
+              "row",
+              "rs-companionbar-bagitemrow"
+            ],
+            "role": null,
+            "tag": "P"
+          },
+          {
+            "classes": [
+              "rs-order-item-details"
+            ],
+            "role": null,
+            "tag": "DIV"
+          },
+          {
+            "classes": [
+              "rs-companionbar-ordertotal"
+            ],
+            "role": null,
+            "tag": "DIV"
+          },
+          {
+            "classes": [
+              "rs-companionbar-ordersummary-section"
+            ],
+            "role": null,
+            "tag": "DIV"
+          }
+        ],
+        "classes": [
+          "column",
+          "large-6",
+          "rs-companionbar-items"
+        ],
+        "display": "block",
+        "tag": "SPAN",
+        "text": "1 件商品",
+        "visibility": "visible"
+      }
+    ],
+    "summaryTitleFields": [
+      {
+        "classes": [
+          "visuallyhidden"
+        ],
+        "tag": "SPAN",
+        "text": "订单摘要"
+      }
+    ]
+  },
+  "afterClose": {
+    "capturedAtUtc": "2026-10-03T18:29:06.770Z",
+    "mainVisible": true,
+    "normalPickupChoiceVisible": true,
+    "origin": "https://secure6.www.apple.com.cn",
+    "path": "/shop/checkout",
+    "summaryButtonCount": 1,
+    "visibleOrderDialogs": 0
+  },
+  "interpretation": {
+    "newCurrentExplicitGoodsCountLabel": "1 件商品",
+    "location": "outside main in the active role=dialog order summary",
+    "quantityUnitVsLineSemanticsNeedsTechnicalAssessment": true,
+    "notPriceOrTitleInference": true,
+    "noWholeClaimOfAppleContract": true,
+    "sourceQuantityReaderPreviouslyMissedThisField": true,
+    "currentExecutorNotTestedOrCalledOnOfficialSite": true
+  },
+  "officialDocumentation": [
+    {
+      "url": "https://www.apple.com.cn/shop/help/shopping_experience",
+      "supports": "review all bag items/quantities, Checkout enters sign-in; final Now Order creates order overview",
+      "doesNotProve": "immutable checkout snapshot, exact count units vs cart rows, absence of remote races, any slot hold or Duo behavior"
+    },
+    {
+      "url": "https://www.apple.com.cn/cn/shop/help/payments",
+      "supports": "Alipay is listed; final order submission precedes Alipay payment and later order-status payment",
+      "doesNotAuthorize": "a new order or payment"
+    }
+  ],
+  "normalActions": [
+    "read public bag",
+    "one normal Checkout entry",
+    "one routine already-authorized existing-account login",
+    "open order-summary disclosure",
+    "close order-summary disclosure"
+  ],
+  "cartQuantityOrProductModified": false,
+  "fulfillmentStoreDateSlotChosen": false,
+  "newOrderSubmitted": false,
+  "paymentAttempted": false,
+  "slotAllocationAsserted": false,
+  "resourceEffectsBeyondObservedUINotProven": true,
+  "noRawQueriesIDsCredentialsCookiesInputContactPaymentValuesSaved": true,
+  "screenshotsIgnoredNotForClaudeOrGit": true,
+  "sourceCodeUnchanged": true
+}

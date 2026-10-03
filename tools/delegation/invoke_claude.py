@@ -18,6 +18,9 @@ from process_tree import OwnedProcess, ProcessTreeUnresolved
 ROOT = Path(__file__).resolve().parents[2]
 MODEL = "claude-opus-5-5"
 EFFORT = "xhigh"
+# Codex dispatch boundary: a resumed session's compaction hint is not authority
+# to read private transcripts. Read denies also cover Claude's Grep/Glob tools.
+PRIVATE_READ_DENIES = ["Read(~/.claude/**)", "Read(~/.codex/**)", "Read(./.local/**)"]
 
 
 def clean(value: str) -> str:
@@ -64,6 +67,7 @@ def run_task() -> int:
                "--permission-prompts", "none", "--setting-sources", "project,local",
                "--strict-mcp-config", "--disable-slash-commands", "--no-chrome",
                "--name", f"Apple Store {args.task}"]
+    command += ["--disallowedTools", *PRIVATE_READ_DENIES]
     command += ["--resume" if args.resume else "--session-id", session_id]
     if args.profile == "probe":
         command += ["--safe-mode", "--tools", ""]
@@ -178,7 +182,10 @@ def run_task() -> int:
                result.get("subtype") == "success" and effective_ok and not meta.get("timed_out"))
     meta["status"] = "returned_for_review" if success else "failed"
     save()
-    summary = {key: meta.get(key) for key in ("task", "status", "exit_code", "session_id", "duration_seconds", "models_actual", "model_verified", "subtype", "is_error", "permission_denials", "result_path")}
+    summary = {key: meta.get(key) for key in ("task", "status", "exit_code", "session_id", "duration_seconds", "models_actual", "model_verified", "subtype", "is_error", "result_path")}
+    # Keep exact denied inputs in the ignored receipt only; they can contain
+    # private file names, transcript identifiers, or credential-bearing commands.
+    summary["permission_denials"] = [{"tool_name": item.get("tool_name")} for item in meta.get("permission_denials", [])]
     summary["result_excerpt"] = clean(str((result or {}).get("result", "")))[:1800]
     if stderr:
         summary["stderr_excerpt"] = clean(stderr)[:600]

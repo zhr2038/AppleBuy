@@ -21,7 +21,7 @@ const optBool=v=>v===undefined||typeof v==='boolean';
 export function validStored(s){return s&&s.schema==='applebuy-purchase-job/v1'&&typeof s.taskId==='string'&&typeof s.planDigest==='string'&&Number.isSafeInteger(s.tabId)&&validIntent(s.plan)&&Number.isSafeInteger(s.lastRead)&&s.lastRead>=0&&Number.isFinite(s.expiresAt)&&Number.isSafeInteger(s.dateCursor)&&s.dateCursor>=0&&s.dateCursor<=3&&Number.isSafeInteger(s.refusals)&&s.refusals>=0&&Array.isArray(s.rejected)&&s.rejected.every(r=>typeof r.date==='string'&&SLOT.test(r.start)&&SLOT.test(r.end)&&Number.isSafeInteger(r.generation))&&s.floors&&typeof s.floors==='object'&&Object.values(s.floors).every(t=>SLOT.test(t))&&(s.initialDates===null||(Array.isArray(s.initialDates)&&s.initialDates.length<=3&&new Set(s.initialDates).size===s.initialDates.length&&s.initialDates.every(d=>typeof d==='string')))&&(s.pending===null||(typeof s.pending.id==='string'&&typeof s.pending.documentId==='string'&&Number.isFinite(s.pending.deadline)&&ACTIONS.includes(s.pending.action)&&(s.pending.dispatched===undefined||s.pending.dispatched===false)))&&(s.finalIntent===null||(typeof s.finalIntent.id==='string'&&typeof s.finalIntent.sent==='boolean'))&&(!s.finalIntent?.sent||s.pending?.action==='submitOrder'||s.state==='CONFIRMED_UNPAID')&&
   optBool(s.bagAddStarted)&&optBool(s.resourceWritten)&&optBool(s.reconcileOnly)&&(s.untouchedFailures===undefined||(Number.isSafeInteger(s.untouchedFailures)&&s.untouchedFailures>=0))&&
   // The consecutive count is part of the cumulative count; a streak above a recorded total is not a trustworthy record.
-  (s.untouchedStreak===undefined||(Number.isSafeInteger(s.untouchedStreak)&&s.untouchedStreak>=0&&(s.untouchedFailures===undefined||s.untouchedStreak<=s.untouchedFailures)))&&(s.quotedCny===undefined||s.quotedCny===null||Number.isFinite(s.quotedCny))&&
+  (s.untouchedStreak===undefined||(Number.isSafeInteger(s.untouchedStreak)&&s.untouchedStreak>=0&&(s.untouchedFailures===undefined||s.untouchedStreak<=s.untouchedFailures)))&&(s.quotedCny===undefined||s.quotedCny===null||Number.isFinite(s.quotedCny))&&(s.bagTotalCny===undefined||s.bagTotalCny===null||Number.isFinite(s.bagTotalCny))&&
   (s.revokedGrantIds===undefined||(Array.isArray(s.revokedGrantIds)&&s.revokedGrantIds.every(x=>typeof x==='string')))&&(s.retiredHistory===undefined||(Array.isArray(s.retiredHistory)&&s.retiredHistory.every(r=>r?.schema==='applebuy-purchase-job/v1'&&r.state==='RETIRED')))&&(s.history===undefined||Array.isArray(s.history));}
 export function validIntent(p){
   return p?.schema==='applebuy-intent/v1'&&p.quantity===1&&p.fulfillment==='pickup'&&p.city==='大连'&&
@@ -45,13 +45,19 @@ export function purchaseMatches(p,c){
 export function itemMatches(p,c){return !!c&&c.itemVerified===true&&c.model===p.product.model&&c.capacity===p.product.capacity&&c.color===p.product.color&&c.quantity===1&&Number.isFinite(c.totalCny)&&c.totalCny>0&&c.totalCny<=p.maxTotalCny;}
 // Retirement is allowed only when no merchant mutation was ever written; legacy records without the fields are not provable.
 export function retirable(s){return s.resourceWritten===false&&s.bagAddStarted===false&&s.finalIntent===null&&(s.pending===null||PUBLIC.has(s.pending.action));}
+// C030: only this narrow cart-only history can be finished; a marker never overrides a final/slot/unknown fact.
+function resolvedReadOnlyBag(s){
+  const unsafe=r=>r.pending!==null||r.finalIntent!==null||r.orderRefHash!==null||r.initialDates!==null||r.dateCursor!==0||r.refusals!==0||r.rejected.length!==0||Array.isArray(r.floors)||Object.keys(r.floors).length!==0||r.acceptedSlot!=null;
+  return validStored(s)&&s.reconcileOnly===true&&s.lastPhase==='BAG'&&s.resourceWritten===true&&s.bagAddStarted===true&&!unsafe(s)&&
+    (s.retiredHistory??[]).every(r=>validStored(r)&&!unsafe(r));
+}
 function terminal(times){
   if(!Array.isArray(times)||times.length===0||times.some(t=>!SLOT.test(t.start)||!SLOT.test(t.end)||t.start>=t.end||typeof t.ref!=='string'))return null;
   const keys=times.map(t=>t.start+'-'+t.end);if(new Set(keys).size!==keys.length)return null;
   return [...times].sort((a,b)=>a.start.localeCompare(b.start)||a.end.localeCompare(b.end)).at(-1);
 }
 export class PurchaseJob {
-  constructor({store,port,now=()=>Date.now(),id=()=>crypto.randomUUID(),maxSteps=100,maxWaitMs=30000,hydrationMs=3000,maxPolls=2000,maxUntouched=3,maxUntouchedPerRun=12,onState=()=>{}}){Object.assign(this,{store,port,now,id,maxSteps,maxWaitMs,hydrationMs,maxPolls,maxUntouched,maxUntouchedPerRun,onState});this.paused=false;this.stopped=false;this.key=TASK_KEY;this.runGrant=null;}
+  constructor({store,port,now=()=>Date.now(),id=()=>crypto.randomUUID(),maxSteps=100,maxWaitMs=30000,hydrationMs=3000,maxPolls=2000,maxUntouched=3,maxUntouchedPerRun=12,maxSummaryReads=30,onState=()=>{}}){Object.assign(this,{store,port,now,id,maxSteps,maxWaitMs,hydrationMs,maxPolls,maxUntouched,maxUntouchedPerRun,maxSummaryReads,onState});this.paused=false;this.stopped=false;this.key=TASK_KEY;this.runGrant=null;}
   pause(){this.paused=true;} resume(){this.paused=false;} stop(){this.stopped=true;}
   async save(s){await this.store.put(this.key,clone(s));this.onState({state:s.state,phase:s.lastPhase,reason:s.reason??null,refusals:s.refusals,finalIntent:s.finalIntent!==null,pendingAction:ACTIONS.includes(s.pending?.action)?s.pending.action:null,permissionOrigin:safePermissionOrigin(s.permissionOrigin),observationCurrent:s.observationCurrent===true});}
   async gate(s,reason,state='NEEDS_USER'){
@@ -65,6 +71,30 @@ export class PurchaseJob {
     this.key=TASK_KEY;const old=await this.store.get(TASK_KEY);if(!old)return null;if(!validStored(old))throw new Error('StoredPurchaseTaskCorrupt');
     if(old.state==='RETIRED')return clone(old);if(!retirable(old))throw new Error('TaskHasMerchantMutationHistory');
     const s={...old,state:'RETIRED',reason:'retired-by-user; history preserved',retiredAt:this.now()};await this.save(s);return clone(s);
+  }
+  // C030 Codex quota takeover: explicitly finish a resolved, permanently read-only BAG rehearsal.
+  // This reads only; no prior mutation or authority is replayed. Slot/final/unknown histories remain blocked.
+  async retireReadOnlyBag(plan,{tabId,planDigest,live=()=>true}={}){
+    if(!validIntent(plan)||!Number.isSafeInteger(tabId)||!planDigest||typeof live!=='function')throw new Error('InvalidPurchaseConfiguration');
+    const cancelled=()=>!live()||this.paused||this.stopped;
+    if(cancelled())throw new Error('ReadOnlyRetirementCancelled');
+    this.key=TASK_KEY;const old=await this.store.get(TASK_KEY);
+    if(cancelled())throw new Error('ReadOnlyRetirementCancelled');
+    if(!old)throw new Error('NoPreservedTaskToRetire');if(!validStored(old))throw new Error('StoredPurchaseTaskCorrupt');
+    if(old.tabId!==tabId||old.planDigest!==planDigest||canonicalJson(normalizeIntent(old.plan))!==canonicalJson(normalizeIntent(plan)))throw new Error('ExistingTaskBindingDiffers');
+    if(!resolvedReadOnlyBag(old))throw new Error('ReadOnlyBagTaskNotResolved');
+    if(old.state==='RETIRED'&&old.readOnlyRetirement?.kind==='resolved-pre-slot-bag')return clone(old);
+    if(old.state==='RETIRED')throw new Error('ReadOnlyBagTaskNotResolved');
+    if(cancelled())throw new Error('ReadOnlyRetirementCancelled');
+    const o=await this.port.observe(normalizeIntent(plan));
+    if(cancelled())throw new Error('ReadOnlyRetirementCancelled');
+    if(o?.schema!=='applebuy-merchant-read/v1'||o.phase!=='BAG'||o.verifiedStep!==true||typeof o.documentId!=='string'||!o.documentId||!Number.isSafeInteger(o.seq)||o.seq<=old.lastRead||!itemMatches(plan,o.purchase)||o.extras!==false)throw new Error('CurrentOneItemBagNotVerified');
+    const current=await this.store.get(TASK_KEY);
+    if(cancelled())throw new Error('ReadOnlyRetirementCancelled');
+    if(canonicalJson(current)!==canonicalJson(old))throw new Error('StoredTaskChangedDuringRetirement');
+    const s={...old,state:'RETIRED',reason:'resolved-read-only-bag-retired-by-user; history preserved',retiredAt:this.now(),observationCurrent:false,
+      readOnlyRetirement:{kind:'resolved-pre-slot-bag',previousState:old.state,previousReason:old.reason,previousObservationCurrent:old.observationCurrent??null,documentId:o.documentId,readSequence:o.seq}};
+    await this.save(s);return clone(s);
   }
   // Observation only: no task is read, created or written, and act is never called.
   async observeOnly(plan){
@@ -85,7 +115,9 @@ export class PurchaseJob {
     this.runGrant=grant;
     const fresh=()=>({schema:'applebuy-purchase-job/v1',taskId:(validating?null:taskId)??this.id(),plan:clone(P),planDigest,tabId,state:'RUNNING',lastPhase:null,lastDocumentId:null,entryDocumentId:null,reason:null,pending:null,finalIntent:null,orderRefHash:null,initialDates:null,dateCursor:0,floors:{},rejected:[],refusals:0,lastRead:0,expiresAt:this.now()+(validating?300000:1800000),bagAddStarted:false,resourceWritten:false,untouchedFailures:0,untouchedStreak:0,quotedCny:null,mode});
     let s;
-    if(old?.state==='RETIRED'){if(rebind)throw new Error('NoPreservedTaskToRebind');const {retiredHistory=[],...prev}=old;s={...fresh(),retiredHistory:[...retiredHistory,prev]};}
+    if(old?.state==='RETIRED'){if(rebind)throw new Error('NoPreservedTaskToRebind');const {retiredHistory=[],...prev}=old;s={...fresh(),retiredHistory:[...retiredHistory,prev]};
+      // A resolved read-only task cannot become a fresh task with its former identity or revoked authority.
+      if(old.readOnlyRetirement&&(!resolvedReadOnlyBag(old)||s.taskId===old.taskId||grant&&(grant.taskId===old.taskId||old.revokedGrantIds?.includes(grant.id))))throw new Error('RetiredReadOnlyAuthorityCannotBeReused');}
     else s=old??fresh();
     // An unresolved earlier validation choice on the same tab/intent is reconciled first, never blindly clicked again.
     const prior=validating?await this.store.get(VALIDATION_KEY):null;
@@ -111,7 +143,7 @@ export class PurchaseJob {
     if(grant&&s.revokedGrantIds?.includes(grant.id))return this.gate(s,'advance-authorization-cleared-by-human-intervention','BLOCKED');
     s.state='RUNNING';s.reason=null;await this.save(s);
     // storeWait marks a wait episode for an already selected store; untouchedRun is this run's absolute untouched count.
-    let step=0,polls=0,waitSince=null,polling=false,storeWait=false,untouchedRun=0;
+    let step=0,polls=0,waitSince=null,polling=false,storeWait=false,untouchedRun=0,summaryReads=0;
     // Waits are bounded by elapsed time per episode and an absolute poll cap; they never consume semantic steps.
     const poll=async(limit)=>{if(!this.port.wait||polls>=this.maxPolls)return false;waitSince??=this.now();if(this.now()-waitSince>=limit)return false;polls++;await this.port.wait(50);return polling=true;};
     for(;;){
@@ -127,6 +159,21 @@ export class PurchaseJob {
       s.lastRead=o.seq;s.lastPhase=o.phase;s.lastDocumentId=o.documentId;s.entryDocumentId??=o.documentId;s.observationCurrent=true;delete s.permissionOrigin;await this.save(s);
       if(this.paused||this.stopped)return this.gate(s,'control-changed-during-read; sent operations preserved',this.stopped?'STOPPED':'PAUSED');
       if(grant?.start===true&&!finalLookup&&(grant.entryDocumentId!==s.entryDocumentId||grant.taskId!==s.taskId||grant.planDigest!==s.planDigest||grant.existingOrdersChecked!==true||grant.noExtras!==true||grant.termsAccepted!==true||!Number.isFinite(grant.expiry)||grant.expiry<=this.now()||grant.expiry>this.now()+1800000))return this.gate(s,'start-authorization-no-longer-current','BLOCKED');
+      // C029 (Claude): when quantity is the only missing checkout fact, the purchase port may read the ordinary order-summary
+      // disclosure (open, read, close; no merchant resource, no human confirmation). Never in read-only, validation or rebound runs,
+      // never for an unknown final order, never while a slot result is awaited. Quantity then comes only from the next fresh read
+      // of the unchanged document. An untouched refusal re-reads within the bound; any other failure stops.
+      if(o.summaryReadable===true&&o.quantitySource!=='order-summary'&&this.port.orderSummary===true&&typeof this.port.readSummary==='function'&&!readOnly&&!validating&&!s.reconcileOnly&&
+        !finalLookup&&!(s.pending?.action==='chooseSlot'&&o.phase===s.pending.beforePhase)){
+        if(++summaryReads>this.maxSummaryReads)return this.gate(s,'order-summary-read-bound-reached; quantity unverified','NEEDS_VERIFICATION');
+        let r=null;try{r=await this.port.readSummary(P,s.taskId);}catch{}
+        s.history=[...(s.history??[]),{event:'order-summary-read',read:r?.read===true,goodsCount:r?.read===true?r.goodsCount:null,totalCny:r?.read===true?r.totalCny:null,reason:r?.read===true?null:typeof r?.reason==='string'?r.reason.slice(0,60):'result-unknown'}].slice(-50);await this.save(s);
+        if(r?.read===true||r?.touched===false)continue;
+        return this.gate(s,'order-summary-not-verified; no purchase action','NEEDS_VERIFICATION');
+      }
+      // A summary-sourced one unit also needs this order's money to equal the one-unit money this task recorded from explicit
+      // quantity (bag total at checkout, else the Add to Bag quote). This detects a changed order; it is never a quantity source.
+      if(o.quantitySource==='order-summary'&&o.purchase?.itemVerified===true&&!finalLookup){const basis=s.bagTotalCny??s.quotedCny??null;if(basis===null||o.purchase.totalCny!==basis)return this.gate(s,'order-summary-money-differs-from-explicit-one-unit-basis','BLOCKED');}
       // Reconcile a previously delivered command, including a crash/restart. Never send it again.
       if(s.pending){
         const pending=s.pending;
@@ -227,7 +274,7 @@ export class PurchaseJob {
       if(command.action==='submitOrder')s.finalIntent.sent=true;
       if(command.action==='addBag'){s.bagAddStarted=true;s.quotedCny=o.quotedCny;}
       // C-019 (Claude): checkout leaves a bag that already holds the item; this task never adds afterwards (kept if untouched).
-      if(command.action==='checkout')s.bagAddStarted=true;
+      if(command.action==='checkout'){s.bagAddStarted=true;s.bagTotalCny=o.purchase.totalCny;}
       if(!PUBLIC.has(command.action))s.resourceWritten=true;
       // C-022-R1 (Claude): a committed command may change the page; until the next valid read it is no longer current.
       s.observationCurrent=false;

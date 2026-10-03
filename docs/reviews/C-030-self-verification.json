@@ -1,0 +1,47 @@
+{
+  "author": "Codex quota takeover",
+  "independentClaudeAgreement": false,
+  "scope": "SELF-test of C030 plus unchanged C029/full regression",
+  "providerQuotaEvidence": "docs/reviews/C-029-cross-quota.json",
+  "changedInputSourceFiles": [
+    "web/checkout-connector/control.html",
+    "web/checkout-connector/control.js",
+    "web/checkout-connector/job.js"
+  ],
+  "unchangedInputTestReviewFiles": 92,
+  "newSourceFiles": [
+    "review/browser-retirement-self-check.mjs",
+    "test/checkout-c030-retirement.test.ts"
+  ],
+  "sourceFiles": 160,
+  "sourceSha256": "d099396b2b73c3dd83942323eb0ba555ccee5958aecdde85d518ca85b8d5e6d6",
+  "fullNodeExitCode": 0,
+  "fullNodeSummary": [
+    "✔ A05: duplicate/old observations and late/duplicate results are ignored without a second mutation (0.695ms)",
+    "✔ A07: unknown select outcome is reconciled read-only and never resent (2.0379ms)",
+    "✔ A09: pause/takeover stop new actions and preserve the truth of the sent action (0.671ms)",
+    "✔ A10: challenge, throttle and expired login yield with clear reasons (0.4732ms)",
+    "ℹ tests 841",
+    "ℹ suites 0",
+    "ℹ pass 841",
+    "ℹ fail 0",
+    "ℹ cancelled 0",
+    "ℹ skipped 0",
+    "ℹ todo 0",
+    "ℹ duration_ms 8805.4111"
+  ],
+  "sourceUnchangedDuringTests": true,
+  "actualMerchantMutation": false,
+  "personalExtensionStorageReadOrChanged": false,
+  "accepted": false,
+  "historicalFullNodeFailure": {
+    "tests": 841,
+    "pass": 840,
+    "fail": 1,
+    "cause": "New prototype UI id differed from protected C017 exact control-id contract; fixed by reusing existing retirement control. No old tests changed."
+  },
+  "historicalBrowserHarnessFailure": {
+    "cases": 4,
+    "cause": "Reviewer exact 商品 label locator did not match select; corrected to source-owned #product and bounded waits; cleanup succeeded."
+  }
+}

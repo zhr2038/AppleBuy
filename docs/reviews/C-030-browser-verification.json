@@ -1,0 +1,46 @@
+{
+  "scope": "Codex takeover SELF-test; actual rendered control and Web Locks, FAKE Chrome/storage/merchant transport",
+  "actualExtensionInstalledOrGranted": false,
+  "personalProfileUsed": false,
+  "actualApplePageVisited": false,
+  "realOrderCreated": false,
+  "checks": [
+    {
+      "name": "rendered-explicit-retirement-preserves-old-record-and-clears-authority-no-purchase",
+      "passed": true,
+      "recordWrites": 1,
+      "merchantActions": 0
+    },
+    {
+      "name": "rendered-unresolved-checkout-is-not-retired",
+      "passed": true,
+      "recordWrites": 0,
+      "merchantActions": 0
+    },
+    {
+      "name": "actual-browser-web-lock-excludes-second-control-page",
+      "passed": true,
+      "nativeWebLocksUsed": true,
+      "recordWrites": 1,
+      "merchantActions": 0
+    },
+    {
+      "name": "rendered-pause-during-observe-keeps-entire-old-record",
+      "passed": true,
+      "recordWrites": 0,
+      "merchantActions": 0
+    }
+  ],
+  "network": {
+    "allowed": 55,
+    "blocked": 0
+  },
+  "cleanup": {
+    "contextsClosed": 4,
+    "browserClosed": true,
+    "serverClosed": true,
+    "errors": []
+  },
+  "browserVersion": "154.0.8037.93",
+  "passed": true
+}

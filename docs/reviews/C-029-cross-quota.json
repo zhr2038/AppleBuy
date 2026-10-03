@@ -1,0 +1,20 @@
+{
+  "task": "C-029-CROSS-REVIEW",
+  "observedResult": "You've hit your session limit · resets 5:20am (Asia/Shanghai)",
+  "exitCode": 1,
+  "isError": true,
+  "durationSeconds": 95.51,
+  "timedOut": false,
+  "ownedProcessCleanupConfirmed": true,
+  "providerSessionQuota": true,
+  "notCliWallTurnDollarCap": true,
+  "reviewCompleted": false,
+  "bilateralAgreement": false,
+  "frozenCandidateFiles": 158,
+  "frozenCandidateSha256": "296434e161c17fcf44ba64cd1c475c0c682164b71dc9b2335af649e063d5deb6",
+  "codexIndependentNodeTests": 800,
+  "codexIndependentRenderedSummaryCases": 8,
+  "resetLocalTime": "2026-10-04T05:20:00+08:00",
+  "shutdownAuthorized": false,
+  "noPrivateTranscriptOrIdentifierIncluded": true
+}

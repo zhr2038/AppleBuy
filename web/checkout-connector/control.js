@@ -57,7 +57,8 @@ async function run(starting=false,{rebind=false,finalGrant=null,live=ticket()}={
       // Last check: no await separates it from job creation, so a later Pause/Stop reaches the job itself.
       if(!live()){halted();return;}
       // A rebound tab is read-only reconciliation: the port is not authorized to act.
-      const port=new ChromePort(chrome,tabId,{authorized:!rebind,initialSequence:previous?.lastRead??0,acceptedSlot:previous?.acceptedSlot??null,pending:previous?.pending??null,privatePickupData,reviewGrant:useGrant});
+      // C029: the purchase run may read the ordinary order-summary disclosure for its quantity; a rebound read-only tab may not.
+      const port=new ChromePort(chrome,tabId,{authorized:!rebind,initialSequence:previous?.lastRead??0,acceptedSlot:previous?.acceptedSlot??null,pending:previous?.pending??null,privatePickupData,reviewGrant:useGrant,orderSummary:!rebind});
       job=new PurchaseJob({store,port,maxSteps:300,onState});
       const result=await job.run(p,{tabId,planDigest:digest,grant:useGrant,taskId:useGrant?.taskId??null,rebind});$('final').disabled=result.lastPhase!=='REVIEW'||result.finalIntent?.sent===true||!!result.reconcileOnly;if(result.lastPhase==='REVIEW'&&port.last?.raw.termsLinks?.length){$('terms').href=port.last.raw.termsLinks[0];}
     }catch{status('执行已停止，请核实当前任务；已发送的动作不会自动重试');}
@@ -99,6 +100,7 @@ $('retire').onclick=async()=>{
   try{
     const ownership=await withPurchaseOwner(navigator.locks,async()=>{
       const s=await store.get(TASK_KEY);if(!live()){halted();return;}if(!s){status('没有保留的任务');return;}
+      if(s.reconcileOnly===true){await finishReadOnlyBag(s,live);return;}
       if(!retirable(s)){status('该任务曾写入官网购物动作或记录不可确认，不能退役；只能核对');return;}
       try{await new PurchaseJob({store,port:null}).retire();status('该任务从未写入官网购物动作，已退役并保留记录；可重新预检');}catch{status('退役未完成；记录保持不变');}
     });
@@ -106,6 +108,17 @@ $('retire').onclick=async()=>{
   }catch{status('退役未完成；记录保持不变');}
 };
 $('rebind').onclick=()=>{if(!$('rebindConfirm').checked){status('改绑标签页需本人确认，仅用于只读核对');return;}return run(false,{rebind:true});};
+// C030 Codex quota takeover: an explicit local task transition, with a read-only port and existing exclusive owner.
+// It creates no purchase and clears every control-page authorization; only a new preflight can prepare the next task.
+async function finishReadOnlyBag(previous,live){
+  try{
+    const p=plan(),tabId=Number($('tab').value),digest=await boundDigest(p,previous);if(!live()){halted();return;}
+    job=new PurchaseJob({store,port:new ChromePort(chrome,tabId,{mode:'observe',initialSequence:previous?.lastRead??0}),onState});
+    await job.retireReadOnlyBag(p,{tabId,planDigest:digest,live});
+    prepared=null;$('approve').checked=false;$('finalReview').checked=false;$('final').disabled=true;
+    status('已结束核对完成的只读购物袋任务，全部记录保留；未点击官网或发出购买动作。新的购买需重新预检和确认');
+  }catch{status(live()?'旧任务未能确认结束；请读取保留记录核对结果，未发购买动作':'已暂停或停止，未发购买动作；任务管理结果请读取保留记录核对');}finally{job=null;}
+}
 $('start').onclick=()=>run(true);$('resume').onclick=()=>run(false);
 // Cancellation reaches both a running job and every older handler still awaiting preparation.
 const cancel=kind=>{epoch++;cancelKind=kind;if(job){if(kind==='stop')job.stop();else job.pause();}else halted();};
