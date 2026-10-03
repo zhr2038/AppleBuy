@@ -1,0 +1,16 @@
+{
+  "recordedAtUtc": "2026-10-03T18:11:02.273155+00:00",
+  "sourceCommit": "3611da7ad24704dc66ca3b4bbc08aede28656434",
+  "main": "3611da7ad24704dc66ca3b4bbc08aede28656434",
+  "checkpoint": "3611da7ad24704dc66ca3b4bbc08aede28656434",
+  "atomicNonForcePush": true,
+  "candidateFiles": 156,
+  "candidateSha256": "9a82d72ba377812d3f4e2bf55c28ad8ddd26f1ebee48389ad7d116cef3c57ff6",
+  "all156GitBlobsVerified": true,
+  "independentNodeTests": 751,
+  "isolatedFakeBrowserCases": 16,
+  "preciseBilateralAgreement": true,
+  "acceptanceScope": "C026/C027/C028 bounded fake-isolated software logic/autonomous proof only; not all repo or live purchase readiness",
+  "realOneClickOrderReady": false,
+  "privateDataPublished": false
+}
