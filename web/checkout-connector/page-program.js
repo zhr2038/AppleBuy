@@ -9,6 +9,9 @@
 // the whole current document again; every action decides synchronously from that final decode. Slot continuation re-enters too.
 // C-016 (Claude): pickup details are sent one value per pass; each next value and Continue are decided only after re-entry.
 // C-018 (Claude): transported expected evidence is compared independent of object-member order only.
+// C-019 (Claude): observed public bag structure: purchased line, unselected inline offer and header/bottom checkout pair.
+// C-019-R1 (Claude): a duplicated or hidden purchased-list anchor is unknown cart scope, never a generic/legacy bag proof.
+// C-019-R2 (Claude): an anchored cart that is not a recognized checkout bag never falls through to View Bag/Add to Bag navigation.
 export async function merchantDocument(plan,command=null,internal=null){
   // `internal` is set only by this program's own re-entry; ChromePort passes plan and command only.
   // A structured command always receives a structured report. Nothing was written unless this id was already delivered.
@@ -44,13 +47,42 @@ export async function merchantDocument(plan,command=null,internal=null){
   const findRadio=t=>radios.filter(e=>(name(e)===t||name(e).startsWith(t+' '))&&!(t==='iPhone 18 Pro'&&name(e).startsWith('iPhone 18 Pro Max')));
   const fullVariant=norm(`${plan.product.model} ${plan.product.capacity} ${plan.product.color}`);
   const productRe=/^iPhone (?:18 Pro(?: Max)?|Duo)\b.*\b(?:256GB|512GB|1TB|2TB)\b/;
+  // C-019 (Claude): observed public bag (October 3, supported read-only observation), used only on /shop/bag with exactly one
+  // visible OL[data-autom="bag-items"]. Purchased lines are its LI children; the item is the single line's one H2 title. Inside
+  // that line a visible .rs-inline-recommendation that reads 添加…, has no 移除/checked control and holds neither title nor
+  // quantity is an unselected offer: its text is cut out before marker checks. Any other product text, marker or removal blocks.
+  // Checkout: one visible enabled 结账/安全结账 control, or exactly the observed header/bottom 结账 pair with data-autom=checkout,
+  // which is one semantic action (the bottom one is clicked). Any further checkout-like control, hidden or not, is ambiguous.
+  const bagLists=/^\/shop\/bag\/?$/.test(u.pathname)?[...main.querySelectorAll('ol[data-autom="bag-items"]')]:[];
+  const bag=bagLists.length!==1||!visible(bagLists[0])?null:(()=>{
+    const inside=(r,s)=>r?[...new Set(r.querySelectorAll(s))]:[];
+    const items=[...bagLists[0].children].filter(e=>e.tagName==='LI'),line=items.length===1?items[0]:null;
+    const heads=inside(line,'h2').filter(visible),title=heads.length===1?heads[0]:null;
+    const offers=inside(line,'.rs-inline-recommendation').filter(o=>visible(o)&&norm(o.textContent).startsWith('添加')&&!heads.some(h=>o===h||within(o,h)||within(h,o))&&!inside(o,'select').length&&
+      !inside(o,'button,a').some(b=>name(b).startsWith('移除'))&&!inside(o,'input,[role="checkbox"],[role="radio"]').some(checked));
+    const free=e=>!offers.some(o=>o===e||within(o,e));
+    const strip=e=>{let s=String(e.textContent??'');for(const o of offers)if(within(e,o))s=s.replace(String(o.textContent??''),' ');return norm(s);};
+    const stray=textEls.some(x=>productRe.test(x.t)&&free(x.e)&&!(title&&(x.e===title||within(title,x.e)||within(x.e,title))));
+    const removes=inside(line,'button,a').filter(b=>visible(b)&&name(b).startsWith('移除'));
+    const named=inside(main,'button,a,input[type="submit"],[data-autom="checkout"]').filter(b=>['结账','安全结账'].includes(name(b))||b.getAttribute('data-autom')==='checkout');
+    const row=(b,c)=>!!b.closest('.'+c),ok=b=>visible(b)&&!disabled(b);
+    const header=named.filter(b=>row(b,'rs-bag-checkoutbutton-header')&&!row(b,'rs-bag-checkoutbutton-bottom')),bottom=named.filter(b=>row(b,'rs-bag-checkoutbutton-bottom')&&!row(b,'rs-bag-checkoutbutton-header'));
+    const pair=named.length===2&&header.length===1&&bottom.length===1&&named.every(b=>ok(b)&&name(b)==='结账'&&b.getAttribute('data-autom')==='checkout');
+    return {items:items.length,line,title,offers,free,strip,stray,otherRemove:removes.length>1||removes.some(b=>!['移除','移除 '+fullVariant].includes(name(b))),
+      checkout:named.length===1&&ok(named[0])&&['结账','安全结账'].includes(name(named[0]))?named[0]:pair?bottom[0]:null};
+  })();
+  // C-019-R1 (Claude): on /shop/bag any purchased-list anchor commits the page to the observed cart scope. A duplicated or
+  // hidden anchor (bag===null) is unknown structure: no generic item, quantity, store, pickup or checkout fact is borrowed.
+  const bagScoped=bagLists.length>0;
   const productLines=texts.filter(t=>productRe.test(t));
-  const exactProduct=productLines.some(t=>t===fullVariant)&&productLines.every(t=>t===fullVariant);
+  const exactProduct=bag?!!bag.title&&norm(bag.title.textContent)===fullVariant&&!bag.stray:!bagScoped&&productLines.some(t=>t===fullVariant)&&productLines.every(t=>t===fullVariant);
   const quantityLines=lines(/^数量\s*[:：]?\s*\d+$/);
   const qtyControls=selects.filter(e=>/数量/.test(name(e)));
   const controlQty=qtyControls.length===1&&qtyControls[0].selectedOptions.length===1?Number(norm(qtyControls[0].selectedOptions[0]?.textContent)):null;
   const lineQty=quantityLines.length===1?Number(quantityLines[0].t.match(/\d+/)[0]):null;
-  const qty=qtyControls.length>1||quantityLines.length>1||(qtyControls.length===1&&quantityLines.length===1&&controlQty!==lineQty)?null:qtyControls.length===1?controlQty:lineQty;
+  const pageQty=qtyControls.length>1||quantityLines.length>1||(qtyControls.length===1&&quantityLines.length===1&&controlQty!==lineQty)?null:qtyControls.length===1?controlQty:lineQty;
+  // C-019: in the observed bag the single quantity control must belong to the single purchased line.
+  const qty=bag?(bag.line&&qtyControls.length===1&&within(bag.line,qtyControls[0])?pageQty:null):bagScoped?null:pageQty;
   const totalLines=[...new Set(texts.filter(t=>/^(?:总计|合计|应付总额)(?:\s*\(含税\))?\s*[:：]?\s*(?:RMB|¥|￥)\s*[\d,]+(?:\.\d{2})?$/.test(t)))];
   const total=totalLines.length===1?Number(totalLines[0].match(/(?:RMB|¥|￥)\s*([\d,]+(?:\.\d{2})?)/)[1].replaceAll(',','')):null;
   // Store proof: one enabled checked store choice or one exact labelled value. Any other checked store,
@@ -71,7 +103,8 @@ export async function merchantDocument(plan,command=null,internal=null){
   const fulfillmentChoice=pickupRadios.length+deliveryRadios.length===0?null:pickupRadios.length>1?'ambiguous':pickupRadios.length===1&&disabled(pickupRadios[0])?'disabled':pickupRadios.length===1&&checked(pickupRadios[0])?(deliveryChecked.length?'conflict':'pickup'):deliveryChecked.length>1?'conflict':deliveryChecked.length===1?'delivery':'unselected';
   const deliveryProse=texts.some(t=>/^(?:送货|配送)/.test(t));
   const pickupShown=fulfillmentChoice!==null?fulfillmentChoice==='pickup':(texts.includes('店内取货')||texts.includes('到店取货'))&&!deliveryProse;
-  const purchase={itemVerified:exactProduct&&qty===1&&Number.isFinite(total),verified:exactProduct&&qty===1&&Number.isFinite(total)&&!!store&&pickupShown,model:exactProduct?plan.product.model:null,capacity:exactProduct?plan.product.capacity:null,color:exactProduct?plan.product.color:null,quantity:qty,totalCny:total,store,fulfillment:pickupShown?'pickup':null};
+  // C-019: bag availability prose (store name, 今天取货, 店内取货) is not a selected fulfillment or store in the observed bag.
+  const purchase={itemVerified:exactProduct&&qty===1&&Number.isFinite(total),verified:!bagScoped&&exactProduct&&qty===1&&Number.isFinite(total)&&!!store&&pickupShown,model:exactProduct?plan.product.model:null,capacity:exactProduct?plan.product.capacity:null,color:exactProduct?plan.product.color:null,quantity:qty,totalCny:total,store:bagScoped?null:store,fulfillment:!bagScoped&&pickupShown?'pickup':null};
   let phase='UNKNOWN';
   if(main.querySelector('input[type="password"],input[autocomplete="one-time-code"]')||texts.includes('以游客身份继续'))phase='AUTH';
   else if(texts.some(t=>t==='Apple 和你的数据隐私'))phase='CONSENT';
@@ -82,9 +115,10 @@ export async function merchantDocument(plan,command=null,internal=null){
   else if(exact('继续填写取货详情').length===1&&purchase.fulfillment==='pickup'&&purchase.store)phase='SLOTS';
   else if(findRadio('支付宝').length===1)phase='PAYMENT';
   else if(findRadio('我要取货').length===1)phase='FULFILLMENT';
-  else if(exact('结账').length===1||exact('安全结账').length===1)phase='BAG';
-  else if(exact('查看购物袋').length===1)phase='ACCESSORIES';
-  else if(exact('添加到购物袋').length===1)phase='VARIANT';
+  else if(bag?!!bag.checkout:!bagScoped&&(exact('结账').length===1||exact('安全结账').length===1))phase='BAG';
+  // C-019-R2: unknown cart scope or ambiguous checkout on an anchored bag stays UNKNOWN; generic navigation needs no anchor.
+  else if(!bagScoped&&exact('查看购物袋').length===1)phase='ACCESSORIES';
+  else if(!bagScoped&&exact('添加到购物袋').length===1)phase='VARIANT';
   else if(u.pathname.startsWith('/shop/buy-iphone/'))phase='ENTRY';
   const out={schema:'applebuy-merchant-read/v1',phase,purchase,verifiedStep:!['UNKNOWN','AUTH','CONSENT','PROCESSING'].includes(phase),path:u.pathname,feedback:null,acceptedSlot:null,slotSummary:null,continueAvailable:exact('继续').length===1,variantVerified:false,quotedCny:null,listComplete:false,dates:[],times:[],selectedDate:null,paymentMethod:findRadio('支付宝').some(checked)?'支付宝':null,extras:null,existingOrdersChecked:false,orderRefHash:null,orderDetailLink:null};
   out.fulfillmentChoice=fulfillmentChoice;
@@ -116,10 +150,12 @@ export async function merchantDocument(plan,command=null,internal=null){
   if(configured&&quote){out.variantVerified=true;out.quotedCny=Number(quote[1].replaceAll(',',''));}
   if(texts.some(t=>t.includes('暂未发售')||t.includes('机型将在获得批准后发售'))&&buttons.some(b=>name(b)==='继续'&&disabled(b))&&!buttons.some(b=>name(b)==='继续'&&!disabled(b)))out.phase=phase='PRELAUNCH';
   // Merchant no-extra evidence (bag/review): one separate product line, no extra marker. Human consent never substitutes.
+  // C-019: only the observed bag (phase BAG) excludes recognized unselected offers; REVIEW and every other page are unchanged.
   if(phase==='REVIEW'||phase==='BAG'){
-    const marker=texts.some(t=>(/AppleCare/.test(t)&&!t.includes(NO_APPLECARE))||(/折抵|换购/.test(t)&&!t.includes(NO_TRADE_IN)));
-    const items=lines(productRe).length;
-    out.extras=out.extrasConflict||marker||items>1||quantityLines.length>1?true:purchase.itemVerified&&items===1?false:null;
+    const b=phase==='BAG'?bag:null,markerText=t=>(/AppleCare/.test(t)&&!t.includes(NO_APPLECARE))||(/折抵|换购/.test(t)&&!t.includes(NO_TRADE_IN));
+    const marker=b?textEls.some(x=>b.free(x.e)&&markerText(b.strip(x.e)))||(!!b.line&&markerText(b.strip(b.line))):texts.some(markerText);
+    const items=b?b.items:lines(productRe).length;
+    out.extras=out.extrasConflict||marker||items>1||quantityLines.length>1||(!!b&&(b.stray||b.otherRemove))?true:purchase.itemVerified&&items===1?false:null;
   }
   const timeSelects=selects.filter(e=>[...e.options].some(o=>/^\d{2}:\d{2}\s*[-–—至]\s*\d{2}:\d{2}$/.test(norm(o.textContent))));
   const datePattern=/^(?:(?:\d{4}年)?\d{1,2}月\d{1,2}日(?:\s*(?:周|星期)[一二三四五六日天])?|(?:January|February|March|April|May|June|July|August|September|October|November|December)\s+\d{1,2})$/;
@@ -225,8 +261,12 @@ export async function merchantDocument(plan,command=null,internal=null){
       if(out.nextChoice?.choice!==command.choice||out.nextChoice.state!=='enabled'||out.extrasConflict)throw new Error('ProductChoiceChanged');pick(command.choice);
     }else if(command.action==='continueProduct'&&phase==='ENTRY'&&specSelected&&!out.extrasConflict&&!out.nextChoice){click('继续');
     }else if(command.action==='addBag'&&phase==='VARIANT'&&out.variantVerified&&!out.nextChoice&&out.quotedCny<=plan.maxTotalCny)click('添加到购物袋');
-    else if(command.action==='viewBag'&&phase==='ACCESSORIES')click('查看购物袋');
-    else if(command.action==='checkout'&&phase==='BAG'&&purchase.itemVerified){if(exact('安全结账').length===1)click('安全结账');else click('结账');}
+    else if(command.action==='viewBag'&&phase==='ACCESSORIES'&&!bagScoped)click('查看购物袋');
+    else if(command.action==='checkout'&&phase==='BAG'&&purchase.itemVerified&&!bagScoped){if(exact('安全结账').length===1)click('安全结账');else click('结账');}
+    // C-019: observed bag checkout additionally needs merchant no-extras proof and the cap on this fresh decode; one control only.
+    else if(command.action==='checkout'&&phase==='BAG'&&bag&&purchase.itemVerified&&out.extras===false&&purchase.totalCny<=plan.maxTotalCny){
+      const b=bag.checkout;if(!b?.isConnected||!visible(b)||disabled(b))throw new Error('CurrentControlUnrecognized');touched=true;b.click();
+    }
     else if(command.action==='selectPickup'&&phase==='FULFILLMENT'&&purchase.itemVerified&&['unselected','delivery'].includes(fulfillmentChoice))pick('我要取货');
     else if(command.action==='selectStore'&&phase==='FULFILLMENT'&&purchase.itemVerified&&pickupShown&&plan.stores.includes(command.store)){
       const choices=storeRadios.filter(e=>name(e)===norm(command.store)&&!disabled(e));

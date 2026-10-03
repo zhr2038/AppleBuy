@@ -213,6 +213,8 @@ export class PurchaseJob {
       s.pending={...command,id:this.id(),documentId:o.documentId,beforePhase:o.phase,deadline:this.now()+8000};
       if(command.action==='submitOrder')s.finalIntent.sent=true;
       if(command.action==='addBag'){s.bagAddStarted=true;s.quotedCny=o.quotedCny;}
+      // C-019 (Claude): checkout leaves a bag that already holds the item; this task never adds afterwards (kept if untouched).
+      if(command.action==='checkout')s.bagAddStarted=true;
       if(!PUBLIC.has(command.action))s.resourceWritten=true;
       await this.save(s);
       if(this.paused||this.stopped){

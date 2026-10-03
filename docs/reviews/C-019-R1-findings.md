@@ -1,0 +1,14 @@
+# C019 R1 — invalid observed cart scope falls through to generic checkout
+
+Codex independently ran the initial135-file candidate SHA `050df4aa137fc58e5b98eb4b7c6789b435e858396ba5e5990aa3d6a0e5951ed9`:500/500. Actual original-session Claude implementation was first-party Opus5.5/xhigh, success without permission denial, timeout or provider quota. Its two-source patch and one new7-case implementation file stay preserved. The initial candidate is **not accepted** because the stronger independent review below demonstrates unsafe scope fallback.
+
+The initial repair sets bag=null when `ol[data-autom="bag-items"]` is duplicated or hidden, then permits the generic decoder and generic checkout gate to recognize unrelated visible item/quantity text. These explicitly SYNTHETIC mutations reproduce the defect:
+
+1. From the single-checkout no-upsell positive bag fixture, add harmless leading product prose so only the H2 is product-prefixed, then add a second purchased-items OL anchor. Despite two competing cart scopes, current phase is BAG, itemVerified=true, extras=false; an authorized FAKE page command returns delivered=true and clicks checkout once.
+2. Hide the purchased-items OL and put exact item and `数量：1` prose outside that hidden cart. The legacy path borrows those facts and again declares BAG and clicks the FAKE checkout.
+
+The unmodified single visible cart positive control still succeeds. All original12 reviewer cases are preserved verbatim; Codex appended3 cases, not weakened or replaced them. Full after append:501/503, with just the two new negatives failing and all original500 passing. Exact R1 input is135 files SHA `39855f09a527a8494a4f58f9bc9269d01daaf0ecb65e3946fc25c07e71eff3d3`,69 test/review paths. Only the independent review file differs from the initial candidate; no new Codex business implementation.
+
+Acceptance: the presence of duplicated or hidden known purchased-cart anchors cannot become a legacy positive proof. Preserve current human AUTH/other conservative gates and the established single visible cart positive, and preserve legacy tests with no observed-cart anchors. Both page command and controller must send zero actions on the two invalid scopes, with structured positively untouched page results. Native structures/refusal/order contracts remain unverified. No real checkout was attempted.
+
+Count correction: the original C019 task/report described67 protected input paths; root's actual inventory proves68 C019 input test/review paths. All68 were unchanged by that implementation. R1 adds no new protected path but includes the author's implementation test, so its input has69 test/review paths. Use actual manifests and byte proofs, not those earlier count labels. The author-reported local spend is not independently confirmed incremental billing; structured modelUsage is retained as resumed-session counters.

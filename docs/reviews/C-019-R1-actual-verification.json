@@ -1,0 +1,78 @@
+{
+  "recordedAt": "2026-10-03T06:46:42.645228+00:00",
+  "task": "C-019-R1",
+  "requestedModel": "claude-opus-5-5",
+  "requestedEffort": "xhigh",
+  "actualModels": [
+    "claude-opus-5-5"
+  ],
+  "modelVerified": true,
+  "actualPrimaryModels": [
+    "claude-opus-5-5"
+  ],
+  "actualAuxiliaryModels": [],
+  "status": "returned_for_review",
+  "subtype": "success",
+  "isError": false,
+  "exitCode": 0,
+  "durationSeconds": 165.31,
+  "cliLimits": {
+    "turns": 22,
+    "wallSeconds": 900,
+    "usd": 5.0
+  },
+  "reportedTurns": 26,
+  "usageAccountingScope": "modelUsage counters are captured as reported for this resumed session; not incremental billing",
+  "modelUsage": {
+    "claude-opus-5-5": {
+      "inputTokens": 141371,
+      "outputTokens": 1762654,
+      "thinkingTokens": 1003151,
+      "cacheReadInputTokens": 86235696,
+      "cacheCreationInputTokens": 5049599,
+      "webSearchRequests": 0,
+      "costUSD": 93.25562419999991,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 128000,
+      "canonicalModel": "claude-opus-5-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "permissionDenials": [],
+  "timedOut": false,
+  "ownedCleanupConfirmed": true,
+  "osLeaseAcquiredAndReleased": true,
+  "tools": {
+    "Read": 11,
+    "Bash": 5,
+    "Edit": 6,
+    "Write": 2,
+    "Grep": 1
+  },
+  "changedSource": [
+    "web/checkout-connector/page-program.js"
+  ],
+  "addedSource": [
+    "test/checkout-c019-scope.test.ts"
+  ],
+  "protectedInputFiles": 69,
+  "allProtectedUnchanged": true,
+  "writeScopeMatches": true,
+  "candidateFiles": 136,
+  "candidateSha256": "43023e74c1fd0d19a688f099f1492a971a3e39d2ecf9e08755e1643a999b8722",
+  "newProviderQuotaEvent": false,
+  "preciseBilateralAgreement": false,
+  "nativePurchasingReady": false,
+  "independentTests": {
+    "tests": 506,
+    "pass": 506,
+    "fail": 0,
+    "cancelled": 0,
+    "skipped": 0,
+    "todo": 0,
+    "exitCode": 0,
+    "recordedAt": "2026-10-03T06:46:48.870101+00:00",
+    "durationMs": 6185.2054
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "recordedAt": "2026-10-03T07:08:08.365772+00:00",
+  "candidateFiles": 136,
+  "candidateSha256": "0094ff4f62c852ebebb955097358b546705d01c477940d11610352333d5ac34c",
+  "fullIndependentTests": {
+    "tests": 511,
+    "pass": 507,
+    "fail": 4,
+    "cancelled": 0,
+    "skipped": 0,
+    "todo": 0
+  },
+  "exitCode": 1,
+  "allOriginal506Passed": true,
+  "newIndependentCases": 5,
+  "newCasesPassed": 1,
+  "newCasesFailed": 4,
+  "original15ReviewerCasesBytePreserved": true,
+  "businessSourceUnchangedFromRejected136Candidate": true,
+  "fakeDomAndCommandsOnly": true,
+  "actualClaudeCrossReviewVerdict": "DISAGREE",
+  "crossReviewFindingIndependentlyReproduced": true,
+  "preciseBilateralAgreement": false,
+  "providerQuotaEvent": false,
+  "realPurchasingReady": false
+}

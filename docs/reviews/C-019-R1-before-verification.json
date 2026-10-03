@@ -1,0 +1,21 @@
+{
+  "recordedAt": "2026-10-03T06:40:49.084402+00:00",
+  "exitCode": 1,
+  "tests": 503,
+  "pass": 501,
+  "fail": 2,
+  "cancelled": 0,
+  "skipped": 0,
+  "todo": 0,
+  "allInitial500CasesPass": true,
+  "original12ReviewerCasesVerbatimPreserved": true,
+  "rootOnlyAppendThreeCases": true,
+  "initialSourceCandidateSha256": "050df4aa137fc58e5b98eb4b7c6789b435e858396ba5e5990aa3d6a0e5951ed9",
+  "inputFiles": 135,
+  "inputSha256": "39855f09a527a8494a4f58f9bc9269d01daaf0ecb65e3946fc25c07e71eff3d3",
+  "protectedInputTestReviewPaths": 69,
+  "claudeBusinessDeltaInThisRevision": false,
+  "actualNewInvocation": false,
+  "newProviderQuotaEvent": false,
+  "exactBilateralAgreement": false
+}

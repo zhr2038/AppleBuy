@@ -1,0 +1,79 @@
+{
+  "recordedAt": "2026-10-03T06:35:46.053075+00:00",
+  "task": "C-019-OBSERVED-BAG",
+  "requestedModel": "claude-opus-5-5",
+  "requestedEffort": "xhigh",
+  "actualModels": [
+    "claude-opus-5-5"
+  ],
+  "modelVerified": true,
+  "actualPrimaryModels": [
+    "claude-opus-5-5"
+  ],
+  "actualAuxiliaryModels": [],
+  "status": "returned_for_review",
+  "subtype": "success",
+  "isError": false,
+  "exitCode": 0,
+  "durationSeconds": 1099.28,
+  "cliLimits": {
+    "turns": 32,
+    "wallSeconds": 1200,
+    "usd": 8.0
+  },
+  "reportedTurns": 37,
+  "usageAccountingScope": "modelUsage counters are captured as reported for this resumed session; not incremental billing",
+  "modelUsage": {
+    "claude-opus-5-5": {
+      "inputTokens": 141349,
+      "outputTokens": 1744779,
+      "thinkingTokens": 998383,
+      "cacheReadInputTokens": 84431208,
+      "cacheCreationInputTokens": 4961178,
+      "webSearchRequests": 0,
+      "costUSD": 91.82977059999992,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 128000,
+      "canonicalModel": "claude-opus-5-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "permissionDenials": [],
+  "timedOut": false,
+  "ownedCleanupConfirmed": true,
+  "osLeaseAcquiredAndReleased": true,
+  "tools": {
+    "Read": 16,
+    "Bash": 6,
+    "Edit": 9,
+    "Write": 2,
+    "Grep": 2
+  },
+  "changedSource": [
+    "web/checkout-connector/job.js",
+    "web/checkout-connector/page-program.js"
+  ],
+  "addedSource": [
+    "test/checkout-c019-observed-bag.test.ts"
+  ],
+  "protectedInputFiles": 68,
+  "allProtectedUnchanged": true,
+  "writeScopeMatches": true,
+  "candidateFiles": 135,
+  "candidateSha256": "050df4aa137fc58e5b98eb4b7c6789b435e858396ba5e5990aa3d6a0e5951ed9",
+  "newProviderQuotaEvent": false,
+  "preciseBilateralAgreement": false,
+  "nativePurchasingReady": false,
+  "independentTests": {
+    "tests": 500,
+    "pass": 500,
+    "fail": 0,
+    "cancelled": 0,
+    "skipped": 0,
+    "todo": 0,
+    "exitCode": 0,
+    "recordedAt": "2026-10-03T06:35:52.309669+00:00",
+    "durationMs": 6212.4839
+  }
+}

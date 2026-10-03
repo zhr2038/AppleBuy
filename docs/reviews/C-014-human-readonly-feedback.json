@@ -1,10 +1,10 @@
 {
   "schema": "applebuy-native-human-feedback/v1",
   "recordedLocalDate": "2026-10-03",
-  "acceptedSourceManifest": "docs/reviews/C-017-candidate-manifest.json",
-  "acceptedSourceFiles": 131,
-  "acceptedSourceSha256": "5386e64d1c2e63050ebfb1a94cf7fe47e014e2a974864711cfbef549c3575223",
-  "acceptedSourceTests": 455,
+  "acceptedSourceManifest": "docs/reviews/C-019-R2-candidate-manifest.json",
+  "acceptedSourceFiles": 137,
+  "acceptedSourceSha256": "12c6eeae9220e8e08e610650685e67689897d54d77874b7dbd4e25c91276da41",
+  "acceptedSourceTests": 515,
   "events": [
     {
       "source": "human supplied control-page status, not an independent extension-runtime inspection",
@@ -31,6 +31,27 @@
       "actualNativeCauseVerified": false,
       "validationPassed": false,
       "stateResetRequested": false
+    },
+    {
+      "status": "公开配置校验完成：已选不折抵换购、不加 AppleCare+，规格和价格一致；停在加入购物袋之前，未加入购物袋",
+      "source": "human-reported native control status",
+      "independentPreBagEndpointObserved": false
+    },
+    {
+      "subsequentAction": "一键开始",
+      "source": "human explicitly identified the subsequent action; not the validation button"
+    },
+    {
+      "status": "已暂停：本控制页进行中的准备已取消，未创建执行，未发出新动作；如需继续请重新明确操作",
+      "source": "human-reported Pause status",
+      "independentInternalRuntimeInspection": false
+    },
+    {
+      "source": "direct human steering",
+      "statusText": "是我删除了购物车",
+      "deleteAttributedToHumanReportOnly": true,
+      "codexDeletedBag": false,
+      "oldTaskHistoryEraseAuthorized": false
     }
   ],
   "independentPublicObservation": {
@@ -49,11 +70,53 @@
       "method": "supported read-only DOM snapshot in the same public Pro tab"
     }
   },
-  "nextBoundedStep": "Pause blind native retries; reproduce transport/persistence evidence ordering offline and dispatch an exact original-session repair if independently demonstrated. Preserve native old-task and validation history.",
+  "nextBoundedStep": "Human reload existing connector and Observe current Pro product only after exact acceptance; no new bag/slot/order authority. Native identity/API result pending; C014 not dispatched. Preserve cleared bag and old history.",
   "c014ActuallyDispatched": false,
   "realPurchasingReady": false,
   "newPurchaseOrResourceAuthorization": false,
   "internalExtensionToolPolicyBypassed": false,
   "providerQuotaEvent": false,
-  "shutdownTriggerSatisfied": false
+  "shutdownTriggerSatisfied": false,
+  "priorAcceptedSourceAtFailedReport": {
+    "acceptedSourceManifest": "docs/reviews/C-017-candidate-manifest.json",
+    "acceptedSourceFiles": 131,
+    "acceptedSourceSha256": "5386e64d1c2e63050ebfb1a94cf7fe47e014e2a974864711cfbef549c3575223",
+    "acceptedSourceTests": 455
+  },
+  "currentDetailedObservation": "docs/reviews/C-019-current-public-handoff.json",
+  "publicConfigValidationHumanReportedPassed": true,
+  "publicConfigPreBagEndpointIndependentlyObserved": false,
+  "priorIndependentBagObservation": {
+    "method": "supported read-only public DOM in human Chrome",
+    "url": "https://www.apple.com.cn/shop/bag",
+    "exactItem": "iPhone 18 Pro 256GB 黑色",
+    "quantity": 1,
+    "totalCny": 9999,
+    "inlineAppleCareOfferIsNotPurchasedLine": true,
+    "codexMerchantClicksOrWrites": 0,
+    "scope": "historical one-item bag before human-reported deletion"
+  },
+  "currentIndependentPublicObservation": {
+    "source": "supported read-only DOM in current human Chrome public product tab",
+    "url": "https://www.apple.com.cn/shop/buy-iphone/iphone-18-pro/mjt74ch/a",
+    "selectedModel": "iPhone 18 Pro",
+    "selectedCapacity": "256GB",
+    "selectedColor": "黑色",
+    "noTradeInChecked": true,
+    "noAppleCareChecked": true,
+    "quotedCny": 9999,
+    "addToBagEnabled": true,
+    "codexMerchantClicksOrWrites": 0,
+    "currentBagContentsNotReobserved": true
+  },
+  "currentConfiguredPublicEndpointIndependentlyObserved": true,
+  "priorAcceptedSourceAtSuccessfulReport": {
+    "acceptedSourceManifest": "docs/reviews/C-018-candidate-manifest.json",
+    "acceptedSourceFiles": 133,
+    "acceptedSourceSha256": "4ead4c58aa4e9551db8b1c631fedec39a3a53e98ca3ee99f33d9e5fcff2e8fa5",
+    "acceptedSourceTests": 481
+  },
+  "acceptedOnlyOffline": true,
+  "currentReloadConfirmed": false,
+  "nativeLoadedIdentityVerified": false
 }

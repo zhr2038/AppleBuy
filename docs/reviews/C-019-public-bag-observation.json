@@ -1,0 +1,125 @@
+{
+  "schema": "applebuy-supported-public-bag-observation/v1",
+  "recordedAt": "2026-10-03T06:15:39.594408+00:00",
+  "method": "supported read-only DOM/AX observations in the human Chrome; no internal extension access",
+  "humanEvents": [
+    {
+      "status": "公开配置校验完成：已选不折抵换购、不加 AppleCare+，规格和价格一致；停在加入购物袋之前，未加入购物袋",
+      "source": "human-reported native control status",
+      "independentPreBagEndpointObserved": false
+    },
+    {
+      "subsequentAction": "一键开始",
+      "source": "human explicitly identified the subsequent action; not the validation button"
+    },
+    {
+      "status": "已暂停：本控制页进行中的准备已取消，未创建执行，未发出新动作；如需继续请重新明确操作",
+      "source": "human-reported Pause status",
+      "independentInternalRuntimeInspection": false
+    }
+  ],
+  "publicObservation": {
+    "url": "https://www.apple.com.cn/shop/bag",
+    "title": "购物袋 - Apple (中国大陆)",
+    "main": {
+      "tag": "DIV",
+      "role": "main"
+    },
+    "bagLine": {
+      "title": "iPhone 18 Pro 256GB 黑色",
+      "quantity": 1,
+      "productLink": "/shop/product/mjt74ch/a",
+      "visiblePurchasedProductLines": 1
+    },
+    "totalCny": 9999,
+    "actualSubtotalCny": 9999,
+    "checkoutButtons": [
+      {
+        "text": "结账",
+        "dataAutom": "checkout",
+        "id": "shoppingCart.actions.navCheckout",
+        "containerClass": "row rs-bag-checkoutbutton-header",
+        "visible": true,
+        "disabled": false
+      },
+      {
+        "text": "结账",
+        "dataAutom": "checkout",
+        "id": "shoppingCart.actions.checkout",
+        "containerClass": "row rs-bag-checkoutbutton-bottom",
+        "visible": true,
+        "disabled": false
+      }
+    ],
+    "quantityControls": [
+      {
+        "label": "数量",
+        "dataAutom": "item-quantity-dropdown",
+        "visible": true,
+        "selectedText": "1"
+      },
+      {
+        "class": "rs-quantity-hidden-select",
+        "label": "",
+        "visible": false,
+        "selectedText": "1"
+      }
+    ],
+    "purchasedList": {
+      "tag": "OL",
+      "role": "list",
+      "dataAutom": "bag-items",
+      "class": "rs-bag-items rs-iteminfos"
+    },
+    "purchasedLine": {
+      "tag": "LI",
+      "role": "listitem",
+      "dataAutom": "bag-item-1",
+      "class": "rs-bag-item rs-iteminfo-wrap"
+    },
+    "productHeading": {
+      "tag": "H2",
+      "class": "rs-iteminfo-title"
+    },
+    "appleCareOffer": {
+      "text": "添加 适用于 iPhone 18 Pro 的 AppleCare+ 服务计划 (同时加入 iPhone 年年焕新计划) - RMB 1,799",
+      "containerClass": "rs-inline-recommendation rs-iteminfo-child",
+      "purchasedLine": false,
+      "offerButtonClickedByCodex": false
+    },
+    "totalPair": {
+      "parentTag": "DIV",
+      "children": [
+        {
+          "tag": "DIV",
+          "text": "总计"
+        },
+        {
+          "tag": "DIV",
+          "text": "RMB 9,999"
+        }
+      ]
+    },
+    "storeAvailabilityText": "Apple 大连恒隆广场；今天取货",
+    "selectedPickupFulfillmentProven": false,
+    "slotHoldProven": false,
+    "noTradeInSelectionIndependentlyVerified": false,
+    "oldGenericProTabAbsentFromCurrentInventory": true
+  },
+  "publicConfigStatusQualifiedAsHumanReportedSuccess": true,
+  "nativeLoadedIdentityVerified": false,
+  "nativeApiExecutionIndependentlyVerified": false,
+  "currentC018Source": {
+    "files": 133,
+    "sha256": "4ead4c58aa4e9551db8b1c631fedec39a3a53e98ca3ee99f33d9e5fcff2e8fa5",
+    "unchanged": true
+  },
+  "codexMerchantClicksOrWrites": 0,
+  "privateInputValuesOrAccountDetailsRead": false,
+  "newOrderOrSlotAuthorization": false,
+  "oldSingleProOrderAuthorizationConsumed": true,
+  "validationCausedBagTransitionProven": false,
+  "startCausedBagTransitionProven": false,
+  "internalPolicyBypassed": false,
+  "realPurchasingReady": false
+}

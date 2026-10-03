@@ -1,0 +1,22 @@
+{
+  "recordedAt": "2026-10-03T06:15:45.629940+00:00",
+  "exitCode": 1,
+  "tests": 493,
+  "pass": 489,
+  "fail": 4,
+  "cancelled": 0,
+  "skipped": 0,
+  "todo": 0,
+  "all481OldCasesPassed": true,
+  "newIndependentCases": 12,
+  "newFailures": 4,
+  "onlyNewPath": "review/c019-observed-bag.test.ts",
+  "inputFiles": 134,
+  "inputSha256": "72923741c7f01f39ad5413c047bc8b6f64ba8834de32f0fe72162734e5fdccf2",
+  "all133InputFilesUnchanged": true,
+  "terminalInvocationRecords": 43,
+  "activeInvocationRecords": 0,
+  "osLeaseAcquiredAndReleased": true,
+  "actualNewClaudeInvocation": false,
+  "providerQuotaEvent": false
+}

@@ -1,0 +1,40 @@
+{
+  "scope": "exact9-file C019 R2 connector; scoped offline agreement; native readonly Observe pending",
+  "candidateManifest": "docs/reviews/C-019-R2-candidate-manifest.json",
+  "candidateFiles": 137,
+  "candidateSha256": "12c6eeae9220e8e08e610650685e67689897d54d77874b7dbd4e25c91276da41",
+  "files": {
+    "web/checkout-connector/chrome-port.js": "247010e9d458a56b3fdd4c91b6024018fd5e81f20e77df38c47ae8fa8553c8fd",
+    "web/checkout-connector/control.html": "78b3907a64163b156b781483d6ea2b749e5b02033115f23a5b72a56b349ca570",
+    "web/checkout-connector/control.js": "08dbd7cfe0170862cddfd0f788f3e8a585ba12ed4cf9369f4f14f2beee405edf",
+    "web/checkout-connector/job.js": "5a49b65fbcb7786905db2a64e5db38748610f33d8748e2d87ba3cd27009ae4be",
+    "web/checkout-connector/manifest.json": "872e16c3a19ffd24c2b84213ec079463e97872af58ad424153ae35a8c60c1d0d",
+    "web/checkout-connector/open.html": "ff5010007a6bd18358606f60f16aed96a0304dc6669db7cbe1271597027c149e",
+    "web/checkout-connector/open.js": "1e50610d766d92e5bd4271a3746b2667485fa5bd9cae7121b02f06bb95add1b8",
+    "web/checkout-connector/owner.js": "2aa17b6b1666dabe757c56e620a29b8c2f62130d6993b8ff988665bd262577ed",
+    "web/checkout-connector/page-program.js": "537076f05e71e8ad2c40fcd09cbc379774dc711fdc4ac13b2c5237f9fd9a239f"
+  },
+  "zipSha256": "01f6bd072e07172994756f8aa3010e2b5d9840cda1c0e9ef0224f165b1f362bc",
+  "permissions": [
+    "scripting",
+    "storage",
+    "activeTab"
+  ],
+  "optionalHostPermissions": [
+    "https://www.apple.com.cn/*",
+    "https://*.www.apple.com.cn/*"
+  ],
+  "sourceScopeBilateralAgreement": true,
+  "installationConsentReceived": true,
+  "currentWwwHostConsentReceived": true,
+  "newPermissionsIntroduced": false,
+  "currentReloadConfirmed": false,
+  "installedSourceIdentityVerified": false,
+  "actualHostGrantVerified": false,
+  "nativeApiExecutionVerified": false,
+  "previousPublicValidationHumanReportedPassed": true,
+  "currentPublicProductEndpointIndependentlyObserved": true,
+  "currentBagHumanReportedDeleted": true,
+  "newMerchantMutationAuthorized": false,
+  "realPurchasingReady": false
+}

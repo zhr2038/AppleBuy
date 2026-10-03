@@ -1,0 +1,540 @@
+{
+  "recordedAt": "2026-10-03T06:55:42.758022+00:00",
+  "osLeaseAcquiredAndReleased": true,
+  "allDispatchRecordsTerminal": true,
+  "settingsSha256": "778cd85d79b8b1609cd225fb7b4035116912c2be6e28a9c6e6510e4c98d361a1",
+  "invocations": [
+    {
+      "task": "C-019-OBSERVED-BAG",
+      "status": "returned_for_review",
+      "actualModelVerified": true,
+      "ownedCleanupConfirmed": true,
+      "recordedRootPidAbsentOrExitedAtAudit": true,
+      "tools": {
+        "Read": 16,
+        "Bash": 6,
+        "Edit": 9,
+        "Write": 2,
+        "Grep": 2
+      },
+      "freshReads": [
+        {
+          "path": "docs/tasks/C-019-OBSERVED-BAG.md",
+          "offset": 1,
+          "limit": null,
+          "expectedInputLines": 33,
+          "returnedLines": 33,
+          "first": 1,
+          "last": 33,
+          "completeRequestedRange": true,
+          "completeFileRead": true,
+          "resultError": false
+        },
+        {
+          "path": "docs/requirements.md",
+          "offset": 1,
+          "limit": null,
+          "expectedInputLines": 88,
+          "returnedLines": 88,
+          "first": 1,
+          "last": 88,
+          "completeRequestedRange": true,
+          "completeFileRead": true,
+          "resultError": false
+        },
+        {
+          "path": "docs/reviews/C-019-observed-bag-findings.md",
+          "offset": 1,
+          "limit": null,
+          "expectedInputLines": 14,
+          "returnedLines": 14,
+          "first": 1,
+          "last": 14,
+          "completeRequestedRange": true,
+          "completeFileRead": true,
+          "resultError": false
+        },
+        {
+          "path": "docs/reviews/C-019-public-bag-observation.json",
+          "offset": 1,
+          "limit": null,
+          "expectedInputLines": 126,
+          "returnedLines": 126,
+          "first": 1,
+          "last": 126,
+          "completeRequestedRange": true,
+          "completeFileRead": true,
+          "resultError": false
+        },
+        {
+          "path": "docs/reviews/C-019-before-verification.json",
+          "offset": 1,
+          "limit": null,
+          "expectedInputLines": 23,
+          "returnedLines": 23,
+          "first": 1,
+          "last": 23,
+          "completeRequestedRange": true,
+          "completeFileRead": true,
+          "resultError": false
+        },
+        {
+          "path": "docs/reviews/C-018-bounded-agreement.md",
+          "offset": 1,
+          "limit": null,
+          "expectedInputLines": 16,
+          "returnedLines": 16,
+          "first": 1,
+          "last": 16,
+          "completeRequestedRange": true,
+          "completeFileRead": true,
+          "resultError": false
+        },
+        {
+          "path": "docs/reviews/C-019-input-candidate-manifest.json",
+          "offset": 1,
+          "limit": null,
+          "expectedInputLines": 141,
+          "returnedLines": 141,
+          "first": 1,
+          "last": 141,
+          "completeRequestedRange": true,
+          "completeFileRead": true,
+          "resultError": false
+        },
+        {
+          "path": "review/c019-observed-bag.test.ts",
+          "offset": 1,
+          "limit": null,
+          "expectedInputLines": 114,
+          "returnedLines": 114,
+          "first": 1,
+          "last": 114,
+          "completeRequestedRange": true,
+          "completeFileRead": true,
+          "resultError": false
+        },
+        {
+          "path": "web/checkout-connector/page-program.js",
+          "offset": 1,
+          "limit": null,
+          "expectedInputLines": 272,
+          "returnedLines": 272,
+          "first": 1,
+          "last": 272,
+          "completeRequestedRange": true,
+          "completeFileRead": true,
+          "resultError": false
+        },
+        {
+          "path": "web/checkout-connector/chrome-port.js",
+          "offset": 1,
+          "limit": null,
+          "expectedInputLines": 43,
+          "returnedLines": 43,
+          "first": 1,
+          "last": 43,
+          "completeRequestedRange": true,
+          "completeFileRead": true,
+          "resultError": false
+        },
+        {
+          "path": "web/checkout-connector/job.js",
+          "offset": 1,
+          "limit": null,
+          "expectedInputLines": 240,
+          "returnedLines": 240,
+          "first": 1,
+          "last": 240,
+          "completeRequestedRange": true,
+          "completeFileRead": true,
+          "resultError": false
+        },
+        {
+          "path": "test/checkout-page-program.test.ts",
+          "offset": 1,
+          "limit": null,
+          "expectedInputLines": 73,
+          "returnedLines": 73,
+          "first": 1,
+          "last": 73,
+          "completeRequestedRange": true,
+          "completeFileRead": true,
+          "resultError": false
+        },
+        {
+          "path": "test/checkout-job.test.ts",
+          "offset": 1,
+          "limit": null,
+          "expectedInputLines": 133,
+          "returnedLines": 133,
+          "first": 1,
+          "last": 133,
+          "completeRequestedRange": true,
+          "completeFileRead": true,
+          "resultError": false
+        },
+        {
+          "path": "test/checkout-r1-public-configuration.test.ts",
+          "offset": 1,
+          "limit": null,
+          "expectedInputLines": 292,
+          "returnedLines": 292,
+          "first": 1,
+          "last": 292,
+          "completeRequestedRange": true,
+          "completeFileRead": true,
+          "resultError": false
+        },
+        {
+          "path": "web/checkout-connector/page-program.js",
+          "offset": 1,
+          "limit": 125,
+          "expectedInputLines": 272,
+          "returnedLines": 125,
+          "first": 1,
+          "last": 125,
+          "completeRequestedRange": true,
+          "completeFileRead": false,
+          "resultError": false
+        },
+        {
+          "path": "web/checkout-connector/page-program.js",
+          "offset": 200,
+          "limit": 40,
+          "expectedInputLines": 272,
+          "returnedLines": 40,
+          "first": 200,
+          "last": 239,
+          "completeRequestedRange": true,
+          "completeFileRead": false,
+          "resultError": false
+        }
+      ],
+      "actualCommands": [
+        {
+          "command": "python tools/delegation/verify_candidate_manifest.py docs/reviews/C-019-input-candidate-manifest.json",
+          "resultError": false,
+          "completePersistedOutputInspected": false,
+          "stats": {},
+          "manifestReceipts": [
+            {
+              "ok": true,
+              "files": 134,
+              "sha256": "72923741c7f01f39ad5413c047bc8b6f64ba8834de32f0fe72162734e5fdccf2",
+              "mismatches": []
+            }
+          ]
+        },
+        {
+          "command": "node --test review/c019-observed-bag.test.ts",
+          "resultError": false,
+          "completePersistedOutputInspected": false,
+          "stats": {
+            "tests": 12,
+            "pass": 12,
+            "fail": 0,
+            "cancelled": 0,
+            "skipped": 0,
+            "todo": 0
+          },
+          "manifestReceipts": []
+        },
+        {
+          "command": "node --test test/checkout-c019-observed-bag.test.ts",
+          "resultError": true,
+          "completePersistedOutputInspected": false,
+          "stats": {
+            "tests": 7,
+            "pass": 6,
+            "fail": 1,
+            "cancelled": 0,
+            "skipped": 0,
+            "todo": 0
+          },
+          "manifestReceipts": []
+        },
+        {
+          "command": "node --test test/checkout-c019-observed-bag.test.ts",
+          "resultError": true,
+          "completePersistedOutputInspected": false,
+          "stats": {
+            "tests": 7,
+            "pass": 6,
+            "fail": 1,
+            "cancelled": 0,
+            "skipped": 0,
+            "todo": 0
+          },
+          "manifestReceipts": []
+        },
+        {
+          "command": "node --test test/checkout-c019-observed-bag.test.ts",
+          "resultError": false,
+          "completePersistedOutputInspected": false,
+          "stats": {
+            "tests": 7,
+            "pass": 7,
+            "fail": 0,
+            "cancelled": 0,
+            "skipped": 0,
+            "todo": 0
+          },
+          "manifestReceipts": []
+        },
+        {
+          "command": "node --test \"test/*.test.ts\" \"review/*.test.ts\"",
+          "resultError": false,
+          "completePersistedOutputInspected": true,
+          "stats": {
+            "tests": 500,
+            "pass": 500,
+            "fail": 0,
+            "cancelled": 0,
+            "skipped": 0,
+            "todo": 0
+          },
+          "manifestReceipts": []
+        }
+      ],
+      "writePaths": [
+        "docs/claude/C-019-report.md",
+        "test/checkout-c019-observed-bag.test.ts",
+        "web/checkout-connector/job.js",
+        "web/checkout-connector/page-program.js"
+      ],
+      "scope": "current invocation tool events only; no private history or thinking exported",
+      "recordedAt": "2026-10-03T06:55:42.748521+00:00"
+    },
+    {
+      "task": "C-019-R1",
+      "status": "returned_for_review",
+      "actualModelVerified": true,
+      "ownedCleanupConfirmed": true,
+      "recordedRootPidAbsentOrExitedAtAudit": true,
+      "tools": {
+        "Read": 11,
+        "Bash": 5,
+        "Edit": 6,
+        "Write": 2,
+        "Grep": 1
+      },
+      "freshReads": [
+        {
+          "path": "docs/tasks/C-019-R1.md",
+          "offset": 1,
+          "limit": null,
+          "expectedInputLines": 21,
+          "returnedLines": 21,
+          "first": 1,
+          "last": 21,
+          "completeRequestedRange": true,
+          "completeFileRead": true,
+          "resultError": false
+        },
+        {
+          "path": "docs/reviews/C-019-R1-findings.md",
+          "offset": 1,
+          "limit": null,
+          "expectedInputLines": 15,
+          "returnedLines": 15,
+          "first": 1,
+          "last": 15,
+          "completeRequestedRange": true,
+          "completeFileRead": true,
+          "resultError": false
+        },
+        {
+          "path": "docs/reviews/C-019-R1-before-verification.json",
+          "offset": 1,
+          "limit": null,
+          "expectedInputLines": 22,
+          "returnedLines": 22,
+          "first": 1,
+          "last": 22,
+          "completeRequestedRange": true,
+          "completeFileRead": true,
+          "resultError": false
+        },
+        {
+          "path": "review/c019-observed-bag.test.ts",
+          "offset": 1,
+          "limit": null,
+          "expectedInputLines": 132,
+          "returnedLines": 132,
+          "first": 1,
+          "last": 132,
+          "completeRequestedRange": true,
+          "completeFileRead": true,
+          "resultError": false
+        },
+        {
+          "path": "docs/requirements.md",
+          "offset": 1,
+          "limit": null,
+          "expectedInputLines": 88,
+          "returnedLines": 88,
+          "first": 1,
+          "last": 88,
+          "completeRequestedRange": true,
+          "completeFileRead": true,
+          "resultError": false
+        },
+        {
+          "path": "docs/reviews/C-019-public-bag-observation.json",
+          "offset": 1,
+          "limit": null,
+          "expectedInputLines": 126,
+          "returnedLines": 126,
+          "first": 1,
+          "last": 126,
+          "completeRequestedRange": true,
+          "completeFileRead": true,
+          "resultError": false
+        },
+        {
+          "path": "docs/reviews/C-019-R1-input-candidate-manifest.json",
+          "offset": 1,
+          "limit": null,
+          "expectedInputLines": 142,
+          "returnedLines": 142,
+          "first": 1,
+          "last": 142,
+          "completeRequestedRange": true,
+          "completeFileRead": true,
+          "resultError": false
+        },
+        {
+          "path": "web/checkout-connector/page-program.js",
+          "offset": 1,
+          "limit": null,
+          "expectedInputLines": 306,
+          "returnedLines": 306,
+          "first": 1,
+          "last": 306,
+          "completeRequestedRange": true,
+          "completeFileRead": true,
+          "resultError": false
+        },
+        {
+          "path": "web/checkout-connector/job.js",
+          "offset": 1,
+          "limit": null,
+          "expectedInputLines": 242,
+          "returnedLines": 242,
+          "first": 1,
+          "last": 242,
+          "completeRequestedRange": true,
+          "completeFileRead": true,
+          "resultError": false
+        },
+        {
+          "path": "web/checkout-connector/chrome-port.js",
+          "offset": 1,
+          "limit": null,
+          "expectedInputLines": 43,
+          "returnedLines": 43,
+          "first": 1,
+          "last": 43,
+          "completeRequestedRange": true,
+          "completeFileRead": true,
+          "resultError": false
+        },
+        {
+          "path": "test/checkout-c019-observed-bag.test.ts",
+          "offset": 1,
+          "limit": null,
+          "expectedInputLines": 163,
+          "returnedLines": 163,
+          "first": 1,
+          "last": 163,
+          "completeRequestedRange": true,
+          "completeFileRead": true,
+          "resultError": false
+        }
+      ],
+      "actualCommands": [
+        {
+          "command": "python tools/delegation/verify_candidate_manifest.py docs/reviews/C-019-R1-input-candidate-manifest.json",
+          "resultError": false,
+          "completePersistedOutputInspected": false,
+          "stats": {},
+          "manifestReceipts": [
+            {
+              "ok": true,
+              "files": 135,
+              "sha256": "39855f09a527a8494a4f58f9bc9269d01daaf0ecb65e3946fc25c07e71eff3d3",
+              "mismatches": []
+            }
+          ]
+        },
+        {
+          "command": "node --test review/c019-observed-bag.test.ts",
+          "resultError": true,
+          "completePersistedOutputInspected": false,
+          "stats": {
+            "tests": 15,
+            "pass": 13,
+            "fail": 2,
+            "cancelled": 0,
+            "skipped": 0,
+            "todo": 0
+          },
+          "manifestReceipts": []
+        },
+        {
+          "command": "node --test test/checkout-c019-scope.test.ts",
+          "resultError": false,
+          "completePersistedOutputInspected": false,
+          "stats": {
+            "tests": 3,
+            "pass": 3,
+            "fail": 0,
+            "cancelled": 0,
+            "skipped": 0,
+            "todo": 0
+          },
+          "manifestReceipts": []
+        },
+        {
+          "command": "node --test review/c019-observed-bag.test.ts",
+          "resultError": false,
+          "completePersistedOutputInspected": false,
+          "stats": {
+            "tests": 15,
+            "pass": 15,
+            "fail": 0,
+            "cancelled": 0,
+            "skipped": 0,
+            "todo": 0
+          },
+          "manifestReceipts": []
+        },
+        {
+          "command": "node --test \"test/*.test.ts\" \"review/*.test.ts\"",
+          "resultError": false,
+          "completePersistedOutputInspected": true,
+          "stats": {
+            "tests": 506,
+            "pass": 506,
+            "fail": 0,
+            "cancelled": 0,
+            "skipped": 0,
+            "todo": 0
+          },
+          "manifestReceipts": []
+        }
+      ],
+      "writePaths": [
+        "docs/claude/C-019-R1-report.md",
+        "test/checkout-c019-scope.test.ts",
+        "web/checkout-connector/page-program.js"
+      ],
+      "scope": "current invocation tool events only; no private history or thinking exported",
+      "recordedAt": "2026-10-03T06:55:42.757521+00:00"
+    }
+  ],
+  "providerQuotaEvent": false,
+  "fullSuiteOutputsAreAuthorRunsNotIndependentRuns": true,
+  "nativeOrRealPurchasingReady": false
+}

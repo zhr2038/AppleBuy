@@ -1,0 +1,278 @@
+{
+  "recordedAt": "2026-10-03T07:28:43.128172+00:00",
+  "task": "C-019-R2-CROSS-REVIEW",
+  "verdict": "AGREE",
+  "candidateFiles": 137,
+  "candidateSha256": "12c6eeae9220e8e08e610650685e67689897d54d77874b7dbd4e25c91276da41",
+  "sourceUnchangedAtReviewReturn": true,
+  "currentMilestoneAccepted": true,
+  "preciseBilateralAgreement": true,
+  "actualReview": {
+    "status": "returned_for_review",
+    "exitCode": 0,
+    "durationSeconds": 143.44,
+    "modelRequested": "claude-opus-5-5",
+    "effortRequested": "xhigh",
+    "modelsActual": [
+      "claude-opus-5-5"
+    ],
+    "modelVerified": true,
+    "primaryModelsActual": [
+      "claude-opus-5-5"
+    ],
+    "auxiliaryModelsActual": [],
+    "structuredModelUsage": {
+      "claude-opus-5-5": {
+        "inputTokens": 222416,
+        "outputTokens": 1872704,
+        "thinkingTokens": 1058717,
+        "cacheReadInputTokens": 89955552,
+        "cacheCreationInputTokens": 5477458,
+        "webSearchRequests": 0,
+        "costUSD": 99.9437383999999,
+        "contextWindow": 1000000,
+        "maxOutputTokens": 128000,
+        "canonicalModel": "claude-opus-5-5",
+        "provider": "firstParty",
+        "costBasis": "list"
+      }
+    },
+    "usageAccountingScope": "reported resumed-session counters; not incremental task billing",
+    "cliLimits": {
+      "turns": 32,
+      "wallSeconds": 1200,
+      "usd": 6.0
+    },
+    "reportedTurns": 25,
+    "subtype": "success",
+    "isError": false,
+    "permissionDenials": [],
+    "timedOut": false,
+    "tools": {
+      "Read": 20,
+      "Bash": 2,
+      "Grep": 2
+    },
+    "freshCompleteReads": [
+      {
+        "path": "docs/tasks/C-019-R2-CROSS-REVIEW.md",
+        "offset": 1,
+        "limit": null,
+        "expectedLinesIncludingEmptyEof": 34,
+        "returnedLines": 34,
+        "completeFileRead": true,
+        "error": false
+      },
+      {
+        "path": "docs/requirements.md",
+        "offset": 1,
+        "limit": null,
+        "expectedLinesIncludingEmptyEof": 88,
+        "returnedLines": 88,
+        "completeFileRead": true,
+        "error": false
+      },
+      {
+        "path": "docs/reviews/C-019-R2-candidate-manifest.json",
+        "offset": 1,
+        "limit": null,
+        "expectedLinesIncludingEmptyEof": 144,
+        "returnedLines": 144,
+        "completeFileRead": true,
+        "error": false
+      },
+      {
+        "path": "docs/reviews/C-019-R2-independent-review.md",
+        "offset": 1,
+        "limit": null,
+        "expectedLinesIncludingEmptyEof": 22,
+        "returnedLines": 22,
+        "completeFileRead": true,
+        "error": false
+      },
+      {
+        "path": "docs/reviews/C-019-R2-actual-verification.json",
+        "offset": 1,
+        "limit": null,
+        "expectedLinesIncludingEmptyEof": 284,
+        "returnedLines": 284,
+        "completeFileRead": true,
+        "error": false
+      },
+      {
+        "path": "docs/reviews/C-019-R2-findings.md",
+        "offset": 1,
+        "limit": null,
+        "expectedLinesIncludingEmptyEof": 14,
+        "returnedLines": 14,
+        "completeFileRead": true,
+        "error": false
+      },
+      {
+        "path": "docs/reviews/C-019-Claude-cross-review.md",
+        "offset": 1,
+        "limit": null,
+        "expectedLinesIncludingEmptyEof": 167,
+        "returnedLines": 167,
+        "completeFileRead": true,
+        "error": false
+      },
+      {
+        "path": "docs/claude/C-019-R2-report.md",
+        "offset": 1,
+        "limit": null,
+        "expectedLinesIncludingEmptyEof": 198,
+        "returnedLines": 198,
+        "completeFileRead": true,
+        "error": false
+      },
+      {
+        "path": "docs/reviews/C-019-public-bag-observation.json",
+        "offset": 1,
+        "limit": null,
+        "expectedLinesIncludingEmptyEof": 126,
+        "returnedLines": 126,
+        "completeFileRead": true,
+        "error": false
+      },
+      {
+        "path": "docs/reviews/C-019-current-public-handoff.json",
+        "offset": 1,
+        "limit": null,
+        "expectedLinesIncludingEmptyEof": 23,
+        "returnedLines": 23,
+        "completeFileRead": true,
+        "error": false
+      },
+      {
+        "path": "docs/reviews/C-019-human-bag-cleared.json",
+        "offset": 1,
+        "limit": null,
+        "expectedLinesIncludingEmptyEof": 15,
+        "returnedLines": 15,
+        "completeFileRead": true,
+        "error": false
+      },
+      {
+        "path": "web/checkout-connector/page-program.js",
+        "offset": 1,
+        "limit": null,
+        "expectedLinesIncludingEmptyEof": 312,
+        "returnedLines": 312,
+        "completeFileRead": true,
+        "error": false
+      },
+      {
+        "path": "web/checkout-connector/job.js",
+        "offset": 1,
+        "limit": null,
+        "expectedLinesIncludingEmptyEof": 242,
+        "returnedLines": 242,
+        "completeFileRead": true,
+        "error": false
+      },
+      {
+        "path": "web/checkout-connector/chrome-port.js",
+        "offset": 1,
+        "limit": null,
+        "expectedLinesIncludingEmptyEof": 43,
+        "returnedLines": 43,
+        "completeFileRead": true,
+        "error": false
+      },
+      {
+        "path": "review/c019-observed-bag.test.ts",
+        "offset": 1,
+        "limit": null,
+        "expectedLinesIncludingEmptyEof": 161,
+        "returnedLines": 161,
+        "completeFileRead": true,
+        "error": false
+      },
+      {
+        "path": "test/checkout-c019-observed-bag.test.ts",
+        "offset": 1,
+        "limit": null,
+        "expectedLinesIncludingEmptyEof": 163,
+        "returnedLines": 163,
+        "completeFileRead": true,
+        "error": false
+      },
+      {
+        "path": "test/checkout-c019-scope.test.ts",
+        "offset": 1,
+        "limit": null,
+        "expectedLinesIncludingEmptyEof": 102,
+        "returnedLines": 102,
+        "completeFileRead": true,
+        "error": false
+      },
+      {
+        "path": "test/checkout-c019-navigation-scope.test.ts",
+        "offset": 1,
+        "limit": null,
+        "expectedLinesIncludingEmptyEof": 132,
+        "returnedLines": 132,
+        "completeFileRead": true,
+        "error": false
+      },
+      {
+        "path": "test/checkout-job.test.ts",
+        "offset": 1,
+        "limit": null,
+        "expectedLinesIncludingEmptyEof": 133,
+        "returnedLines": 133,
+        "completeFileRead": true,
+        "error": false
+      },
+      {
+        "path": "test/checkout-r1-public-configuration.test.ts",
+        "offset": 1,
+        "limit": null,
+        "expectedLinesIncludingEmptyEof": 292,
+        "returnedLines": 292,
+        "completeFileRead": true,
+        "error": false
+      }
+    ],
+    "actualCommands": [
+      {
+        "command": "python tools/delegation/verify_candidate_manifest.py docs/reviews/C-019-R2-candidate-manifest.json",
+        "error": false,
+        "actualStats": {},
+        "manifestReceipts": [
+          {
+            "ok": true,
+            "files": 137,
+            "sha256": "12c6eeae9220e8e08e610650685e67689897d54d77874b7dbd4e25c91276da41",
+            "mismatches": []
+          }
+        ],
+        "completePersistedOutputInspected": false
+      },
+      {
+        "command": "node --test \"test/*.test.ts\" \"review/*.test.ts\"",
+        "error": false,
+        "actualStats": {
+          "tests": 515,
+          "pass": 515,
+          "fail": 0,
+          "cancelled": 0,
+          "skipped": 0,
+          "todo": 0
+        },
+        "manifestReceipts": [],
+        "completePersistedOutputInspected": true
+      }
+    ],
+    "ownedCleanupConfirmed": true,
+    "recordedRootPidAbsentOrExitedAtAudit": true
+  },
+  "providerQuotaEvent": false,
+  "noMerchantMutations": true,
+  "nativePurchasingReady": false,
+  "wholeRepositoryReviewed": false,
+  "codexAcceptedAt": "2026-10-03T07:34:33.630397+00:00",
+  "acceptanceScope": "bounded runnable offline C019 cart decoder/navigation/no-repeat integration only; native and real purchase unverified",
+  "sourceInventoryIndependentlyVerifiedComplete": true
+}

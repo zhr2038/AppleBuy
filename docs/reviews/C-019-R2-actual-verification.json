@@ -1,0 +1,283 @@
+{
+  "recordedAt": "2026-10-03T07:18:56.918998+00:00",
+  "task": "C-019-R2",
+  "modelRequested": "claude-opus-5-5",
+  "effortRequested": "xhigh",
+  "modelsActual": [
+    "claude-opus-5-5"
+  ],
+  "modelVerified": true,
+  "structuredModelUsage": {
+    "claude-opus-5-5": {
+      "inputTokens": 222398,
+      "outputTokens": 1858943,
+      "thinkingTokens": 1050853,
+      "cacheReadInputTokens": 88813278,
+      "cacheCreationInputTokens": 5351589,
+      "webSearchRequests": 0,
+      "costUSD": 98.43303959999989,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 128000,
+      "canonicalModel": "claude-opus-5-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "usageAccountingScope": "reported resumed-session counters; not incremental billing",
+  "status": "returned_for_review",
+  "subtype": "success",
+  "isError": false,
+  "permissionDenials": [],
+  "timedOut": false,
+  "cliLimits": {
+    "turns": 28,
+    "wallSeconds": 900,
+    "usd": 5.0
+  },
+  "reportedTurns": 34,
+  "durationSeconds": 517.09,
+  "ownedCleanupConfirmed": true,
+  "recordedRootPidAbsentOrExitedAtAudit": true,
+  "osLeaseAcquiredAndReleased": true,
+  "tools": {
+    "Read": 17,
+    "Bash": 6,
+    "Grep": 4,
+    "Edit": 3,
+    "Write": 2
+  },
+  "freshReads": [
+    {
+      "path": "docs/tasks/C-019-R2.md",
+      "offset": 1,
+      "limit": null,
+      "fullRead": true,
+      "completeRequestedRange": true,
+      "error": false
+    },
+    {
+      "path": "docs/requirements.md",
+      "offset": 1,
+      "limit": null,
+      "fullRead": true,
+      "completeRequestedRange": true,
+      "error": false
+    },
+    {
+      "path": "docs/reviews/C-019-R2-findings.md",
+      "offset": 1,
+      "limit": null,
+      "fullRead": true,
+      "completeRequestedRange": true,
+      "error": false
+    },
+    {
+      "path": "docs/reviews/C-019-R2-before-verification.json",
+      "offset": 1,
+      "limit": null,
+      "fullRead": true,
+      "completeRequestedRange": true,
+      "error": false
+    },
+    {
+      "path": "docs/reviews/C-019-R2-input-candidate-manifest.json",
+      "offset": 1,
+      "limit": null,
+      "fullRead": true,
+      "completeRequestedRange": true,
+      "error": false
+    },
+    {
+      "path": "docs/reviews/C-019-Claude-cross-review.md",
+      "offset": 1,
+      "limit": null,
+      "fullRead": true,
+      "completeRequestedRange": true,
+      "error": false
+    },
+    {
+      "path": "docs/reviews/C-019-cross-review-verification.json",
+      "offset": 1,
+      "limit": null,
+      "fullRead": true,
+      "completeRequestedRange": true,
+      "error": false
+    },
+    {
+      "path": "docs/reviews/C-019-public-bag-observation.json",
+      "offset": 1,
+      "limit": null,
+      "fullRead": true,
+      "completeRequestedRange": true,
+      "error": false
+    },
+    {
+      "path": "docs/reviews/C-019-human-bag-cleared.json",
+      "offset": 1,
+      "limit": null,
+      "fullRead": true,
+      "completeRequestedRange": true,
+      "error": false
+    },
+    {
+      "path": "review/c019-observed-bag.test.ts",
+      "offset": 1,
+      "limit": null,
+      "fullRead": true,
+      "completeRequestedRange": true,
+      "error": false
+    },
+    {
+      "path": "web/checkout-connector/page-program.js",
+      "offset": 1,
+      "limit": null,
+      "fullRead": true,
+      "completeRequestedRange": true,
+      "error": false
+    },
+    {
+      "path": "web/checkout-connector/job.js",
+      "offset": 1,
+      "limit": null,
+      "fullRead": true,
+      "completeRequestedRange": true,
+      "error": false
+    },
+    {
+      "path": "web/checkout-connector/chrome-port.js",
+      "offset": 1,
+      "limit": null,
+      "fullRead": true,
+      "completeRequestedRange": true,
+      "error": false
+    },
+    {
+      "path": "test/checkout-c019-scope.test.ts",
+      "offset": 1,
+      "limit": null,
+      "fullRead": true,
+      "completeRequestedRange": true,
+      "error": false
+    },
+    {
+      "path": "web/checkout-connector/page-program.js",
+      "offset": 1,
+      "limit": null,
+      "fullRead": true,
+      "completeRequestedRange": true,
+      "error": false
+    },
+    {
+      "path": "test/checkout-c019-scope.test.ts",
+      "offset": 1,
+      "limit": null,
+      "fullRead": true,
+      "completeRequestedRange": true,
+      "error": false
+    },
+    {
+      "path": "web/checkout-connector/job.js",
+      "offset": 150,
+      "limit": 32,
+      "fullRead": false,
+      "completeRequestedRange": true,
+      "error": false
+    }
+  ],
+  "actualAuthorCommands": [
+    {
+      "command": "python tools/delegation/verify_candidate_manifest.py docs/reviews/C-019-R2-input-candidate-manifest.json",
+      "error": false,
+      "actualStats": {},
+      "completePersistedOutputInspected": false
+    },
+    {
+      "command": "node --test review/c019-observed-bag.test.ts",
+      "error": true,
+      "actualStats": {
+        "tests": 20,
+        "pass": 16,
+        "fail": 4,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "completePersistedOutputInspected": false
+    },
+    {
+      "command": "node --test review/c019-observed-bag.test.ts",
+      "error": false,
+      "actualStats": {
+        "tests": 20,
+        "pass": 20,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "completePersistedOutputInspected": false
+    },
+    {
+      "command": "node --test test/checkout-c019-navigation-scope.test.ts",
+      "error": false,
+      "actualStats": {
+        "tests": 4,
+        "pass": 4,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "completePersistedOutputInspected": false
+    },
+    {
+      "command": "node --test \"test/*.test.ts\" \"review/*.test.ts\"",
+      "error": false,
+      "actualStats": {
+        "tests": 515,
+        "pass": 515,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "completePersistedOutputInspected": true
+    },
+    {
+      "command": "python tools/delegation/verify_candidate_manifest.py docs/reviews/C-019-R2-input-candidate-manifest.json",
+      "error": true,
+      "actualStats": {},
+      "completePersistedOutputInspected": false
+    }
+  ],
+  "writePaths": [
+    "docs/claude/C-019-R2-report.md",
+    "test/checkout-c019-navigation-scope.test.ts",
+    "web/checkout-connector/page-program.js"
+  ],
+  "changedSource": [
+    "web/checkout-connector/page-program.js"
+  ],
+  "addedSource": [
+    "test/checkout-c019-navigation-scope.test.ts"
+  ],
+  "candidateFiles": 137,
+  "candidateSha256": "12c6eeae9220e8e08e610650685e67689897d54d77874b7dbd4e25c91276da41",
+  "protectedInputFiles": 70,
+  "allProtectedUnchanged": true,
+  "writeScopeMatches": true,
+  "independentTests": {
+    "tests": 515,
+    "pass": 515,
+    "fail": 0,
+    "cancelled": 0,
+    "skipped": 0,
+    "todo": 0,
+    "exitCode": 0,
+    "recordedAt": "2026-10-03T07:18:56.918998+00:00",
+    "durationMs": 6156.4162
+  },
+  "preciseBilateralAgreement": false,
+  "providerQuotaEvent": false,
+  "nativePurchasingReady": false
+}

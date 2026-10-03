@@ -1,0 +1,22 @@
+{
+  "schema": "applebuy-supported-public-handoff/v1",
+  "localDate": "2026-10-03",
+  "method": "supported read-only DOM snapshot of the human current Chrome public product tab; replacement tab obtained from the same selected browser",
+  "url": "https://www.apple.com.cn/shop/buy-iphone/iphone-18-pro/mjt74ch/a",
+  "selectedModel": "iPhone 18 Pro",
+  "selectedCapacity": "256GB",
+  "selectedColor": "黑色",
+  "quotedCny": 9999,
+  "noTradeInChecked": true,
+  "noAppleCareChecked": true,
+  "addToBagButtonEnabled": true,
+  "codexMerchantClicksOrWrites": 0,
+  "humanBagDeletionReport": "docs/reviews/C-019-human-bag-cleared.json",
+  "currentBagContentsIndependentlyReobserved": false,
+  "oldTaskHistoryRetained": "required; actual private task contents not read",
+  "noNewBagSlotOrderOrPaymentAuthority": true,
+  "nativeLoadedIdentityVerified": false,
+  "nativeApiIndependentlyVerified": false,
+  "realPurchasingReady": false,
+  "nextHumanAction": "reload already authorized AppleBuy, select current Pro public tab, Observe only; report status"
+}

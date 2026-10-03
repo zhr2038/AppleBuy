@@ -1,0 +1,14 @@
+{
+  "schema": "applebuy-qualified-human-feedback/v1",
+  "localDate": "2026-10-03",
+  "humanReport": "是我删除了购物车",
+  "source": "direct human steering after pause and public product-page follow-up",
+  "currentBagContentsIndependentlyReobserved": false,
+  "earlierOneItemBagEvidenceIsHistorical": true,
+  "deleteAttributedToHumanReportOnly": true,
+  "codexDeleteOrOtherMerchantMutation": false,
+  "oldTaskHistoryMustBePreserved": true,
+  "mustNotReAddFromEarlierBagEvidence": true,
+  "noNewBagSlotOrderOrPaymentAuthority": true,
+  "nextNativeStep": "read-only observation of the currently selected public product page; no start, restore, checkout, add or submit"
+}
