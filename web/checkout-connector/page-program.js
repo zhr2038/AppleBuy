@@ -12,6 +12,7 @@
 // C-019 (Claude): observed public bag structure: purchased line, unselected inline offer and header/bottom checkout pair.
 // C-019-R1 (Claude): a duplicated or hidden purchased-list anchor is unknown cart scope, never a generic/legacy bag proof.
 // C-019-R2 (Claude): an anchored cart that is not a recognized checkout bag never falls through to View Bag/Add to Bag navigation.
+// C-020 (Claude): an anchored cart is BAG (recognized, proved checkout) or UNKNOWN; no other stage label there is step authority.
 export async function merchantDocument(plan,command=null,internal=null){
   // `internal` is set only by this program's own re-entry; ChromePort passes plan and command only.
   // A structured command always receives a structured report. Nothing was written unless this id was already delivered.
@@ -110,6 +111,10 @@ export async function merchantDocument(plan,command=null,internal=null){
   else if(texts.some(t=>t==='Apple 和你的数据隐私'))phase='CONSENT';
   else if(main.querySelector('[aria-busy="true"]'))phase='PROCESSING';
   else if(texts.some(t=>['待付款','等待付款','请完成付款'].includes(t)))phase=/^\/shop\/order\/(?!list(?:\/|$))[^/]+\/?$/.test(u.pathname)?'ORDER_DETAIL':u.pathname==='/shop/checkout'?'ORDER_RECEIPT':'UNKNOWN';
+  // C-020 (Claude): on /shop/bag a purchased-list anchor makes the cart itself the only stage evidence. Only the recognized bag
+  // with its proved checkout is BAG; any other anchored cart is UNKNOWN. Review/details/slots/payment/fulfillment or navigation
+  // labels never become step authority there. The human/processing gates and order-state line above keep priority.
+  else if(bagScoped)phase=bag&&bag.checkout?'BAG':'UNKNOWN';
   else if(exact('立即下单').length===1)phase='REVIEW';
   else if(exact('继续选择付款方式').length===1)phase='DETAILS';
   else if(exact('继续填写取货详情').length===1&&purchase.fulfillment==='pickup'&&purchase.store)phase='SLOTS';

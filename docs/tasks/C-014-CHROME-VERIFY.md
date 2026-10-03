@@ -1,5 +1,7 @@
 # C-014 — installed Chrome connector verification (not yet dispatched)
 
+CURRENT prerequisite — accepted C020139-file SHA `6e2acb69c981c4676c267ff311ae564012e3c4f28c2a0d09250a7d14a2ffe331`, independent and actual consistency553/553. C014 is NOT dispatched. Human reload/Observe pending after publication; no new merchant action authority. All earlier candidate identities below are historical; use current exact manifest and bundle. Keep human-cleared bag and task history.
+
 CURRENT ACCEPTED BASELINE: exact137 SHA 12c6eeae9220e8e08e610650685e67689897d54d77874b7dbd4e25c91276da41, independent515/515 and actual specified-model original-session AGREE/515/515; scoped offline C019 only. Actual earlier DISAGREE preserved. Human explicitly deleted cart; historical one-item evidence cannot drive re-add. Current public Pro256black/CNY9999/no-trade-in/noAppleCare endpoint independently observed. Next human reload and Observe current product only; no Start/Resume/Submit, history reset or merchant mutation. Read C019 bounded agreement/installable bundle/actual R2 cross-review. Native identity/API/timing and stage/refusal/order/Duo contracts remain unverified; C014 NOT dispatched. All calls terminal, no provider quota/shutdown event. Older pending statements below are historical.
 
 以下为历史记录，旧“当前／待处理”措辞以本段为准：

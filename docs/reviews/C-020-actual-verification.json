@@ -1,0 +1,238 @@
+{
+  "recordedAt": "2026-10-03T08:15:12.169638+00:00",
+  "task": "C-020-CART-STAGE",
+  "modelRequested": "claude-opus-5-5",
+  "effortRequested": "xhigh",
+  "modelsActual": [
+    "claude-opus-5-5"
+  ],
+  "modelVerified": true,
+  "structuredModelUsage": {
+    "claude-opus-5-5": {
+      "inputTokens": 233214,
+      "outputTokens": 1927876,
+      "thinkingTokens": 1084522,
+      "cacheReadInputTokens": 91733523,
+      "cacheCreationInputTokens": 5618584,
+      "webSearchRequests": 0,
+      "costUSD": 102.5736675999999,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 128000,
+      "canonicalModel": "claude-opus-5-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "usageAccountingScope": "reported resumed-session counters; not incremental billing",
+  "status": "returned_for_review",
+  "subtype": "success",
+  "isError": false,
+  "permissionDenials": [],
+  "timedOut": false,
+  "cliLimits": {
+    "turns": 28,
+    "wallSeconds": 900,
+    "usd": 5.0
+  },
+  "reportedTurns": 26,
+  "durationSeconds": 476.91,
+  "ownedCleanupConfirmed": true,
+  "recordedRootPidAbsentOrExitedAtAudit": true,
+  "osLeaseAcquiredAndReleased": true,
+  "tools": {
+    "Read": 13,
+    "Bash": 5,
+    "Edit": 3,
+    "Write": 2,
+    "Grep": 1
+  },
+  "freshReads": [
+    {
+      "path": "docs/tasks/C-020-CART-STAGE.md",
+      "offset": 1,
+      "limit": null,
+      "fullRead": true,
+      "completeRequestedRange": true,
+      "error": false
+    },
+    {
+      "path": "docs/reviews/C-020-cart-stage-findings.md",
+      "offset": 1,
+      "limit": null,
+      "fullRead": true,
+      "completeRequestedRange": true,
+      "error": false
+    },
+    {
+      "path": "docs/reviews/C-020-before-verification.json",
+      "offset": 1,
+      "limit": null,
+      "fullRead": true,
+      "completeRequestedRange": true,
+      "error": false
+    },
+    {
+      "path": "review/c020-cart-stage.test.ts",
+      "offset": 1,
+      "limit": null,
+      "fullRead": true,
+      "completeRequestedRange": true,
+      "error": false
+    },
+    {
+      "path": "docs/requirements.md",
+      "offset": 1,
+      "limit": null,
+      "fullRead": true,
+      "completeRequestedRange": true,
+      "error": false
+    },
+    {
+      "path": "docs/plan.md",
+      "offset": 1,
+      "limit": null,
+      "fullRead": true,
+      "completeRequestedRange": true,
+      "error": false
+    },
+    {
+      "path": "docs/reviews/C-020-input-candidate-manifest.json",
+      "offset": 1,
+      "limit": null,
+      "fullRead": true,
+      "completeRequestedRange": true,
+      "error": false
+    },
+    {
+      "path": "docs/reviews/C-019-R2-independent-review.md",
+      "offset": 1,
+      "limit": null,
+      "fullRead": true,
+      "completeRequestedRange": true,
+      "error": false
+    },
+    {
+      "path": "web/checkout-connector/chrome-port.js",
+      "offset": 1,
+      "limit": null,
+      "fullRead": true,
+      "completeRequestedRange": true,
+      "error": false
+    },
+    {
+      "path": "web/checkout-connector/page-program.js",
+      "offset": 1,
+      "limit": null,
+      "fullRead": true,
+      "completeRequestedRange": true,
+      "error": false
+    },
+    {
+      "path": "web/checkout-connector/job.js",
+      "offset": 1,
+      "limit": null,
+      "fullRead": true,
+      "completeRequestedRange": true,
+      "error": false
+    },
+    {
+      "path": "review/c020-cart-stage.test.ts",
+      "offset": 1,
+      "limit": null,
+      "fullRead": true,
+      "completeRequestedRange": true,
+      "error": false
+    },
+    {
+      "path": "test/checkout-c019-navigation-scope.test.ts",
+      "offset": 1,
+      "limit": null,
+      "fullRead": true,
+      "completeRequestedRange": true,
+      "error": false
+    }
+  ],
+  "actualAuthorCommands": [
+    {
+      "command": "python tools/delegation/verify_candidate_manifest.py docs/reviews/C-020-input-candidate-manifest.json",
+      "error": false,
+      "actualStats": {},
+      "completePersistedOutputInspected": false
+    },
+    {
+      "command": "node --test review/c020-cart-stage.test.ts",
+      "error": false,
+      "actualStats": {
+        "tests": 22,
+        "pass": 22,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "completePersistedOutputInspected": false
+    },
+    {
+      "command": "node --test test/checkout-c020-cart-stage.test.ts",
+      "error": false,
+      "actualStats": {
+        "tests": 16,
+        "pass": 16,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "completePersistedOutputInspected": false
+    },
+    {
+      "command": "node --test \"test/*.test.ts\" \"review/*.test.ts\"",
+      "error": false,
+      "actualStats": {
+        "tests": 553,
+        "pass": 553,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "completePersistedOutputInspected": true
+    },
+    {
+      "command": "python tools/delegation/verify_candidate_manifest.py docs/reviews/C-020-input-candidate-manifest.json",
+      "error": true,
+      "actualStats": {},
+      "completePersistedOutputInspected": false
+    }
+  ],
+  "writePaths": [
+    "docs/claude/C-020-report.md",
+    "test/checkout-c020-cart-stage.test.ts",
+    "web/checkout-connector/page-program.js"
+  ],
+  "changedSource": [
+    "web/checkout-connector/page-program.js"
+  ],
+  "addedSource": [
+    "test/checkout-c020-cart-stage.test.ts"
+  ],
+  "candidateFiles": 139,
+  "candidateSha256": "6e2acb69c981c4676c267ff311ae564012e3c4f28c2a0d09250a7d14a2ffe331",
+  "protectedInputFiles": 72,
+  "allProtectedUnchanged": true,
+  "writeScopeMatches": true,
+  "independentTests": {
+    "tests": 553,
+    "pass": 553,
+    "fail": 0,
+    "cancelled": 0,
+    "skipped": 0,
+    "todo": 0,
+    "exitCode": 0,
+    "recordedAt": "2026-10-03T08:15:12.169137+00:00",
+    "durationMs": 5901.7695
+  },
+  "preciseBilateralAgreement": false,
+  "providerQuotaEvent": false,
+  "nativePurchasingReady": false
+}

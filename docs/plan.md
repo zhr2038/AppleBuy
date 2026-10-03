@@ -1,5 +1,19 @@
 # Milestones and recovery point
 
+LATEST — C020 is actually accepted for the bounded offline anchored-cart repair:139 files SHA `6e2acb69c981c4676c267ff311ae564012e3c4f28c2a0d09250a7d14a2ffe331`, Codex553/553 and genuine original-session first-party Opus5.5/xhigh AGREE553/553.72 input tests/reviews preserved. [Accepted scope](reviews/C-020-bounded-agreement.md). Both calls are terminal. Publication is pending its real receipt. Next native human reload/Observe remains pending; C014 is not dispatched, full one-click/Duo/live contracts and timings are unverified. No merchant/quota/shutdown event. All later current/dispatched wording is historical.
+
+LATEST — October3 C020: the C019-R2 bounded offline milestone was actually accepted and published at source507279e6/receipt d3753a17 (137 files, exact SHA `12c6eeae9220e8e08e610650685e67689897d54d77874b7dbd4e25c91276da41`, Codex515/515 and actual original-session Opus5.5/xhigh AGREE515/515). The human reported deleting the cart. Native reload/Observe is still pending and cannot establish live purchase readiness by itself.
+
+Codex has now independently reproduced the disclosed residual anchored-cart stage confusion:22 new FAKE cases,17 failures and5 positives; all original515 pass. Only one reviewer file is new; all137 prior bytes are preserved. Exact repair input138 files SHA `f8c406f91a12ef80b3b4b53551f8ba2f1a4eae81b3b2310ef62ace017dbab7a1`,72 protected test/review paths. [C020 findings](reviews/C-020-cart-stage-findings.md) and [C020 task](tasks/C-020-CART-STAGE.md) define the next single original-session repair. New source is not accepted until independent regression and genuine exact-source Claude agreement. Hold native reloading during implementation; preserve prior task history and the human-cleared cart. No new merchant mutation, quota or shutdown event exists.
+
+| Current dependency | Concrete next evidence |
+| --- | --- |
+| C020 cart-stage repair | Actual sole Claude delivery, all22 reviewer cases plus regression, exact new inventory and real scoped consistency review |
+| C014 native read-only handoff | Accepted current source, human reload and Observe result, installed identity/API evidence; not yet dispatched |
+| One-start pickup/refusal/order chain | Current authorized official contracts and separate one-run authority; real timings and Duo adaptation still unverified |
+
+All later "current" sections are dated historical records, superseded where they differ.
+
 LATEST — October3 10:26 Asia/Shanghai: C016 actual Opus5.5/xhigh details-event repair has returned and Codex independently passes **440/440**. Exact **129-file SHA `69970b51edab3be858d312a77c2e8b42e258c9dc56a79f96a182e7003fd33708`**. Only page-program.js changed;30 reviewer files and32 existing test files preserved. [Independent review](reviews/C-016-independent-review.md), [actual verification](reviews/C-016-actual-verification.json), [exact cross-review](tasks/C-016-CROSS-REVIEW.md) actually completed in the unique original session. Actual precise cross-review has returned with440/440 and explicit bounded agreement, no writes/denials/quota; all129 post-review bytes are unchanged. Both calls are terminal. Do not approve new bytes with historical C015127 or C013119 receipts.
 
 | Next milestone | Dependency | Acceptance / current state |

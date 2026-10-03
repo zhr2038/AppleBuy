@@ -1,10 +1,10 @@
 {
   "schema": "applebuy-native-human-feedback/v1",
   "recordedLocalDate": "2026-10-03",
-  "acceptedSourceManifest": "docs/reviews/C-019-R2-candidate-manifest.json",
-  "acceptedSourceFiles": 137,
-  "acceptedSourceSha256": "12c6eeae9220e8e08e610650685e67689897d54d77874b7dbd4e25c91276da41",
-  "acceptedSourceTests": 515,
+  "acceptedSourceManifest": "docs/reviews/C-020-candidate-manifest.json",
+  "acceptedSourceFiles": 139,
+  "acceptedSourceSha256": "6e2acb69c981c4676c267ff311ae564012e3c4f28c2a0d09250a7d14a2ffe331",
+  "acceptedSourceTests": 553,
   "events": [
     {
       "source": "human supplied control-page status, not an independent extension-runtime inspection",
@@ -70,7 +70,7 @@
       "method": "supported read-only DOM snapshot in the same public Pro tab"
     }
   },
-  "nextBoundedStep": "Human reload existing connector and Observe current Pro product only after exact acceptance; no new bag/slot/order authority. Native identity/API result pending; C014 not dispatched. Preserve cleared bag and old history.",
+  "nextBoundedStep": "Human reload accepted139 C020 connector and Observe current Pro product only after actual publication. Old cart human-cleared; all history retained. No new merchant authority. Native identity/API evidence remains pending.",
   "c014ActuallyDispatched": false,
   "realPurchasingReady": false,
   "newPurchaseOrResourceAuthorization": false,
@@ -118,5 +118,11 @@
   },
   "acceptedOnlyOffline": true,
   "currentReloadConfirmed": false,
-  "nativeLoadedIdentityVerified": false
+  "nativeLoadedIdentityVerified": false,
+  "priorAcceptedSourceBeforeC020": {
+    "acceptedSourceManifest": "docs/reviews/C-019-R2-candidate-manifest.json",
+    "acceptedSourceFiles": 137,
+    "acceptedSourceSha256": "12c6eeae9220e8e08e610650685e67689897d54d77874b7dbd4e25c91276da41",
+    "acceptedSourceTests": 515
+  }
 }

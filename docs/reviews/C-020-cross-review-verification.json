@@ -1,0 +1,226 @@
+{
+  "recordedAt": "2026-10-03T08:27:01.143459+00:00",
+  "task": "C-020-CROSS-REVIEW",
+  "verdict": "AGREE",
+  "candidateFiles": 139,
+  "candidateSha256": "6e2acb69c981c4676c267ff311ae564012e3c4f28c2a0d09250a7d14a2ffe331",
+  "sourceUnchangedAtReviewReturn": true,
+  "currentMilestoneAccepted": true,
+  "preciseBilateralAgreement": true,
+  "actualReview": {
+    "status": "returned_for_review",
+    "exitCode": 0,
+    "durationSeconds": 113.75,
+    "modelRequested": "claude-opus-5-5",
+    "effortRequested": "xhigh",
+    "modelsActual": [
+      "claude-opus-5-5"
+    ],
+    "modelVerified": true,
+    "primaryModelsActual": [
+      "claude-opus-5-5"
+    ],
+    "auxiliaryModelsActual": [],
+    "structuredModelUsage": {
+      "claude-opus-5-5": {
+        "inputTokens": 233224,
+        "outputTokens": 1938706,
+        "thinkingTokens": 1090451,
+        "cacheReadInputTokens": 92489453,
+        "cacheCreationInputTokens": 5699884,
+        "webSearchRequests": 0,
+        "costUSD": 103.5918935999999,
+        "contextWindow": 1000000,
+        "maxOutputTokens": 128000,
+        "canonicalModel": "claude-opus-5-5",
+        "provider": "firstParty",
+        "costBasis": "list"
+      }
+    },
+    "usageAccountingScope": "reported resumed-session counters; not incremental task billing",
+    "cliLimits": {
+      "turns": 28,
+      "wallSeconds": 900,
+      "usd": 5.0
+    },
+    "reportedTurns": 18,
+    "subtype": "success",
+    "isError": false,
+    "permissionDenials": [],
+    "timedOut": false,
+    "tools": {
+      "Read": 13,
+      "Bash": 2,
+      "Grep": 2
+    },
+    "freshCompleteReads": [
+      {
+        "path": "docs/tasks/C-020-CROSS-REVIEW.md",
+        "offset": 1,
+        "limit": null,
+        "expectedLinesIncludingEmptyEof": 36,
+        "returnedLines": 36,
+        "completeFileRead": true,
+        "error": false
+      },
+      {
+        "path": "docs/requirements.md",
+        "offset": 1,
+        "limit": null,
+        "expectedLinesIncludingEmptyEof": 88,
+        "returnedLines": 88,
+        "completeFileRead": true,
+        "error": false
+      },
+      {
+        "path": "docs/reviews/C-020-cart-stage-findings.md",
+        "offset": 1,
+        "limit": null,
+        "expectedLinesIncludingEmptyEof": 34,
+        "returnedLines": 34,
+        "completeFileRead": true,
+        "error": false
+      },
+      {
+        "path": "docs/reviews/C-020-before-verification.json",
+        "offset": 1,
+        "limit": null,
+        "expectedLinesIncludingEmptyEof": 47,
+        "returnedLines": 47,
+        "completeFileRead": true,
+        "error": false
+      },
+      {
+        "path": "docs/claude/C-020-report.md",
+        "offset": 1,
+        "limit": null,
+        "expectedLinesIncludingEmptyEof": 151,
+        "returnedLines": 151,
+        "completeFileRead": true,
+        "error": false
+      },
+      {
+        "path": "docs/reviews/C-020-independent-review.md",
+        "offset": 1,
+        "limit": null,
+        "expectedLinesIncludingEmptyEof": 24,
+        "returnedLines": 24,
+        "completeFileRead": true,
+        "error": false
+      },
+      {
+        "path": "docs/reviews/C-020-actual-verification.json",
+        "offset": 1,
+        "limit": null,
+        "expectedLinesIncludingEmptyEof": 239,
+        "returnedLines": 239,
+        "completeFileRead": true,
+        "error": false
+      },
+      {
+        "path": "docs/reviews/C-020-candidate-manifest.json",
+        "offset": 1,
+        "limit": null,
+        "expectedLinesIncludingEmptyEof": 146,
+        "returnedLines": 146,
+        "completeFileRead": true,
+        "error": false
+      },
+      {
+        "path": "web/checkout-connector/page-program.js",
+        "offset": 1,
+        "limit": null,
+        "expectedLinesIncludingEmptyEof": 317,
+        "returnedLines": 317,
+        "completeFileRead": true,
+        "error": false
+      },
+      {
+        "path": "web/checkout-connector/job.js",
+        "offset": 1,
+        "limit": null,
+        "expectedLinesIncludingEmptyEof": 242,
+        "returnedLines": 242,
+        "completeFileRead": true,
+        "error": false
+      },
+      {
+        "path": "web/checkout-connector/chrome-port.js",
+        "offset": 1,
+        "limit": null,
+        "expectedLinesIncludingEmptyEof": 43,
+        "returnedLines": 43,
+        "completeFileRead": true,
+        "error": false
+      },
+      {
+        "path": "review/c020-cart-stage.test.ts",
+        "offset": 1,
+        "limit": null,
+        "expectedLinesIncludingEmptyEof": 136,
+        "returnedLines": 136,
+        "completeFileRead": true,
+        "error": false
+      },
+      {
+        "path": "test/checkout-c020-cart-stage.test.ts",
+        "offset": 1,
+        "limit": null,
+        "expectedLinesIncludingEmptyEof": 195,
+        "returnedLines": 195,
+        "completeFileRead": true,
+        "error": false
+      }
+    ],
+    "actualCommands": [
+      {
+        "command": "python tools/delegation/verify_candidate_manifest.py docs/reviews/C-020-candidate-manifest.json",
+        "error": false,
+        "actualStats": {},
+        "manifestReceipts": [
+          {
+            "ok": true,
+            "files": 139,
+            "sha256": "6e2acb69c981c4676c267ff311ae564012e3c4f28c2a0d09250a7d14a2ffe331",
+            "mismatches": []
+          }
+        ],
+        "completePersistedOutputInspected": false
+      },
+      {
+        "command": "node --test \"test/*.test.ts\" \"review/*.test.ts\"",
+        "error": false,
+        "actualStats": {
+          "tests": 553,
+          "pass": 553,
+          "fail": 0,
+          "cancelled": 0,
+          "skipped": 0,
+          "todo": 0
+        },
+        "manifestReceipts": [],
+        "completePersistedOutputInspected": true
+      }
+    ],
+    "ownedCleanupConfirmed": true,
+    "recordedRootPidAbsentOrExitedAtAudit": true
+  },
+  "providerQuotaEvent": false,
+  "noMerchantMutations": true,
+  "nativePurchasingReady": false,
+  "wholeRepositoryReviewed": false,
+  "acceptedAtUtc": "2026-10-03T08:35:57.507024+00:00",
+  "codexIndependentTests": {
+    "tests": 553,
+    "pass": 553,
+    "fail": 0,
+    "cancelled": 0,
+    "skipped": 0,
+    "todo": 0,
+    "exitCode": 0,
+    "recordedAt": "2026-10-03T08:15:12.169137+00:00",
+    "durationMs": 5901.7695
+  },
+  "acceptanceScope": "bounded offline anchored-cart stage repair only; N1 wording qualified to anchored bag path",
+  "fullGoalComplete": false
+}

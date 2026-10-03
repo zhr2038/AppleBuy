@@ -1,5 +1,7 @@
 # C014 — actual Chrome control-page discovery, read-only execution pending
 
+CURRENT — C020139/553 bounded offline agreement is actual. Native loading/byte/API evidence is still unverified; human reload/Observe on current public Pro page is pending after publication. No C014 dispatch, no new bag/slot/order/payment authority. Older source claims below are historical.
+
 CURRENT ACCEPTED BASELINE: exact137 SHA 12c6eeae9220e8e08e610650685e67689897d54d77874b7dbd4e25c91276da41, independent515/515 and actual specified-model original-session AGREE/515/515; scoped offline C019 only. Actual earlier DISAGREE preserved. Human explicitly deleted cart; historical one-item evidence cannot drive re-add. Current public Pro256black/CNY9999/no-trade-in/noAppleCare endpoint independently observed. Next human reload and Observe current product only; no Start/Resume/Submit, history reset or merchant mutation. Read C019 bounded agreement/installable bundle/actual R2 cross-review. Native identity/API/timing and stage/refusal/order/Duo contracts remain unverified; C014 NOT dispatched. All calls terminal, no provider quota/shutdown event. Older pending statements below are historical.
 
 以下为历史记录，旧“当前／待处理”措辞以本段为准：
