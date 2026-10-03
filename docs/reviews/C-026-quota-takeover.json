@@ -1,0 +1,53 @@
+{
+  "recordedAtUtc": "2026-10-03T14:55:53.838306+00:00",
+  "task": "C-026-SINGLE-PURCHASED-LINE",
+  "actualStatus": "failed",
+  "actualIsError": true,
+  "subtype": "success",
+  "timedOut": false,
+  "durationSeconds": 132.55,
+  "cliLimits": {
+    "turns": 32,
+    "seconds": 900,
+    "usd": 6.0
+  },
+  "providerQuotaMessage": "You've hit your session limit · resets 12:20am (Asia/Shanghai)",
+  "resetReportedAsiaShanghai": "2026-10-04 00:20",
+  "actualStructuredProviderModels": {
+    "claude-opus-5-5": "firstParty"
+  },
+  "fullDeliveryModelGate": false,
+  "requestedEffort": "xhigh",
+  "permissionDenials": [],
+  "tools": {
+    "Read": 7,
+    "Bash": 1,
+    "Edit": 1
+  },
+  "actualPartialWrites": [
+    {
+      "tool": "Edit",
+      "path": "web/checkout-connector/page-program.js"
+    }
+  ],
+  "sourceFilesChangedBeforeTakeover": [
+    "web/checkout-connector/page-program.js"
+  ],
+  "partialSourceHash": "a1555b5b99c12576765a7cff61078ebda853ad0345fd131e383807045a41036b",
+  "protectedInputTestFilesUnchanged": 84,
+  "ownedRootExited": true,
+  "ownedCleanupConfirmed": true,
+  "dispatchLeaseAvailable": true,
+  "remainingActiveCalls": 0,
+  "completedReportReturned": false,
+  "claudeImplementationTestsReturned": false,
+  "codexIndependentSyntaxCheck": {
+    "exitCode": 1,
+    "diagnostic": "Identifier 'checkoutScope' has already been declared"
+  },
+  "snapshotPrivatelySaved": true,
+  "codexTakeoverAuthorizedByLatestHuman": true,
+  "currentCandidateAccepted": false,
+  "exactClaudeReviewStillRequired": true,
+  "shutdownCancelled": true
+}

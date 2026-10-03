@@ -77,7 +77,25 @@ export async function merchantDocument(plan,command=null,internal=null){
   // hidden anchor (bag===null) is unknown structure: no generic item, quantity, store, pickup or checkout fact is borrowed.
   const bagScoped=bagLists.length>0;
   const productLines=texts.filter(t=>productRe.test(t));
-  const exactProduct=bag?!!bag.title&&norm(bag.title.textContent)===fullVariant&&!bag.stray:!bagScoped&&productLines.some(t=>t===fullVariant)&&productLines.every(t=>t===fullVariant);
+  // C-026 (Claude quota-interrupted proposal, completed by Codex): equal independent title rows do not prove one purchased line.
+  // The observed secure checkout has one visible shipment group/strip and a repeated title in its accessible fulfillment legend.
+  // Merge only that bounded structural counterpart; count hidden group/strip/legend anchors too. Generic pages still need one
+  // separate title line. Neither a group, a title nor its accessibility representation supplies quantity.
+  const checkoutScope=/^secure(?:\d+)?\.www\.apple\.com\.cn$/.test(u.hostname)&&/^\/shop\/checkout\/?$/.test(u.pathname);
+  const groups=checkoutScope?[...main.querySelectorAll('.rs-fulfillment-shipmentgroup')]:[],group=groups.length===1&&visible(groups[0])?groups[0]:null;
+  const related=(a,b)=>!!a&&!!b&&(a===b||within(a,b)||within(b,a));
+  const strips=groups.length?[...main.querySelectorAll('.rs-fulfillment-productstrip-content')]:[],strip=strips.length===1?strips[0]:null;
+  const legends=groups.length?[...main.querySelectorAll('.rs-fulfillment-selector-title')]:[],legend=legends.length===1?legends[0]:null;
+  const headers=legend?[...legend.querySelectorAll('.rs-fullfillment-selector-header')]:[],header=headers.length===1?headers[0]:null;
+  const copies=legend?[...legend.querySelectorAll('.visuallyhidden')]:[],copy=copies.length===1?copies[0]:null;
+  const options=legend?.closest('.rs-fulfillment-deliveryoptions');
+  const knownLegend=legends.length===0||!!(legend&&legend.tagName==='LEGEND'&&visible(legend)&&within(group,legend)&&
+    options?.tagName==='FIELDSET'&&within(group,options)&&header?.tagName==='H2'&&copy?.tagName==='SPAN'&&within(header,copy)&&
+    visible(copy)&&norm(copy.textContent)===fullVariant);
+  const groupLine=!!(group&&strip&&strip.tagName==='DIV'&&visible(strip)&&within(group,strip)&&norm(strip.textContent)===fullVariant&&knownLegend&&
+    textEls.filter(x=>productRe.test(x.t)).every(x=>related(x.e,strip)||related(x.e,legend)));
+  const oneLine=groups.length===0?lines(productRe).length===1:groupLine;
+  const exactProduct=bag?!!bag.title&&norm(bag.title.textContent)===fullVariant&&!bag.stray:!bagScoped&&oneLine&&productLines.some(t=>t===fullVariant)&&productLines.every(t=>t===fullVariant);
   // C022 (Codex quota takeover): wrapper text includes every option, even hidden native clones (observed 数量121).
   // Remove descendant select text only; literal quantity outside those controls still conflicts with selected values.
   // Strip outermost controls once, before the length bound, so long/nested option lists cannot hide a real contradiction.
@@ -97,7 +115,6 @@ export async function merchantDocument(plan,command=null,internal=null){
   // Any other widget count (even equal), hidden widget, other caption/currency or zero leaves the checkout total unknown, and a
   // labelled total there must agree with it. Nothing outside main is read. It never supplies quantity; the summary dialogue is
   // never read.
-  const checkoutScope=/^secure(?:\d+)?\.www\.apple\.com\.cn$/.test(u.hostname)&&/^\/shop\/checkout\/?$/.test(u.pathname);
   const bars=checkoutScope?[...main.querySelectorAll('button,a[role="button"],input[type="submit"]')].filter(b=>b.getAttribute('data-autom')==='companionbar-button'):[];
   const barMoney=bars.length===1&&bars[0].tagName==='BUTTON'&&visible(bars[0])?/^显示订单摘要\s*[:：]?\s*RMB\s*(\d{1,3}(?:,\d{3})*|\d+)(\.\d{2})?$/.exec(norm(bars[0].textContent)):null;
   const barTotal=barMoney?Number(barMoney[1].replaceAll(',','')+(barMoney[2]??'')):null;

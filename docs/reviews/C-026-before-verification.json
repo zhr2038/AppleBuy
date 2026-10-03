@@ -1,0 +1,24 @@
+{
+  "recordedAtUtc": "2026-10-03T14:38:28.386354+00:00",
+  "baselineFilesUnchanged": 149,
+  "baselineTests": 709,
+  "newIndependentTests": 7,
+  "fullBeforeStats": {
+    "tests": 716,
+    "pass": 711,
+    "fail": 5
+  },
+  "actualExitCode": 1,
+  "inputFiles": 150,
+  "inputSha256": "5afded29c3af7af96e01ce3dec008fb6a1cab71cff5dbae78c9b735571677f52",
+  "testScope": "FAKE DOM/API only, no live mutation",
+  "nativeData": "C-025-native-checkout-observation.json",
+  "noLiveQuantityProof": true,
+  "acceptedSourceUnchanged": true,
+  "initialFixtureStats": {
+    "tests": 716,
+    "pass": 714,
+    "fail": 2
+  },
+  "fixtureCorrection": "The first fake group omitted a non-product shipment heading observed on the real page. Its ancestor began with two concatenated titles and was rejected incidentally. Added a clearly FAKE shipment heading so title ancestry models the observed layout; no assertions or business source changed."
+}

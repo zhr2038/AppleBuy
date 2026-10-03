@@ -1,0 +1,75 @@
+{
+  "recordedAtUtc": "2026-10-03T15:13:35.611197+00:00",
+  "task": "C-026-Codex-quota-completion",
+  "candidateFiles": 151,
+  "candidateSha256": "90504db16241de5e80f826e812544945f6d483aec273a4ca7172e92746fc41a9",
+  "changedInputSourceFiles": [
+    "web/checkout-connector/page-program.js"
+  ],
+  "newSourceFiles": [
+    "test/checkout-c026-lines.test.ts"
+  ],
+  "implementationAuthors": [
+    "Claude quota-interrupted partial Edit",
+    "Codex authorized quota completion"
+  ],
+  "codexChanges": [
+    "completed bounded purchased-group/accessible-counterpart proof and generic separate-row count",
+    "removed duplicate checkoutScope declaration left by interrupted Edit",
+    "added10 FAKE structural fault/positive cases"
+  ],
+  "protectedInputTestFiles": 84,
+  "protectedBytesUnchanged": true,
+  "original709StillPass": true,
+  "independentBeforeStats": {
+    "tests": 716,
+    "pass": 711,
+    "fail": 5
+  },
+  "postCompletionCommands": [
+    {
+      "command": "node --check web/checkout-connector/page-program.js",
+      "exitCode": 0
+    },
+    {
+      "command": "node --test review/c026-purchased-groups.test.ts",
+      "tests": 7,
+      "pass": 7,
+      "fail": 0,
+      "exitCode": 0
+    },
+    {
+      "command": "node --test test/checkout-c026-lines.test.ts",
+      "tests": 10,
+      "pass": 10,
+      "fail": 0,
+      "exitCode": 0
+    },
+    {
+      "command": "node --test \"test/*.test.ts\" \"review/*.test.ts\"",
+      "tests": 726,
+      "pass": 726,
+      "fail": 0,
+      "cancelled": 0,
+      "skipped": 0,
+      "todo": 0,
+      "exitCode": 0,
+      "durationMs": 6378.8513,
+      "outputScope": "actual returned execution output; local FAKE regression timing only"
+    }
+  ],
+  "sourceIndependentChecksPassed": true,
+  "actualClaudeCrossReviewOccurred": false,
+  "finalAcceptanceByCodex": false,
+  "preciseBilateralAgreement": false,
+  "lastAcceptedCandidateFiles": 149,
+  "lastAcceptedCandidateSha256": "7d53716433beafb078cef2184f68470f2c60a323a0e57d28a063923920e6bfd4",
+  "nativeQuantityContractEstablished": false,
+  "nativeOneClickOrderReady": false,
+  "newRealPickupSlotOrderOrPayment": false,
+  "desktopControlOutcome": "Documented native initialization/listing found Chrome; minimized-window recovery activation stopped Computer Use for this turn because current URL could not be determined sufficiently for policy enforcement. No further UI input.",
+  "currentActiveClaudeCalls": 0,
+  "quotaResetReportedAsiaShanghai": "2026-10-04 00:20",
+  "reviewTask": "docs/tasks/C-026-CROSS-REVIEW.md",
+  "noShutdown": true
+}

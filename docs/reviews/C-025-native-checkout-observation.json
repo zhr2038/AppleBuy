@@ -1,0 +1,422 @@
+{
+  "recordedAtUtc": "2026-10-03T14:36:48.447153+00:00",
+  "method": "supported Chrome extension DOM observation, public whitelist only",
+  "controllingExtensionRestored": true,
+  "bagBeforeHumanCheckout": {
+    "origin": "https://www.apple.com.cn",
+    "path": "/shop/bag",
+    "purchasedLists": 1,
+    "purchasedLines": 1,
+    "title": "iPhone 18 Pro 256GB 黑色",
+    "selectedQuantity": 1,
+    "totalCny": 9999
+  },
+  "humanCheckoutAndLogin": true,
+  "executorCheckoutConfirmed": false,
+  "closedSummary": {
+    "capturedAtUtc": "2026-10-03T14:26:23.714Z",
+    "dialogs": [],
+    "explicitQuantities": [],
+    "fulfillmentOptions": [
+      {
+        "checked": true,
+        "disabled": false,
+        "label": "为我送货",
+        "visible": true
+      },
+      {
+        "checked": false,
+        "disabled": false,
+        "label": "我要取货",
+        "visible": true
+      }
+    ],
+    "mainCount": 1,
+    "moneyRows": [],
+    "origin": "https://secure6.www.apple.com.cn",
+    "pageMatches": true,
+    "path": "/shop/checkout",
+    "productLineCount": 2,
+    "products": [
+      {
+        "classes": [
+          "rs-fulfillment-productstrip-content"
+        ],
+        "inDialog": false,
+        "inMain": true,
+        "tag": "DIV",
+        "text": "iPhone 18 Pro 256GB 黑色",
+        "visible": true
+      },
+      {
+        "classes": [
+          "visuallyhidden"
+        ],
+        "inDialog": false,
+        "inMain": true,
+        "tag": "SPAN",
+        "text": "iPhone 18 Pro 256GB 黑色",
+        "visible": true
+      }
+    ],
+    "quantitySelects": [],
+    "summaryButtons": [
+      {
+        "ariaExpanded": null,
+        "caption": "显示订单摘要: RMB 9,999",
+        "classes": [
+          "as-buttonlink"
+        ],
+        "controlsDialog": false,
+        "inDialog": false,
+        "inMain": true,
+        "tag": "BUTTON",
+        "visible": true
+      }
+    ]
+  },
+  "openedSummary": {
+    "capturedAtUtc": "2026-10-03T14:26:59.375Z",
+    "dialogs": [
+      {
+        "classes": [],
+        "inDialog": true,
+        "inMain": false,
+        "open": true,
+        "productLineCount": 0,
+        "tag": "DIV",
+        "visible": true
+      }
+    ],
+    "explicitQuantities": [],
+    "fulfillmentOptions": [
+      {
+        "checked": true,
+        "disabled": false,
+        "label": "为我送货",
+        "visible": false
+      },
+      {
+        "checked": false,
+        "disabled": false,
+        "label": "我要取货",
+        "visible": false
+      }
+    ],
+    "mainCount": 1,
+    "moneyRows": [
+      {
+        "amounts": [
+          "RMB 9,999"
+        ],
+        "classes": [
+          "column",
+          "large-6",
+          "rs-companionbar-summary-subtotallabel"
+        ],
+        "inDialog": true,
+        "inMain": false,
+        "label": "小计",
+        "tag": "SPAN",
+        "visible": true
+      },
+      {
+        "amounts": [
+          "RMB 9,999"
+        ],
+        "classes": [
+          "column",
+          "large-6"
+        ],
+        "inDialog": true,
+        "inMain": false,
+        "label": "总计",
+        "tag": "SPAN",
+        "visible": true
+      }
+    ],
+    "origin": "https://secure6.www.apple.com.cn",
+    "pageMatches": true,
+    "path": "/shop/checkout",
+    "productLineCount": 2,
+    "products": [
+      {
+        "classes": [
+          "rs-fulfillment-productstrip-content"
+        ],
+        "inDialog": false,
+        "inMain": true,
+        "tag": "DIV",
+        "text": "iPhone 18 Pro 256GB 黑色",
+        "visible": false
+      },
+      {
+        "classes": [
+          "visuallyhidden"
+        ],
+        "inDialog": false,
+        "inMain": true,
+        "tag": "SPAN",
+        "text": "iPhone 18 Pro 256GB 黑色",
+        "visible": false
+      }
+    ],
+    "quantitySelects": [],
+    "summaryButtons": [
+      {
+        "ariaExpanded": null,
+        "caption": "显示订单摘要: RMB 9,999",
+        "classes": [
+          "as-buttonlink"
+        ],
+        "controlsDialog": false,
+        "inDialog": false,
+        "inMain": true,
+        "tag": "BUTTON",
+        "visible": false
+      }
+    ]
+  },
+  "productTitleAncestry": [
+    {
+      "ancestors": [
+        {
+          "classes": [
+            "rs-fulfillment-shipmentgroup",
+            "rs-load-fadein"
+          ],
+          "relatedTitleNodes": 2,
+          "tag": "DIV"
+        },
+        {
+          "classes": [
+            "rs-fulfillment-shipmentgroup-container"
+          ],
+          "relatedTitleNodes": 2,
+          "tag": "DIV"
+        },
+        {
+          "classes": [
+            "rs-fulfillment-deliverydetails"
+          ],
+          "relatedTitleNodes": 2,
+          "tag": "DIV"
+        },
+        {
+          "classes": [
+            "rs-fulfillment"
+          ],
+          "relatedTitleNodes": 2,
+          "tag": "DIV"
+        },
+        {
+          "classes": [
+            "rs-zoom-content",
+            "as-l-container"
+          ],
+          "relatedTitleNodes": 2,
+          "tag": "DIV"
+        },
+        {
+          "classes": [
+            "rs-checkout-fulfillment"
+          ],
+          "relatedTitleNodes": 2,
+          "tag": "DIV"
+        },
+        {
+          "classes": [],
+          "relatedTitleNodes": 2,
+          "tag": "DIV"
+        }
+      ],
+      "classes": [
+        "rs-fulfillment-productstrip-content"
+      ],
+      "tag": "DIV"
+    },
+    {
+      "ancestors": [
+        {
+          "classes": [
+            "rs-fullfillment-selector-header"
+          ],
+          "relatedTitleNodes": 1,
+          "tag": "H2"
+        },
+        {
+          "classes": [
+            "rs-fulfillment-selector-title"
+          ],
+          "relatedTitleNodes": 1,
+          "tag": "LEGEND"
+        },
+        {
+          "classes": [
+            "rs-fulfillment-deliveryoptions",
+            "column",
+            "large-6"
+          ],
+          "relatedTitleNodes": 1,
+          "tag": "FIELDSET"
+        },
+        {
+          "classes": [
+            "rs-fulfillment-shipment",
+            "row"
+          ],
+          "relatedTitleNodes": 1,
+          "tag": "DIV"
+        },
+        {
+          "classes": [
+            "rs-fulfillment-shipmentgroup",
+            "rs-load-fadein"
+          ],
+          "relatedTitleNodes": 2,
+          "tag": "DIV"
+        },
+        {
+          "classes": [
+            "rs-fulfillment-shipmentgroup-container"
+          ],
+          "relatedTitleNodes": 2,
+          "tag": "DIV"
+        },
+        {
+          "classes": [
+            "rs-fulfillment-deliverydetails"
+          ],
+          "relatedTitleNodes": 2,
+          "tag": "DIV"
+        }
+      ],
+      "classes": [
+        "visuallyhidden"
+      ],
+      "tag": "SPAN"
+    }
+  ],
+  "summaryStructure": [
+    {
+      "classes": [],
+      "closeButtons": [
+        {
+          "label": "关闭",
+          "tag": "BUTTON"
+        }
+      ],
+      "headingLabels": [],
+      "numericLeafCount": 0,
+      "style": {
+        "ariaHidden": null,
+        "display": "block",
+        "visibility": "visible"
+      },
+      "tag": "DIV"
+    }
+  ],
+  "roleMainStructure": {
+    "explicitQuantityPhrases": [],
+    "productAriaQuantityPhrases": [],
+    "productStrips": 1,
+    "rootRole": "main",
+    "rootTag": "DIV",
+    "shipmentGroups": 1
+  },
+  "afterClosingSummary": {
+    "capturedAtUtc": "2026-10-03T14:28:55.700Z",
+    "dialogs": [],
+    "explicitQuantities": [],
+    "fulfillmentOptions": [
+      {
+        "checked": true,
+        "disabled": false,
+        "label": "为我送货",
+        "visible": true
+      },
+      {
+        "checked": false,
+        "disabled": false,
+        "label": "我要取货",
+        "visible": true
+      }
+    ],
+    "mainCount": 1,
+    "moneyRows": [],
+    "origin": "https://secure6.www.apple.com.cn",
+    "pageMatches": true,
+    "path": "/shop/checkout",
+    "productLineCount": 2,
+    "products": [
+      {
+        "classes": [
+          "rs-fulfillment-productstrip-content"
+        ],
+        "inDialog": false,
+        "inMain": true,
+        "tag": "DIV",
+        "text": "iPhone 18 Pro 256GB 黑色",
+        "visible": true
+      },
+      {
+        "classes": [
+          "visuallyhidden"
+        ],
+        "inDialog": false,
+        "inMain": true,
+        "tag": "SPAN",
+        "text": "iPhone 18 Pro 256GB 黑色",
+        "visible": true
+      }
+    ],
+    "quantitySelects": [],
+    "summaryButtons": [
+      {
+        "ariaExpanded": null,
+        "caption": "显示订单摘要: RMB 9,999",
+        "classes": [
+          "as-buttonlink"
+        ],
+        "controlsDialog": false,
+        "inDialog": false,
+        "inMain": true,
+        "tag": "BUTTON",
+        "visible": true
+      }
+    ]
+  },
+  "interpretation": {
+    "productLineCountFieldActuallyCountsTitleRepresentations": true,
+    "sameProductTitleRepresentations": 2,
+    "actualObservedShipmentGroups": 1,
+    "actualObservedProductStrips": 1,
+    "secondTitleIsVisuallyHiddenLegendText": true,
+    "titleMultiplicityDoesNotProveTwoPurchasedUnits": true,
+    "explicitQuantityNotFoundInInspectedPublicFields": true,
+    "summaryContainsPublicMoneyButNoObservedProductLineOrQuantity": true,
+    "noQuantityInferredFromMoneyOrBagHistory": true,
+    "quantityContractEstablished": false,
+    "routeAOrBImplemented": false,
+    "currentOneClickOrderReady": false
+  },
+  "actionsByCodex": [
+    "read-only public bag GET",
+    "read-only existing checkout route GET returned session-expired",
+    "normal open order-summary disclosure",
+    "normal close order-summary disclosure"
+  ],
+  "resourceMutationByCodex": false,
+  "pickupOptionSelectedByCodex": false,
+  "slotReserved": false,
+  "newOrderCreated": false,
+  "paid": false,
+  "privateScreenshotsIgnoredNotSentToClaude": true,
+  "captureLimits": [
+    "Exact public text and selected quantity controls only; no form values, account/contact values, IDs, query, cookies/storage/network.",
+    "The negative quantity observation is limited to the inspected displayed text, public aria labels, quantity-labelled selects and actual summary. It is not a documented universal Apple contract.",
+    "Initial heading checks incorrectly compared NFKC-normalized punctuation with a fullwidth literal; those checks were discarded.",
+    "An attempted local string-code generation was denied. No alternate generator or browser-control backend was used; the final capture used a literal supported read-only DOM function.",
+    "main descendant counts were initially zero because the actual main is a DIV role=main; final counts use the observed role container."
+  ]
+}
