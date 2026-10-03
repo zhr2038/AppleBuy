@@ -1,0 +1,17 @@
+{
+  "recordedAtUtc": "2026-10-03T15:13:41.888878+00:00",
+  "sourceCommit": "036abd9de824c82447b0c4dddf624773d69fc4f6",
+  "publishedRef": "codex/c015-quota-checkpoint-20261003",
+  "actualRemoteSourceCommit": "036abd9de824c82447b0c4dddf624773d69fc4f6",
+  "mainNotUpdatedByThisPublication": true,
+  "observedRemoteMain": "9abc4b345ee31d30871db057ba0e05e7ef364cda",
+  "candidateFiles": 151,
+  "candidateSha256": "90504db16241de5e80f826e812544945f6d483aec273a4ca7172e92746fc41a9",
+  "all151PublishedGitBlobsMatch": true,
+  "independentTests": 726,
+  "publicationKind": "Codex-checked candidate checkpoint, awaiting actual Claude consistency review",
+  "preciseBilateralAgreement": false,
+  "nativeOneClickOrderReady": false,
+  "privateDataPublished": false,
+  "forcePush": false
+}
