@@ -1,0 +1,32 @@
+{
+  "recordedAtUtc": "2026-10-03T12:31:41.583248+00:00",
+  "sourceCommit": "638275207ca1448f7a13f2de1aeca6e1a7281ea5",
+  "pushExitCode": 0,
+  "mainAndCheckpointRefVerified": true,
+  "candidateFiles": 145,
+  "candidateSha256": "1881005394febf0f2ed1f3635d8b4a92e3559e28c4419b9572b5635c7df6ecf9",
+  "all145GitBlobHashesMatch": true,
+  "independentTests": 654,
+  "actualClaudeAgreeVerified": true,
+  "acceptedScope": "bounded C021+C022+R1, not native one-click or whole-repository readiness",
+  "privatePathsPublished": false,
+  "publishedPaths": [
+    "docs/reviews/C-022-Claude-actual-review.md",
+    "docs/reviews/C-022-R1-Claude-cross-review.md",
+    "docs/reviews/C-022-R1-actual-verification.json",
+    "docs/reviews/C-022-R1-before-verification.json",
+    "docs/reviews/C-022-R1-bounded-agreement.md",
+    "docs/reviews/C-022-R1-candidate-manifest.json",
+    "docs/reviews/C-022-R1-cross-review-verification.json",
+    "docs/reviews/C-022-R1-input-candidate-manifest.json",
+    "docs/reviews/C-022-R1-installable-bundle.json",
+    "docs/reviews/C-022-actual-review-verification.json",
+    "docs/tasks/C-022-R1-CROSS-REVIEW.md",
+    "docs/tasks/C-022-R1.md",
+    "docs/status.md",
+    "web/checkout-connector/job.js",
+    "review/c022-status-truth.test.ts",
+    "test/checkout-c022-status-truth.test.ts",
+    "docs/claude/C-022-R1-report.md"
+  ]
+}
