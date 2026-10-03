@@ -1,0 +1,30 @@
+{
+  "recordedAtUtc": "2026-10-03T13:47:07.326072+00:00",
+  "sourceCommit": "e6c269c9ba941cc07713e027a1c7b603883b832b",
+  "pushExitCode": 0,
+  "mainAndCheckpointRefVerified": true,
+  "candidateFiles": 149,
+  "candidateSha256": "7d53716433beafb078cef2184f68470f2c60a323a0e57d28a063923920e6bfd4",
+  "all149GitBlobHashesMatch": true,
+  "independentTests": 709,
+  "actualClaudeAgreeVerified": true,
+  "acceptedScope": "current summary-money evidence, not native autonomous checkout/quantity contract",
+  "privatePathsPublished": false,
+  "publishedPaths": [
+    "docs/reviews/C-024-Claude-cross-review.md",
+    "docs/reviews/C-024-actual-verification.json",
+    "docs/reviews/C-024-before-verification.json",
+    "docs/reviews/C-024-bounded-agreement.md",
+    "docs/reviews/C-024-candidate-manifest.json",
+    "docs/reviews/C-024-cross-review-verification.json",
+    "docs/reviews/C-024-input-candidate-manifest.json",
+    "docs/reviews/C-024-installable-bundle.json",
+    "docs/tasks/C-024-CHECKOUT-EVIDENCE.md",
+    "docs/tasks/C-024-CROSS-REVIEW.md",
+    "docs/status.md",
+    "web/checkout-connector/page-program.js",
+    "review/c024-checkout-money.test.ts",
+    "test/checkout-c024-evidence.test.ts",
+    "docs/claude/C-024-report.md"
+  ]
+}
