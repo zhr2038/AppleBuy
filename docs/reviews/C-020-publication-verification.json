@@ -1,0 +1,43 @@
+{
+  "scope": "actual accepted C020139-file source publication; later receipt-only commits preserve source identity",
+  "sourceCommit": "2863402c15088d874dd9a35b183314ee2ce34c35",
+  "sourcePublicationVerifiedAtUtc": "2026-10-03T08:43:30.846126+00:00",
+  "sourceCommitPushed": true,
+  "publicRefsVerifiedAtSourcePublication": {
+    "refs/heads/codex/c015-quota-checkpoint-20261003": "2863402c15088d874dd9a35b183314ee2ce34c35",
+    "refs/heads/main": "2863402c15088d874dd9a35b183314ee2ce34c35"
+  },
+  "candidateFiles": 139,
+  "candidateSha256": "6e2acb69c981c4676c267ff311ae564012e3c4f28c2a0d09250a7d14a2ffe331",
+  "allSourceGitHashesMatch": true,
+  "sourceScopeBilateralAgreement": true,
+  "independentTests": 553,
+  "actualClaudeConsistencyTests": 553,
+  "publicFiles": [
+    "docs/checkout-chrome-runbook.md",
+    "docs/plan.md",
+    "docs/reviews/C-014-control-page-observed.md",
+    "docs/reviews/C-014-human-readonly-feedback.json",
+    "docs/status.md",
+    "docs/tasks/C-014-CHROME-VERIFY.md",
+    "web/checkout-connector/page-program.js",
+    "docs/claude/C-020-report.md",
+    "docs/reviews/C-020-Claude-cross-review.md",
+    "docs/reviews/C-020-actual-verification.json",
+    "docs/reviews/C-020-before-verification.json",
+    "docs/reviews/C-020-bounded-agreement.md",
+    "docs/reviews/C-020-candidate-manifest.json",
+    "docs/reviews/C-020-cart-stage-findings.md",
+    "docs/reviews/C-020-cross-review-verification.json",
+    "docs/reviews/C-020-independent-review.md",
+    "docs/reviews/C-020-input-candidate-manifest.json",
+    "docs/reviews/C-020-installable-bundle.json",
+    "docs/tasks/C-020-CART-STAGE.md",
+    "docs/tasks/C-020-CROSS-REVIEW.md",
+    "review/c020-cart-stage.test.ts",
+    "test/checkout-c020-cart-stage.test.ts"
+  ],
+  "privateFilesPublished": false,
+  "realPurchasingReady": false,
+  "newMerchantMutationAuthorized": false
+}
