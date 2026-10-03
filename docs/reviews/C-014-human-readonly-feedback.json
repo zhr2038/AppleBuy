@@ -1,0 +1,59 @@
+{
+  "schema": "applebuy-native-human-feedback/v1",
+  "recordedLocalDate": "2026-10-03",
+  "acceptedSourceManifest": "docs/reviews/C-017-candidate-manifest.json",
+  "acceptedSourceFiles": 131,
+  "acceptedSourceSha256": "5386e64d1c2e63050ebfb1a94cf7fe47e014e2a974864711cfbef549c3575223",
+  "acceptedSourceTests": 455,
+  "events": [
+    {
+      "source": "human supplied control-page status, not an independent extension-runtime inspection",
+      "buttonCategoryConfirmedByHuman": "Start, Resume or Submit",
+      "statusText": "状态：BLOCKED；页面：ENTRY；existing-task-binding-differs",
+      "currentSourceInterpretation": "Purchase mode retains the earlier task and stops before observing or acting when its tab, digest or normalized plan differs. ENTRY is a retained last phase and is not a new merchant observation in this branch.",
+      "specificBindingDifferenceVerified": false,
+      "oldTaskContentsRead": false,
+      "oldTaskErasedOrRetired": false
+    },
+    {
+      "source": "human supplied control-page status after the requested Observe action",
+      "button": "只读观察当前页面",
+      "statusText": "只读观察：页面 ENTRY；待选 iPhone 18 Pro（enabled）；配置完整：否。未执行任何点击",
+      "currentSourceInterpretation": "Observe mode bypasses purchase-task reads and writes and performs no action. The reported public page still requires the enabled model choice; incomplete configuration is not no stock.",
+      "independentNativeApiInspection": false,
+      "installedSourceIdentityVerified": false,
+      "hostPermissionGrantIndependentlyVerified": false
+    },
+    {
+      "source": "human supplied control-page status after requested public-configuration validation",
+      "button": "public-configuration validation; stops before Add to Bag",
+      "statusText": "公开配置校验停止：NEEDS_VERIFICATION；repeated-untouched-failures; human check required",
+      "actualNativeCauseVerified": false,
+      "validationPassed": false,
+      "stateResetRequested": false
+    }
+  ],
+  "independentPublicObservation": {
+    "method": "supported read-only DOM snapshot in the user's Chrome",
+    "url": "https://www.apple.com.cn/shop/buy-iphone/iphone-18-pro",
+    "modelChoiceEnabled": true,
+    "modelChoiceSelected": false,
+    "dependentColorCapacityTradeInAppleCareControlsDisabled": true,
+    "continueDisabled": true,
+    "matchesHumanReportedEntryRequirement": true,
+    "codexPageClicksOrWrites": 0,
+    "privateInputValuesRead": false,
+    "afterValidationReport": {
+      "modelChoiceSelected": false,
+      "continueDisabled": true,
+      "method": "supported read-only DOM snapshot in the same public Pro tab"
+    }
+  },
+  "nextBoundedStep": "Pause blind native retries; reproduce transport/persistence evidence ordering offline and dispatch an exact original-session repair if independently demonstrated. Preserve native old-task and validation history.",
+  "c014ActuallyDispatched": false,
+  "realPurchasingReady": false,
+  "newPurchaseOrResourceAuthorization": false,
+  "internalExtensionToolPolicyBypassed": false,
+  "providerQuotaEvent": false,
+  "shutdownTriggerSatisfied": false
+}

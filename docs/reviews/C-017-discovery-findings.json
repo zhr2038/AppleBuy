@@ -1,0 +1,31 @@
+{
+  "recordedAtUtc": "2026-10-03T03:46:59.313455+00:00",
+  "candidateFiles": 130,
+  "inputSha256": "67a23b8cb5f0d7efa1719d92a4f75b7ef44072c758af6568a99ef9a946a40d88",
+  "prior129Unchanged": true,
+  "independentTests": {
+    "tests": 6,
+    "pass": 3,
+    "fail": 3
+  },
+  "fullInputTests": {
+    "tests": 446,
+    "pass": 443,
+    "fail": 3,
+    "cancelled": 0,
+    "skipped": 0,
+    "todo": 0
+  },
+  "exitCode": 1,
+  "reportedNativeMessage": "没有可访问的官网标签页；先本人打开官网",
+  "messageEvidence": "Direct user reply; not independently inspected extension DOM",
+  "officialProPagesIndependentlyObserved": true,
+  "causeQualification": "Documented Tab.url omission plus exact-source synthetic reproduction; actual installed permission state inaccessible",
+  "nativeChromeApiVerified": false,
+  "newMerchantActions": 0,
+  "currentHostConsent": "Explicit user authorization for https://www.apple.com.cn/*; actual grant not observed",
+  "sources": [
+    "https://developer.chrome.com/docs/extensions/reference/api/tabs",
+    "https://developer.chrome.com/docs/extensions/reference/api/permissions"
+  ]
+}

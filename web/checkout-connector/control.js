@@ -6,8 +6,17 @@ const store={async get(k){return (await chrome.storage.local.get(k))[k]??null;},
 const status=s=>{$('state').textContent=s;};
 // The fixed user condition is part of the bound intent: no trade-in and no AppleCare+.
 const plan=()=>({schema:'applebuy-intent/v1',product:$('product').value==='duo'?{model:'iPhone Duo',capacity:'256GB',color:'星光白色'}:{model:'iPhone 18 Pro',capacity:'256GB',color:'黑色'},quantity:1,maxTotalCny:$('product').value==='duo'?15999:9999,city:'大连',fulfillment:'pickup',stores:['Apple 大连恒隆广场'],dateRule:'initial-first-three-terminal',paymentMethod:'支付宝',extras:{...NO_EXTRAS}});
-$('find').onclick=async()=>{const tabs=(await chrome.tabs.query({})).filter(t=>allowedMerchantUrl(t.url));$('tab').replaceChildren(...tabs.map(t=>{const o=document.createElement('option');o.value=t.id;o.textContent=`${new URL(t.url).hostname} · 标签页 ${t.id}`;return o;}));status(tabs.length?'请选择唯一的官网标签页':'没有可访问的官网标签页；先本人打开官网');};
-$('permission').onclick=async()=>{try{const t=await chrome.tabs.get(Number($('tab').value));if(!allowedMerchantUrl(t.url))throw new Error();const ok=await chrome.permissions.request({origins:[new URL(t.url).origin+'/*']});status(ok?'该官网主机访问已允许；页面跨主机后需本人另行确认':'访问未允许');}catch{status('当前标签页或权限不可用');}};
+// Only tabs whose URL Chrome discloses AND that are supported official pages are listed; opaque tabs stay undisclosed.
+$('find').onclick=async()=>{const tabs=(await chrome.tabs.query({})).filter(t=>allowedMerchantUrl(t.url));$('tab').replaceChildren(...tabs.map(t=>{const o=document.createElement('option');o.value=t.id;o.textContent=`${new URL(t.url).hostname} · 标签页 ${t.id}`;return o;}));status(tabs.length?'请选择唯一的官网标签页':'没有可读取的官网标签页：首次使用请先点“允许读取和操作官网主机”，在 Chrome 弹窗中允许 www.apple.com.cn 后再读取；或先本人打开官网');};
+// C-017: Chrome hides Tab.url until host access exists, so first use cannot start from a selected tab. With no selected
+// tab, the click requests ONLY the declared public origin, as its first synchronous call (no await before it keeps
+// Chrome's user gesture). It never requests a secure host, tabs or anything else, and only reports the outcome: no
+// job, checkbox, storage write, page script, navigation or repeat. A selected readable tab keeps its exact-origin request.
+const PUBLIC_ORIGIN='https://www.apple.com.cn/*';
+$('permission').onclick=async()=>{
+  if(!$('tab').value){try{const ok=await chrome.permissions.request({origins:[PUBLIC_ORIGIN]});status(ok?'已允许读取 www.apple.com.cn 官网主机；请再点“读取当前官网标签页”。结账等其他官网主机需选中其标签页后另行允许':'www.apple.com.cn 访问未允许；未执行任何操作，如需可再次点击本按钮');}catch{status('官网主机访问请求未完成；未执行任何操作');}return;}
+  try{const t=await chrome.tabs.get(Number($('tab').value));if(!allowedMerchantUrl(t.url))throw new Error();const ok=await chrome.permissions.request({origins:[new URL(t.url).origin+'/*']});status(ok?'该官网主机访问已允许；页面跨主机后需本人另行确认':'访问未允许');}catch{status('当前标签页或权限不可用；可重新读取官网标签页');}
+};
 let prepared=null;
 async function digestPlan(p){const bytes=new TextEncoder().encode(JSON.stringify(p));return [...new Uint8Array(await crypto.subtle.digest('SHA-256',bytes))].map(b=>b.toString(16).padStart(2,'0')).join('');}
 // Constrained migration: a preserved task bound before the explicit field keeps its digest only when it is the same

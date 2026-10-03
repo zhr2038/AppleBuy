@@ -1,0 +1,13 @@
+# C017 independent review — first-time public-host request
+
+Actual Claude implementation returned success after311.26 seconds. Full structured usage confirms only first-party Opus5.5; xhigh is requested in the actual argv. No permission denial, provider quota, timeout or cap error; owned process tree cleaned. The reported29-turn counter differs from28 requested, but the terminal result is success. Usage/cost are cumulative resumed-session data, not incremental spend.
+
+Codex inspected full controller, HTML, new tests and report, exact diff and all old130 hashes. Only `control.js` and `control.html` changed, plus one new9-case implementation test. All64 protected reviewer/old test files and other input sources unchanged. Manifest, page program, port, owner/job and delegation files unchanged. Full independent **455/455**, 6024.9013ms, whitespace check passed. Accurate131 SHA `5386e64d1c2e63050ebfb1a94cf7fe47e014e2a974864711cfbef549c3575223`.
+
+The explicit empty-selection permission click directly requests only already-declared `https://www.apple.com.cn/*` with no preceding await. It reports allow/denial/error and returns, never constructing a job, writing task/private state, injecting, navigating or ticking checkout controls. Find lists supported disclosed URLs; empty message now explains first authorization without implying stock. Existing selected-host/purchase guards unchanged. Root6 cases now pass; new9 cover bootstrap, deny, sync/promise errors, filtering, secure-host separation and controls. APIs/DOM are synthetic, not native prompt/gesture/permission evidence. The test gesture flag resets at any await; it is not Chromium's activation-lifetime model.
+
+Implementation candidly reused prior requirements/port context despite a fresh full-read requirement. Exact cross-review must now read both fully, without offsets/limits. Controller/HTML were actually read in full. A first8/9 implementation-test run checked denial after Find changed the status; model corrected its test order without weakening protected assertions.
+
+Native concerns remain: existing selected-host await before permission, opaque secure-tab discovery after cross-origin navigation, installed identity, actual native read-only executeScript/document/ISOLATED behavior. Find query rejection remains pre-existing and unhandled by this patch. No live delayed refusal/reselection, checkout or speed was tested. Internal-protocol browser restriction requires human control clicks; no alternate HTTP control surface/native/CDP/profile workaround is authorized.
+
+Exact review agreement remains pending; green tests/delivery do not self-approve. C014 native verification and one-click purchasing remain pending, REAL_PURCHASING_READY=false.

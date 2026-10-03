@@ -1,0 +1,54 @@
+{
+  "task": "C-017-DISCOVERY",
+  "verifiedAtUtc": "2026-10-03T03:58:48.381450+00:00",
+  "candidateFiles": 131,
+  "candidateSha256": "5386e64d1c2e63050ebfb1a94cf7fe47e014e2a974864711cfbef549c3575223",
+  "inputSourceChanges": [
+    "web/checkout-connector/control.html",
+    "web/checkout-connector/control.js"
+  ],
+  "newImplementationTest": "test/checkout-c017-discovery.test.ts",
+  "all64ProtectedReviewAndOldTestFilesUnchanged": true,
+  "modelRequested": "claude-opus-5-5",
+  "effortRequested": "xhigh",
+  "structuredModelsActual": [
+    "claude-opus-5-5"
+  ],
+  "provider": "firstParty",
+  "canonicalModel": "claude-opus-5-5",
+  "modelVerified": true,
+  "startedAtUtc": "2026-10-03T03:47:20.349898+00:00",
+  "endedAtUtc": "2026-10-03T03:52:31.617241+00:00",
+  "durationSeconds": 311.26,
+  "requestedTurnCap": 28,
+  "reportedNumTurns": 29,
+  "exitCode": 0,
+  "subtype": "success",
+  "isError": false,
+  "permissionDenials": [],
+  "timedOut": false,
+  "cleanupConfirmed": true,
+  "providerQuotaReported": false,
+  "localCapReported": false,
+  "usageQualification": "Full structured modelUsage inspected privately; resumed-session counters/cost are cumulative, not incremental spend. A reported turn counter is not a cap error.",
+  "freshFullRequirementsAndPortReadInImplementation": false,
+  "readQualification": "Implementation reused earlier requirements and port context; cross-review must read both full current files freshly.",
+  "independentCodexTests": {
+    "tests": 455,
+    "pass": 455,
+    "fail": 0,
+    "cancelled": 0,
+    "skipped": 0,
+    "todo": 0,
+    "durationMs": 6024.9013,
+    "exitCode": 0
+  },
+  "reportedClaudeTests": {
+    "tests": 455,
+    "pass": 455,
+    "fail": 0
+  },
+  "actualBilateralAgreement": false,
+  "nativeApiExecuted": false,
+  "realPurchasingReady": false
+}
