@@ -37,12 +37,13 @@ export async function merchantDocument(plan,command=null,internal=null){
   const buttons=[...main.querySelectorAll('button,a[role="button"],input[type="submit"]')].filter(visible);
   const radios=[...main.querySelectorAll('input[type="radio"],[role="radio"]')].filter(visible);
   const boxes=[...main.querySelectorAll('input[type="checkbox"],[role="checkbox"]')].filter(visible);
-  const selects=[...main.querySelectorAll('select')].filter(visible);
-  const textEls=[...main.querySelectorAll('h1,h2,h3,p,span,div')].filter(visible).map(e=>({e,t:norm(e.textContent)})).filter(x=>x.t.length>0&&x.t.length<=180);
+  const allSelects=[...main.querySelectorAll('select')],selects=allSelects.filter(visible);
+  const textNodes=[...main.querySelectorAll('h1,h2,h3,p,span,div')].filter(visible);
+  const textEls=textNodes.map(e=>({e,t:norm(e.textContent)})).filter(x=>x.t.length>0&&x.t.length<=180);
   const texts=textEls.map(x=>x.t);
   // Separate page lines: an identical nested wrapper is one line, identical siblings are separate lines (never deduplicated by text).
   const within=(a,b)=>{for(let p=b.parentElement;p;p=p.parentElement)if(p===a)return true;return false;};
-  const lines=re=>{const m=textEls.filter(x=>re.test(x.t));return m.filter(x=>!m.some(y=>y!==x&&within(y.e,x.e)));};
+  const lines=(re,fields=textEls)=>{const m=fields.filter(x=>re.test(x.t));return m.filter(x=>!m.some(y=>y!==x&&within(y.e,x.e)));};
   const exact=t=>buttons.filter(b=>name(b)===t&&!disabled(b));
   const checked=e=>e.checked===true||e.getAttribute('aria-checked')==='true';
   const findRadio=t=>radios.filter(e=>(name(e)===t||name(e).startsWith(t+' '))&&!(t==='iPhone 18 Pro'&&name(e).startsWith('iPhone 18 Pro Max')));
@@ -77,7 +78,11 @@ export async function merchantDocument(plan,command=null,internal=null){
   const bagScoped=bagLists.length>0;
   const productLines=texts.filter(t=>productRe.test(t));
   const exactProduct=bag?!!bag.title&&norm(bag.title.textContent)===fullVariant&&!bag.stray:!bagScoped&&productLines.some(t=>t===fullVariant)&&productLines.every(t=>t===fullVariant);
-  const quantityLines=lines(/^数量\s*[:：]?\s*\d+$/);
+  // C022 (Codex quota takeover): wrapper text includes every option, even hidden native clones (observed 数量121).
+  // Remove descendant select text only; literal quantity outside those controls still conflicts with selected values.
+  // Strip outermost controls once, before the length bound, so long/nested option lists cannot hide a real contradiction.
+  const quantityFields=textNodes.map(e=>{const contained=allSelects.filter(s=>within(e,s)),roots=contained.filter(s=>!contained.some(other=>other!==s&&within(other,s)));let raw=String(e.textContent??'');for(const s of roots){const content=String(s.textContent??'');if(content)raw=raw.replace(content,'');}return {e,t:norm(raw)};}).filter(x=>x.t.length>0&&x.t.length<=180);
+  const quantityLines=lines(/^数量\s*[:：]?\s*\d+$/,quantityFields);
   const qtyControls=selects.filter(e=>/数量/.test(name(e)));
   const controlQty=qtyControls.length===1&&qtyControls[0].selectedOptions.length===1?Number(norm(qtyControls[0].selectedOptions[0]?.textContent)):null;
   const lineQty=quantityLines.length===1?Number(quantityLines[0].t.match(/\d+/)[0]):null;

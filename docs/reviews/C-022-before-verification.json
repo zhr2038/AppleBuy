@@ -1,0 +1,20 @@
+{
+  "recordedAtUtc": "2026-10-03T10:47:51.153506+00:00",
+  "tests": {
+    "tests": 633,
+    "pass": 627,
+    "fail": 6,
+    "cancelled": 0,
+    "skipped": 0,
+    "todo": 0
+  },
+  "exitCode": 1,
+  "allPrior619Unchanged": true,
+  "candidateFiles": 142,
+  "candidateSha256": "e4554742cef1df878f21a2df5c85c9d337901a05ae9e34bd14049e78b796e430",
+  "protectedTestReviewFiles": 76,
+  "nativeObserved": "Quantity DOM text121 contains visible options1/2 and hidden select1; actual selected quantity1.",
+  "nativeScope": "Human reports BAG/pending viewBag unknown. Codex current bag read proves exact Pro256black,1 unit,total9999. No cart/checkout/slot/order mutation.",
+  "allPrior619Passed": true,
+  "onlyNewC022CasesFailed": true
+}

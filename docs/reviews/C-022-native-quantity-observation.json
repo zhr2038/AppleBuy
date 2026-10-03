@@ -1,0 +1,47 @@
+{
+  "recordedAtUtc": "2026-10-03T11:03:55.079977+00:00",
+  "merchant": "official mainland public bag",
+  "path": "https://www.apple.com.cn/shop/bag",
+  "observedPurchasedLists": 1,
+  "observedPurchasedLines": 1,
+  "observedModel": "iPhone 18 Pro",
+  "observedCapacity": "256GB",
+  "observedColor": "黑色",
+  "observedSelectedQuantity": 1,
+  "observedTotalCny": 9999,
+  "quantitySelector": {
+    "class": "rs-quantity-dropdown form-dropdown-select",
+    "label": "数量",
+    "labelDisplay": "block",
+    "labelVisibility": "visible",
+    "selectedText": "1",
+    "options": [
+      "1",
+      "2"
+    ],
+    "controlDisplay": "inline-block",
+    "controlVisibility": "visible"
+  },
+  "hiddenClone": {
+    "class": "rs-quantity-hidden-select",
+    "labels": [],
+    "selectedText": "1",
+    "visibility": "hidden"
+  },
+  "quantityAncestorClasses": [
+    "rs-iteminfo-quantity",
+    "rs-quantity",
+    "rs-quantity-selector",
+    "rs-quantity-wrapper form-dropdown"
+  ],
+  "quantityAncestorText": "数量121",
+  "humanReportedNativePhase": "BAG",
+  "humanReportedPendingKind": "viewBag",
+  "humanReportedReason": "mutation-result-unconfirmed; no automatic repeat",
+  "nativeNewDecoderVerificationPending": true,
+  "actualQuantityObservedBySupportedReadonlyDom": true,
+  "driverNowBlocked": "Chrome ChatGPT control extension explicitly requires updating; no further browser calls or alternate control attempted after rejection.",
+  "newCartMutationOrCheckoutOrSlotOrOrderByCodex": false,
+  "stockAvailabilityConclusion": null,
+  "screenshotSaved": false
+}

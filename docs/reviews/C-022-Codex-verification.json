@@ -1,0 +1,38 @@
+{
+  "recordedAtUtc": "2026-10-03T10:51:23.720518+00:00",
+  "implementer": "Codex actual provider-quota takeover",
+  "quotaEvidence": "docs/reviews/C-021-quota-verification.json",
+  "userShutdownCancelled": true,
+  "newBusinessFilesChanged": [
+    "web/checkout-connector/page-program.js"
+  ],
+  "newImplementationTests": [
+    "test/checkout-c022-quantity.test.ts"
+  ],
+  "protectedInputFiles": 76,
+  "protectedByteIdentical": 76,
+  "priorC021InventoryAmendmentStillDisclosed": true,
+  "newIndependentCases": 14,
+  "newImplementationCases": 3,
+  "prior619StillPassing": true,
+  "fullIndependentTests": {
+    "tests": 636,
+    "pass": 636,
+    "fail": 0,
+    "cancelled": 0,
+    "skipped": 0,
+    "todo": 0,
+    "exitCode": 0,
+    "durationMs": 6228.4379
+  },
+  "candidateFiles": 143,
+  "candidateSha256": "cfdcb7e40117d8a033cb53a2dba573fc05bbcbc56bb9bce355bfed006bfb1646",
+  "actualClaudeReviewDone": false,
+  "preciseBilateralAgreement": false,
+  "nativeQuantityFixVerified": false,
+  "nativeOneClickOrderReady": false,
+  "realSlotRefusalVerified": false,
+  "duoActualContractVerified": false,
+  "newMerchantResourceMutationsByCodex": 0,
+  "knownResidual": "FULFILLMENT current DOM lacks explicit quantity and splits summary total; do not invent one or broaden expected View Bag next-phase list. Old task remains permanently readonly after human rebind."
+}
