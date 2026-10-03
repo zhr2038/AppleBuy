@@ -1,0 +1,20 @@
+{
+  "recordedAtUtc": "2026-10-03T13:02:58.727211+00:00",
+  "tests": {
+    "tests": 684,
+    "pass": 681,
+    "fail": 3,
+    "cancelled": 0,
+    "skipped": 0,
+    "todo": 0,
+    "exitCode": 1
+  },
+  "allPrior670Passed": true,
+  "all147PriorBytesUnchanged": true,
+  "newIndependentCases": 14,
+  "protectedTestReviewFiles": 82,
+  "candidateFiles": 148,
+  "candidateSha256": "9eff87ea10468fe6beb3a5c7cba09b96685b726f4b1d268d8d32319c2d3f5ac3",
+  "currentCheckoutEvidence": "One visible companionbar-button text 显示订单摘要： RMB9,999, Pro256black title; quantity absent. Split orderTotalValue existed in summary dialogue; no authenticated raw requests, values or quantity inferred.",
+  "nativeReadiness": false
+}

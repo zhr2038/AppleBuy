@@ -1,0 +1,247 @@
+{
+  "recordedAtUtc": "2026-10-03T13:39:02.637614+00:00",
+  "task": "C-024-CROSS-REVIEW",
+  "candidateFiles": 149,
+  "candidateSha256": "7d53716433beafb078cef2184f68470f2c60a323a0e57d28a063923920e6bfd4",
+  "verdict": "AGREE",
+  "actualReviewEvidenceVerified": true,
+  "checks": {
+    "terminalSuccess": true,
+    "exactModelAndEffort": true,
+    "zeroPermissionDenials": true,
+    "onlyReadonlyTools": true,
+    "onlyApprovedCommands": true,
+    "noPrivateRead": true,
+    "all15RequiredFilesActuallyRead": true,
+    "manifestActuallyVerified": true,
+    "actual709TestPass": true,
+    "ownedCleanupConfirmed": true,
+    "actualExplicitVerdict": true
+  },
+  "missingFullReads": [],
+  "tools": {
+    "Read": 15,
+    "Bash": 2,
+    "Grep": 2
+  },
+  "reads": [
+    {
+      "path": "docs/tasks/C-024-CROSS-REVIEW.md",
+      "offset": 1,
+      "limit": null,
+      "returnedLineCount": 21,
+      "expectedLineCount": 21,
+      "completeRequestedRange": true,
+      "fullFileInOneRead": true,
+      "error": false
+    },
+    {
+      "path": "docs/reviews/C-024-actual-verification.json",
+      "offset": 1,
+      "limit": null,
+      "returnedLineCount": 320,
+      "expectedLineCount": 320,
+      "completeRequestedRange": true,
+      "fullFileInOneRead": true,
+      "error": false
+    },
+    {
+      "path": "docs/requirements.md",
+      "offset": 1,
+      "limit": null,
+      "returnedLineCount": 88,
+      "expectedLineCount": 88,
+      "completeRequestedRange": true,
+      "fullFileInOneRead": true,
+      "error": false
+    },
+    {
+      "path": "docs/reviews/C-023-bounded-agreement.md",
+      "offset": 1,
+      "limit": null,
+      "returnedLineCount": 10,
+      "expectedLineCount": 10,
+      "completeRequestedRange": true,
+      "fullFileInOneRead": true,
+      "error": false
+    },
+    {
+      "path": "docs/reviews/C-022-native-quantity-observation.json",
+      "offset": 1,
+      "limit": null,
+      "returnedLineCount": 48,
+      "expectedLineCount": 48,
+      "completeRequestedRange": true,
+      "fullFileInOneRead": true,
+      "error": false
+    },
+    {
+      "path": "docs/reviews/C-024-candidate-manifest.json",
+      "offset": 1,
+      "limit": null,
+      "returnedLineCount": 156,
+      "expectedLineCount": 156,
+      "completeRequestedRange": true,
+      "fullFileInOneRead": true,
+      "error": false
+    },
+    {
+      "path": "docs/reviews/C-024-input-candidate-manifest.json",
+      "offset": 1,
+      "limit": null,
+      "returnedLineCount": 155,
+      "expectedLineCount": 155,
+      "completeRequestedRange": true,
+      "fullFileInOneRead": true,
+      "error": false
+    },
+    {
+      "path": "docs/reviews/C-024-before-verification.json",
+      "offset": 1,
+      "limit": null,
+      "returnedLineCount": 21,
+      "expectedLineCount": 21,
+      "completeRequestedRange": true,
+      "fullFileInOneRead": true,
+      "error": false
+    },
+    {
+      "path": "docs/tasks/C-024-CHECKOUT-EVIDENCE.md",
+      "offset": 1,
+      "limit": null,
+      "returnedLineCount": 28,
+      "expectedLineCount": 28,
+      "completeRequestedRange": true,
+      "fullFileInOneRead": true,
+      "error": false
+    },
+    {
+      "path": "web/checkout-connector/page-program.js",
+      "offset": 1,
+      "limit": null,
+      "returnedLineCount": 335,
+      "expectedLineCount": 335,
+      "completeRequestedRange": true,
+      "fullFileInOneRead": true,
+      "error": false
+    },
+    {
+      "path": "web/checkout-connector/job.js",
+      "offset": 1,
+      "limit": null,
+      "returnedLineCount": 257,
+      "expectedLineCount": 257,
+      "completeRequestedRange": true,
+      "fullFileInOneRead": true,
+      "error": false
+    },
+    {
+      "path": "web/checkout-connector/chrome-port.js",
+      "offset": 1,
+      "limit": null,
+      "returnedLineCount": 43,
+      "expectedLineCount": 43,
+      "completeRequestedRange": true,
+      "fullFileInOneRead": true,
+      "error": false
+    },
+    {
+      "path": "review/c024-checkout-money.test.ts",
+      "offset": 1,
+      "limit": null,
+      "returnedLineCount": 96,
+      "expectedLineCount": 96,
+      "completeRequestedRange": true,
+      "fullFileInOneRead": true,
+      "error": false
+    },
+    {
+      "path": "test/checkout-c024-evidence.test.ts",
+      "offset": 1,
+      "limit": null,
+      "returnedLineCount": 146,
+      "expectedLineCount": 146,
+      "completeRequestedRange": true,
+      "fullFileInOneRead": true,
+      "error": false
+    },
+    {
+      "path": "docs/claude/C-024-report.md",
+      "offset": 1,
+      "limit": null,
+      "returnedLineCount": 191,
+      "expectedLineCount": 191,
+      "completeRequestedRange": true,
+      "fullFileInOneRead": true,
+      "error": false
+    }
+  ],
+  "commands": [
+    {
+      "command": "python tools/delegation/verify_candidate_manifest.py docs/reviews/C-024-candidate-manifest.json",
+      "error": false,
+      "actualStats": {},
+      "manifestReceipts": [
+        {
+          "ok": true,
+          "files": 149,
+          "sha256": "7d53716433beafb078cef2184f68470f2c60a323a0e57d28a063923920e6bfd4",
+          "mismatches": []
+        }
+      ],
+      "persistedFullOutputInspected": false
+    },
+    {
+      "command": "node --test \"test/*.test.ts\" \"review/*.test.ts\"",
+      "error": false,
+      "actualStats": {
+        "tests": 709,
+        "pass": 709,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "manifestReceipts": [],
+      "persistedFullOutputInspected": true
+    }
+  ],
+  "structuredModelUsage": {
+    "claude-opus-5-5": {
+      "inputTokens": 249610,
+      "outputTokens": 2194121,
+      "thinkingTokens": 1236769,
+      "cacheReadInputTokens": 102989103,
+      "cacheCreationInputTokens": 6951923,
+      "webSearchRequests": 0,
+      "costUSD": 120.87918359999995,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 128000,
+      "canonicalModel": "claude-opus-5-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "usageScope": "reported resumed-session counters; not incremental task billing",
+  "status": "returned_for_review",
+  "isError": false,
+  "subtype": "success",
+  "timedOut": false,
+  "permissionDenials": [],
+  "cliLimits": {
+    "turns": 48,
+    "wallSeconds": 1800,
+    "usd": 10.0
+  },
+  "reportedTurns": 20,
+  "durationSeconds": 214.24,
+  "ownedRootAbsentOrExited": true,
+  "leaseAvailable": true,
+  "sourceAndInventoryUnchanged": true,
+  "finalAcceptanceByCodex": true,
+  "preciseBilateralAgreement": true,
+  "wholeRepoReviewed": false,
+  "nativeOneClickOrderReady": false,
+  "acceptedScope": "C024 secure-checkout current summary-money parsing and pickup/store cap/conflict guard, not native quantity proof or autonomous checkout",
+  "manifestScopeLabelCorrectedWithoutSourceOrShaChange": true
+}

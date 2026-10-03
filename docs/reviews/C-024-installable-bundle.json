@@ -1,0 +1,17 @@
+{
+  "candidateManifest": "docs/reviews/C-024-candidate-manifest.json",
+  "candidateSha256": "7d53716433beafb078cef2184f68470f2c60a323a0e57d28a063923920e6bfd4",
+  "files": {
+    "web/checkout-connector/chrome-port.js": "5ed8060eb7dece1442d55f74752772e8145bff345c172f21ec2bad25bd68173b",
+    "web/checkout-connector/control.html": "630226e70bfdfbd9cc91667e08679bfab027a53f2a6bb2e2afc8d6fff526ad75",
+    "web/checkout-connector/control.js": "931d31204ea7f7da36415eaf2d190a49a6a1539c7fe63f25445f618dd392afa3",
+    "web/checkout-connector/job.js": "6b74a9c7bc8106302e53cade0605f7bfe88b446a04c0ce7b966f124b06433c31",
+    "web/checkout-connector/manifest.json": "872e16c3a19ffd24c2b84213ec079463e97872af58ad424153ae35a8c60c1d0d",
+    "web/checkout-connector/open.html": "ff5010007a6bd18358606f60f16aed96a0304dc6669db7cbe1271597027c149e",
+    "web/checkout-connector/open.js": "1e50610d766d92e5bd4271a3746b2667485fa5bd9cae7121b02f06bb95add1b8",
+    "web/checkout-connector/owner.js": "2aa17b6b1666dabe757c56e620a29b8c2f62130d6993b8ff988665bd262577ed",
+    "web/checkout-connector/page-program.js": "bc367201e72ed8edc456eca079d2621ef4feaa629d714a9b9ad6b9ca6ed690d1"
+  },
+  "nativeIdentityVerified": false,
+  "reviewPending": true
+}
