@@ -101,6 +101,15 @@ for(const action of ['pause','stop'])for(const barrier of ['lock','record','dige
 test('C021 AUTH status names checkout and instructs a readonly login handoff, not Start',async()=>{
   const h=await control();h.page=auth;await h.click('reconcile');assert.match(h.status(),/待确认动作：结账/);assert.match(h.status(),/登录后核对原任务/);assert.equal(h.row.pending.action,'checkout');
 });
+test('C021 native binding diagnostic distinguishes an old tab from purchase conditions, retaining both records',async()=>{
+  const h=await control(),before=structuredClone(h.row);h.nodes.get('tab').value='8';await h.click('reconcile');assert.match(h.status(),/标签页与原任务不同/);assert.match(h.status(),/原任务：iPhone 18 Pro · 标签页 7/);assert.match(h.status(),/当前：iPhone 18 Pro · 标签页 8/);assert.deepEqual(h.row,before);assert.equal(h.writes+h.observations+h.actions.length,0);
+});
+test('C021 native binding diagnostic distinguishes a different requested product and never silently changes it',async()=>{
+  const h=await control(),before=structuredClone(h.row);h.nodes.get('product').value='duo';await h.click('reconcile');assert.match(h.status(),/购买条件与原任务不同/);assert.match(h.status(),/原任务：iPhone 18 Pro/);assert.match(h.status(),/当前：iPhone Duo/);assert.deepEqual(h.row,before);assert.equal(h.nodes.get('product').value,'duo');assert.equal(h.writes+h.observations+h.actions.length,0);
+});
+test('C021 binding status never echoes arbitrary saved model/contact/credential strings',async()=>{
+  const h=await control();h.row.plan.product.model='FAKE-private-secret';h.row.planDigest='FAKE-other-digest';h.row.plan.contact='FAKE-sensitive-contact';await h.click('reconcile');assert.match(h.status(),/型号记录无法确认/);assert.doesNotMatch(h.status(),/FAKE-private-secret|FAKE-sensitive-contact/);assert.equal(h.writes+h.observations+h.actions.length,0);
+});
 test('C021 permission status qualifies the stale BAG read and supplies only the exact observed secure origin',async()=>{
   const h=await control();h.error=Object.assign(new Error('CurrentHostPermissionMissing'),{origin:'https://secure6.www.apple.com.cn'});await h.click('reconcile');assert.match(h.status(),/最近已读页面：BAG/);assert.match(h.status(),/主机尚未获访问权限/);assert.match(h.status(),/待确认动作：结账/);assert.equal(h.nodes.get('hostOrigin').value,'https://secure6.www.apple.com.cn');
 });

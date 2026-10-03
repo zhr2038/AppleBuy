@@ -85,7 +85,7 @@
     "test/checkout-c019-observed-bag.test.ts": "d3a00dc8ff75978c7e36789ff8908d09f4e73253d62580cb2cd070b5698a0852",
     "test/checkout-c019-scope.test.ts": "c8b9819fb06a92c76148a97b7353555c79784c742e550d533dc613f9bfeb44b2",
     "test/checkout-c020-cart-stage.test.ts": "4eb7e48bc8a70ac871525a8e4b3ff96ed974d00a48b622505654f010e9469ce1",
-    "test/checkout-c021-auth-handoff.test.ts": "2858b208d1c5209f3c84daae7a1ea2b7542d2ccf95404357ad23033a6e4b076f",
+    "test/checkout-c021-auth-handoff.test.ts": "3fffc872bf5427c6f174d86941daaed35b08f285fa69567b900b3f49fae42169",
     "test/checkout-chrome-port.test.ts": "d0103578b3905d1e201e3f0fe0ccdd01d321c02b7c8831faa1c99c20a6244317",
     "test/checkout-job.test.ts": "b8da313d377c24c8836d6088e059712efddf0f4e180b46a4c63e38df37faf7f5",
     "test/checkout-owner.test.ts": "4eb74ff20b3d69c21334d32d35ac684b41b97d885c4347b86e62255d6f5d68c5",
@@ -118,7 +118,7 @@
     "web/app.js": "fab518015a2070743255e6d6ee7648121f9e526022e28134e3509a4497bf25e4",
     "web/checkout-connector/chrome-port.js": "5ed8060eb7dece1442d55f74752772e8145bff345c172f21ec2bad25bd68173b",
     "web/checkout-connector/control.html": "630226e70bfdfbd9cc91667e08679bfab027a53f2a6bb2e2afc8d6fff526ad75",
-    "web/checkout-connector/control.js": "9904d8bd942517d5f9acdda9323fec8c585da84b8c56b2f7eb6e707ed77cf6c2",
+    "web/checkout-connector/control.js": "931d31204ea7f7da36415eaf2d190a49a6a1539c7fe63f25445f618dd392afa3",
     "web/checkout-connector/job.js": "55e003853129770213494b1048bd3a3d7e9f26dec826d387e68d0ee341994ad9",
     "web/checkout-connector/manifest.json": "872e16c3a19ffd24c2b84213ec079463e97872af58ad424153ae35a8c60c1d0d",
     "web/checkout-connector/open.html": "ff5010007a6bd18358606f60f16aed96a0304dc6669db7cbe1271597027c149e",
@@ -143,5 +143,5 @@
     "web/render.js": "0b1e1785621f81c010891de845db81ff481e06b11b5f28c4335ff51524940385",
     "web/style.css": "329e476f6c3deb2cfc88088e0b5c2751e97729bd38cd880e4857d87e532a1772"
   },
-  "sha256": "c304038f06dc40e67903e59dbdf3255eb42c1c78df9678a0ffd262c8150ad9e5"
+  "sha256": "2eb2758eed247a88430b413d309ddd8809a654ee13f4fe4caaf46ea780755208"
 }

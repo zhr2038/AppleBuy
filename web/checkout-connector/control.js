@@ -28,6 +28,8 @@ async function boundDigest(p,previous){const {extras,...legacy}=p;const digest=a
 $('prepare').onclick=async()=>{try{const p=plan(),tabId=Number($('tab').value),previous=await store.get(TASK_KEY),digest=await boundDigest(p,previous),port=new ChromePort(chrome,tabId,{mode:'observe',initialSequence:previous?.lastRead??0});const o=await port.observe(p);if(!o.termsLinks?.length){prepared=null;status('该页面未识别当前商店条款；可推进到官网复核页后再确认');return;}const reuse=previous&&previous.state!=='RETIRED';prepared={taskId:reuse?previous.taskId:crypto.randomUUID(),planDigest:digest,tabId,entryDocumentId:reuse?previous.entryDocumentId??o.documentId:o.documentId,termsUrl:o.termsLinks[0]};$('terms').href=prepared.termsUrl;status('只读预检完成。核对购买条件和条款后可一键开始；尚未提交任何购买动作');}catch{prepared=null;status('预检未完成；请核实当前标签页和主机授权');}};
 $('savePrivate').onclick=async()=>{const v={};for(const k of ['firstName','lastName','phone','email','identitySuffix'])if($(k).value)v[k]=$(k).value;if(v.identitySuffix&&!/^\d{4}$/.test(v.identitySuffix)){status('证件后四位格式不正确');return;}await chrome.storage.session.set({applebuyPickupSession:v});status('自提资料已仅保留在本次 Chrome 会话，不进入购买记录或日志');};
 const actionName={configureProduct:'选择商品配置',continueProduct:'继续商品配置',addBag:'加入购物袋',viewBag:'查看购物袋',checkout:'结账',selectPickup:'选择自提',selectStore:'选择门店',selectDate:'选择日期',chooseSlot:'选择时段',fillDetails:'取货详情',selectPayment:'选择付款方式',continuePayment:'继续付款方式',submitOrder:'提交订单'};
+// Only fixed public models and safe tab numbers are shown, never arbitrary persisted strings or private customer fields.
+const bindingSummary=s=>{const model=['iPhone Duo','iPhone 18 Pro'].includes(s?.plan?.product?.model)?s.plan.product.model:'型号记录无法确认';const tab=Number.isSafeInteger(s?.tabId)&&s.tabId>0?s.tabId:'标签页记录无法确认';return `${model} · 标签页 ${tab}`;};
 const onState=s=>{const pending=actionName[s.pendingAction];const host=exactHost(s.permissionOrigin);if(host&&$('hostOrigin'))$('hostOrigin').value=host;const help=host?`当前主机尚未获访问权限：${host}；点击授权按钮并处理 Chrome 提示，再只读核对原任务`:s.reason==='auth'?'官网要求 Apple 账户登录／验证；完成后点“登录后核对原任务（只读）”':'';status(`状态：${s.state}；${s.observationCurrent?'页面':'最近已读页面'}：${s.phase??'尚未读取'}；${pending?`待确认动作：${pending}；请勿重复执行；`:''}${help?help+'；':''}${s.reason??''}`);};
 // C-013-R2: Pause/Stop advance a cancellation epoch. Each handler captures the epoch synchronously at its click and
 // re-checks it after its awaits; an older handler then creates no job, uses no grant and sends nothing. A running job
@@ -72,7 +74,8 @@ $('reconcile').onclick=async()=>{
     if(!live()){halted();return;}const p=plan(),tabId=Number($('tab').value),previous=await store.get(TASK_KEY);if(!live()){halted();return;}
     if(!previous||previous.state==='RETIRED'){status('没有可核对的原任务；未创建新任务，也未点击官网');return;}
     const digest=await boundDigest(p,previous);if(!live()){halted();return;}
-    if(previous.tabId!==tabId||previous.planDigest!==digest){status('所选商品或标签页与原任务不同；记录保持不变。改绑必须另行明确确认');return;}
+    if(previous.planDigest!==digest){status(`购买条件与原任务不同；原任务：${bindingSummary(previous)}；当前：${bindingSummary({plan:p,tabId})}。记录保持不变；只读核对需使用原任务条件，改绑标签页不能改变商品`);return;}
+    if(previous.tabId!==tabId){status(`标签页与原任务不同；原任务：${bindingSummary(previous)}；当前：${bindingSummary({plan:p,tabId})}。记录保持不变；原标签页仍在时应选回原页；原页已关闭时，另行明确确认改绑仅只读，旧任务不能因此恢复购买`);return;}
     const port=new ChromePort(chrome,tabId,{authorized:false,mode:'observe',initialSequence:previous.lastRead??0,acceptedSlot:previous.acceptedSlot??null,pending:previous.pending??null});
     job=new PurchaseJob({store,port,maxSteps:20,onState});await job.run(p,{tabId,planDigest:digest,mode:'reconcile'});
   }catch{status('只读核对未完成；原任务和已发送动作保留，请核实标签页、主机权限或任务记录');}finally{job=null;}});if(!ownership.owned)status('另一控制页正在执行；本页没有核对或点击');}
@@ -118,4 +121,4 @@ $('final').onclick=async()=>{
   await run(false,{finalGrant,live});
 };
 // No delete/reset: completed and unknown purchase history cannot be erased by reopening a control page.
-const saved=await store.get(TASK_KEY);if(saved)status(`保留的任务：${saved.state}；重新打开不会清除购买或未知记录`);
+const saved=await store.get(TASK_KEY);if(saved)status(`保留的任务：${saved.state}；原绑定：${bindingSummary(saved)}；重新打开不会清除购买或未知记录`);

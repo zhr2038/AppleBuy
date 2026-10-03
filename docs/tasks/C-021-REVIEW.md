@@ -7,9 +7,9 @@ Read completely before issuing a verdict:
 - this task and `docs/requirements.md`;
 - `docs/reviews/C-021-auth-handoff-findings.md`, `C-021-quota-verification.json`, `C-021-Codex-takeover.md`, `C-021-Codex-takeover-verification.json`, `C-021-current-auth-observation.json`, `C-021-candidate-manifest.json`;
 - all four changed business files `web/checkout-connector/chrome-port.js`, `job.js`, `control.js`, `control.html`, plus unchanged `page-program.js` for the action/recognition boundary;
-- unchanged12-case `review/c021-auth-handoff.test.ts`, new51-case `test/checkout-c021-auth-handoff.test.ts`, and the full amended `test/checkout-c017-discovery.test.ts`.
+- unchanged12-case `review/c021-auth-handoff.test.ts`, new54-case `test/checkout-c021-auth-handoff.test.ts`, and the full amended `test/checkout-c017-discovery.test.ts`.
 
-Review exact141-file candidate SHA256 `c304038f06dc40e67903e59dbdf3255eb42c1c78df9678a0ffd262c8150ad9e5`. Actual Codex full subprocess regression616/616 exit0. Original input140 SHA `af273d2b77471fdd2c242717c165df96a0a06228fde49cfbd5e1ce85a585d2c4` preserved privately.73/74 input test/review files are byte-identical. The single amended protected inventory assertion extends the full exact ID set by the two required functional controls, retaining all prior IDs/uniqueness/final-disabled and every prior permission/action test. Assess that amendment honestly; do not imply all74 are unchanged or waive a purchasing safeguard.
+Review exact141-file candidate SHA256 `2eb2758eed247a88430b413d309ddd8809a654ee13f4fe4caaf46ea780755208`. Actual Codex full subprocess regression619/619 exit0. Original input140 SHA `af273d2b77471fdd2c242717c165df96a0a06228fde49cfbd5e1ce85a585d2c4` preserved privately.73/74 input test/review files are byte-identical. The single amended protected inventory assertion extends the full exact ID set by the two required functional controls, retaining all prior IDs/uniqueness/final-disabled and every prior permission/action test. Assess that amendment honestly; do not imply all74 are unchanged or waive a purchasing safeguard.
 
 Critical scope:
 
@@ -25,3 +25,5 @@ Read-only profile48 CLI turns/1800 seconds/USD10 CLI cap. No writes, network, br
 2. `node --test "test/*.test.ts" "review/*.test.ts"`
 
 Return an actual English report with **AGREE** or **DISAGREE** for this precise bounded candidate, exact SHA/file count, actual tests and counts, exact full/partial reading scope, findings with file/line/repro/acceptance, and any denied/unrun/cap/provider limitations. Recommend fixes without editing. Agreement is only for the described tested C021 functionality; it cannot approve uninspected legacy collectors or assert full project/live readiness. Codex will independently reproduce findings and perform final acceptance. Source drift requires a new exact manifest/task rather than approving old bytes.
+
+Native feedback addendum: human reports owner-lock rejection, then after pause/close/reopen the old task purchase-condition/tab binding differs. Both attempts stopped before any merchant read or click. The latest control refines only whitelist-safe old/current model and tab diagnostics, separates condition versus tab mismatch and never switches model or silently rebinds. Review its three new FAKE cases and private-string non-disclosure. Older616 candidate/publication are historical bytes; do not approve latest source with that olderSHA.
