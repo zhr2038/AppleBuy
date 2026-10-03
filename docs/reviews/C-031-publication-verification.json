@@ -1,0 +1,14 @@
+{
+  "scope": "pending Codex takeover SELF-tested checkpoint, not accepted main or live readiness",
+  "branch": "codex/c030-quota-checkpoint-20261004",
+  "sourceCommit": "c5e52455c122b3f5c7ec1a9d43318d8f85597321",
+  "pushExitCode": 0,
+  "remoteMatches": true,
+  "acceptedMain": "43de5c8ba063749567c930a59fe3f87635e118ae",
+  "sourceFiles": 161,
+  "sha256": "9d8ac4ee49a3332806085bbbf370d57b0269b58a7c718b17c990db1992adf91a",
+  "allSourceIndexBlobsVerified": true,
+  "privateDataPublished": false,
+  "accepted": false,
+  "timestampUtc": "2026-10-03T21:05:34.381200+00:00"
+}
