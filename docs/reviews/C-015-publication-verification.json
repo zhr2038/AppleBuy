@@ -1,0 +1,15 @@
+{
+  "checkedAtUtc": "2026-10-03T01:48:03.062007+00:00",
+  "sourceCommit": "82b7b9be0d0575b8fb83347401ae0232dd665db5",
+  "branch": "codex/c015-quota-checkpoint-20261003",
+  "remoteMainVerified": "82b7b9be0d0575b8fb83347401ae0232dd665db5",
+  "remoteWorkBranchVerified": "82b7b9be0d0575b8fb83347401ae0232dd665db5",
+  "push": "normal atomic non-force fast-forward of both refs",
+  "candidateManifest": "docs/reviews/C-015-candidate-manifest.json",
+  "candidateFiles": 127,
+  "candidateSha256": "f4036ec0385cecbd07ab4fe9887f6926b316115bb8c50c4d8cd57481692d78e6",
+  "boundedOfflineAgreement": true,
+  "REAL_PURCHASING_READY": false,
+  "privateInvocationCheckpointArchivePublished": false,
+  "note": "This receipt records the source/review commit before the following documentation-only sync acknowledgment."
+}
