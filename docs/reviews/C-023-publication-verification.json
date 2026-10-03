@@ -1,0 +1,30 @@
+{
+  "recordedAtUtc": "2026-10-03T12:59:35.560486+00:00",
+  "sourceCommit": "6d7c72f578782470d21d864c71f00592916daf04",
+  "pushExitCode": 0,
+  "mainAndCheckpointRefVerified": true,
+  "candidateFiles": 147,
+  "candidateSha256": "45182bf07f5144130b6c15d5b5e484066dfa5b48ad054c26781f90e5b88cf326",
+  "all147GitBlobHashesMatch": true,
+  "independentTests": 670,
+  "actualClaudeAgreeVerified": true,
+  "acceptedScope": "C023 final-result label correctness, not real/native one-click or whole-project readiness",
+  "privatePathsPublished": false,
+  "publishedPaths": [
+    "docs/reviews/C-023-Claude-cross-review.md",
+    "docs/reviews/C-023-actual-verification.json",
+    "docs/reviews/C-023-before-verification.json",
+    "docs/reviews/C-023-bounded-agreement.md",
+    "docs/reviews/C-023-candidate-manifest.json",
+    "docs/reviews/C-023-cross-review-verification.json",
+    "docs/reviews/C-023-input-candidate-manifest.json",
+    "docs/reviews/C-023-installable-bundle.json",
+    "docs/tasks/C-023-CROSS-REVIEW.md",
+    "docs/tasks/C-023-FINAL-LOOKUP.md",
+    "docs/status.md",
+    "web/checkout-connector/job.js",
+    "review/c023-final-lookup-truth.test.ts",
+    "test/checkout-c023-final-lookup.test.ts",
+    "docs/claude/C-023-report.md"
+  ]
+}
