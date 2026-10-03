@@ -1,0 +1,18 @@
+{
+  "verifiedAtUtc": "2026-10-03T02:29:49.005345+00:00",
+  "sourceCommit": "8bd3d2e847e25bd9f837e640e2e61727e5e00948",
+  "branch": "codex/c015-quota-checkpoint-20261003",
+  "candidateFiles": 129,
+  "candidateSha256": "69970b51edab3be858d312a77c2e8b42e258c9dc56a79f96a182e7003fd33708",
+  "all129GitBlobsMatchAcceptedManifest": true,
+  "atomicNonForcePushExitCode": 0,
+  "lsRemoteExitCode": 0,
+  "remoteRefs": {
+    "refs/heads/codex/c015-quota-checkpoint-20261003": "8bd3d2e847e25bd9f837e640e2e61727e5e00948",
+    "refs/heads/main": "8bd3d2e847e25bd9f837e640e2e61727e5e00948"
+  },
+  "syncVerified": true,
+  "includedPublicChangedFiles": 20,
+  "privateLocalFilesPublished": false,
+  "realPurchasingReady": false
+}
