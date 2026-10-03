@@ -1,0 +1,40 @@
+{
+  "observedAtLocal": "2026-10-03 09:37-09:41 Asia/Shanghai",
+  "method": "Actual user Chrome through supported cua_repl DOM/AX read-only API; no project extension API executed",
+  "pro": {
+    "url": "https://www.apple.com.cn/shop/buy-iphone/iphone-18-pro/mjt74ch/a",
+    "selectedModel": "iPhone 18 Pro",
+    "selectedCapacity": "256GB",
+    "selectedColor": "黑色",
+    "quotedCny": 9999,
+    "observedPublicStoreText": "Apple 大连恒隆广场今天取货",
+    "noTradeIn": {
+      "checked": false,
+      "disabled": false
+    },
+    "addBag": {
+      "disabled": true
+    }
+  },
+  "duo": {
+    "url": "https://www.apple.com.cn/shop/buy-iphone/iphone-duo/mk2m4ch/a",
+    "selectedModel": "iPhone Duo",
+    "selectedCapacity": "256GB",
+    "selectedColor": "星光白色",
+    "quotedCny": 15999,
+    "availabilityText": "暂未发售",
+    "pickupText": "目前暂不提供 Apple Store 零售店取货服务",
+    "preorderPageStatement": "10 月 16 日晚 8 点接受预购。10 月 23 日发售。",
+    "approvalStatement": "机型将在获得批准后发售",
+    "continue": {
+      "disabled": true
+    }
+  },
+  "limits": [
+    "Observed website statements, not guaranteed dates or availability",
+    "No slot list, refusal or live checkout contract observed",
+    "No private values, authenticated orders or traffic read",
+    "No site selection, addBag, hold, order or payment sent",
+    "Native project extension installation/execution/host grant not verified"
+  ]
+}

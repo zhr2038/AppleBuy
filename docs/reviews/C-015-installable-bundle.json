@@ -1,0 +1,33 @@
+{
+  "scope": "Exact nine-file unpacked Chrome connector; bounded offline source repair accepted, native loading unverified",
+  "candidateManifest": "docs/reviews/C-015-candidate-manifest.json",
+  "candidateSha256": "f4036ec0385cecbd07ab4fe9887f6926b316115bb8c50c4d8cd57481692d78e6",
+  "files": {
+    "web/checkout-connector/chrome-port.js": "7c091d9a101f0401981336fdf9c986c20786a607f2cc8a96489e32499db4e4e4",
+    "web/checkout-connector/control.html": "0a5eaf54549d42ac11db7d2d327a932c9922847b03ea60451436b7cd66bf0b2c",
+    "web/checkout-connector/control.js": "f30dc703e4980ac60f6076f92d4e13bf581524984946990858f48dff2b970bf1",
+    "web/checkout-connector/job.js": "f9e0d79932860a97ab3ce77566f538c918a859d82502c3198373f7af08bd1716",
+    "web/checkout-connector/manifest.json": "872e16c3a19ffd24c2b84213ec079463e97872af58ad424153ae35a8c60c1d0d",
+    "web/checkout-connector/open.html": "ff5010007a6bd18358606f60f16aed96a0304dc6669db7cbe1271597027c149e",
+    "web/checkout-connector/open.js": "1e50610d766d92e5bd4271a3746b2667485fa5bd9cae7121b02f06bb95add1b8",
+    "web/checkout-connector/owner.js": "2aa17b6b1666dabe757c56e620a29b8c2f62130d6993b8ff988665bd262577ed",
+    "web/checkout-connector/page-program.js": "c5bb8e508f301d2455a1e781d1cb3687b03e08e3d4bfacdf1a62ecb6794dec72"
+  },
+  "zipSha256": "33ef19e23351418eacff79e128a4d126de2377f17576b7e7259ea0488fc77b4a",
+  "permissions": [
+    "scripting",
+    "storage",
+    "activeTab"
+  ],
+  "optionalHostPermissions": [
+    "https://www.apple.com.cn/*",
+    "https://*.www.apple.com.cn/*"
+  ],
+  "installationConsentReceived": true,
+  "manualLoadingConfirmed": false,
+  "installedVerified": false,
+  "currentHostGrantAuthorized": false,
+  "newMerchantMutationsAuthorized": false,
+  "realPurchasingReady": false,
+  "offlineSourceScopeAgreement": true
+}

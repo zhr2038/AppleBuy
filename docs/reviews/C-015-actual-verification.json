@@ -1,0 +1,127 @@
+{
+  "task": "C-015-CONTINUE",
+  "checkedAtUtc": "2026-10-03T01:35:37.539502+00:00",
+  "input": {
+    "files": 126,
+    "sha256": "667dc062d25e5bf653279ffdcd71375723685063c1088c1fbe877e50adfba691"
+  },
+  "candidate": {
+    "files": 127,
+    "sha256": "f4036ec0385cecbd07ab4fe9887f6926b316115bb8c50c4d8cd57481692d78e6",
+    "manifest": "docs/reviews/C-015-candidate-manifest.json"
+  },
+  "actualInvocation": {
+    "profile": "implementation",
+    "status": "returned_for_review",
+    "started_at": "2026-10-03T01:20:00.321394+00:00",
+    "ended_at": "2026-10-03T01:24:40.557016+00:00",
+    "duration_seconds": 280.24,
+    "model_requested": "claude-opus-5-5",
+    "effort_requested": "xhigh",
+    "models_actual": [
+      "claude-opus-5-5"
+    ],
+    "primary_models_actual": [
+      "claude-opus-5-5"
+    ],
+    "auxiliary_models_actual": [],
+    "model_verified": true,
+    "timed_out": false,
+    "cleanup_confirmed": true,
+    "exit_code": 0,
+    "subtype": "success",
+    "is_error": false,
+    "permission_denials": [],
+    "turn_budget": 40,
+    "wall_budget_seconds": 1200,
+    "cli_budget_usd": 5.0
+  },
+  "actualTurns": 16,
+  "sessionIdentity": "retained privately",
+  "structuredModelUsage": {
+    "claude-opus-5-5": {
+      "inputTokens": 93779,
+      "outputTokens": 1422677,
+      "thinkingTokens": 811826,
+      "cacheReadInputTokens": 72945715,
+      "cacheCreationInputTokens": 3749999,
+      "webSearchRequests": 0,
+      "costUSD": 73.23611099999991,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 128000,
+      "canonicalModel": "claude-opus-5-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "usageScope": "Returned structured usage may be cumulative for the resumed session; no incremental dollar claim. CLI caps are requested limits.",
+  "rawToolAudit": {
+    "commands": [
+      "python tools/delegation/verify_candidate_manifest.py docs/reviews/C-015-quota-candidate-manifest.json",
+      "node --test \"review/c015-async-evidence.test.ts\"",
+      "node --test \"test/checkout*.test.ts\" \"review/c012*.test.ts\" \"review/c013*.test.ts\" \"review/c015*.test.ts\"",
+      "node --test \"test/*.test.ts\" \"review/*.test.ts\""
+    ],
+    "writes": [
+      "web/checkout-connector/page-program.js",
+      "test/checkout-c015-evidence.test.ts",
+      "docs/claude/C-015-report.md"
+    ],
+    "privateReadsObserved": false,
+    "networkOrBrowserToolObserved": false,
+    "newAgentToolObserved": false
+  },
+  "independentTests": {
+    "command": "node --test \"test/*.test.ts\" \"review/*.test.ts\"",
+    "tests": 420,
+    "pass": 420,
+    "fail": 0,
+    "cancelled": 0,
+    "skipped": 0,
+    "todo": 0,
+    "durationMs": 5878.6687,
+    "environment": "Node synthetic fixtures only"
+  },
+  "independentDriftBranch": {
+    "privateDerivativeOf": "review/c015-async-evidence.test.ts",
+    "assertionAddedOnlyInPrivateCopy": "Each of the four injected drift cases must actually execute its mutation",
+    "tests": 6,
+    "pass": 6,
+    "fail": 0,
+    "durationMs": 79.467,
+    "protectedOriginalChanged": false
+  },
+  "independentOldSlotCounterexample": {
+    "beforeSha256": "667dc062d25e5bf653279ffdcd71375723685063c1088c1fbe877e50adfba691",
+    "fixture": "test/checkout-c015-evidence.test.ts seventh test with only import paths changed in a private copy",
+    "oldProgramBytesMatchInput": true,
+    "oldTargetedTests": 1,
+    "oldPass": 0,
+    "oldFail": 1,
+    "actualOldDelivery": {
+      "delivered": true
+    },
+    "newResultInCompleteSuite": "Pass: zero Continue and touched SlotEvidenceChangedAfterSelection, stable positive one Continue",
+    "environment": "Synthetic Node VM scheduling, not Chromium or Apple"
+  },
+  "protected": {
+    "reviewerFiles": 29,
+    "allReviewerHashesUnchanged": true,
+    "allExistingImplementationTestHashesUnchanged": true,
+    "permissionsUnchanged": true,
+    "transportJobControllerUnchanged": true
+  },
+  "codexBusinessImplementationThisCycle": [],
+  "publicReportSanitization": "Removed only private session identity; original retained privately",
+  "bilateralAgreement": false,
+  "REAL_PURCHASING_READY": false,
+  "remaining": [
+    "Exact-source Claude cross-review pending",
+    "Native Chrome extension loading/control-page confirmation pending despite installation/read-only consent",
+    "Current official-host access needs separate action-time approval",
+    "Chromium ISOLATED scheduling and production latency unverified",
+    "Current Apple refusal, date, secure summary and independent order-detail contracts unverified",
+    "P3-C order-reference privacy, P3-D defense-in-depth and old Pro collector/unread scope remain separate open items",
+    "No new bag, reservation, order, payment or Duo purchase authority"
+  ]
+}

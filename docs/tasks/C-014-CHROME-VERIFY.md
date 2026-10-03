@@ -1,6 +1,6 @@
 # C-014 — installed Chrome connector verification (not yet dispatched)
 
-LATEST RECOVERY GATE (2026-10-03): C015 independently reproduced four additional asynchronous final-action failures. Its actual quota-interrupted partial source in the current directory is NOT ACCEPTED (126 files SHA `667dc062d25e5bf653279ffdcd71375723685063c1088c1fbe877e50adfba691`, 409/413 passing). Resume `C-015-CONTINUE.md` and obtain exact new-source bilateral agreement before preparing this installed verification. Prior C013 agreement below remains historical bounded evidence and cannot approve C015 bytes. Installation/read-only consent still persists; actual loading remains unconfirmed. No live action or extra permission follows from this task.
+LATEST EXACT BASELINE (2026-10-03 09:44 Asia/Shanghai): C015 repair now has actual bilateral bounded offline agreement:127 files SHA `f4036ec0385cecbd07ab4fe9887f6926b316115bb8c50c4d8cd57481692d78e6`, Codex420/420 and actualClaude420/420. Read `docs/reviews/C-015-bounded-agreement.md`, `C-015-cross-review-verification.json`, `C-015-candidate-manifest.json`, `C-015-installable-bundle.json` and `C-015-current-public-observation.json`. The prior quota-partial126/409-of413 identity below is historical only. Current source may be loaded for the already-consented installed read-only verification; loading/control-page confirmation is still absent and the current host needs separate approval. This task has NOT been dispatched. No live resource mutation follows.
 
 Priority is the user's actual one-phone purchase execution, native terminal selection and conservative re-selection, not appearance work. This task is currently blocked on manual Chrome installation and action-time host-access confirmation. It has NOT been dispatched and there is no actual delivery to claim.
 
@@ -8,7 +8,7 @@ The user has now explicitly authorized installation and read-only verification o
 
 Baseline: `docs/requirements.md`, same `E:\Apple Store`, exact `claude-opus-5-5` / `xhigh`, English collaboration and concise Chinese end-user text. Codex owns requirements, independent verification and acceptance; Claude chooses the technical verification approach and any implementation needed in a later bounded dispatch. Do not dictate or silently substitute another stack or a hidden Apple API.
 
-Read `docs/reviews/C-013-R3-bounded-agreement.md`, `C-013-R3-cross-review-verification.json`, `C-013-R3-candidate-manifest.json`, `C-013-R3-installable-bundle.json` and `docs/checkout-chrome-runbook.md`. Current accepted scope is bounded offline C013 repaired behavior, 125 files SHA256 `add8b1c98c7f3cff2fe1b0375c8a80b556c9dce3076af90243e8f6f1b2b496dd`, 407 independently passing tests. Whole-repository and real-purchasing approval are NOT implied.
+Use the current C015 documents listed above and `docs/checkout-chrome-runbook.md`. Earlier C013125-file/407-test and nine-file archive are preserved historical acceptance, not the current installed target. Whole-repository and real-purchasing approval are NOT implied.
 
 Prerequisites before an actual run:
 

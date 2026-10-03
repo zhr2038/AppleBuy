@@ -1,0 +1,112 @@
+{
+  "task": "C-015-CROSS-REVIEW",
+  "acceptedAtUtc": "2026-10-03T01:44:09.171466+00:00",
+  "candidate": {
+    "files": 127,
+    "sha256": "f4036ec0385cecbd07ab4fe9887f6926b316115bb8c50c4d8cd57481692d78e6",
+    "manifest": "docs/reviews/C-015-candidate-manifest.json",
+    "unchangedAfterActualReview": true
+  },
+  "actualInvocation": {
+    "profile": "review",
+    "status": "returned_for_review",
+    "started_at": "2026-10-03T01:35:51.815748+00:00",
+    "ended_at": "2026-10-03T01:38:06.139206+00:00",
+    "duration_seconds": 134.33,
+    "model_requested": "claude-opus-5-5",
+    "effort_requested": "xhigh",
+    "models_actual": [
+      "claude-opus-5-5"
+    ],
+    "primary_models_actual": [
+      "claude-opus-5-5"
+    ],
+    "auxiliary_models_actual": [],
+    "model_verified": true,
+    "timed_out": false,
+    "cleanup_confirmed": true,
+    "exit_code": 0,
+    "subtype": "success",
+    "is_error": false,
+    "permission_denials": [],
+    "turn_budget": 32,
+    "wall_budget_seconds": 1200,
+    "cli_budget_usd": 5.0
+  },
+  "actualTurns": 18,
+  "sessionIdentity": "retained privately",
+  "structuredModelUsage": {
+    "claude-opus-5-5": {
+      "inputTokens": 93795,
+      "outputTokens": 1434968,
+      "thinkingTokens": 819423,
+      "cacheReadInputTokens": 74350967,
+      "cacheCreationInputTokens": 3827902,
+      "webSearchRequests": 0,
+      "costUSD": 74.38626939999992,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 128000,
+      "canonicalModel": "claude-opus-5-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "usageScope": "Full structured result retained as returned; resumed-session counters may be cumulative. No incremental dollar amount inferred; requested caps are not measured cost.",
+  "actualCommands": [
+    "python tools/delegation/verify_candidate_manifest.py docs/reviews/C-015-candidate-manifest.json",
+    "node --test \"test/*.test.ts\" \"review/*.test.ts\""
+  ],
+  "actualTestSummary": {
+    "tests": 420,
+    "pass": 420,
+    "fail": 0,
+    "cancelled": 0,
+    "skipped": 0,
+    "todo": 0,
+    "durationMs": 5986.0783
+  },
+  "actualToolAudit": {
+    "tools": [
+      "Read",
+      "Bash",
+      "Grep"
+    ],
+    "writesOrEdits": 0,
+    "privateProjectReads": 0,
+    "networkBrowserAgents": 0,
+    "ownCommandOutputGrep": "One Grep of this invocation's CLI-persisted synthetic test output; its private path and session identity are not published"
+  },
+  "completeReads": [
+    "assigned task",
+    "docs/requirements.md",
+    "candidate manifest",
+    "independent review/verification/delta",
+    "implementer report",
+    "web/checkout-connector/page-program.js",
+    "web/checkout-connector/chrome-port.js",
+    "review/c015-async-evidence.test.ts",
+    "test/checkout-c015-evidence.test.ts",
+    "review/c013-decoder-findings.test.ts",
+    "test/checkout-c013-decoder.test.ts"
+  ],
+  "partialReads": {
+    "web/checkout-connector/job.js": "lines 90-234"
+  },
+  "notRereviewed": [
+    "controller/owner/rest of repository",
+    "job lines 1-89",
+    "private derivative fixtures"
+  ],
+  "agreement": "Codex and actual Claude agree on this bounded offline repair and exact candidate only",
+  "correctedHistoricalItem": "P3-E is closed in the tested offline scope; actual Apple reference applicability remains unknown. P3-C and P3-D stay open.",
+  "REAL_PURCHASING_READY": false,
+  "newMerchantMutations": 0,
+  "nativeInstallationVerified": false,
+  "coverageLimits": [
+    "Missing/ambiguous reference after hashing assessed from source, not directly tested",
+    "New reference appearing on slot re-entry assessed from source, not directly tested",
+    "Some adjacent actions share the repaired path but lack individual digest-drift fixtures",
+    "Synchronous fillDetails write/click is unchanged and outside the repaired hash await"
+  ],
+  "nextDependency": "Manual Chrome load/control-page confirmation, then separate current-host access approval and C014 real installed read-only verification"
+}

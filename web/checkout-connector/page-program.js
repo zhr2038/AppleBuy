@@ -137,16 +137,45 @@ export async function merchantDocument(plan,command=null,internal=null){
   // Known normal-flow transition is not a hold guarantee. ChromePort binds it to its delivered choice.
   out.termsLinks=[...new Set([...document.querySelectorAll('a[href]')].filter(a=>visible(a)&&/条款|销售政策/.test(name(a))).flatMap(a=>{try{const h=new URL(a.href);return h.protocol==='https:'&&h.hostname==='www.apple.com.cn'&&/^\/shop\/open\/salespolicies\/?$/.test(h.pathname)?[h.origin+h.pathname.replace(/\/$/,'')]:[];}catch{return [];}}))];
   const orderLabels=[...new Set(texts.filter(t=>/^订单(?:编号|号)\s*[:：]?\s*[A-Z0-9-]{6,30}$/.test(t)).map(t=>t.match(/[A-Z0-9-]{6,30}$/)[0]))];
-  if(orderLabels.length===1){const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(orderLabels[0]));out.orderRefHash=[...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('');}
+  // C-015: hash a newly seen reference, then decode the WHOLE current document again with the hash cached. Only that final,
+  // await-free decode is returned or acted on. A reference that changed while it was hashed is not current evidence.
+  let referenceChanged=false;
+  if(orderLabels.length===1){const known=internal?.hashes?.get(orderLabels[0]);
+    if(known)out.orderRefHash=known;else if(internal?.hashes)referenceChanged=true;
+    else{const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(orderLabels[0]));
+      return merchantDocument(plan,command,{hashes:new Map([[orderLabels[0],[...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('')]])});}}
   const detailLinks=[...new Set([...main.querySelectorAll('a[href]')].filter(a=>visible(a)&&['查看订单','查看订单详情'].includes(name(a))).flatMap(a=>{try{const h=new URL(a.href);return h.protocol==='https:'&&(h.hostname==='www.apple.com.cn'||/^secure(?:\d+)?\.www\.apple\.com\.cn$/.test(h.hostname))&&/^\/shop\/order\/(?!list(?:\/|$))[^/]+(?:\/)?$/.test(h.pathname)?[h.href]:[];}catch{return [];}}))];
   if(detailLinks.length===1)out.orderDetailLink=detailLinks[0];
   out.receiptVerified=phase==='ORDER_RECEIPT'&&!!out.orderRefHash&&purchase.verified;
   // Official refusal anchors are not yet observed: real alerts remain unknown rather than invented rejection.
+  if(referenceChanged)return command?report('OperationEvidenceChanged'):{schema:'applebuy-merchant-read/v1',phase:'UNKNOWN',reason:'order-reference-changed'};
   if(!command)return out;
+  // Private DOM fingerprint for slot continuation. It never reads input values or leaves document memory.
+  const snapshot=()=>JSON.stringify([location.href,document.querySelector('main,[role="main"]')===main,
+    [...main.querySelectorAll('h1,h2,h3,p,span,div')].filter(visible).map(e=>norm(e.textContent)).filter(t=>t.length>0&&t.length<=180),
+    [...main.querySelectorAll('input[type="radio"],[role="radio"]')].filter(visible).map(e=>[name(e),checked(e),disabled(e)]),
+    [...main.querySelectorAll('select')].filter(visible).map(e=>[name(e),disabled(e),e.selectedIndex,[...e.options].map(o=>[name(o),disabled(o)])]),
+    [...main.querySelectorAll('button,a[role="button"],input[type="submit"]')].filter(visible).map(e=>[name(e),disabled(e)])]);
   // touched becomes true immediately before the first DOM write. A structured caller learns whether a failure
   // happened before any control was touched; otherwise the original exception propagates.
   let touched=false;
   try{
+    if(internal?.slot){
+      // C-015: slot continuation, re-entered after the change task boundary. The selection was already written, so any
+      // failure is touched. This gate uses THIS synchronous decode of the current document and is immediately followed
+      // by the click: no await separates the evidence from the decision. Same main, native selector holding the commanded
+      // enabled terminal, same date, item/quote/store, complete lists, unchanged fingerprint and the same live Continue.
+      const c=internal.slot,s=c.select;touched=true;
+      const liveNext=buttons.filter(b=>name(b)==='继续填写取货详情');
+      const selected=s.selectedOptions.length===1?s.selectedOptions[0]:null;
+      const m=selected?/^(\d{2}:\d{2})\s*[-–—至]\s*(\d{2}:\d{2})$/.exec(norm(selected.textContent)):null;
+      if(Date.now()-c.changedAt>c.limit||snapshot()!==c.afterChange||main!==c.main||!s.isConnected||timeSelects.length!==1||timeSelects[0]!==s||disabled(s)||!selected||disabled(selected)||
+        s.selectedIndex!==Number(command.ref.split(':')[1])||!m||m[1]!==command.start||m[2]!==command.end||
+        phase!=='SLOTS'||out.listComplete!==true||out.selectedDate!==command.date||!purchase.verified||
+        JSON.stringify(purchase)!==JSON.stringify(c.out.purchase)||JSON.stringify(out.dates)!==JSON.stringify(c.out.dates)||JSON.stringify(out.times)!==JSON.stringify(c.out.times)||
+        liveNext.length!==1||liveNext[0]!==c.next||!c.next.isConnected||disabled(c.next))throw new Error('SlotEvidenceChangedAfterSelection');
+      c.next.click();return {delivered:true};
+    }
     if(command.authorized!==true||!command.id||!command.taskId)throw new Error('OperationEvidenceChanged');
     // C-013-R3: delivery truth first. A known id stays touched even when its own delivery changed the evidence;
     // only a never-seen id with stale evidence is positively untouched.
@@ -175,32 +204,14 @@ export async function merchantDocument(plan,command=null,internal=null){
       const s=timeSelects[0];touched=true;s.selectedIndex=Number(command.ref.split(':')[1]);s.dispatchEvent(new Event('change',{bubbles:true}));
       if(!s.isConnected)throw new Error('SlotControlRedrawn');
       // A change handler may reset the choice, disable it, redraw controls, or change purchase conditions.
-      // Re-read production evidence before continuation. The local fingerprint stays private and detects
-      // DOM drift from the change event until the decision. It never reads input values or leaves document memory.
-      const snapshot=()=>JSON.stringify([location.href,document.querySelector('main,[role="main"]')===main,
-        [...main.querySelectorAll('h1,h2,h3,p,span,div')].filter(visible).map(e=>norm(e.textContent)).filter(t=>t.length>0&&t.length<=180),
-        [...main.querySelectorAll('input[type="radio"],[role="radio"]')].filter(visible).map(e=>[name(e),checked(e),disabled(e)]),
-        [...main.querySelectorAll('select')].filter(visible).map(e=>[name(e),disabled(e),e.selectedIndex,[...e.options].map(o=>[name(o),disabled(o)])]),
-        [...main.querySelectorAll('button,a[role="button"],input[type="submit"]')].filter(visible).map(e=>[name(e),disabled(e)])]);
       // C-013-R3: decide only after the browser task boundary that follows the change event. By then every microtask the
       // page queued (any nesting depth) has run, and so has every zero-delay timer it queued earlier in this frame's
       // timer order. Longer timers, network validation and any later server decision are NOT covered (contract unknown).
       // The boundary is bounded: a selection older than SETTLE_LIMIT_MS (throttled/frozen page) is no longer current.
+      // C-015: the decision re-enters this program, which decodes the current document and gates synchronously (above).
       const SETTLE_LIMIT_MS=2000,changedAt=Date.now(),afterChange=snapshot();
       await new Promise(r=>setTimeout(r,0));
-      const current=await merchantDocument(plan);
-      const liveSelectors=[...main.querySelectorAll('select')].filter(visible).filter(e=>[...e.options].some(o=>/^\d{2}:\d{2}\s*[-–—至]\s*\d{2}:\d{2}$/.test(norm(o.textContent))));
-      const liveNext=[...main.querySelectorAll('button,a[role="button"],input[type="submit"]')].filter(visible).filter(b=>name(b)==='继续填写取货详情');
-      const selected=s.selectedOptions.length===1?s.selectedOptions[0]:null;
-      const m=selected?/^(\d{2}:\d{2})\s*[-–—至]\s*(\d{2}:\d{2})$/.exec(norm(selected.textContent)):null;
-      // Current-state gate, immediately followed by the click with no further await: same native selector still
-      // holding the commanded enabled terminal, same date, item/quote/store, complete lists and the same live control.
-      if(Date.now()-changedAt>SETTLE_LIMIT_MS||snapshot()!==afterChange||!s.isConnected||liveSelectors.length!==1||liveSelectors[0]!==s||disabled(s)||!selected||disabled(selected)||
-        s.selectedIndex!==Number(command.ref.split(':')[1])||!m||m[1]!==command.start||m[2]!==command.end||
-        current.phase!=='SLOTS'||current.listComplete!==true||current.selectedDate!==command.date||!current.purchase?.verified||
-        JSON.stringify(current.purchase)!==JSON.stringify(out.purchase)||JSON.stringify(current.dates)!==JSON.stringify(out.dates)||JSON.stringify(current.times)!==JSON.stringify(out.times)||
-        liveNext.length!==1||liveNext[0]!==next[0]||!next[0].isConnected||disabled(next[0]))throw new Error('SlotEvidenceChangedAfterSelection');
-      next[0].click();
+      return await merchantDocument(plan,command,{hashes:internal?.hashes??new Map(),slot:{select:s,next:next[0],main,out,afterChange,changedAt,limit:SETTLE_LIMIT_MS}});
     }else if(command.action==='fillDetails'&&phase==='DETAILS'&&purchase.verified){
       const rules={firstName:['名字'],lastName:['姓氏'],phone:['手机号码','电话号码'],email:['电子邮件地址'],identitySuffix:['身份证件号码最后4位','身份证件号码后四位']};
       const supplied=command.privatePickupData??{};if(Object.keys(supplied).some(k=>!Object.hasOwn(rules,k)))throw new Error('PrivateFieldNotAllowed');
