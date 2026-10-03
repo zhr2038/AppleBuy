@@ -13,7 +13,10 @@ $('find').onclick=async()=>{const tabs=(await chrome.tabs.query({})).filter(t=>a
 // Chrome's user gesture). It never requests a secure host, tabs or anything else, and only reports the outcome: no
 // job, checkbox, storage write, page script, navigation or repeat. A selected readable tab keeps its exact-origin request.
 const PUBLIC_ORIGIN='https://www.apple.com.cn/*';
+const exactHost=x=>typeof x==='string'&&/^https:\/\/(?:www\.apple\.com\.cn|secure\d*\.www\.apple\.com\.cn)$/.test(x)?x:null;
 $('permission').onclick=async()=>{
+  // Optional explicit human entry makes an opaque secure-host handoff usable without guessing tab URLs or widening access.
+  const entered=$('hostOrigin')?.value?.trim();if(entered){const origin=exactHost(entered);if(!origin){status('仅可输入完整的苹果官网 HTTPS 主机，不含路径或参数；未申请权限');return;}try{const ok=await chrome.permissions.request({origins:[origin+'/*']});status(ok?'该指定官网主机已允许；请读取标签页，再点“登录后核对原任务（只读）”':'指定主机访问未允许；没有执行购买动作');}catch{status('指定主机访问请求未完成；没有执行购买动作');}return;}
   if(!$('tab').value){try{const ok=await chrome.permissions.request({origins:[PUBLIC_ORIGIN]});status(ok?'已允许读取 www.apple.com.cn 官网主机；请再点“读取当前官网标签页”。结账等其他官网主机需选中其标签页后另行允许':'www.apple.com.cn 访问未允许；未执行任何操作，如需可再次点击本按钮');}catch{status('官网主机访问请求未完成；未执行任何操作');}return;}
   try{const t=await chrome.tabs.get(Number($('tab').value));if(!allowedMerchantUrl(t.url))throw new Error();const ok=await chrome.permissions.request({origins:[new URL(t.url).origin+'/*']});status(ok?'该官网主机访问已允许；页面跨主机后需本人另行确认':'访问未允许');}catch{status('当前标签页或权限不可用；可重新读取官网标签页');}
 };
@@ -24,7 +27,8 @@ async function digestPlan(p){const bytes=new TextEncoder().encode(JSON.stringify
 async function boundDigest(p,previous){const {extras,...legacy}=p;const digest=await digestPlan(p);return previous&&previous.state!=='RETIRED'&&previous.planDigest===await digestPlan(legacy)?previous.planDigest:digest;}
 $('prepare').onclick=async()=>{try{const p=plan(),tabId=Number($('tab').value),previous=await store.get(TASK_KEY),digest=await boundDigest(p,previous),port=new ChromePort(chrome,tabId,{mode:'observe',initialSequence:previous?.lastRead??0});const o=await port.observe(p);if(!o.termsLinks?.length){prepared=null;status('该页面未识别当前商店条款；可推进到官网复核页后再确认');return;}const reuse=previous&&previous.state!=='RETIRED';prepared={taskId:reuse?previous.taskId:crypto.randomUUID(),planDigest:digest,tabId,entryDocumentId:reuse?previous.entryDocumentId??o.documentId:o.documentId,termsUrl:o.termsLinks[0]};$('terms').href=prepared.termsUrl;status('只读预检完成。核对购买条件和条款后可一键开始；尚未提交任何购买动作');}catch{prepared=null;status('预检未完成；请核实当前标签页和主机授权');}};
 $('savePrivate').onclick=async()=>{const v={};for(const k of ['firstName','lastName','phone','email','identitySuffix'])if($(k).value)v[k]=$(k).value;if(v.identitySuffix&&!/^\d{4}$/.test(v.identitySuffix)){status('证件后四位格式不正确');return;}await chrome.storage.session.set({applebuyPickupSession:v});status('自提资料已仅保留在本次 Chrome 会话，不进入购买记录或日志');};
-const onState=s=>status(`状态：${s.state}；页面：${s.phase??'尚未读取'}；${s.reason??''}`);
+const actionName={configureProduct:'选择商品配置',continueProduct:'继续商品配置',addBag:'加入购物袋',viewBag:'查看购物袋',checkout:'结账',selectPickup:'选择自提',selectStore:'选择门店',selectDate:'选择日期',chooseSlot:'选择时段',fillDetails:'取货详情',selectPayment:'选择付款方式',continuePayment:'继续付款方式',submitOrder:'提交订单'};
+const onState=s=>{const pending=actionName[s.pendingAction];const host=exactHost(s.permissionOrigin);if(host&&$('hostOrigin'))$('hostOrigin').value=host;const help=host?`当前主机尚未获访问权限：${host}；点击授权按钮并处理 Chrome 提示，再只读核对原任务`:s.reason==='auth'?'官网要求 Apple 账户登录／验证；完成后点“登录后核对原任务（只读）”':'';status(`状态：${s.state}；${s.observationCurrent?'页面':'最近已读页面'}：${s.phase??'尚未读取'}；${pending?`待确认动作：${pending}；请勿重复执行；`:''}${help?help+'；':''}${s.reason??''}`);};
 // C-013-R2: Pause/Stop advance a cancellation epoch. Each handler captures the epoch synchronously at its click and
 // re-checks it after its awaits; an older handler then creates no job, uses no grant and sends nothing. A running job
 // is paused/stopped by the job itself. Durable records are untouched; a later fresh explicit click captures a new epoch.
@@ -61,6 +65,19 @@ async function run(starting=false,{rebind=false,finalGrant=null,live=ticket()}={
 }
 // Two bounded validation modes. Neither adds to the bag, reserves a slot, creates an order or pays.
 $('observe').onclick=async()=>{try{const p=plan(),tabId=Number($('tab').value);const r=await new PurchaseJob({store,port:new ChromePort(chrome,tabId,{mode:'observe'})}).run(p,{tabId,planDigest:'observe-only',mode:'observe'});status(`只读观察：页面 ${r.phase}；待选 ${r.nextChoice?`${r.nextChoice.choice}（${r.nextChoice.state}）`:'无'}；配置完整：${r.variantVerified?'是':'否'}。未执行任何点击`);}catch{status('只读观察未完成；请核实当前标签页和主机授权');}};
+// Same-tab reconciliation never reads private session data, creates a missing task or grants any mutation authority.
+$('reconcile').onclick=async()=>{
+  const live=ticket();if(!navigator.locks){status('浏览器缺少执行互斥能力，不能核对；记录保持不变');return;}
+  try{const ownership=await withPurchaseOwner(navigator.locks,async()=>{try{
+    if(!live()){halted();return;}const p=plan(),tabId=Number($('tab').value),previous=await store.get(TASK_KEY);if(!live()){halted();return;}
+    if(!previous||previous.state==='RETIRED'){status('没有可核对的原任务；未创建新任务，也未点击官网');return;}
+    const digest=await boundDigest(p,previous);if(!live()){halted();return;}
+    if(previous.tabId!==tabId||previous.planDigest!==digest){status('所选商品或标签页与原任务不同；记录保持不变。改绑必须另行明确确认');return;}
+    const port=new ChromePort(chrome,tabId,{authorized:false,mode:'observe',initialSequence:previous.lastRead??0,acceptedSlot:previous.acceptedSlot??null,pending:previous.pending??null});
+    job=new PurchaseJob({store,port,maxSteps:20,onState});await job.run(p,{tabId,planDigest:digest,mode:'reconcile'});
+  }catch{status('只读核对未完成；原任务和已发送动作保留，请核实标签页、主机权限或任务记录');}finally{job=null;}});if(!ownership.owned)status('另一控制页正在执行；本页没有核对或点击');}
+  catch{status('只读核对未能安全开始；记录保持不变');}
+};
 $('validate').onclick=async()=>{
   const live=ticket();
   if(!navigator.locks){status('浏览器缺少执行互斥能力，无法安全运行');return;}

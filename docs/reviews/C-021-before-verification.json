@@ -1,0 +1,21 @@
+{
+  "recordedAtUtc": "2026-10-03T09:23:39.347708+00:00",
+  "independentTests": {
+    "tests": 565,
+    "pass": 561,
+    "fail": 4,
+    "cancelled": 0,
+    "skipped": 0,
+    "todo": 0,
+    "exitCode": 1
+  },
+  "allPrior553Passed": true,
+  "existing139Unchanged": true,
+  "candidateFiles": 140,
+  "candidateSha256": "af273d2b77471fdd2c242717c165df96a0a06228fde49cfbd5e1ce85a585d2c4",
+  "protectedTestReviewFiles": 74,
+  "nativeCauseKnown": false,
+  "nativePurchasingReady": false,
+  "newMerchantResourceActionsByCodex": 0,
+  "authLoginSucceededByAuthorizedChromeDriver": true
+}

@@ -1,0 +1,18 @@
+{
+  "candidateManifest": "docs/reviews/C-021-candidate-manifest.json",
+  "candidateSha256": "c304038f06dc40e67903e59dbdf3255eb42c1c78df9678a0ffd262c8150ad9e5",
+  "files": {
+    "web/checkout-connector/chrome-port.js": "5ed8060eb7dece1442d55f74752772e8145bff345c172f21ec2bad25bd68173b",
+    "web/checkout-connector/control.html": "630226e70bfdfbd9cc91667e08679bfab027a53f2a6bb2e2afc8d6fff526ad75",
+    "web/checkout-connector/control.js": "9904d8bd942517d5f9acdda9323fec8c585da84b8c56b2f7eb6e707ed77cf6c2",
+    "web/checkout-connector/job.js": "55e003853129770213494b1048bd3a3d7e9f26dec826d387e68d0ee341994ad9",
+    "web/checkout-connector/manifest.json": "872e16c3a19ffd24c2b84213ec079463e97872af58ad424153ae35a8c60c1d0d",
+    "web/checkout-connector/open.html": "ff5010007a6bd18358606f60f16aed96a0304dc6669db7cbe1271597027c149e",
+    "web/checkout-connector/open.js": "1e50610d766d92e5bd4271a3746b2667485fa5bd9cae7121b02f06bb95add1b8",
+    "web/checkout-connector/owner.js": "2aa17b6b1666dabe757c56e620a29b8c2f62130d6993b8ff988665bd262577ed",
+    "web/checkout-connector/page-program.js": "8353aa041fe4aeb3f39f2c102a18b66970766907ca3171324d14ff6d194ba43d"
+  },
+  "nativeLoadedIdentityVerified": false,
+  "claudeReviewPending": true,
+  "usage": "Human may reload the already installed extension for read-only same-tab reconciliation only under latest takeover steering. No purchase enablement."
+}

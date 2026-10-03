@@ -126,8 +126,10 @@ test('C017 impl: a vanished or unsupported selected tab requests nothing',async(
   }
 });
 
-test('C017 impl: control.html keeps every existing control id exactly once',()=>{
-  const ids=['product','find','tab','permission','prepare','firstName','lastName','phone','email','identitySuffix','savePrivate','approve','terms','finalReview','start','pause','resume','stop','final','observe','validate','retire','rebindConfirm','rebind','state'];
+// C021 (Codex quota takeover): the new host/login handoff adds two controls. Keep every old identity and the disabled
+// final control, and require both new identities exactly once. No original safety behavior/permission assertion changes.
+test('C017 impl plus C021: control.html keeps every original and new handoff control id exactly once',()=>{
+  const ids=['product','find','tab','permission','prepare','firstName','lastName','phone','email','identitySuffix','savePrivate','approve','terms','finalReview','start','pause','resume','stop','final','observe','validate','retire','rebindConfirm','rebind','state','hostOrigin','reconcile'];
   const found=[...html.matchAll(/\bid="([^"]+)"/g)].map(m=>m[1]);
   assert.deepEqual([...found].sort(),[...ids].sort());assert.match(html,/<button id="final" disabled>/);
 });

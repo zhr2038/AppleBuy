@@ -4,6 +4,7 @@
 <p>一台 · Apple 大连恒隆广场 · 仅到店自提 · 首次提供的前三个日期依次选每天末档 · 支付宝 · 不折抵换购 · 不加 AppleCare+ · 不添加其他商品</p>
 <button id="find">读取当前官网标签页</button><select id="tab" aria-label="官网标签页"></select>
 <button id="permission">允许读取和操作官网主机</button><button id="prepare">只读预检与读取当前条款</button><p>首次使用：未选标签页时点“允许读取和操作官网主机”，只请求 www.apple.com.cn，由你在 Chrome 弹窗中决定；允许后再点“读取当前官网标签页”。已选标签页时只请求该标签页所在的官网主机。主机授权由 Chrome 保存，可在扩展设置撤销；跨官网主机需另行允许。授权本身不会开始任何购买动作。</p>
+<label>跨主机后无法读取标签页时，输入官网当前完整主机<input id="hostOrigin" type="text" autocomplete="off" placeholder="例如 https://secure6.www.apple.com.cn"></label><p>只输入地址栏里的 HTTPS 主机，不含路径或参数；点击上面的授权按钮，由 Chrome 确认这一个主机。不要输入账号密码。</p>
 <details><summary>提前填写自提资料（仅本次 Chrome 会话保存）</summary><p>不填写账号密码。官网已有资料可留空；字段不能确认时会停下。</p>
 <label>名字<input id="firstName" autocomplete="off"></label><label>姓氏<input id="lastName" autocomplete="off"></label><label>手机号码<input id="phone" autocomplete="off"></label><label>电子邮件<input id="email" autocomplete="off"></label><label>证件后四位<input id="identitySuffix" maxlength="4" autocomplete="off"></label><button id="savePrivate">仅本次会话记住这些自提资料</button></details>
 <label><input id="approve" type="checkbox">本次允许按上述条件推进结账；遇到登录、条款或订单核实需本人处理</label>
@@ -11,5 +12,6 @@
 <p>完成预检并确认后，一次开始即可自动推进至提交、查单。没有提前确认时只推进到订单复核。登录、验证和无法确认的官网反馈仍需本人处理。</p>
 <button id="start">一键开始本次官网购买</button><button id="pause">暂停</button><button id="resume">恢复本任务</button><button id="stop">停止</button><button id="final" disabled>复核页确认后自动提交并查单</button>
 <p>校验（不会加入购物袋、占用时段、创建订单或付款）：</p><button id="observe">只读观察当前页面</button><button id="validate">公开配置校验（止于加入购物袋前）</button>
+<button id="reconcile">登录后核对原任务（只读）</button><p>登录／授权完成后选择原标签页并点此按钮，核对待确认动作；保留旧记录，不再次加购或结账。核对不延长购买期限，也不会自动恢复购买。</p>
 <p>任务管理（保留全部记录，不删除）：</p><button id="retire">退役从未写入官网购物动作的任务</button><label><input id="rebindConfirm" type="checkbox">本人确认改用当前所选标签页，仅做只读核对，不增加购买权限</label><button id="rebind">改绑标签页并只读核对</button>
 <p role="status" id="state">尚未运行。开发授权不能代替一次真实购买授权。</p><script type="module" src="control.js"></script></main></body></html>

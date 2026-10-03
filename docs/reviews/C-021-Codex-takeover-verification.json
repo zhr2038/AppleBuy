@@ -1,0 +1,54 @@
+{
+  "recordedAtUtc": "2026-10-03T09:43:59.294222+00:00",
+  "task": "C-021-AUTH-HANDOFF",
+  "implementer": "Codex under actual provider quota takeover and latest direct human steering",
+  "actualQuotaEvidence": "docs/reviews/C-021-quota-verification.json",
+  "changedBusinessFiles": [
+    "web/checkout-connector/chrome-port.js",
+    "web/checkout-connector/control.html",
+    "web/checkout-connector/control.js",
+    "web/checkout-connector/job.js"
+  ],
+  "addedImplementationTest": "test/checkout-c021-auth-handoff.test.ts",
+  "protectedTestChange": {
+    "path": "test/checkout-c017-discovery.test.ts",
+    "scope": "Extend exact ID set by two new functional handoff controls; all original control IDs, uniqueness, final-disabled assertion and every old permission/action case retained."
+  },
+  "protectedInputFiles": 74,
+  "protectedByteIdentical": 73,
+  "independentReviewFileByteIdentical": true,
+  "inputManifestSha256": "af273d2b77471fdd2c242717c165df96a0a06228fde49cfbd5e1ce85a585d2c4",
+  "candidateFiles": 141,
+  "candidateSha256": "c304038f06dc40e67903e59dbdf3255eb42c1c78df9678a0ffd262c8150ad9e5",
+  "beforeTests": {
+    "tests": 565,
+    "pass": 561,
+    "fail": 4,
+    "cancelled": 0,
+    "skipped": 0,
+    "todo": 0,
+    "exitCode": 1
+  },
+  "independentFinalTests": {
+    "tests": 616,
+    "pass": 616,
+    "fail": 0,
+    "cancelled": 0,
+    "skipped": 0,
+    "todo": 0,
+    "exitCode": 0,
+    "durationMs": 6547.9599
+  },
+  "newIndependentCases": 12,
+  "newImplementationCases": 51,
+  "claudeActualReviewDone": false,
+  "preciseBilateralAgreement": false,
+  "nativeBundleIdentityVerified": false,
+  "nativeCauseVerified": false,
+  "nativePurchaseReady": false,
+  "realOneClickOrderVerified": false,
+  "newMerchantResourceMutationsByCodex": 0,
+  "shutdownCancelledByLatestHuman": true,
+  "shutdownCallPerformed": false,
+  "offlineAcceptanceQualification": "Runnable tested Codex candidate only; no final/bilateral acceptance until actual specified-model original-session review."
+}

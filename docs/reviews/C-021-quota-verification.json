@@ -1,0 +1,44 @@
+{
+  "recordedAtUtc": "2026-10-03T09:28:08.316591+00:00",
+  "task": "C-021-AUTH-HANDOFF",
+  "status": "actual-provider-session-quota",
+  "provider": "firstParty",
+  "actualProviderMessage": "You've hit your session limit · resets 7:20pm (Asia/Shanghai)",
+  "reportedReset": "2026-10-03 19:20 Asia/Shanghai",
+  "requestedModel": "claude-opus-5-5",
+  "requestedEffort": "xhigh",
+  "structuredModelUsageKeys": [
+    "claude-opus-5-5"
+  ],
+  "modelVerified": false,
+  "modelVerificationQualification": "Quota synthetic error content means this failed invocation is not accepted as completed implementation/review. Exact requested/init model and firstParty result are inspected.",
+  "isError": true,
+  "exitCode": 1,
+  "durationSeconds": 6.08,
+  "reportedTurns": 2,
+  "tools": {
+    "Read": 1
+  },
+  "actualReadPaths": [
+    "docs/tasks/C-021-AUTH-HANDOFF.md"
+  ],
+  "sourceWrites": [],
+  "allInput140Unchanged": true,
+  "lastAccepted139Unchanged": true,
+  "protectedInputPaths": 74,
+  "independentBaseline": {
+    "tests": 565,
+    "pass": 561,
+    "fail": 4,
+    "allPrior553Passed": true
+  },
+  "implementationComplete": false,
+  "preciseBilateralAgreement": false,
+  "nativeCheckoutCauseVerified": false,
+  "ownedCleanupConfirmed": true,
+  "rootExitedOrAbsent": true,
+  "osDispatchLeaseAcquiredAndReleased": true,
+  "activeCalls": 0,
+  "shutdownPolicyTrigger": "A new real provider quota after the productive restored C015-C020 cycle. Not local cap, auth failure or artificial consumption.",
+  "nextTask": "Retry unchanged C-021-AUTH-HANDOFF on the unique original session only after actual reset and mutually exclusive dispatch checks; independent acceptance and exact-source review still required."
+}

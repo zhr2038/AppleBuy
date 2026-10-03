@@ -1,0 +1,35 @@
+{
+  "recordedAtUtc": "2026-10-03T09:28:08.316591+00:00",
+  "kind": "authorized-browser-driver-observation",
+  "signIn": {
+    "origin": "https://secure6.www.apple.com.cn",
+    "path": "/shop/signIn",
+    "mainPresent": true,
+    "embeddedAppleAuthPresent": true,
+    "exactGuestTextPresent": true,
+    "alreadyDecodedAsAuthByCurrentSource": true
+  },
+  "afterAuthorizedLogin": {
+    "origin": "https://secure6.www.apple.com.cn",
+    "path": "/shop/checkout",
+    "receiptMethodHeading": "你希望如何收到订单商品？",
+    "choices": [
+      "为我送货",
+      "我要取货"
+    ],
+    "model": "iPhone 18 Pro",
+    "capacity": "256GB",
+    "color": "黑色",
+    "displayedCny": 9999,
+    "currentDefault": "delivery",
+    "agentSelectedPickupOrSlot": false,
+    "newOrderOrPayment": false
+  },
+  "humanCorrection": "Human, not executor, clicked Checkout to reach sign-in.",
+  "nativeTaskAndPendingActionKnown": false,
+  "nativePermissionStateVerified": false,
+  "secure6HumanReadOnlyConsent": true,
+  "executorReadinessProven": false,
+  "screenshotSaved": false,
+  "screenshotLimitation": "After a runtime reset the current-tab claim returned Debugger unattached; no alternate access or screenshot workaround was attempted. Historical successful login/fulfillment DOM observation remains the available evidence."
+}

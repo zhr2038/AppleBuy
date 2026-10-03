@@ -15,6 +15,8 @@ const ACTIONS=['configureProduct','continueProduct','addBag','viewBag','checkout
 const PUBLIC=new Set(['configureProduct','continueProduct']);
 const SLOT=/^(?:[01]\d|2[0-3]):[0-5]\d$/;
 const clone=x=>structuredClone(x);
+// C021 quota takeover: diagnostics carry only this fixed official origin grammar, never raw errors or URL queries.
+const safePermissionOrigin=x=>typeof x==='string'&&/^https:\/\/(?:www\.apple\.com\.cn|secure\d*\.www\.apple\.com\.cn)$/.test(x)?x:null;
 const optBool=v=>v===undefined||typeof v==='boolean';
 export function validStored(s){return s&&s.schema==='applebuy-purchase-job/v1'&&typeof s.taskId==='string'&&typeof s.planDigest==='string'&&Number.isSafeInteger(s.tabId)&&validIntent(s.plan)&&Number.isSafeInteger(s.lastRead)&&s.lastRead>=0&&Number.isFinite(s.expiresAt)&&Number.isSafeInteger(s.dateCursor)&&s.dateCursor>=0&&s.dateCursor<=3&&Number.isSafeInteger(s.refusals)&&s.refusals>=0&&Array.isArray(s.rejected)&&s.rejected.every(r=>typeof r.date==='string'&&SLOT.test(r.start)&&SLOT.test(r.end)&&Number.isSafeInteger(r.generation))&&s.floors&&typeof s.floors==='object'&&Object.values(s.floors).every(t=>SLOT.test(t))&&(s.initialDates===null||(Array.isArray(s.initialDates)&&s.initialDates.length<=3&&new Set(s.initialDates).size===s.initialDates.length&&s.initialDates.every(d=>typeof d==='string')))&&(s.pending===null||(typeof s.pending.id==='string'&&typeof s.pending.documentId==='string'&&Number.isFinite(s.pending.deadline)&&ACTIONS.includes(s.pending.action)&&(s.pending.dispatched===undefined||s.pending.dispatched===false)))&&(s.finalIntent===null||(typeof s.finalIntent.id==='string'&&typeof s.finalIntent.sent==='boolean'))&&(!s.finalIntent?.sent||s.pending?.action==='submitOrder'||s.state==='CONFIRMED_UNPAID')&&
   optBool(s.bagAddStarted)&&optBool(s.resourceWritten)&&optBool(s.reconcileOnly)&&(s.untouchedFailures===undefined||(Number.isSafeInteger(s.untouchedFailures)&&s.untouchedFailures>=0))&&
@@ -51,7 +53,7 @@ function terminal(times){
 export class PurchaseJob {
   constructor({store,port,now=()=>Date.now(),id=()=>crypto.randomUUID(),maxSteps=100,maxWaitMs=30000,hydrationMs=3000,maxPolls=2000,maxUntouched=3,maxUntouchedPerRun=12,onState=()=>{}}){Object.assign(this,{store,port,now,id,maxSteps,maxWaitMs,hydrationMs,maxPolls,maxUntouched,maxUntouchedPerRun,onState});this.paused=false;this.stopped=false;this.key=TASK_KEY;this.runGrant=null;}
   pause(){this.paused=true;} resume(){this.paused=false;} stop(){this.stopped=true;}
-  async save(s){await this.store.put(this.key,clone(s));this.onState({state:s.state,phase:s.lastPhase,reason:s.reason??null,refusals:s.refusals,finalIntent:s.finalIntent!==null});}
+  async save(s){await this.store.put(this.key,clone(s));this.onState({state:s.state,phase:s.lastPhase,reason:s.reason??null,refusals:s.refusals,finalIntent:s.finalIntent!==null,pendingAction:ACTIONS.includes(s.pending?.action)?s.pending.action:null,permissionOrigin:safePermissionOrigin(s.permissionOrigin),observationCurrent:s.observationCurrent===true});}
   async gate(s,reason,state='NEEDS_USER'){
     s.state=state;s.reason=reason;
     // Human intervention invalidates an advance start authorization; it cannot carry across a gate.
@@ -71,14 +73,15 @@ export class PurchaseJob {
     return {mode:'observe',state:'OBSERVED',phase:o?.phase??'UNKNOWN',nextChoice:o?.nextChoice??null,needsSelection:o?.needsSelection??null,configuration:o?.configuration??null,extrasConflict:o?.extrasConflict??null,variantVerified:o?.variantVerified===true,quotedCny:o?.quotedCny??null};
   }
   async run(plan,{tabId,planDigest,grant=null,taskId=null,mode='purchase',rebind=false}={}){
-    if(!validIntent(plan)||!Number.isSafeInteger(tabId)||!planDigest||!['purchase','observe','public-config'].includes(mode))throw new Error('InvalidPurchaseConfiguration');
+    if(!validIntent(plan)||!Number.isSafeInteger(tabId)||!planDigest||!['purchase','observe','public-config','reconcile'].includes(mode)||(mode==='reconcile'&&rebind))throw new Error('InvalidPurchaseConfiguration');
     if(mode==='observe')return this.observeOnly(plan);
-    const P=normalizeIntent(plan),validating=mode==='public-config';
+    const P=normalizeIntent(plan),validating=mode==='public-config',readOnly=mode==='reconcile';
     this.key=validating?VALIDATION_KEY:TASK_KEY;
     const old=validating?null:await this.store.get(TASK_KEY);
     if(old&&!validStored(old))throw new Error('StoredPurchaseTaskCorrupt');
+    if(readOnly&&(!old||old.state==='RETIRED'))throw new Error('NoPreservedTaskToReconcile');
     // Validation is bounded, never authorized and stored separately; it cannot use a purchase grant.
-    if(validating||rebind)grant=null;
+    if(validating||rebind||readOnly)grant=null;
     this.runGrant=grant;
     const fresh=()=>({schema:'applebuy-purchase-job/v1',taskId:(validating?null:taskId)??this.id(),plan:clone(P),planDigest,tabId,state:'RUNNING',lastPhase:null,lastDocumentId:null,entryDocumentId:null,reason:null,pending:null,finalIntent:null,orderRefHash:null,initialDates:null,dateCursor:0,floors:{},rejected:[],refusals:0,lastRead:0,expiresAt:this.now()+(validating?300000:1800000),bagAddStarted:false,resourceWritten:false,untouchedFailures:0,untouchedStreak:0,quotedCny:null,mode});
     let s;
@@ -112,12 +115,14 @@ export class PurchaseJob {
       if(polling)polling=false;else{waitSince=null;storeWait=false;if(++step>this.maxSteps)return this.gate(s,'step-bound-reached','NEEDS_VERIFICATION');}
       const finalLookup=s.pending?.action==='submitOrder'&&s.pending.dispatched!==false;
       // Expiry gates new mutations. Independent final lookup and human-rebound read-only reconciliation remain available.
-      if(s.expiresAt<=this.now()&&!finalLookup&&!s.reconcileOnly)return this.gate(s,'task-window-expired; existing intent preserved','EXPIRED');
+      if(s.expiresAt<=this.now()&&!finalLookup&&!s.reconcileOnly&&!readOnly)return this.gate(s,'task-window-expired; existing intent preserved','EXPIRED');
       if(this.stopped)return this.gate(s,'stopped; sent operations may still complete','STOPPED');
       if(this.paused)return this.gate(s,'paused; sent operations may still complete','PAUSED');
-      let o;try{o=await this.port.observe(P);}catch{return this.gate(s,'observation-transport-failed','NEEDS_VERIFICATION');}
+      s.observationCurrent=false;delete s.permissionOrigin;
+      let o;try{o=await this.port.observe(P);}catch(error){const origin=error?.message==='CurrentHostPermissionMissing'?safePermissionOrigin(error.origin):null;if(origin){s.permissionOrigin=origin;return this.gate(s,'current-host-permission-missing; no automatic action','NEEDS_USER');}return this.gate(s,'observation-transport-failed','NEEDS_VERIFICATION');}
       if(!o||o.schema!=='applebuy-merchant-read/v1'||!o.documentId||!Number.isSafeInteger(o.seq)||o.seq<=s.lastRead)return this.gate(s,'invalid-or-stale-observation','NEEDS_VERIFICATION');
-      s.lastRead=o.seq;s.lastPhase=o.phase;s.lastDocumentId=o.documentId;s.entryDocumentId??=o.documentId;await this.save(s);
+      s.lastRead=o.seq;s.lastPhase=o.phase;s.lastDocumentId=o.documentId;s.entryDocumentId??=o.documentId;s.observationCurrent=true;delete s.permissionOrigin;await this.save(s);
+      if(this.paused||this.stopped)return this.gate(s,'control-changed-during-read; sent operations preserved',this.stopped?'STOPPED':'PAUSED');
       if(grant?.start===true&&!finalLookup&&(grant.entryDocumentId!==s.entryDocumentId||grant.taskId!==s.taskId||grant.planDigest!==s.planDigest||grant.existingOrdersChecked!==true||grant.noExtras!==true||grant.termsAccepted!==true||!Number.isFinite(grant.expiry)||grant.expiry<=this.now()||grant.expiry>this.now()+1800000))return this.gate(s,'start-authorization-no-longer-current','BLOCKED');
       // Reconcile a previously delivered command, including a crash/restart. Never send it again.
       if(s.pending){
@@ -125,6 +130,7 @@ export class PurchaseJob {
         // Positively known not dispatched (pause/stop after the write-ahead, before act): recover truthfully.
         if(pending.dispatched===false){s.pending=null;if(pending.action==='addBag')s.bagAddStarted=false;if(pending.action==='submitOrder'&&s.finalIntent)s.finalIntent.sent=false;await this.save(s);continue;}
         if(pending.action==='submitOrder'){
+          if(readOnly)return this.gate(s,'final-result-unconfirmed; no resubmission','NEEDS_VERIFICATION');
           if(!s.orderRefHash&&o.phase==='ORDER_RECEIPT'&&o.receiptVerified===true&&purchaseMatches(P,o.purchase)&&o.orderRefHash){s.orderRefHash=o.orderRefHash;await this.save(s);}
           let order;try{order=await this.port.lookupOrder(P,s.orderRefHash);}catch{}
           if(order?.independent===true&&order.state==='unpaid'&&s.orderRefHash&&order.orderRefHash===s.orderRefHash&&purchaseMatches(P,order.purchase)&&order.acceptedSlot?.date===s.acceptedSlot?.date&&order.acceptedSlot?.start===s.acceptedSlot?.start&&order.acceptedSlot?.end===s.acceptedSlot?.end){s.pending=null;s.state='CONFIRMED_UNPAID';s.reason=null;await this.save(s);return clone(s);}
@@ -136,18 +142,19 @@ export class PurchaseJob {
             if(s.refusals>5)return this.gate(s,'refusal-bound-reached','EXHAUSTED');continue;
           }
           if(['DETAILS','PAYMENT','REVIEW'].includes(o.phase)&&o.acceptedSlot?.verified===true&&purchaseMatches(P,o.purchase)&&o.acceptedSlot.date===pending.date&&o.acceptedSlot.start===pending.start&&o.acceptedSlot.end===pending.end){s.acceptedSlot=clone(o.acceptedSlot);s.pending=null;s.untouchedStreak=0;await this.save(s);continue;}
-          if((o.phase==='PROCESSING'||o.phase===pending.beforePhase)&&this.now()<pending.deadline&&await poll(this.maxWaitMs))continue;
+          if(!readOnly&&(o.phase==='PROCESSING'||o.phase===pending.beforePhase)&&this.now()<pending.deadline&&await poll(this.maxWaitMs))continue;
           return this.gate(s,'slot-result-unconfirmed; no resubmission','NEEDS_VERIFICATION');
         }
         const reached={configureProduct:['ENTRY','VARIANT'],continueProduct:['VARIANT'],addBag:['ACCESSORIES','BAG'],viewBag:['BAG'],checkout:['FULFILLMENT','SLOTS'],selectPickup:['FULFILLMENT','SLOTS'],selectStore:['SLOTS'],selectDate:['SLOTS'],fillDetails:['PAYMENT'],selectPayment:['PAYMENT'],continuePayment:['REVIEW']}[pending.action]??[];
         const conditions=o.phase==='BAG'||o.phase==='FULFILLMENT'?itemMatches(P,o.purchase):!['SLOTS','PAYMENT','REVIEW'].includes(o.phase)||purchaseMatches(P,o.purchase);
-        if(reached.includes(o.phase)&&o.verifiedStep===true&&conditions&&(pending.action!=='selectPickup'||o.purchase?.fulfillment==='pickup')&&(pending.action!=='selectDate'||o.selectedDate===pending.date)&&(pending.action!=='configureProduct'||o.selectedProductChoices?.includes(pending.choice))&&(pending.action!=='selectPayment'||o.paymentMethod===P.paymentMethod)){s.pending=null;s.untouchedStreak=0;await this.save(s);continue;}
+        if(reached.includes(o.phase)&&o.verifiedStep===true&&conditions&&(!readOnly||o.extras!==true)&&(pending.action!=='selectPickup'||o.purchase?.fulfillment==='pickup')&&(pending.action!=='selectDate'||o.selectedDate===pending.date)&&(pending.action!=='configureProduct'||o.selectedProductChoices?.includes(pending.choice))&&(pending.action!=='selectPayment'||o.paymentMethod===P.paymentMethod)){s.pending=null;s.untouchedStreak=0;await this.save(s);if(readOnly)return this.gate(s,'same-tab-read-only-reconciliation-complete; no new purchase action','NEEDS_USER');continue;}
         if(STOP.has(o.phase))return this.gate(s,o.phase.toLowerCase());
-        if((o.phase===pending.beforePhase||o.phase==='PROCESSING')&&this.now()<pending.deadline&&await poll(this.maxWaitMs))continue;
+        if(!readOnly&&(o.phase===pending.beforePhase||o.phase==='PROCESSING')&&this.now()<pending.deadline&&await poll(this.maxWaitMs))continue;
         return this.gate(s,'mutation-result-unconfirmed; no automatic repeat','NEEDS_VERIFICATION');
       }
       if(s.reconcileOnly)return this.gate(s,'read-only-reconciliation-complete; a rebound tab cannot add purchase authority','NEEDS_USER');
       if(STOP.has(o.phase))return this.gate(s,o.phase.toLowerCase());
+      if(readOnly)return this.gate(s,'same-tab-read-only-reconciliation-complete; no new purchase action','NEEDS_USER');
       if(o.phase==='PROCESSING'){if(await poll(this.maxWaitMs))continue;return this.gate(s,'merchant-processing-time-bound-reached','NEEDS_VERIFICATION');}
       if(o.phase==='PRELAUNCH')return this.gate(s,'official-entry-not-released','NOT_RELEASED');
       if(validating&&!['ENTRY','VARIANT'].includes(o.phase))return this.gate(s,'validation-endpoint-is-public-configuration; no checkout action','VALIDATION_STOPPED');
