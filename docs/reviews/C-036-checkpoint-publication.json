@@ -1,0 +1,14 @@
+{
+  "scope": "self-verified pending C035-R1/C036 checkpoint; not accepted main or live readiness",
+  "sourceCommit": "d0308a1b9845f5cb9bfc46915bcaf8afb8947f97",
+  "sourceFiles": 169,
+  "sourceSha256": "885c23b8b5966479828bf9536e23a348f2d70d2906701c390b0f3c3014ed2625",
+  "atomicNonForceCheckpointPush": true,
+  "allSourceGitBlobsVerified": true,
+  "checkpointRemoteMatches": true,
+  "acceptedMainUnchanged": true,
+  "mainCommit": "151c86e2cf75aead4f8acb6cac6c083aeb482705",
+  "privateDataPublished": false,
+  "actualOpusReviewPending": true,
+  "timestampUtc": "2026-10-04T00:56:53.321065+00:00"
+}
