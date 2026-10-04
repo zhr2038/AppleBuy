@@ -1,0 +1,38 @@
+{
+  "task": "C-041 normal public entry evidence",
+  "observedAtUtc": "2026-10-04T10:13:29.438945+00:00",
+  "source": "normal current desktop Chrome via approved CUA UI/DOM; no hidden state/traffic/private field",
+  "publicUrl": "https://www.apple.com.cn/shop/buy-iphone/iphone-duo/mk2m4ch/a",
+  "model": "iPhone Duo",
+  "capacity": "256GB",
+  "officialColor": "星光白色",
+  "quotedCny": 15999,
+  "selectedPublicChoices": [
+    "星光白色",
+    "256GB",
+    "不折抵换购",
+    "不加 AppleCare+ 服务计划"
+  ],
+  "currentNotices": [
+    "暂未发售",
+    "目前暂不提供 Apple Store 零售店取货服务",
+    "10 月 16 日晚 8 点接受预购。10 月 23 日发售。",
+    "机型将在获得批准后发售"
+  ],
+  "nativeContinueDisabled": true,
+  "normalActions": [
+    "new tab at currently observed public SKU URL",
+    "ordinary enabled noTrade radio click",
+    "ordinary newly enabled noCare radio click"
+  ],
+  "noAddOrSlotOrOrderOrPayment": true,
+  "noForceDisabledOrValidationBypass": true,
+  "noNewPersistentHostPermissions": true,
+  "currentExecutorRegulatoryGate": "page-program.js explicitly preserves regulatory approval notice; test/checkout-c031-preparation.test.ts dedicated gate assertion independently ran1/1, unchanged",
+  "runtimeSourceFilesUnchanged": 175,
+  "runtimeSourceSha256": "0597f4e1b30e60bf862b50b3d43034509be18c7334f37da649c5c25ac645b992",
+  "productionReadiness": "incomplete; approval/release/pickup/real refusal/latest list/installed native API/actual speed not established",
+  "screenshotPrivateOnly": true,
+  "knownWeeklyQuotaResetLocal": "2026-10-07T17:00:00+08:00",
+  "finalOpusAgreementStillMissing": true
+}
