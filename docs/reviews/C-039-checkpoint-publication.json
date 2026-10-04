@@ -1,0 +1,16 @@
+{
+  "scope": "C038 quota-partial navigation plus C039 Root-self-verified ordinary native integration checkpoint, actual Opus review pending; not main acceptance/live readiness",
+  "sourceCommit": "c1539f0f792acf35a24683b5e63301e2aabbf885",
+  "sourceFiles": 173,
+  "sourceSha256": "832c840415d16f658b75b5898c93dd4b53661bef80e739e541e5e4cdcd5a00cf",
+  "nonForceCheckpointPush": true,
+  "allSourceGitBlobsVerified": true,
+  "checkpointRemoteMatches": true,
+  "acceptedMainUnchanged": true,
+  "mainCommit": "c87b8c3bf577eda95c71318c040158327301c734",
+  "privateDataPublished": false,
+  "actualOpusReviewPending": true,
+  "NodePassed": 943,
+  "nativeScenariosPassed": 8,
+  "timestampUtc": "2026-10-04T05:19:46.510516+00:00"
+}
