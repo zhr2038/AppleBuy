@@ -13,7 +13,9 @@ export class ChromePort {
   async permission(){this.currentOrigin=null;const t=await this.api.tabs.get(this.tabId);if(!allowedMerchantUrl(t.url))throw new Error('UnsupportedMerchantPage');const u=new URL(t.url);this.currentOrigin=u.origin;return await this.api.permissions.contains({origins:[u.origin+'/*']});}
   async observe(plan){
     if(!await this.permission())throw Object.assign(new Error('CurrentHostPermissionMissing'),{origin:this.currentOrigin});
-    const r=await this.api.scripting.executeScript({target:{tabId:this.tabId,frameIds:[0]},world:'ISOLATED',func:merchantDocument,args:[plan]});
+    // C040-R1 (Claude): a rejected injection (e.g. its frame was replaced by a document change) is script transport, distinct from a
+    // returned result that is missing, failed or unrecognized below. Only the job decides whether a bounded read-only re-read is allowed.
+    let r;try{r=await this.api.scripting.executeScript({target:{tabId:this.tabId,frameIds:[0]},world:'ISOLATED',func:merchantDocument,args:[plan]});}catch{throw Object.assign(new Error('ScriptTransportRejected'),{scriptTransport:true});}
     if(r.length!==1||r[0].frameId!==0||!r[0].documentId||r[0].error||!r[0].result)throw new Error('CurrentDocumentUnrecognized');
     // C-018: a list generation advances only on a changed date/time fact or order, never on reordered object members alone.
     const page=r[0].result;const fingerprint=canonicalJson([page.dates,page.times,page.selectedDate]);if(!this.last||fingerprint!==this.last.fingerprint)this.generation++;

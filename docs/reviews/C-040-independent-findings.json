@@ -1,0 +1,117 @@
+{
+  "scope": "Root independently executed actual current production native FAKE runner, not real Apple",
+  "A": {
+    "name": "RED-post-slot-document-change-read-loss",
+    "passed": false,
+    "durationMs": 332,
+    "error": "AssertionError [ERR_ASSERTION]: RED: after one successful native chooseSlot Continue, a single transient read loss during the normal document change stopped the journey (pending chooseSlot)\n    at scenario (file:///E:/Apple%20Store/test/c040-native-order.mjs:156:14)\n    at runNextTicks (node:internal/process/task_queues:65:5)\n    at process.processImmediate (node:internal/timers:472:9)\n    at async file:///E:/Apple%20Store/test/c040-native-order.mjs:212:14",
+    "runs": [
+      {
+        "kind": "start",
+        "state": "NEEDS_VERIFICATION",
+        "reason": "observation-transport-failed",
+        "phase": "SLOTS",
+        "pending": "chooseSlot"
+      }
+    ],
+    "actions": [
+      "checkout",
+      "selectPickup",
+      "chooseSlot"
+    ],
+    "effects": {
+      "checkout": 1,
+      "summaryOpen": 2,
+      "summaryClose": 2,
+      "pickup": 1,
+      "time": 1,
+      "slotContinue": 1
+    },
+    "orders": 0,
+    "navigations": [],
+    "readStages": {
+      "bag": 4,
+      "checkout": 10
+    },
+    "expectedRed": true
+  },
+  "B": {
+    "name": "native-order-confirmed-unpaid",
+    "passed": true,
+    "durationMs": 886,
+    "runs": [
+      {
+        "kind": "start",
+        "state": "NEEDS_VERIFICATION",
+        "reason": "final-result-unconfirmed; no resubmission",
+        "phase": "REVIEW",
+        "pending": "submitOrder"
+      },
+      {
+        "kind": "resume",
+        "state": "CONFIRMED_UNPAID",
+        "reason": null,
+        "phase": "ORDER_RECEIPT",
+        "pending": null
+      },
+      {
+        "kind": "consumed-grant",
+        "state": "CONFIRMED_UNPAID",
+        "reason": null,
+        "phase": "ORDER_RECEIPT",
+        "pending": null
+      }
+    ],
+    "final": {
+      "state": "CONFIRMED_UNPAID",
+      "reason": null,
+      "phase": "ORDER_RECEIPT",
+      "pending": null
+    },
+    "actions": [
+      "checkout",
+      "selectPickup",
+      "chooseSlot",
+      "fillDetails",
+      "selectPayment",
+      "continuePayment",
+      "submitOrder"
+    ],
+    "summaryReads": 5,
+    "effects": {
+      "checkout": 1,
+      "summaryOpen": 5,
+      "summaryClose": 5,
+      "pickup": 1,
+      "time": 1,
+      "slotContinue": 1,
+      "detailsContinue": 1,
+      "payment": 1,
+      "paymentContinue": 1,
+      "submit": 1
+    },
+    "orders": 1,
+    "orderRecordExact": true,
+    "detailsWrittenOnceByNativeEvents": true,
+    "detailsAbsentFromDurableTask": true,
+    "navigations": [
+      "https://www.apple.com.cn/shop/order/FAKE-C040-0001"
+    ],
+    "readStages": {
+      "bag": 4,
+      "checkout": 11,
+      "details": 6,
+      "payment": 9,
+      "review": 7,
+      "receipt": 2,
+      "order": 1
+    },
+    "lostSubmitResults": 0,
+    "detailOverride": [],
+    "realAcceptanceClaimed": false,
+    "expectedRed": false
+  },
+  "acceptance": "Normal genuine pending-final processing reaches CONFIRMED_UNPAID in the initial run with one native final click and one backend fake order; known transient scripting-frame read loss after slot/payment navigation is bounded/read-only, never replayed. Decoder-unrecognized/permission/invalid/stale/challenge/closed/readonly and unconfirmed slot/final safety retain their current guarantees.",
+  "initialOld943SourcesUnchanged": true,
+  "timestampUtc": "2026-10-04T08:22:32.196489+00:00"
+}

@@ -1,0 +1,657 @@
+{
+  "task": "C-040-R1",
+  "status": "independently verified; actual exact-source consistency pending",
+  "modelActual": "claude-opus-5-5",
+  "provider": "firstParty",
+  "canonicalModel": "claude-opus-5-5",
+  "actualCliEffort": "xhigh",
+  "modelVerified": true,
+  "isError": false,
+  "subtype": "success",
+  "durationSeconds": 704.19,
+  "wallCapSeconds": 1500,
+  "configuredCliTurnCap": 48,
+  "actualReportedNumTurns": 60,
+  "turnCapDiscrepancy": "Structured result reports60 while argv max-turns48; success and no turn-limit error. Do not claim aggregate reported turns within48. Not provider quota; semantics/enforcement discrepancy retained.",
+  "cliDollarCap": 10,
+  "aggregateResumedUsageNotCurrentBilling": true,
+  "permissionDenials": 0,
+  "privateReadAttempts": 0,
+  "freshRequiredReadFiles": [
+    "docs/tasks/C-040-R1.md",
+    "docs/requirements.md",
+    "docs/tasks/C-040-NATIVE-ORDER.md",
+    "docs/reviews/C-040-actual-verification.json",
+    "docs/reviews/C-040-independent-findings.json",
+    "docs/reviews/C-040-R1-input-candidate-manifest.json",
+    "docs/claude/C-040-report.md",
+    "web/checkout-connector/job.js",
+    "web/checkout-connector/chrome-port.js",
+    "web/checkout-connector/page-program.js",
+    "test/c040-native-order.mjs",
+    "test/checkout-c038-navigation.test.ts",
+    "test/checkout-c023-final-lookup.test.ts"
+  ],
+  "currentTipFullReadLineCoverageVerified": false,
+  "currentTipUnreadLineCounts": {
+    "web/checkout-connector/job.js": 6,
+    "test/c040-native-order.mjs": 1
+  },
+  "readScopeLimit": "Input files were read before author edits; comparing current tip leaves6 job and1 native lines outside delivered read ranges. Do not call this a complete current-source review. Final fresh exact-source review must cover current entire files.",
+  "actualWrites": [
+    "docs/claude/C-040-R1-report.md",
+    "test/c040-native-order.mjs",
+    "test/checkout-c040-recovery.test.ts",
+    "web/checkout-connector/chrome-port.js",
+    "web/checkout-connector/job.js"
+  ],
+  "actualCommands": [
+    "python tools/delegation/verify_candidate_manifest.py docs/reviews/C-040-R1-input-candidate-manifest.json",
+    "node test/c040-native-order.mjs",
+    "node --test test/checkout-c040-recovery.test.ts",
+    "node --test test/checkout-c040-recovery.test.ts",
+    "node --test --test-reporter=dot \"test/*.test.ts\" \"review/*.test.ts\""
+  ],
+  "initialNewTestFailure": {
+    "passed": 9,
+    "failed": 1,
+    "cause": "New author test expected null where fresh field undefined; normalization retained no accepted slot condition"
+  },
+  "toolErrorResources": [
+    {
+      "name": "Bash",
+      "resource": ""
+    }
+  ],
+  "oldAcceptedProtectedSourceUnchanged": 171,
+  "candidateFiles": 175,
+  "candidateSha256": "0597f4e1b30e60bf862b50b3d43034509be18c7334f37da649c5c25ac645b992",
+  "rootIndependentNodeTotals": [
+    "ℹ tests 953",
+    "ℹ pass 953",
+    "ℹ fail 0",
+    "ℹ cancelled 0",
+    "ℹ skipped 0",
+    "ℹ todo 0",
+    "ℹ duration_ms 8323.9307"
+  ],
+  "rootNativeCompletion": [
+    {
+      "name": "native-order-confirmed-unpaid",
+      "passed": true,
+      "durationMs": 967,
+      "runs": [
+        {
+          "kind": "start",
+          "state": "CONFIRMED_UNPAID",
+          "reason": null,
+          "phase": "ORDER_RECEIPT",
+          "pending": null
+        },
+        {
+          "kind": "consumed-grant",
+          "state": "CONFIRMED_UNPAID",
+          "reason": null,
+          "phase": "ORDER_RECEIPT",
+          "pending": null
+        }
+      ],
+      "final": {
+        "state": "CONFIRMED_UNPAID",
+        "reason": null,
+        "phase": "ORDER_RECEIPT",
+        "pending": null
+      },
+      "actions": [
+        "checkout",
+        "selectPickup",
+        "chooseSlot",
+        "fillDetails",
+        "selectPayment",
+        "continuePayment",
+        "submitOrder"
+      ],
+      "summaryReads": 5,
+      "effects": {
+        "checkout": 1,
+        "summaryOpen": 5,
+        "summaryClose": 5,
+        "pickup": 1,
+        "time": 1,
+        "slotContinue": 1,
+        "detailsContinue": 1,
+        "payment": 1,
+        "paymentContinue": 1,
+        "submit": 1
+      },
+      "orders": 1,
+      "orderRecordExact": true,
+      "detailsWrittenOnceByNativeEvents": true,
+      "detailsAbsentFromDurableTask": true,
+      "navigations": [
+        "https://www.apple.com.cn/shop/order/FAKE-C040-0001"
+      ],
+      "readStages": {
+        "bag": 4,
+        "checkout": 11,
+        "details": 6,
+        "payment": 9,
+        "review": 8,
+        "receipt": 2,
+        "order": 1
+      },
+      "lostSubmitResults": 0,
+      "frameRemoved": [],
+      "detailOverride": [],
+      "realAcceptanceClaimed": false
+    },
+    {
+      "name": "submit-result-lost-readonly-revoked-resume",
+      "passed": true,
+      "durationMs": 906,
+      "runs": [
+        {
+          "kind": "start",
+          "state": "NEEDS_VERIFICATION",
+          "reason": "mutation-transport-lost; reconcile before proceeding",
+          "phase": "REVIEW",
+          "pending": "submitOrder"
+        },
+        {
+          "kind": "readonly",
+          "state": "NEEDS_VERIFICATION",
+          "reason": "final-result-unconfirmed; no resubmission",
+          "phase": "ORDER_RECEIPT",
+          "pending": "submitOrder"
+        },
+        {
+          "kind": "revoked-grant",
+          "state": "BLOCKED",
+          "reason": "advance-authorization-cleared-by-human-intervention",
+          "phase": "ORDER_RECEIPT",
+          "pending": "submitOrder"
+        },
+        {
+          "kind": "resume",
+          "state": "CONFIRMED_UNPAID",
+          "reason": null,
+          "phase": "ORDER_RECEIPT",
+          "pending": null
+        },
+        {
+          "kind": "consumed-grant",
+          "state": "CONFIRMED_UNPAID",
+          "reason": null,
+          "phase": "ORDER_RECEIPT",
+          "pending": null
+        }
+      ],
+      "final": {
+        "state": "CONFIRMED_UNPAID",
+        "reason": null,
+        "phase": "ORDER_RECEIPT",
+        "pending": null
+      },
+      "actions": [
+        "checkout",
+        "selectPickup",
+        "chooseSlot",
+        "fillDetails",
+        "selectPayment",
+        "continuePayment",
+        "submitOrder"
+      ],
+      "summaryReads": 5,
+      "effects": {
+        "checkout": 1,
+        "summaryOpen": 5,
+        "summaryClose": 5,
+        "pickup": 1,
+        "time": 1,
+        "slotContinue": 1,
+        "detailsContinue": 1,
+        "payment": 1,
+        "paymentContinue": 1,
+        "submit": 1
+      },
+      "orders": 1,
+      "orderRecordExact": true,
+      "detailsWrittenOnceByNativeEvents": true,
+      "detailsAbsentFromDurableTask": true,
+      "navigations": [
+        "https://www.apple.com.cn/shop/order/FAKE-C040-0001"
+      ],
+      "readStages": {
+        "bag": 4,
+        "checkout": 11,
+        "details": 6,
+        "payment": 9,
+        "review": 5,
+        "receipt": 3,
+        "order": 1
+      },
+      "lostSubmitResults": 1,
+      "frameRemoved": [],
+      "detailOverride": [],
+      "realAcceptanceClaimed": false
+    },
+    {
+      "name": "detail-quantity-two-unconfirmed",
+      "passed": true,
+      "durationMs": 866,
+      "runs": [
+        {
+          "kind": "start",
+          "state": "NEEDS_VERIFICATION",
+          "reason": "final-result-unconfirmed; no resubmission",
+          "phase": "ORDER_RECEIPT",
+          "pending": "submitOrder"
+        }
+      ],
+      "final": {
+        "state": "NEEDS_VERIFICATION",
+        "reason": "final-result-unconfirmed; no resubmission",
+        "phase": "ORDER_RECEIPT",
+        "pending": "submitOrder"
+      },
+      "actions": [
+        "checkout",
+        "selectPickup",
+        "chooseSlot",
+        "fillDetails",
+        "selectPayment",
+        "continuePayment",
+        "submitOrder"
+      ],
+      "summaryReads": 5,
+      "effects": {
+        "checkout": 1,
+        "summaryOpen": 5,
+        "summaryClose": 5,
+        "pickup": 1,
+        "time": 1,
+        "slotContinue": 1,
+        "detailsContinue": 1,
+        "payment": 1,
+        "paymentContinue": 1,
+        "submit": 1
+      },
+      "orders": 1,
+      "orderRecordExact": true,
+      "detailsWrittenOnceByNativeEvents": true,
+      "detailsAbsentFromDurableTask": true,
+      "navigations": [
+        "https://www.apple.com.cn/shop/order/FAKE-C040-0001"
+      ],
+      "readStages": {
+        "bag": 4,
+        "checkout": 11,
+        "details": 6,
+        "payment": 9,
+        "review": 8,
+        "receipt": 2,
+        "order": 1
+      },
+      "lostSubmitResults": 0,
+      "frameRemoved": [],
+      "detailOverride": [
+        "quantity"
+      ],
+      "realAcceptanceClaimed": false
+    },
+    {
+      "name": "detail-price-over-cap-unconfirmed",
+      "passed": true,
+      "durationMs": 852,
+      "runs": [
+        {
+          "kind": "start",
+          "state": "NEEDS_VERIFICATION",
+          "reason": "final-result-unconfirmed; no resubmission",
+          "phase": "ORDER_RECEIPT",
+          "pending": "submitOrder"
+        }
+      ],
+      "final": {
+        "state": "NEEDS_VERIFICATION",
+        "reason": "final-result-unconfirmed; no resubmission",
+        "phase": "ORDER_RECEIPT",
+        "pending": "submitOrder"
+      },
+      "actions": [
+        "checkout",
+        "selectPickup",
+        "chooseSlot",
+        "fillDetails",
+        "selectPayment",
+        "continuePayment",
+        "submitOrder"
+      ],
+      "summaryReads": 5,
+      "effects": {
+        "checkout": 1,
+        "summaryOpen": 5,
+        "summaryClose": 5,
+        "pickup": 1,
+        "time": 1,
+        "slotContinue": 1,
+        "detailsContinue": 1,
+        "payment": 1,
+        "paymentContinue": 1,
+        "submit": 1
+      },
+      "orders": 1,
+      "orderRecordExact": true,
+      "detailsWrittenOnceByNativeEvents": true,
+      "detailsAbsentFromDurableTask": true,
+      "navigations": [
+        "https://www.apple.com.cn/shop/order/FAKE-C040-0001"
+      ],
+      "readStages": {
+        "bag": 4,
+        "checkout": 11,
+        "details": 6,
+        "payment": 9,
+        "review": 8,
+        "receipt": 2,
+        "order": 1
+      },
+      "lostSubmitResults": 0,
+      "frameRemoved": [],
+      "detailOverride": [
+        "totalCny"
+      ],
+      "realAcceptanceClaimed": false
+    },
+    {
+      "name": "detail-other-spec-unconfirmed",
+      "passed": true,
+      "durationMs": 878,
+      "runs": [
+        {
+          "kind": "start",
+          "state": "NEEDS_VERIFICATION",
+          "reason": "final-result-unconfirmed; no resubmission",
+          "phase": "ORDER_RECEIPT",
+          "pending": "submitOrder"
+        }
+      ],
+      "final": {
+        "state": "NEEDS_VERIFICATION",
+        "reason": "final-result-unconfirmed; no resubmission",
+        "phase": "ORDER_RECEIPT",
+        "pending": "submitOrder"
+      },
+      "actions": [
+        "checkout",
+        "selectPickup",
+        "chooseSlot",
+        "fillDetails",
+        "selectPayment",
+        "continuePayment",
+        "submitOrder"
+      ],
+      "summaryReads": 5,
+      "effects": {
+        "checkout": 1,
+        "summaryOpen": 5,
+        "summaryClose": 5,
+        "pickup": 1,
+        "time": 1,
+        "slotContinue": 1,
+        "detailsContinue": 1,
+        "payment": 1,
+        "paymentContinue": 1,
+        "submit": 1
+      },
+      "orders": 1,
+      "orderRecordExact": true,
+      "detailsWrittenOnceByNativeEvents": true,
+      "detailsAbsentFromDurableTask": true,
+      "navigations": [
+        "https://www.apple.com.cn/shop/order/FAKE-C040-0001"
+      ],
+      "readStages": {
+        "bag": 4,
+        "checkout": 11,
+        "details": 6,
+        "payment": 9,
+        "review": 8,
+        "receipt": 2,
+        "order": 1
+      },
+      "lostSubmitResults": 0,
+      "frameRemoved": [],
+      "detailOverride": [
+        "title"
+      ],
+      "realAcceptanceClaimed": false
+    },
+    {
+      "name": "detail-other-slot-unconfirmed",
+      "passed": true,
+      "durationMs": 864,
+      "runs": [
+        {
+          "kind": "start",
+          "state": "NEEDS_VERIFICATION",
+          "reason": "final-result-unconfirmed; no resubmission",
+          "phase": "ORDER_RECEIPT",
+          "pending": "submitOrder"
+        }
+      ],
+      "final": {
+        "state": "NEEDS_VERIFICATION",
+        "reason": "final-result-unconfirmed; no resubmission",
+        "phase": "ORDER_RECEIPT",
+        "pending": "submitOrder"
+      },
+      "actions": [
+        "checkout",
+        "selectPickup",
+        "chooseSlot",
+        "fillDetails",
+        "selectPayment",
+        "continuePayment",
+        "submitOrder"
+      ],
+      "summaryReads": 5,
+      "effects": {
+        "checkout": 1,
+        "summaryOpen": 5,
+        "summaryClose": 5,
+        "pickup": 1,
+        "time": 1,
+        "slotContinue": 1,
+        "detailsContinue": 1,
+        "payment": 1,
+        "paymentContinue": 1,
+        "submit": 1
+      },
+      "orders": 1,
+      "orderRecordExact": true,
+      "detailsWrittenOnceByNativeEvents": true,
+      "detailsAbsentFromDurableTask": true,
+      "navigations": [
+        "https://www.apple.com.cn/shop/order/FAKE-C040-0001"
+      ],
+      "readStages": {
+        "bag": 4,
+        "checkout": 11,
+        "details": 6,
+        "payment": 9,
+        "review": 8,
+        "receipt": 2,
+        "order": 1
+      },
+      "lostSubmitResults": 0,
+      "frameRemoved": [],
+      "detailOverride": [
+        "time"
+      ],
+      "realAcceptanceClaimed": false
+    },
+    {
+      "name": "detail-slot-proof-missing-unconfirmed",
+      "passed": true,
+      "durationMs": 881,
+      "runs": [
+        {
+          "kind": "start",
+          "state": "NEEDS_VERIFICATION",
+          "reason": "final-result-unconfirmed; no resubmission",
+          "phase": "ORDER_RECEIPT",
+          "pending": "submitOrder"
+        }
+      ],
+      "final": {
+        "state": "NEEDS_VERIFICATION",
+        "reason": "final-result-unconfirmed; no resubmission",
+        "phase": "ORDER_RECEIPT",
+        "pending": "submitOrder"
+      },
+      "actions": [
+        "checkout",
+        "selectPickup",
+        "chooseSlot",
+        "fillDetails",
+        "selectPayment",
+        "continuePayment",
+        "submitOrder"
+      ],
+      "summaryReads": 5,
+      "effects": {
+        "checkout": 1,
+        "summaryOpen": 5,
+        "summaryClose": 5,
+        "pickup": 1,
+        "time": 1,
+        "slotContinue": 1,
+        "detailsContinue": 1,
+        "payment": 1,
+        "paymentContinue": 1,
+        "submit": 1
+      },
+      "orders": 1,
+      "orderRecordExact": true,
+      "detailsWrittenOnceByNativeEvents": true,
+      "detailsAbsentFromDurableTask": true,
+      "navigations": [
+        "https://www.apple.com.cn/shop/order/FAKE-C040-0001"
+      ],
+      "readStages": {
+        "bag": 4,
+        "checkout": 11,
+        "details": 6,
+        "payment": 9,
+        "review": 8,
+        "receipt": 2,
+        "order": 1
+      },
+      "lostSubmitResults": 0,
+      "frameRemoved": [],
+      "detailOverride": [
+        "time"
+      ],
+      "realAcceptanceClaimed": false
+    },
+    {
+      "name": "document-route-read-loss-recovered",
+      "passed": true,
+      "durationMs": 1067,
+      "runs": [
+        {
+          "kind": "start",
+          "state": "CONFIRMED_UNPAID",
+          "reason": null,
+          "phase": "ORDER_RECEIPT",
+          "pending": null
+        },
+        {
+          "kind": "consumed-grant",
+          "state": "CONFIRMED_UNPAID",
+          "reason": null,
+          "phase": "ORDER_RECEIPT",
+          "pending": null
+        }
+      ],
+      "final": {
+        "state": "CONFIRMED_UNPAID",
+        "reason": null,
+        "phase": "ORDER_RECEIPT",
+        "pending": null
+      },
+      "actions": [
+        "checkout",
+        "selectPickup",
+        "chooseSlot",
+        "fillDetails",
+        "selectPayment",
+        "continuePayment",
+        "submitOrder"
+      ],
+      "summaryReads": 5,
+      "effects": {
+        "checkout": 1,
+        "summaryOpen": 5,
+        "summaryClose": 5,
+        "pickup": 1,
+        "time": 1,
+        "slotContinue": 1,
+        "detailsContinue": 1,
+        "payment": 1,
+        "paymentContinue": 1,
+        "submit": 1
+      },
+      "orders": 1,
+      "orderRecordExact": true,
+      "detailsWrittenOnceByNativeEvents": true,
+      "detailsAbsentFromDurableTask": true,
+      "navigations": [
+        "https://www.apple.com.cn/shop/order/FAKE-C040-0001"
+      ],
+      "readStages": {
+        "bag": 4,
+        "checkout": 10,
+        "details": 5,
+        "payment": 8,
+        "review": 5,
+        "receipt": 2,
+        "order": 1
+      },
+      "lostSubmitResults": 0,
+      "frameRemoved": [
+        "chooseSlot",
+        "fillDetails",
+        "continuePayment",
+        "submitOrder"
+      ],
+      "detailOverride": [],
+      "realAcceptanceClaimed": false
+    }
+  ],
+  "rootNativeCompletionCleanup": {
+    "contextsClosed": 8,
+    "browserClosed": true,
+    "serverClosed": true,
+    "errors": []
+  },
+  "rootPriorNativePrefixPassed": 8,
+  "rootPriorNativePrefixCleanup": {
+    "contextsClosed": 8,
+    "browserClosed": true,
+    "serverClosed": true,
+    "errors": []
+  },
+  "guard": {
+    "url": "http://127.0.0.2:2796/FAKE-c040-guard",
+    "outcome": "aborted",
+    "blockedDelta": 1,
+    "serverHits": 0
+  },
+  "allFakeNoOfficialSpeedOrOrder": true,
+  "authorship": "Claude implementation; Root independent review/runs, not self-approval",
+  "actualFinalAgreement": false,
+  "fullGoalAccepted": false,
+  "timestampUtc": "2026-10-04T08:47:26.781700+00:00"
+}

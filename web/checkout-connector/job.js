@@ -18,6 +18,8 @@ const PUBLIC=new Set(['configureProduct','continueProduct']);
 const NAVIGATION=new Set(['openProduct','openBag']);
 // C038-R1 (Claude): sent actions whose normal result is a new document. Between documents a read can briefly find none.
 const NAVIGATING=new Set(['openProduct','openBag','addBag','viewBag','checkout']);
+// C040-R1 (Claude): sent later steps that may also change the document. Only a proven script-transport rejection re-reads for them.
+const CONTINUING=new Set(['chooseSlot','fillDetails','continuePayment','submitOrder']);
 const productPathOf=P=>new RegExp('^/shop/buy-iphone/'+(P.product.model==='iPhone Duo'?'iphone-duo':'iphone-18-pro')+'(?:/[^/]+/a)?/?$');
 const SLOT=/^(?:[01]\d|2[0-3]):[0-5]\d$/;
 const clone=x=>structuredClone(x);
@@ -179,7 +181,9 @@ export class PurchaseJob {
       let o;try{o=await this.port.observe(P);}catch(error){const origin=error?.message==='CurrentHostPermissionMissing'?safePermissionOrigin(error.origin):null;if(origin){s.permissionOrigin=origin;return this.gate(s,'current-host-permission-missing; no automatic action','NEEDS_USER');}
         // C038-R1 (Claude): only the read is repeated, only for a delivered navigating action inside its own deadline and the existing
         // wait bounds; the action is never sent again. Slot/final/unknown results and read-only runs keep the immediate stop.
-        if(!readOnly&&s.pending&&s.pending.dispatched!==false&&NAVIGATING.has(s.pending.action)&&this.now()<s.pending.deadline&&await poll(this.maxWaitMs))continue;
+        // C040-R1 (Claude): a delivered slot/details/payment/final step may also re-read, but only after a script-transport rejection
+        // (never a returned unrecognized/failed document), under the same original deadline and bounds; the result is then reconciled.
+        if(!readOnly&&s.pending&&s.pending.dispatched!==false&&(NAVIGATING.has(s.pending.action)||error?.scriptTransport===true&&CONTINUING.has(s.pending.action))&&this.now()<s.pending.deadline&&await poll(this.maxWaitMs))continue;
         return this.gate(s,'observation-transport-failed','NEEDS_VERIFICATION');}
       if(!o||o.schema!=='applebuy-merchant-read/v1'||!o.documentId||!Number.isSafeInteger(o.seq)||o.seq<=s.lastRead)return this.gate(s,'invalid-or-stale-observation','NEEDS_VERIFICATION');
       s.lastRead=o.seq;s.lastPhase=o.phase;s.lastDocumentId=o.documentId;s.entryDocumentId??=o.documentId;s.observationCurrent=true;delete s.permissionOrigin;await this.save(s);
@@ -207,6 +211,9 @@ export class PurchaseJob {
         if(pending.dispatched===false){s.pending=null;if(pending.action==='addBag')s.bagAddStarted=false;if(pending.action==='submitOrder'&&s.finalIntent)s.finalIntent.sent=false;await this.save(s);continue;}
         if(pending.action==='submitOrder'){
           if(readOnly)return this.gate(s,'final-result-unconfirmed; no resubmission','NEEDS_VERIFICATION');
+          // C040-R1 (Claude): while merchant processing, or the final click's own unchanged review document, is still shown, wait read-only
+          // within the ORIGINAL pending deadline and existing bounds. Never resubmit or extend authority; an expired one goes to lookup.
+          if((o.phase==='PROCESSING'||o.phase===pending.beforePhase&&o.documentId===pending.documentId&&o.verifiedStep===true&&purchaseMatches(P,o.purchase))&&this.now()<pending.deadline&&await poll(this.maxWaitMs))continue;
           if(!s.orderRefHash&&o.phase==='ORDER_RECEIPT'&&o.receiptVerified===true&&purchaseMatches(P,o.purchase)&&o.orderRefHash){s.orderRefHash=o.orderRefHash;await this.save(s);}
           // C-023 (Claude): the lookup may follow the receipt's own detail link and read pages this job never validates or
           // records, so from here the last validated read is named only as the last read page, never the current one.

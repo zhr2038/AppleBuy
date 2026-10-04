@@ -1,0 +1,76 @@
+{
+  "task": "C-040-NATIVE-ORDER",
+  "status": "returned with real functional RED, not accepted",
+  "modelActual": "claude-opus-5-5",
+  "provider": "firstParty",
+  "canonicalModel": "claude-opus-5-5",
+  "actualCliEffort": "xhigh",
+  "modelVerified": true,
+  "isError": false,
+  "subtype": "success",
+  "durationSeconds": 1054.25,
+  "actualTurns": 48,
+  "turnCap": 48,
+  "wallCapSeconds": 1500,
+  "cliDollarCap": 10,
+  "terminalReportCompleteButAtTurnCap": true,
+  "permissionDenialCount": 2,
+  "permissionDenials": [
+    {
+      "tool": "Grep",
+      "resource": "ignored.local native result",
+      "reason": "private output read denied",
+      "successfulAccess": false
+    },
+    {
+      "tool": "Grep",
+      "resource": "private Claude persisted full-suite output",
+      "reason": "private output read denied",
+      "successfulAccess": false
+    }
+  ],
+  "privateDeniedResourcesNotRetriedOrReprinted": true,
+  "actualExistingProtected173Changed": false,
+  "actualNewFiles": [
+    "test/c040-native-order.mjs",
+    "docs/claude/C-040-report.md"
+  ],
+  "actualCommands": [
+    "python tools/delegation/verify_candidate_manifest.py docs/reviews/C-040-input-candidate-manifest.json",
+    "node test/c040-native-order.mjs (three justified runs after changes/failures)",
+    "node --test \"test/*.test.ts\" \"review/*.test.ts\""
+  ],
+  "authorFullSuiteExitSuccessfulNumericTotalsUnavailable": true,
+  "freshRequiredReadScopeIncomplete": [
+    "test/c039-native-pipeline.mjs only1line",
+    "job.js partial",
+    "page-program.js from earlier context, not freshly read",
+    "current pickup evidence partial"
+  ],
+  "independentRootNativeRun": {
+    "completionScenariosPass": 7,
+    "functionalRed": 1,
+    "exitCode": 1,
+    "guard": {
+      "url": "http://127.0.0.2:10812/FAKE-c040-guard",
+      "outcome": "aborted",
+      "blockedDelta": 1,
+      "serverHits": 0
+    },
+    "cleanup": {
+      "contextsClosed": 8,
+      "browserClosed": true,
+      "serverClosed": true,
+      "errors": []
+    }
+  },
+  "findings": {
+    "A": "A raw scripting-frame rejection just after sent chooseSlot/new details document immediately stops with pending chooseSlot; no new write was sent. Need bounded read-only recovery for proven transport loss, not decoder-unrecognized content.",
+    "B": "Normal150ms fake merchant processing produces one order but initial job stops before receipt. Harness manually calls resume; this is not one-start autonomous confirmation. Bounded pending-final read-only reconciliation must continue within existing deadline; no submit repeated."
+  },
+  "fullGoalAccepted": false,
+  "liveOneStartVerified": false,
+  "ownedCallTerminalAndCleanup": true,
+  "resumedAggregateUsageNotCurrentBilling": true,
+  "timestampUtc": "2026-10-04T08:22:32.196489+00:00"
+}
