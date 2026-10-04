@@ -1,0 +1,100 @@
+{
+  "task": "C-037-CROSS-REVIEW",
+  "verdict": "AGREE",
+  "candidateFiles": 171,
+  "candidateSha256": "1e0b45f78bb3ef77395c327c752b5d6f21c23fb67d50956d1900368e2b636eb8",
+  "modelRequested": "claude-opus-5-5",
+  "effortRequested": "xhigh",
+  "actualPrimaryModels": [
+    "claude-opus-5-5"
+  ],
+  "provider": "firstParty",
+  "canonicalModel": "claude-opus-5-5",
+  "actualCliEffortVerified": true,
+  "isError": false,
+  "subtype": "success",
+  "actualTurns": 45,
+  "turnCap": 48,
+  "durationSeconds": 376.94,
+  "wallCapSeconds": 1800,
+  "cliDollarCap": 10,
+  "historicalAggregateUsageNotCurrentBilling": true,
+  "permissionDenialCount": 0,
+  "toolsExposed": [
+    "Glob",
+    "Grep",
+    "Read"
+  ],
+  "actualBashCalls": 0,
+  "actualWrites": 0,
+  "privateReads": 0,
+  "freshCompleteReadFiles": [
+    "docs/tasks/C-037-CROSS-REVIEW.md",
+    "docs/requirements.md",
+    "docs/tasks/C-035-EMPTY-CART.md",
+    "docs/tasks/C-035-R1.md",
+    "docs/tasks/C-037-NATIVE-STORE.md",
+    "docs/reviews/C-037-candidate-manifest.json",
+    "docs/reviews/C-037-actual-verification.json",
+    "docs/reviews/C-037-store-reproduced.json",
+    "docs/reviews/C-036-actual-cross-review.md",
+    "docs/reviews/C-036-cross-review-verification.json",
+    "docs/reviews/C-036-codex-quota-report.md",
+    "docs/reviews/C-035-R1-codex-takeover.md",
+    "docs/reviews/C-035-R1-actual-quota.json",
+    "docs/reviews/C-035-current-cart-finding.md",
+    "docs/reviews/C-035-official-cart-evidence.json",
+    "docs/reviews/C-036-normal-pickup-evidence.json",
+    "docs/claude/C-037-report.md",
+    "web/checkout-connector/page-program.js",
+    "web/checkout-connector/chrome-port.js",
+    "web/checkout-connector/job.js",
+    "web/checkout-connector/control.js",
+    "web/checkout-connector/control.html",
+    "README.md",
+    "test/checkout-r1-public-configuration.test.ts",
+    "test/checkout-c035-empty.test.ts",
+    "test/checkout-c035-r1.test.ts",
+    "test/checkout-c037-store.test.ts",
+    "test/checkout-c034-successor.test.ts",
+    "review/c035-current-cart-race.test.ts",
+    "review/c034-successor-cart.test.ts",
+    "review/browser-c035-empty-repro.mjs",
+    "review/browser-c035-boundary-self-check.mjs",
+    "review/browser-c036-pickup-self-check.mjs",
+    "review/browser-c037-store-repro.mjs",
+    "review/browser-summary-self-check.mjs",
+    "review/browser-retirement-self-check.mjs"
+  ],
+  "freshCompleteReadFileCount": 36,
+  "readSizeException": {
+    "file": "web/checkout-connector/page-program.js",
+    "totalLines": 498,
+    "deliveredRanges": [
+      [
+        1,
+        407
+      ],
+      [
+        408,
+        498
+      ]
+    ],
+    "reason": "First no-offset Read hit tool output size limit; normal allowed Read at line408 delivered remainder. Complete no-gap coverage independently verified; Codex accepts this reporting exception."
+  },
+  "sourceUnchanged": true,
+  "cleanupConfirmed": true,
+  "terminalRecordsAndFreeOsLeaseVerified": true,
+  "independentNodePassed": 936,
+  "independentNativeScenariosPassed": 37,
+  "reviewAuthorship": "Cross-author on Codex quota deltas; same-author consistency on Claude code, with Codex independent reproduction/verification",
+  "nonblockingRecommendations": [
+    "selectStore conflicting/preselected store stops could be untouched; currently plan-only click then bounded stop",
+    "bounded openBag/openProduct navigation may bounce",
+    "native nonempty side-read and openBag branch coverage not yet complete",
+    "README historical status needs manager update before final publication"
+  ],
+  "fullGoalAccepted": false,
+  "liveOneStartVerified": false,
+  "timestampUtc": "2026-10-04T04:01:54.695643+00:00"
+}

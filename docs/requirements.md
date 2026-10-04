@@ -27,6 +27,9 @@ October 2 C-008 result: the authorized one-unit Pro unpaid order was actually cr
 
 October 2 late evening: the user expressly requires the normal official public options `不折抵换购` and `不加 AppleCare+ 服务计划`. Codex's actual Chrome observation confirms the dependency on the Pro page: no-trade-in enables no-AppleCare, and selecting no-AppleCare enables Add to Bag. The configured executor must perform and verify those prerequisites; missing selections are not no stock. The user asks to inspect subsequent flow rather than create another order. No new bag/slot/order/payment authorization follows. Normal configuration validation must stop at its declared endpoint and cannot force disabled controls or bypass merchant validation. The user also asks to resume actual Claude collaboration; the exact-model original-session review did return and rejected current C-012 source for independently reproduced wrong-store and repeated-addition defects.
 
+
+October 4 user steering: routine already authorized development, normal configuration, observation and self-testing should proceed autonomously without repeated confirmation. The explicit one-Pro removal and restoration was completed through normal Chrome; normal pickup/date preview was also observed, stopping before selecting/submitting a time. Do not turn development heartbeats into a fresh order/payment/slot authorization or override action-time tool security/terms/challenge rules. The latest instruction cancels shutdown. Main-function progress has priority over cosmetic UI work; preserve exact one-unit conditions and the used C008 order authority.
+
 ## Functional requirements
 
 | ID | Required behavior |

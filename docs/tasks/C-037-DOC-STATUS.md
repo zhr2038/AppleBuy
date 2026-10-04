@@ -1,0 +1,11 @@
+# C037 manager README status-only consistency review
+
+Same original recorded session and E:\Apple Store, exact first-party claude-opus-5-5/xhigh. READ-ONLY Read/Glob/Grep; no Bash, commands, private home/log/config/transcript/screenshots/credentials, edits, agents, network, publication, personal Chrome/extension or merchant resources. Do not retry/work around historical denied Git.
+
+Freshly read COMPLETE: this task; README.md; docs/reviews/C-037-doc-candidate-manifest.json; docs/reviews/C-037-cross-review-verification.json; docs/reviews/C-037-bounded-agreement.md. Normal allowed paged Read is allowed only if tool-size limit prevents a complete single Read; cover every line and report it.
+
+Your actual C037 final review AGREE is independently verified: complete36 input line coverage, exact171 identity, first-party/modelUsage, CLIxhigh, zero errors/denials/private reads/writes, no Bash, terminal cleanup and free OS lease. Root independently936/936 and37 native scenarios. The C037 first no-offset page-program Read delivered1-407, normal continuation408-498; Codex accepts the tool-size reporting exception after no gaps. Root has accepted that exact bounded software; full goal/live remain incomplete.
+
+Codex as requirements/review manager corrected only five README status sentences: removed stale pending-review claims, acknowledged accepted C034/current C035-R1 through C037, retained incomplete real one-start/refusal/Duo and consumed Pro authority. All170 other source files match your actual prior AGREE, with byte equality independently rechecked by Codex. No behavior or test change; no need to repeat Node/native tests for these prose-only bytes. The new171 identity is in this manifest.
+
+Return AGREE or DISAGREE for exact updated171 identity as this manager-only README delta plus preserved prior accepted170 files, conditional only on Root verifying hashes (as before). Check no overclaim of personal extension/live purchase/real refusal/Duo; review the repaired stale status lines. Distinguish prior full business review from this new doc-only fresh-read scope, and your consistency versus Root independent acceptance. Do not re-run whole-source review or invent current spend from resumed aggregate usage. 12turns/300seconds/USD3; no commands authorized.

@@ -14,6 +14,7 @@
 // C-019-R2 (Claude): an anchored cart that is not a recognized checkout bag never falls through to View Bag/Add to Bag navigation.
 // C-020 (Claude): an anchored cart is BAG (recognized, proved checkout) or UNKNOWN; no other stage label there is step authority.
 // C035 (Claude): the observed complete normal empty bag is EMPTY_BAG; there only openProduct is accepted, as a write-free re-verification.
+// C037 (Claude): selectStore can choose the observed numbered native Dalian radio when it is not preselected, by the same exact proof.
 export async function merchantDocument(plan,command=null,internal=null){
   // `internal` is set only by this program's own re-entry; ChromePort passes plan and command only.
   // A structured command always receives a structured report. Nothing was written unless this id was already delivered.
@@ -439,9 +440,16 @@ export async function merchantDocument(plan,command=null,internal=null){
     // C-024 (Claude): a FULFILLMENT mutation also needs this fresh decode's total to be positive and within the cap (as the observed
     // bag checkout does); choosing pickup also needs no conflicting store evidence. Quantity still comes only from itemVerified.
     else if(command.action==='selectPickup'&&phase==='FULFILLMENT'&&purchase.itemVerified&&purchase.totalCny>0&&purchase.totalCny<=plan.maxTotalCny&&!storeConflict&&['unselected','delivery'].includes(fulfillmentChoice))pick('我要取货');
+    // C037 (Claude): a numbered native store radio is chosen only through the same exact label+R609 proof (nativeStoreName), never
+    // by its ID or a name substring alone. It must be a visible enabled radio and the only store-locator input in main, of any
+    // visibility or state, that carries its ID or names the store. A duplicate, disabled or hidden twin, or a rival, stops untouched.
     else if(command.action==='selectStore'&&phase==='FULFILLMENT'&&purchase.itemVerified&&purchase.totalCny>0&&purchase.totalCny<=plan.maxTotalCny&&pickupShown&&plan.stores.includes(command.store)){
-      const choices=storeRadios.filter(e=>name(e)===norm(command.store)&&!disabled(e));
-      if(choices.length!==1||!choices[0].isConnected)throw new Error('CurrentChoiceUnrecognized');touched=true;choices[0].click();
+      const want=norm(command.store),label=e=>nativeStore(e)?nativeStoreName(e):name(e);
+      const choices=storeRadios.filter(e=>label(e)===want&&!disabled(e));
+      const names=x=>[norm(x.getAttribute('aria-label')),...[...x.labels??[]].map(l=>norm(l.textContent))];
+      const sole=e=>!nativeStore(e)||norm(e.getAttribute('type')).toLowerCase()==='radio'&&
+        [...main.querySelectorAll('input[name="store-locator-result"]')].every(x=>x===e||x.value!==e.value&&!names(x).some(t=>t.includes(want)));
+      if(choices.length!==1||!choices[0].isConnected||!sole(choices[0]))throw new Error('CurrentChoiceUnrecognized');touched=true;choices[0].click();
     }
     else if(command.action==='selectDate'&&phase==='SLOTS'){
       const index=Number(command.ref?.split(':')[1]),d=out.dates[index];if(!d||d.label!==command.date||!d.enabled)throw new Error('DateEvidenceChanged');

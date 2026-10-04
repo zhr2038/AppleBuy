@@ -1,0 +1,43 @@
+{
+  "task": "C-037-DOC-STATUS",
+  "verdict": "AGREE",
+  "candidateFiles": 171,
+  "candidateSha256": "05831e2ff72645f1d79cd1d2f3878b23868a0b8b8d931f9639739df7a2ff17b9",
+  "baseBusinessAcceptedSha256": "1e0b45f78bb3ef77395c327c752b5d6f21c23fb67d50956d1900368e2b636eb8",
+  "sourceDelta": [
+    "README.md"
+  ],
+  "unchangedOtherFiles": 170,
+  "modelActual": "claude-opus-5-5",
+  "provider": "firstParty",
+  "canonicalModel": "claude-opus-5-5",
+  "actualCliEffort": "xhigh",
+  "actualTurns": 7,
+  "durationSeconds": 79.12,
+  "isError": false,
+  "permissionDenials": 0,
+  "privateReads": 0,
+  "commands": 0,
+  "writes": 0,
+  "freshCompleteRequiredReadFiles": [
+    "docs/tasks/C-037-DOC-STATUS.md",
+    "README.md",
+    "docs/reviews/C-037-doc-candidate-manifest.json",
+    "docs/reviews/C-037-cross-review-verification.json",
+    "docs/reviews/C-037-bounded-agreement.md"
+  ],
+  "extraPublicManifestRead": [
+    "docs/reviews/C-037-candidate-manifest.json"
+  ],
+  "extraReadAccepted": "Read capability permits relevant public project source; prior public manifest comparison is not a denied/private operation. Required list is minimum fresh scope, not a forbidden resource boundary.",
+  "allSixInputLineCoverageVerified": true,
+  "sourceUnchanged": true,
+  "terminalAndCleanupVerified": true,
+  "freeOsLeaseVerified": true,
+  "nodeAndNativeNotRepeatedForProseOnly": true,
+  "modelSelfReportedTurnsNotUsedForAudit": true,
+  "historicalAggregateUsageNotCurrentBilling": true,
+  "fullGoalAccepted": false,
+  "liveOneStartVerified": false,
+  "timestampUtc": "2026-10-04T04:07:19.701387+00:00"
+}

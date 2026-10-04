@@ -1,0 +1,218 @@
+{
+  "task": "C-036-CROSS-REVIEW",
+  "status": "returned_for_review",
+  "model_requested": "claude-opus-5-5",
+  "effort_requested": "xhigh",
+  "models_actual": [
+    "claude-opus-5-5"
+  ],
+  "primary_models_actual": [
+    "claude-opus-5-5"
+  ],
+  "model_verified": true,
+  "is_error": false,
+  "subtype": "success",
+  "timed_out": false,
+  "duration_seconds": 400.94,
+  "cleanup_confirmed": true,
+  "provider": "firstParty",
+  "canonicalModel": "claude-opus-5-5",
+  "permissionDenialCount": 1,
+  "privateReadAttempts": [],
+  "sourceWrites": [],
+  "actualCommands": [
+    "python tools/delegation/verify_candidate_manifest.py docs/reviews/C-036-candidate-manifest.json",
+    "cd \"E:/Apple Store\" && wc -c web/checkout-connector/job.js web/checkout-connector/chrome-port.js web/checkout-connector/page-program.js web/checkout-connector/control.js web/checkout-connector/control.html README.md review/c035-current-cart-race.test.ts test/checkout-c035-empty.test.ts test/checkout-c035-r1.test.ts review/browser-c035-empty-repro.mjs review/browser-c035-boundary-self-check.mjs test/checkout-r1-public-configuration.test.ts test/checkout-c034-successor.test.ts review/c034-successor-cart.test.ts review/browser-c036-pickup-self-check.mjs && git diff --stat HEAD",
+    "cd \"E:/Apple Store\" && git log --oneline -6 && git status --short | head -30",
+    "cd \"E:/Apple Store\" && git diff --stat 151c86e HEAD && git diff 151c86e HEAD -- web/checkout-connector/page-program.js | head -c 20000",
+    "node --test --test-reporter=dot \"test/*.test.ts\" \"review/*.test.ts\"",
+    "node review/browser-c035-empty-repro.mjs",
+    "node review/browser-c035-boundary-self-check.mjs",
+    "node review/browser-summary-self-check.mjs",
+    "node review/browser-retirement-self-check.mjs",
+    "node review/browser-c036-pickup-self-check.mjs"
+  ],
+  "freshReads": [
+    {
+      "file_path": "E:\\Apple Store\\docs\\tasks\\C-036-CROSS-REVIEW.md",
+      "offset": null,
+      "limit": null
+    },
+    {
+      "file_path": "E:\\Apple Store\\docs\\reviews\\C-035-R1-codex-takeover.md",
+      "offset": null,
+      "limit": null
+    },
+    {
+      "file_path": "E:\\Apple Store\\docs\\reviews\\C-035-R1-actual-quota.json",
+      "offset": null,
+      "limit": null
+    },
+    {
+      "file_path": "E:\\Apple Store\\docs\\reviews\\C-036-codex-verification.json",
+      "offset": null,
+      "limit": null
+    },
+    {
+      "file_path": "E:\\Apple Store\\docs\\reviews\\C-036-codex-quota-report.md",
+      "offset": null,
+      "limit": null
+    },
+    {
+      "file_path": "E:\\Apple Store\\docs\\reviews\\C-036-candidate-manifest.json",
+      "offset": null,
+      "limit": null
+    },
+    {
+      "file_path": "E:\\Apple Store\\docs\\requirements.md",
+      "offset": null,
+      "limit": null
+    },
+    {
+      "file_path": "E:\\Apple Store\\docs\\tasks\\C-035-EMPTY-CART.md",
+      "offset": null,
+      "limit": null
+    },
+    {
+      "file_path": "E:\\Apple Store\\docs\\reviews\\C-035-official-cart-evidence.json",
+      "offset": null,
+      "limit": null
+    },
+    {
+      "file_path": "E:\\Apple Store\\docs\\reviews\\C-036-normal-pickup-evidence.json",
+      "offset": null,
+      "limit": null
+    },
+    {
+      "file_path": "E:\\Apple Store\\web\\checkout-connector\\job.js",
+      "offset": null,
+      "limit": null
+    },
+    {
+      "file_path": "E:\\Apple Store\\web\\checkout-connector\\chrome-port.js",
+      "offset": null,
+      "limit": null
+    },
+    {
+      "file_path": "E:\\Apple Store\\web\\checkout-connector\\page-program.js",
+      "offset": null,
+      "limit": null
+    },
+    {
+      "file_path": "E:\\Apple Store\\web\\checkout-connector\\page-program.js",
+      "offset": 407,
+      "limit": 90
+    },
+    {
+      "file_path": "E:\\Apple Store\\web\\checkout-connector\\control.js",
+      "offset": null,
+      "limit": null
+    },
+    {
+      "file_path": "E:\\Apple Store\\web\\checkout-connector\\control.html",
+      "offset": null,
+      "limit": null
+    },
+    {
+      "file_path": "E:\\Apple Store\\web\\checkout-connector\\manifest.json",
+      "offset": null,
+      "limit": null
+    },
+    {
+      "file_path": "E:\\Apple Store\\README.md",
+      "offset": null,
+      "limit": 30
+    },
+    {
+      "file_path": "E:\\Apple Store\\review\\c035-current-cart-race.test.ts",
+      "offset": null,
+      "limit": null
+    },
+    {
+      "file_path": "E:\\Apple Store\\test\\checkout-c035-r1.test.ts",
+      "offset": null,
+      "limit": null
+    },
+    {
+      "file_path": "E:\\Apple Store\\test\\checkout-c035-empty.test.ts",
+      "offset": null,
+      "limit": null
+    },
+    {
+      "file_path": "E:\\Apple Store\\review\\browser-c035-boundary-self-check.mjs",
+      "offset": null,
+      "limit": null
+    },
+    {
+      "file_path": "E:\\Apple Store\\review\\browser-c035-empty-repro.mjs",
+      "offset": null,
+      "limit": null
+    },
+    {
+      "file_path": "E:\\Apple Store\\test\\checkout-r1-public-configuration.test.ts",
+      "offset": null,
+      "limit": 80
+    },
+    {
+      "file_path": "E:\\Apple Store\\review\\browser-c036-pickup-self-check.mjs",
+      "offset": null,
+      "limit": null
+    },
+    {
+      "file_path": "E:\\Apple Store\\review\\c034-successor-cart.test.ts",
+      "offset": null,
+      "limit": null
+    },
+    {
+      "file_path": "E:\\Apple Store\\test\\checkout-c034-successor.test.ts",
+      "offset": null,
+      "limit": null
+    },
+    {
+      "file_path": "E:\\Apple Store\\README.md",
+      "offset": 30,
+      "limit": null
+    },
+    {
+      "file_path": "E:\\Apple Store\\docs\\tasks\\C-035-R1.md",
+      "offset": null,
+      "limit": null
+    },
+    {
+      "file_path": "E:\\Apple Store\\docs\\reviews\\C-035-current-cart-finding.md",
+      "offset": null,
+      "limit": null
+    },
+    {
+      "file_path": "E:\\Apple Store\\docs\\reviews\\C-035-actual-verification.json",
+      "offset": null,
+      "limit": 25
+    },
+    {
+      "file_path": "E:\\Apple Store\\README.md",
+      "offset": null,
+      "limit": 30
+    },
+    {
+      "file_path": "E:\\Apple Store\\docs\\reviews\\C-036-codex-quota-report.md",
+      "offset": null,
+      "limit": null
+    },
+    {
+      "file_path": "E:\\Apple Store\\docs\\reviews\\C-035-R1-codex-takeover.md",
+      "offset": null,
+      "limit": null
+    },
+    {
+      "file_path": "E:\\Apple Store\\docs\\reviews\\C-036-normal-pickup-evidence.json",
+      "offset": null,
+      "limit": null
+    }
+  ],
+  "candidateFiles": 169,
+  "candidateSha256": "885c23b8b5966479828bf9536e23a348f2d70d2906701c390b0f3c3014ed2625",
+  "candidateUnchanged": true,
+  "requestedCliXhigh": true,
+  "scope": "Cross-author review of Codex quota deltas; same-author consistency on original Claude code. Not whole/live goal.",
+  "actualReportReceived": true
+}

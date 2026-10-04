@@ -1,0 +1,201 @@
+{
+  "task": "C-037-NATIVE-STORE",
+  "status": "returned_for_review",
+  "model_requested": "claude-opus-5-5",
+  "effort_requested": "xhigh",
+  "models_actual": [
+    "claude-opus-5-5"
+  ],
+  "primary_models_actual": [
+    "claude-opus-5-5"
+  ],
+  "model_verified": true,
+  "is_error": false,
+  "subtype": "success",
+  "timed_out": false,
+  "duration_seconds": 520.42,
+  "cleanup_confirmed": true,
+  "provider": "firstParty",
+  "canonicalModel": "claude-opus-5-5",
+  "permissionDenialCount": 0,
+  "privateReadAttempts": [],
+  "actualWrites": [
+    "E:\\Apple Store\\web\\checkout-connector\\page-program.js",
+    "E:\\Apple Store\\web\\checkout-connector\\page-program.js",
+    "E:\\Apple Store\\test\\checkout-c037-store.test.ts",
+    "E:\\Apple Store\\web\\checkout-connector\\control.html",
+    "E:\\Apple Store\\web\\checkout-connector\\control.js",
+    "E:\\Apple Store\\web\\checkout-connector\\control.js",
+    "E:\\Apple Store\\web\\checkout-connector\\control.js",
+    "E:\\Apple Store\\README.md",
+    "E:\\Apple Store\\README.md",
+    "E:\\Apple Store\\README.md",
+    "E:\\Apple Store\\README.md",
+    "E:\\Apple Store\\docs\\claude\\C-037-report.md"
+  ],
+  "actualCommands": [
+    "python tools/delegation/verify_candidate_manifest.py docs/reviews/C-037-input-candidate-manifest.json",
+    "node review/browser-c037-store-repro.mjs",
+    "node --test test/checkout-c037-store.test.ts",
+    "node --test --test-reporter=dot \"test/*.test.ts\" \"review/*.test.ts\"",
+    "node review/browser-c036-pickup-self-check.mjs",
+    "node review/browser-c035-boundary-self-check.mjs",
+    "node review/browser-summary-self-check.mjs",
+    "node review/browser-retirement-self-check.mjs",
+    "node --test test/checkout-c037-store.test.ts"
+  ],
+  "freshReads": [
+    {
+      "file_path": "E:\\Apple Store\\docs\\tasks\\C-037-NATIVE-STORE.md",
+      "offset": null,
+      "limit": null
+    },
+    {
+      "file_path": "E:\\Apple Store\\review\\browser-c037-store-repro.mjs",
+      "offset": null,
+      "limit": null
+    },
+    {
+      "file_path": "E:\\Apple Store\\docs\\reviews\\C-037-store-reproduced.json",
+      "offset": null,
+      "limit": null
+    },
+    {
+      "file_path": "E:\\Apple Store\\docs\\reviews\\C-036-actual-cross-review.md",
+      "offset": null,
+      "limit": null
+    },
+    {
+      "file_path": "E:\\Apple Store\\docs\\reviews\\C-036-cross-review-verification.json",
+      "offset": null,
+      "limit": null
+    },
+    {
+      "file_path": "E:\\Apple Store\\web\\checkout-connector\\page-program.js",
+      "offset": null,
+      "limit": null
+    },
+    {
+      "file_path": "E:\\Apple Store\\review\\browser-c036-pickup-self-check.mjs",
+      "offset": null,
+      "limit": null
+    },
+    {
+      "file_path": "E:\\Apple Store\\docs\\requirements.md",
+      "offset": null,
+      "limit": null
+    },
+    {
+      "file_path": "E:\\Apple Store\\web\\checkout-connector\\page-program.js",
+      "offset": 406,
+      "limit": null
+    },
+    {
+      "file_path": "E:\\Apple Store\\test\\checkout-c024-evidence.test.ts",
+      "offset": null,
+      "limit": null
+    },
+    {
+      "file_path": "E:\\Apple Store\\web\\checkout-connector\\job.js",
+      "offset": 295,
+      "limit": 20
+    },
+    {
+      "file_path": "E:\\Apple Store\\web\\checkout-connector\\control.js",
+      "offset": null,
+      "limit": null
+    },
+    {
+      "file_path": "E:\\Apple Store\\web\\checkout-connector\\control.html",
+      "offset": null,
+      "limit": null
+    },
+    {
+      "file_path": "E:\\Apple Store\\test\\checkout-r1-public-configuration.test.ts",
+      "offset": null,
+      "limit": null
+    }
+  ],
+  "changedInputFiles": [
+    "README.md",
+    "web/checkout-connector/control.html",
+    "web/checkout-connector/control.js",
+    "web/checkout-connector/page-program.js"
+  ],
+  "independentAcceptance": false,
+  "independentNodeTotals": [
+    "\u2139 tests 936",
+    "\u2139 pass 936",
+    "\u2139 fail 0",
+    "\u2139 cancelled 0",
+    "\u2139 skipped 0",
+    "\u2139 todo 0",
+    "\u2139 duration_ms 9908.5024"
+  ],
+  "currentCandidateFiles": 171,
+  "currentCandidateSha256": "1e0b45f78bb3ef77395c327c752b5d6f21c23fb67d50956d1900368e2b636eb8",
+  "nativeChecks": {
+    "store": {
+      "checks": 4,
+      "passed": true,
+      "cleanup": {
+        "contextsClosed": 4,
+        "browserClosed": true,
+        "serverClosed": true,
+        "errors": []
+      }
+    },
+    "pickup": {
+      "checks": 7,
+      "passed": true,
+      "cleanup": {
+        "contextsClosed": 7,
+        "browserClosed": true,
+        "serverClosed": true,
+        "errors": []
+      }
+    },
+    "empty": {
+      "checks": 9,
+      "passed": true,
+      "cleanup": {
+        "contextsClosed": 9,
+        "browserClosed": true,
+        "serverClosed": true,
+        "errors": []
+      }
+    },
+    "boundary": {
+      "checks": 5,
+      "passed": true,
+      "cleanup": {
+        "contextsClosed": 4,
+        "browserClosed": true,
+        "serverClosed": true,
+        "errors": []
+      }
+    },
+    "summary": {
+      "checks": 8,
+      "passed": true,
+      "cleanup": {
+        "contextsClosed": 8,
+        "browserClosed": true,
+        "serverClosed": true,
+        "errors": []
+      }
+    },
+    "retirement": {
+      "checks": 4,
+      "passed": true,
+      "cleanup": {
+        "contextsClosed": 4,
+        "browserClosed": true,
+        "serverClosed": true,
+        "errors": []
+      }
+    }
+  },
+  "oldTestBodiesAssertionsVerifiedUnchanged": true,
+  "rootStoreNegativeNativeCoverageAdded": true
+}

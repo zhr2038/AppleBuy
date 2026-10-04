@@ -1,0 +1,26 @@
+{
+  "scope": "current C036 normal pickup/no-shipping summary native replay, explicitly FAKE merchant/authority/events",
+  "actualApplePageVisited": false,
+  "personalProfileUsed": false,
+  "realSlotSubmitted": false,
+  "realOrderCreated": false,
+  "checks": [
+    {
+      "name": "native-Dalian-unselected-radio-can-be-selected-without-slot-or-order-action",
+      "passed": false,
+      "error": "normal numbered native Dalian choice must be selectable\n\nfalse !== true\n"
+    }
+  ],
+  "network": {
+    "allowed": 1,
+    "blocked": 0
+  },
+  "cleanup": {
+    "contextsClosed": 1,
+    "browserClosed": true,
+    "serverClosed": true,
+    "errors": []
+  },
+  "browserVersion": "154.0.8037.93",
+  "passed": false
+}
