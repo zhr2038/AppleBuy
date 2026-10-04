@@ -1,0 +1,14 @@
+{
+  "task": "C-043",
+  "scope": "Accepted exact177 bounded software/native fake completion and lookup recovery; not full/live goal",
+  "sourceCommit": "a565464033b10a490cc1723effa7fbfb5e5ce03f",
+  "sourceFiles": 177,
+  "sourceSha256": "b9d9b8f93edd2801ca922a3c152d3b145ec429b87db3d001088a35a5ae872672",
+  "atomicNonForceMainAndCheckpointPush": true,
+  "allWorkingAndGitBlobsMatched": true,
+  "bothRemotesMatch": true,
+  "privateDataPublished": false,
+  "actualOpusAgreement": true,
+  "root984And18NativeVerified": true,
+  "timestampUtc": "2026-10-04T11:22:35.287901+00:00"
+}
