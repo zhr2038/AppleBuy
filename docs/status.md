@@ -1,3 +1,7 @@
+**C039整段当前执行器软件已实际双审接受：173文件／943项＋8原生场景。** 原Opus5.5/xhigh实际AGREE，19fresh输入逐行全读／7项导航＋8原生＋全套精确命令，Root实数943个完整命令点；零错误／拒绝／私有读取／源码写入，33回合375.66秒及所属cleanup核实。多出的tail输出管道和重复全检如实记为调用偏差，不追认授权；未改源或涉及私有／官网资源。准确SHA `832c840415d16f658b75b5898c93dd4b53661bef80e739e541e5e4cdcd5a00cf`。[限定接受](reviews/C-039-bounded-agreement.md) · [实际复审](reviews/C-039-actual-cross-review.md) · [核验](reviews/C-039-cross-review-verification.json)。
+
+本次接受只证明真实生产模块的隔离原生前段：空袋只加一台／同款零加购，正常自提／大连门店／初始首日末档／一次FAKE继续，到UNKNOWN保留待确认，不称Apple接受或订单。个人插件全链／真实拒绝和Duo及实速未证。后续继续实际执行器到一张未付款模拟订单与独立查单，不改为外观或重复旧DomMotor演示。无新官方购买动作，不关机；main发布身份以最新回执为准，以下保留历史。
+
 **C039待审检查点已同步，main仍C037。** 173源码提交 `c1539f0f792acf35a24683b5e63301e2aabbf885`，工作文件和Gitblob及远端检查点匹配；未发布私密，未强推，未把待审源码放到main。[真实检查点回执](reviews/C-039-checkpoint-publication.json)。
 
 **C038额度接手／C039当前执行器整段原生回放已自测：943项＋8场景。** 真正使用PurchaseJob、ChromePort和页面程序串联：空袋只加一台／已有同款零加购，正常结账、自提、1件摘要、未默认选中的大连门店、初始首日末档及一次FAKE继续；导航读取丢失恢复，错袋／两件／持续读取失败／缺权限／晚结果重启不重复。后续未知时保留待确认时段，不编造接受、拒绝或订单。173候选SHA `832c840415d16f658b75b5898c93dd4b53661bef80e739e541e5e4cdcd5a00cf`，原Opus15:30恢复后精确复审仍待发生，不能称已一致或官网一键。[接手报告](reviews/C-039-codex-takeover.md) · [自测](reviews/C-039-codex-verification.json)。
