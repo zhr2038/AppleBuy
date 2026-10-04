@@ -1,0 +1,14 @@
+{
+  "task": "C-044",
+  "scope": "Accepted exact180 bounded software/observed-route/native-status handling; not full/live goal",
+  "sourceCommit": "cb41816d27fefe55344e282fbff453feed83b149",
+  "sourceFiles": 180,
+  "sourceSha256": "71a90f598480a2d6625f7d4aa0ed843cdfdbdb0bf1d5956625127f263394714e",
+  "atomicNonForceMainAndCheckpointPush": true,
+  "allWorkingAndGitBlobsMatched": true,
+  "bothRemotesMatch": true,
+  "privateDataPublished": false,
+  "actualOpusAgreement": true,
+  "root1037And24NativeVerified": true,
+  "timestampUtc": "2026-10-04T12:25:09.578119+00:00"
+}
