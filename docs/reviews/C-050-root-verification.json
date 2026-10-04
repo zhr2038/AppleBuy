@@ -1,0 +1,197 @@
+{
+  "task": "C050",
+  "status": "author self-verification only; no actual Claude agreement",
+  "sourceFiles": 187,
+  "sourceSha256": "16b4007693639d609ba72888a106041b17f4816986af17aa4c5177ebfa485921",
+  "changedFromC049": [
+    "web/checkout-connector/control.js",
+    "web/checkout-connector/page-program.js"
+  ],
+  "newNativeTest": [
+    "test/c050-native-dates.mjs"
+  ],
+  "protectedC049PathsUnchanged": 184,
+  "allOldTestsUnchanged": true,
+  "jobPortManifestPermissionsUnchanged": true,
+  "nodePassed": 1102,
+  "initialNative": {
+    "scope": "FAKE native date/controller author self-check; no real slot/order",
+    "results": [
+      {
+        "name": "legacy-spaced-month",
+        "pass": true,
+        "complete": true,
+        "dates": [
+          "October 5",
+          "October 6"
+        ],
+        "actions": []
+      },
+      {
+        "name": "actual-compact-lowercase-group",
+        "pass": false,
+        "error": "Expected values to be strictly equal:\n\nfalse !== true\n"
+      },
+      {
+        "name": "native-two-date-terminal-job-no-repeat",
+        "pass": false,
+        "error": "Expected values to be strictly equal:\n\nfalse !== true\n"
+      },
+      {
+        "name": "wrong-day-value",
+        "pass": true,
+        "complete": false,
+        "dates": [],
+        "actions": []
+      },
+      {
+        "name": "unknown-month-member",
+        "pass": true,
+        "complete": false,
+        "dates": [],
+        "actions": []
+      },
+      {
+        "name": "hidden-label-member",
+        "pass": true,
+        "complete": false,
+        "dates": [],
+        "actions": []
+      },
+      {
+        "name": "duplicate-associated-label",
+        "pass": true,
+        "complete": false,
+        "dates": [],
+        "actions": []
+      },
+      {
+        "name": "hidden-date-control",
+        "pass": true,
+        "complete": false,
+        "dates": [],
+        "actions": []
+      },
+      {
+        "name": "duplicate-native-value",
+        "pass": true,
+        "complete": false,
+        "dates": [],
+        "actions": []
+      }
+    ],
+    "cleanup": {
+      "contextsClosed": 9,
+      "browserClosed": true,
+      "serverClosed": true,
+      "errors": []
+    }
+  },
+  "finalNative": {
+    "scope": "FAKE native date/controller author self-check; no real slot/order",
+    "results": [
+      {
+        "name": "legacy-spaced-month",
+        "pass": true,
+        "complete": true,
+        "dates": [
+          "October 5",
+          "October 6"
+        ],
+        "actions": []
+      },
+      {
+        "name": "actual-compact-lowercase-group",
+        "pass": true,
+        "complete": true,
+        "dates": [
+          "october5",
+          "october6"
+        ],
+        "actions": []
+      },
+      {
+        "name": "native-two-date-terminal-job-no-repeat",
+        "pass": true,
+        "complete": true,
+        "dates": [
+          "october5",
+          "october6"
+        ],
+        "actions": [
+          "chooseSlot"
+        ]
+      },
+      {
+        "name": "wrong-day-value",
+        "pass": true,
+        "complete": false,
+        "dates": [],
+        "actions": []
+      },
+      {
+        "name": "unknown-month-member",
+        "pass": true,
+        "complete": false,
+        "dates": [],
+        "actions": []
+      },
+      {
+        "name": "hidden-label-member",
+        "pass": true,
+        "complete": false,
+        "dates": [],
+        "actions": []
+      },
+      {
+        "name": "duplicate-associated-label",
+        "pass": true,
+        "complete": false,
+        "dates": [],
+        "actions": []
+      },
+      {
+        "name": "hidden-date-control",
+        "pass": true,
+        "complete": false,
+        "dates": [],
+        "actions": []
+      },
+      {
+        "name": "duplicate-native-value",
+        "pass": true,
+        "complete": false,
+        "dates": [],
+        "actions": []
+      }
+    ],
+    "cleanup": {
+      "contextsClosed": 9,
+      "browserClosed": true,
+      "serverClosed": true,
+      "errors": []
+    }
+  },
+  "olderNative46": "passed on C049; not rerun for this new parser and not claimed current C050 runs",
+  "actualProgramStageReached": "SLOTS on loaded C049",
+  "actualDates": [
+    "october5",
+    "october6"
+  ],
+  "actualTimes": {
+    "count": 46,
+    "terminal": [
+      "21:15",
+      "21:30"
+    ]
+  },
+  "actualTimeChosenByProgramObserved": false,
+  "actualUnpaidOrderObserved": false,
+  "rootWebsitePurchaseMutation": false,
+  "installedControllerC050Verified": false,
+  "completeInstalledByteIdentityVerified": false,
+  "mainAccepted": "C044",
+  "publication": "not yet published C050",
+  "shutdownRequested": false,
+  "timestampUtc": "2026-10-04T15:17:43.644894+00:00"
+}

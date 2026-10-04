@@ -1,0 +1,45 @@
+{
+  "task": "C051 pre-fix",
+  "sourceFiles": 188,
+  "sourceSha256": "083ee16f2005d39d9e849a1a7e1bd1b48d38ce73dd2151bfa4292cd92cf68bf9",
+  "realTemplateEvidence": "C-051-normal-contact-evidence.json",
+  "nativeReproduction": {
+    "scope": "FAKE independent pre-fix contact-only reproduction; private write stubbed untouched",
+    "results": [
+      {
+        "name": "legacy-full-purchase-contact-baseline",
+        "pass": true,
+        "phase": "DETAILS",
+        "currentPurchaseVerified": true,
+        "summaryReadable": false,
+        "pending": null,
+        "actions": [
+          "fillDetails"
+        ]
+      },
+      {
+        "name": "current-contact-only-cannot-continue",
+        "pass": false,
+        "error": "Expected \"actual\" to be strictly unequal to:\n\n'chooseSlot'"
+      },
+      {
+        "name": "current-contact-only-permanent-readonly-preserves-sent-slot",
+        "pass": true,
+        "phase": "DETAILS",
+        "currentPurchaseVerified": false,
+        "summaryReadable": false,
+        "pending": "chooseSlot",
+        "actions": []
+      }
+    ],
+    "cleanup": {
+      "contextsClosed": 3,
+      "browserClosed": true,
+      "serverClosed": true,
+      "errors": []
+    }
+  },
+  "productionDeltaSinceC050": false,
+  "caseSource": "independent manager test, every DOM/quantity/API/binding/value/outcome FAKE",
+  "realOrderObserved": false
+}

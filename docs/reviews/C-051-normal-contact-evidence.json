@@ -1,0 +1,22 @@
+{
+  "scope": "normal authorized read-only official Chrome contact-page public metadata; no customer values",
+  "host": "secure8.www.apple.com.cn",
+  "path": "/shop/checkout",
+  "readyState": "complete",
+  "continue": {"caption": "继续选择付款方式", "visible": true, "disabled": false},
+  "mainIphoneMentions": 0,
+  "visibleExactProductOrStoreTextObserved": false,
+  "dateControls": 0,
+  "contactControls": [
+    {"label": "姓氏", "type": "text", "maxLength": 20, "required": true, "valuePresent": true},
+    {"label": "名字", "type": "text", "maxLength": 14, "required": true, "valuePresent": true},
+    {"label": "电子邮件地址", "type": "email", "maxLength": 64, "required": true, "valuePresent": true},
+    {"label": "联系人手机号码", "type": "tel", "required": true, "valuePresent": true},
+    {"label": "政府颁发的身份证件号码的后四位", "type": "text", "maxLength": 4, "required": true, "valuePresent": false}
+  ],
+  "privateValues": "not read into this evidence, model input or Git",
+  "programmeReport": "NEEDS_VERIFICATION UNKNOWN; pending chooseSlot; slot-result-unconfirmed; no resubmission",
+  "normalProgressionIsHoldGuarantee": false,
+  "rootContactOrPaymentOrSlotOrOrderAction": false,
+  "realUnpaidOrderVerified": false
+}

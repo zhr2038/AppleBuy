@@ -1,0 +1,39 @@
+--- a/web/checkout-connector/control.js
++++ b/web/checkout-connector/control.js
+@@ -165,7 +165,7 @@
+   await run(false,{finalGrant,live});
+ };
+ // No delete/reset: completed and unknown purchase history cannot be erased by reopening a control page.
+-status('AppleBuy C047 绑定诊断已加载；C049 自提适配已加载；保留全部旧任务记录');
++status('AppleBuy C047 绑定诊断已加载；C049 自提适配已加载；C050 日期适配已加载；保留全部旧任务记录');
+ const saved=await store.get(TASK_KEY);
+ if(saved&&saved.state!=='RETIRED'&&!productEdited&&$('product').value===bootProduct&&['iPhone Duo','iPhone 18 Pro'].includes(saved.plan?.product?.model))$('product').value=saved.plan.product.model==='iPhone 18 Pro'?'pro':'duo';
+-if(saved)status(`AppleBuy C047 绑定诊断已加载；C049 自提适配已加载；保留的任务：${saved.state}；原绑定：${bindingSummary(saved)}；重新打开不会清除购买或未知记录`);
++if(saved)status(`AppleBuy C047 绑定诊断已加载；C049 自提适配已加载；C050 日期适配已加载；保留的任务：${saved.state}；原绑定：${bindingSummary(saved)}；重新打开不会清除购买或未知记录`);
+--- a/web/checkout-connector/page-program.js
++++ b/web/checkout-connector/page-program.js
+@@ -360,9 +360,22 @@
+   const dateSummary=[...new Set(texts.flatMap(t=>{const m=/^取货日期\s*[:：]?\s*(.+)$/.exec(t);return m&&datePattern.test(m[1])?[m[1]]:[]}))];
+   const timeSummary=[...new Set(texts.flatMap(t=>{const m=/^取货时间\s*[:：]?\s*(\d{2}:\d{2})\s*[-–—至]\s*(\d{2}:\d{2})$/.exec(t);return m?[m[1]+'-'+m[2]]:[]}))];
+   if(dateSummary.length===1&&timeSummary.length===1){const [start,end]=timeSummary[0].split('-');if(start<end)out.slotSummary={date:dateSummary[0],start,end,verified:true};}
+-  const dateChoices=radios.filter(e=>datePattern.test(name(e)));
++  // C050 Root genuine-quota adaptation: current native labels are compact/lowercase (october5), not generic date prose.
++  // Their complete associated group, proved pickup fieldset and matching day values are required; no year is invented.
++  const nativeDateInputs=checkoutScope?[...main.querySelectorAll('input[name="bartPickupDateSelectorButtonGroup"]')]:[];
++  const nativeDateLabel=l=>/(?:^|\s)form-selector-label(?:\s|$)/.test(l.getAttribute('class')??'');
++  const nativeDateMode=nativeDateInputs.some(e=>[...e.labels??[]].some(nativeDateLabel));
++  const nativeDateKnown=e=>{
++    const ls=[...e.labels??[]],l=ls.length===1?ls[0]:null,m=/^(january|february|march|april|may|june|july|august|september|october|november|december)\s*([1-9]|[12]\d|3[01])$/i.exec(name(e));
++    const days={january:31,february:29,march:31,april:30,may:31,june:30,july:31,august:31,september:30,october:31,november:30,december:31};
++    return !!(knownPickupCaption&&pf&&within(pf,e)&&visible(e)&&norm(e.getAttribute('type')).toLowerCase()==='radio'&&
++      l?.tagName==='LABEL'&&visible(l)&&nativeDateLabel(l)&&within(pf,l)&&name(e)===norm(l.textContent)&&m&&
++      Number(m[2])<=days[m[1].toLowerCase()]&&e.value===m[2]);
++  };
++  const dateChoices=nativeDateMode?nativeDateInputs.filter(nativeDateKnown):radios.filter(e=>datePattern.test(name(e)));
++  const nativeDatesComplete=!nativeDateMode||nativeDateInputs.length===dateChoices.length&&new Set(dateChoices.map(name)).size===dateChoices.length;
+   const dateSelects=selects.filter(e=>e!==timeSelects[0]&&[...e.options].length>0&&[...e.options].every(o=>datePattern.test(norm(o.textContent))));
+-  if(phase==='SLOTS'&&timeSelects.length===1&&(dateChoices.length>0) !== (dateSelects.length===1)){
++  if(phase==='SLOTS'&&nativeDatesComplete&&timeSelects.length===1&&(dateChoices.length>0) !== (dateSelects.length===1)){
+     const ds=dateChoices.length?dateChoices:[...dateSelects[0].options];
+     out.dates=ds.map((d,i)=>({label:name(d),ref:'date:'+i,enabled:!disabled(d),selected:d.tagName==='OPTION'?d.selected:checked(d)}));
+     const one=out.dates.filter(d=>d.selected);out.selectedDate=one.length===1?one[0].label:null;

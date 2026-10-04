@@ -165,7 +165,7 @@ $('final').onclick=async()=>{
   await run(false,{finalGrant,live});
 };
 // No delete/reset: completed and unknown purchase history cannot be erased by reopening a control page.
-status('AppleBuy C047 绑定诊断已加载；C049 自提适配已加载；保留全部旧任务记录');
+status('AppleBuy C047 绑定诊断已加载；C049 自提适配已加载；C050 日期适配已加载；保留全部旧任务记录');
 const saved=await store.get(TASK_KEY);
 if(saved&&saved.state!=='RETIRED'&&!productEdited&&$('product').value===bootProduct&&['iPhone Duo','iPhone 18 Pro'].includes(saved.plan?.product?.model))$('product').value=saved.plan.product.model==='iPhone 18 Pro'?'pro':'duo';
-if(saved)status(`AppleBuy C047 绑定诊断已加载；C049 自提适配已加载；保留的任务：${saved.state}；原绑定：${bindingSummary(saved)}；重新打开不会清除购买或未知记录`);
+if(saved)status(`AppleBuy C047 绑定诊断已加载；C049 自提适配已加载；C050 日期适配已加载；保留的任务：${saved.state}；原绑定：${bindingSummary(saved)}；重新打开不会清除购买或未知记录`);

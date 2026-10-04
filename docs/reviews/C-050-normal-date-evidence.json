@@ -1,0 +1,39 @@
+{
+  "scope": "normal current secure8 checkout public date/time DOM, no customer or opaque reference",
+  "dateFieldset": "FIELDSET with LEGEND.rs-pickup-slottitle",
+  "nativeInputName": "bartPickupDateSelectorButtonGroup",
+  "dates": [
+    {
+      "value": "5",
+      "publicLabel": "october5",
+      "checked": true,
+      "disabled": false
+    },
+    {
+      "value": "6",
+      "publicLabel": "october6",
+      "checked": false,
+      "disabled": false
+    }
+  ],
+  "associatedLabels": {
+    "oneEach": true,
+    "class": "form-selector-label",
+    "visible": true,
+    "insideSameDateFieldset": true
+  },
+  "timeControl": "select[data-autom=pickup-availablewindow-dropdown]",
+  "options": {
+    "total": 47,
+    "disabledPlaceholder": "可选时段",
+    "concrete": 46,
+    "selectedIndex": 0,
+    "terminal": "21:15 – 21:30"
+  },
+  "offeredDateCount": 2,
+  "noInventedThirdDateOrYear": true,
+  "rootSelectionOrSlotSubmission": false,
+  "actualProgramStatus": "BLOCKED SLOTS slot-list-or-conditions-not-verified, no pending label",
+  "secure8Consent": "human followed specific grant+resume question and reported current SLOTS, no agent permission click",
+  "timestampUtc": "2026-10-04T15:17:43.644894+00:00"
+}
