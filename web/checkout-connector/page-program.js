@@ -96,14 +96,33 @@ export async function merchantDocument(plan,command=null,internal=null){
     visible(copy)&&norm(copy.textContent)===fullVariant);
   const groupLine=!!(group&&strip&&strip.tagName==='DIV'&&visible(strip)&&within(group,strip)&&norm(strip.textContent)===fullVariant&&knownLegend&&
     textEls.filter(x=>productRe.test(x.t)).every(x=>related(x.e,strip)||related(x.e,copy)));
-  const oneLine=groups.length===0?lines(productRe).length===1:groupLine;
+  // C045 (Codex authorized quota takeover): current historical order detail (normal Chrome evidence) pairs a model-only H2 with
+  // one full-title H3 in the SAME LI.rs-od-itemdetail/order-item-N. The item summary is identity scope, never a piece count.
+  // Count every native marker including hidden/duplicate/misplaced ones. A present but incomplete native scope cannot borrow the
+  // generic text fallback; every other iPhone mention still conflicts below. Real quantity/unpaid/slot/extras remain unverified.
+  const nativeOrderPage=/^\/shop\/order\/detail\/[^/]+\/[^/]+\/?$/.test(u.pathname);
+  const nativeItems=nativeOrderPage?[...main.querySelectorAll('.rs-od-itemdetail')]:[];
+  const nativeSummaries=nativeOrderPage?[...main.querySelectorAll('.rs-od-itemsummary')]:[];
+  const nativeNames=nativeOrderPage?[...main.querySelectorAll('.rs-display-item-name')]:[];
+  const nativeHeads=nativeOrderPage?[...main.querySelectorAll('.rs-od-itemtitle')]:[];
+  const nativeInfos=nativeOrderPage?[...main.querySelectorAll('.rs-od-iteminfo')]:[];
+  const nativeScope=nativeItems.length>0||nativeSummaries.length>0||nativeNames.length>0;
+  const ni=nativeItems.length===1?nativeItems[0]:null,ns=nativeSummaries.length===1?nativeSummaries[0]:null;
+  const nn=nativeNames.length===1?nativeNames[0]:null,nh=nativeHeads.length===1?nativeHeads[0]:null,nf=nativeInfos.length===1?nativeInfos[0]:null;
+  const nativeStates=nh?[...nh.querySelectorAll('.rs-od-itemstatus')]:[],st=nativeStates.length===1?nativeStates[0]:null;
+  let nativeHeaderText=String(nh?.textContent??'');if(st)nativeHeaderText=nativeHeaderText.replace(String(st.textContent??''),' ');
+  const nativeLine=!!(ni&&ni.tagName==='LI'&&/^order-item-\d+$/.test(ni.getAttribute('data-autom')??'')&&visible(ni)&&
+    ns&&ns.tagName==='DIV'&&visible(ns)&&within(ni,ns)&&nn&&nn.tagName==='H3'&&visible(nn)&&within(ns,nn)&&norm(nn.textContent)===fullVariant&&
+    nf&&nf.tagName==='DIV'&&visible(nf)&&within(ni,nf)&&nh&&nh.tagName==='H2'&&visible(nh)&&within(nf,nh)&&
+    st&&st.tagName==='SPAN'&&visible(st)&&within(nh,st)&&!/iphone/i.test(norm(st.textContent))&&norm(nativeHeaderText)===norm(plan.product.model));
+  const oneLine=nativeScope?nativeLine:groups.length===0?lines(productRe).length===1:groupLine;
   // C028-R1 (Claude): the line rules above see only visible h1-h3/p/span/div text of at most 180 characters. Outside the observed
   // bag (which keeps its own structural purchased-line count), every iPhone mention in main's whole text - hidden, bare text,
   // any element type or long text - must be an accepted anchor's own mention: the recognized strip/copy pair, or the single
   // generic title line. Nested anchors count once. An ancestor holding the known copy lends no identity to further product
   // text. Only a count is derived; no page text is returned or kept.
   const mentions=e=>(norm(e?.textContent).match(/iphone/gi)??[]).length;
-  const anchors=[...new Set(groups.length>0?[strip,copy]:lines(productRe).map(x=>x.e))].filter(Boolean);
+  const anchors=[...new Set(nativeScope?[nn]:groups.length>0?[strip,copy]:lines(productRe).map(x=>x.e))].filter(Boolean);
   // C036 Codex quota adaptation: current native pickup adds a model-only date LEGEND beside the single selected-store product row.
   // It is metadata, not another purchased item. Whitelist only this observed structural counterpart; every other iPhone mention,
   // duplicate/hidden product scope or mismatching caption still conflicts. Neither this row nor the caption supplies quantity.
@@ -115,12 +134,12 @@ export async function merchantDocument(plan,command=null,internal=null){
   const knownPickupCaption=pickupLists.length===1&&pickupLists[0].tagName==='UL'&&visible(pickupLists[0])&&pickupRows.length===1&&pickupRows[0].tagName==='LI'&&visible(pickupRows[0])&&
     pickupTitles.length===1&&visible(pickupTitles[0])&&norm(pickupTitles[0].textContent)===fullVariant&&pc&&visible(pc)&&norm(pc.textContent)===norm('为你的 '+plan.product.model+' 选择取货日期：')&&
     pf?.tagName==='FIELDSET'&&pf.querySelectorAll('input[name="bartPickupDateSelectorButtonGroup"]').length>0&&pf.querySelectorAll('select[data-autom="pickup-availablewindow-dropdown"]').length===1;
-  const mentionAnchors=[...anchors,...(knownPickupCaption?[pc]:[])];
+  const mentionAnchors=[...anchors,...(knownPickupCaption?[pc]:[]),...(nativeLine?[nh]:[])];
   const soleMentions=mentions(main)<=mentionAnchors.filter(e=>!mentionAnchors.some(o=>o!==e&&within(o,e))).reduce((n,e)=>n+mentions(e),0);
   // C027 (Codex quota completion): the recognized strip/copy supply exact titles. Their real-DOM ancestors also contain
   // native option labels; that aggregate is not another title. Generic pages retain the strict textual proof.
   const exactProduct=bag?!!bag.title&&norm(bag.title.textContent)===fullVariant&&!bag.stray:!bagScoped&&oneLine&&soleMentions&&
-    (groups.length>0?groupLine:productLines.some(t=>t===fullVariant)&&productLines.every(t=>t===fullVariant));
+    (nativeScope?nativeLine:groups.length>0?groupLine:productLines.some(t=>t===fullVariant)&&productLines.every(t=>t===fullVariant));
   // C022 (Codex quota takeover): wrapper text includes every option, even hidden native clones (observed 数量121).
   // Remove descendant select text only; literal quantity outside those controls still conflicts with selected values.
   // Strip outermost controls once, before the length bound, so long/nested option lists cannot hide a real contradiction.

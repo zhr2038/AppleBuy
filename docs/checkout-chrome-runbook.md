@@ -4,6 +4,8 @@
 
 本目录 `E:\Apple Store\web\checkout-connector` 会随开发变化，当前字节已核对为C044验收清单；重新加载前仍要核对当时版本。旧安装清单C016—C020都是历史身份，不能证明当前Chrome已加载这份代码。已加载插件的代码身份和完整原生Chrome API链路仍待核对。历史步骤完整保留在[旧记录](history/checkout-chrome-runbook-through-C020.md)。
 
+**10月4日晚的当前工作目录例外：** C045额度接替候选现在是182文件，1076项和31原生场景仅自测通过，待23:50额度恢复后实际Claude跨作者复审。main仍是上面的C044；当前目录的待审代码不能当成main验收字节。[接替说明](reviews/C-045-codex-quota-takeover.md)
+
 ## 当前可以自主跑的验证
 
 在 `E:\Apple Store` 终端运行：

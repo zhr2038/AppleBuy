@@ -1,0 +1,127 @@
+{
+  "task": "C-045",
+  "authorship": "Root independent protected native regression; no Root business implementation",
+  "reproCommand": "node review/c045-native-item-identity.mjs",
+  "beforeTotals": {
+    "pass": 5,
+    "fail": 2,
+    "checks": 7
+  },
+  "actualProblem": "One observed LI product item has a model-only h2 and full-title h3. Generic sole-mention/full-text rules count the structural representations as ambiguous, leaving plan product identity null.",
+  "failedCases": [
+    {
+      "name": "native-one-item-two-title-representations-fake-unpaid",
+      "passed": false,
+      "durationMs": 894,
+      "error": "AssertionError [ERR_ASSERTION]: the normal final processing must be reconciled in the initial run (final-result-unconfirmed; no resubmission)\n+ actual - expected\n\n+ 'NEEDS_VERIFICATION'\n- 'CONFIRMED_UNPAID'\n\n    at scenario (file:///E:/Apple%20Store/review/c045-native-item-identity.mjs:199:63)\n    at async file:///E:/Apple%20Store/review/c045-native-item-identity.mjs:235:14",
+      "runs": [
+        {
+          "kind": "start",
+          "state": "NEEDS_VERIFICATION",
+          "reason": "final-result-unconfirmed; no resubmission",
+          "phase": "ORDER_RECEIPT",
+          "pending": "submitOrder"
+        }
+      ],
+      "actions": [
+        "checkout",
+        "selectPickup",
+        "chooseSlot",
+        "fillDetails",
+        "selectPayment",
+        "continuePayment",
+        "submitOrder"
+      ],
+      "effects": {
+        "checkout": 1,
+        "summaryOpen": 5,
+        "summaryClose": 5,
+        "pickup": 1,
+        "time": 1,
+        "slotContinue": 1,
+        "detailsContinue": 1,
+        "payment": 1,
+        "paymentContinue": 1,
+        "submit": 1
+      },
+      "orders": 1,
+      "navigations": [
+        "https://secure8.www.apple.com.cn/shop/order/detail/FAKE-ORDER/FAKE-LOOKUP"
+      ],
+      "readStages": {
+        "bag": 4,
+        "checkout": 11,
+        "details": 6,
+        "payment": 9,
+        "review": 8,
+        "receipt": 2,
+        "order": 1
+      }
+    },
+    {
+      "name": "native-item-with-no-quantity-identity-only",
+      "passed": false,
+      "durationMs": 882,
+      "error": "AssertionError [ERR_ASSERTION]: one native line must provide identity without supplying quantity\n+ actual - expected\n\n+ null\n- 'iPhone 18 Pro'\n\n    at scenario (file:///E:/Apple%20Store/review/c045-native-item-identity.mjs:209:34)\n    at async file:///E:/Apple%20Store/review/c045-native-item-identity.mjs:235:14",
+      "runs": [
+        {
+          "kind": "start",
+          "state": "NEEDS_VERIFICATION",
+          "reason": "final-result-unconfirmed; no resubmission",
+          "phase": "ORDER_RECEIPT",
+          "pending": "submitOrder"
+        }
+      ],
+      "actions": [
+        "checkout",
+        "selectPickup",
+        "chooseSlot",
+        "fillDetails",
+        "selectPayment",
+        "continuePayment",
+        "submitOrder"
+      ],
+      "effects": {
+        "checkout": 1,
+        "summaryOpen": 5,
+        "summaryClose": 5,
+        "pickup": 1,
+        "time": 1,
+        "slotContinue": 1,
+        "detailsContinue": 1,
+        "payment": 1,
+        "paymentContinue": 1,
+        "submit": 1
+      },
+      "orders": 1,
+      "navigations": [
+        "https://secure8.www.apple.com.cn/shop/order/detail/FAKE-ORDER/FAKE-LOOKUP"
+      ],
+      "readStages": {
+        "bag": 4,
+        "checkout": 11,
+        "details": 6,
+        "payment": 9,
+        "review": 8,
+        "receipt": 2,
+        "order": 1
+      }
+    }
+  ],
+  "expected": "Recognize the exact product of one complete observed native item, treat its matching model header as a bounded counterpart, preserve all other stray/hidden/multiple/conflicting goods guards. Identity alone/one card/price never supplies quantity. Missing quantity must keep order unconfirmed.",
+  "positiveUnpaidProofAndQuantityFake": true,
+  "actualCurrentUnpaidReceiptProven": false,
+  "realObserved": "native LI order-item-0, matching model header, one summary/full h3, actual historical reference label regex compatibility, no explicit quantity found",
+  "cleanup": {
+    "contextsClosed": 7,
+    "browserClosed": true,
+    "serverClosed": true,
+    "errors": []
+  },
+  "guard": {
+    "outcome": "aborted",
+    "blockedRequests": 1,
+    "serverHits": 0
+  },
+  "timestampUtc": "2026-10-04T12:37:26.692196+00:00"
+}

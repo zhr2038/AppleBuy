@@ -1,0 +1,160 @@
+{
+  "task": "C-045",
+  "capturedAtUtc": "2026-10-04T12:33:17.377Z",
+  "executor": "Root normal authorized Chrome historical Pro read-only observation; not installed AppleBuy",
+  "facts": {
+    "capturedAt": "2026-10-04T12:33:17.377Z",
+    "cancelled": {
+      "cancelled": true,
+      "host": "secure8.www.apple.com.cn",
+      "main": {
+        "autom": null,
+        "className": "as-l-fullwidth rs-od-container",
+        "role": "main",
+        "tag": "DIV"
+      },
+      "pathTemplate": "/shop/order/detail/[private]/[private]",
+      "productHeads": [
+        {
+          "ancestors": [
+            {
+              "autom": null,
+              "className": "rs-display-item-name typography-body-reduced rs-od-itemsummary-canceled",
+              "role": null,
+              "tag": "H3"
+            },
+            {
+              "autom": null,
+              "className": "rs-od-itemname column",
+              "role": null,
+              "tag": "DIV"
+            },
+            {
+              "autom": null,
+              "className": "row",
+              "role": null,
+              "tag": "DIV"
+            },
+            {
+              "autom": null,
+              "className": "row rs-od-itemattrs",
+              "role": null,
+              "tag": "DIV"
+            },
+            {
+              "autom": null,
+              "className": "rs-od-itemsummary-start column large-4 small-12 small-pull-0 rs-od-itemsummary-canceled",
+              "role": null,
+              "tag": "DIV"
+            },
+            {
+              "autom": null,
+              "className": "row as-l-container rs-od-itemsummary",
+              "role": null,
+              "tag": "DIV"
+            }
+          ],
+          "product": "iPhone 18 Pro 256GB 黑色"
+        }
+      ],
+      "quantityNodes": [],
+      "referenceNodes": [
+        {
+          "autom": null,
+          "children": [
+            {
+              "autom": null,
+              "className": "",
+              "isReferenceLabel": true,
+              "role": null,
+              "tag": "SPAN",
+              "valueNotReturned": true
+            },
+            {
+              "autom": null,
+              "className": "",
+              "isReferenceLabel": false,
+              "role": null,
+              "tag": "SPAN",
+              "valueNotReturned": true
+            }
+          ],
+          "className": "rs-label-value rs-od-order-number",
+          "role": null,
+          "tag": "DIV",
+          "wholeCurrentRefPatternMatches": true
+        }
+      ],
+      "title": "订单详情 - Apple (中国大陆)",
+      "unpaid": false
+    },
+    "cancelledVisible": {
+      "nativeFullTitles": 1,
+      "nativeItemHeaders": 1,
+      "nativeSummaries": 1,
+      "quantityOrMoneyLines": [
+        "RMB 9,999",
+        "RMB 9,999"
+      ]
+    },
+    "pickedUp": {
+      "currentReferencePatternMatches": [
+        true
+      ],
+      "itemStatuses": [
+        "已取货 9月 17"
+      ],
+      "nativeItemHeaders": 1,
+      "nativeSummaries": 1,
+      "pathTemplate": "/shop/order/detail/[private]/[private]",
+      "productTitles": [
+        "iPhone 18 Pro 256GB 黑色"
+      ],
+      "quantityOrMoneyLines": [
+        "RMB 9,999",
+        "RMB 9,999"
+      ],
+      "title": "订单详情 - Apple (中国大陆)"
+    },
+    "association": {
+      "commonItemContainer": {
+        "autom": "order-item-0",
+        "className": "rs-od-itemdetail",
+        "role": null,
+        "tag": "LI"
+      },
+      "headerParent": {
+        "autom": null,
+        "className": "column large-7 small-12 rs-od-iteminfo",
+        "role": null,
+        "tag": "DIV"
+      },
+      "quantityLabels": [],
+      "quantityText": [],
+      "summaryVisibleTextShape": [
+        "iPhone 18 Pro 256GB 黑色",
+        "RMB 9,999"
+      ],
+      "titleSummaryParent": {
+        "autom": null,
+        "className": "row as-l-container rs-od-itemsummary",
+        "role": null,
+        "tag": "DIV"
+      }
+    },
+    "noCurrentUnpaidOrReceipt": true,
+    "newRealOrderSlotPaymentPermissionActions": false
+  },
+  "samePlanNativeItemGroupingObserved": true,
+  "actualExplicitQuantityObserved": false,
+  "referenceWholeLabelMatchesCurrentPattern": true,
+  "actualReferenceValuesReturned": false,
+  "actualReferenceHashBindingProven": false,
+  "normalExistingCredentialLoginOnceThisTurn": true,
+  "credentialsOutputOrNewCopy": false,
+  "challengeBypass": false,
+  "hostPermissionChange": false,
+  "researchTabsClosed": 2,
+  "unpaidReceiptSlotDateExtraProofStillMissing": true,
+  "fullGoalComplete": false
+}
