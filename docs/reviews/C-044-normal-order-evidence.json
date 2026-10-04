@@ -1,0 +1,242 @@
+{
+  "task": "C-044",
+  "capturedAtUtc": "2026-10-04T11:54:17.029988+00:00",
+  "executor": "Root normal authorized desktop Chrome, not AppleBuy installed runtime",
+  "duoPublic": {
+    "capturedAt": "2026-10-04T11:29:44.156Z",
+    "url": "https://www.apple.com.cn/shop/buy-iphone/iphone-duo/mk2m4ch/a",
+    "facts": {
+      "continue": [
+        {
+          "disabled": true,
+          "text": "继续"
+        }
+      ],
+      "heading": "iPhone Duo",
+      "notices": [
+        "暂未发售",
+        "目前暂不提供 Apple Store 零售店取货服务",
+        "10 月 16 日晚 8 点接受预购。10 月 23 日发售。",
+        "机型将在获得批准后发售",
+        "RMB 15,999",
+        "iPhone Duo 256GB 星光白色",
+        "RMB 15,999",
+        "暂未发售",
+        "目前暂不提供 Apple Store 零售店取货服务"
+      ],
+      "orderStatusLink": "https://secure.www.apple.com.cn/shop/order/list",
+      "selected": [
+        {
+          "id": "_r_b_",
+          "label": "星光白色",
+          "value": "starwhite"
+        },
+        {
+          "id": "_r_e_",
+          "label": "256GB\n 脚注 \n1\nRMB 15,999\n或 RMB 667/月 (24 期) 起",
+          "value": "256gb"
+        },
+        {
+          "id": "noTradeIn",
+          "label": "不折抵换购",
+          "value": "noTradeIn"
+        },
+        {
+          "id": "_r_14_",
+          "label": "不加 AppleCare+ 服务计划",
+          "value": "on"
+        }
+      ]
+    }
+  },
+  "normalOrdersLogin": {
+    "submittedOnce": true,
+    "successfulNormalOrderListObserved": true,
+    "source": "existing specifically authorized credential, privately obtained from original direct user message",
+    "credentialsReturnedToModelOrCopied": false,
+    "captchaOrOtherChallengeBypassed": false,
+    "persistentAppleBuyHostPermissionsChanged": false
+  },
+  "realDetailRoute": "/shop/order/detail/[private]/[private]",
+  "receiptLinkWithThisRouteObserved": false,
+  "observedHistoricalProStates": [
+    "already picked up",
+    "pickup cancelled"
+  ],
+  "currentUnpaidObserved": false,
+  "cancelledNativeContract": {
+    "cancelled": true,
+    "fields": [
+      {
+        "autom": null,
+        "className": "rs-od-itemstatus",
+        "id": "",
+        "parent": {
+          "autom": null,
+          "className": "rs-od-itemtitle",
+          "id": "",
+          "role": null,
+          "tag": "H2"
+        },
+        "role": null,
+        "tag": "SPAN",
+        "text": "取货已取消"
+      },
+      {
+        "autom": null,
+        "className": "",
+        "id": "",
+        "parent": {
+          "autom": null,
+          "className": "rs-display-item-price",
+          "id": "",
+          "role": null,
+          "tag": "DIV"
+        },
+        "role": null,
+        "tag": "SPAN",
+        "text": "RMB 9,999"
+      },
+      {
+        "autom": null,
+        "className": "rs-od-actions",
+        "id": "",
+        "parent": {
+          "autom": null,
+          "className": "rs-od-itemsummary-start column large-4 small-12 small-pull-0 rs-od-itemsummary-canceled",
+          "id": "",
+          "role": null,
+          "tag": "DIV"
+        },
+        "role": null,
+        "tag": "DIV",
+        "text": "已取消"
+      },
+      {
+        "autom": null,
+        "className": "",
+        "id": "",
+        "parent": {
+          "autom": "form-field-companyName",
+          "className": "rf-form-layout-field-viewmode",
+          "id": "",
+          "role": null,
+          "tag": "SPAN"
+        },
+        "role": null,
+        "tag": "SPAN",
+        "text": "Apple 大连恒隆广场"
+      },
+      {
+        "autom": null,
+        "className": "rs-pricingsummary-value-content",
+        "id": "",
+        "parent": {
+          "autom": null,
+          "className": "rs-pricingsummary-value column large-4",
+          "id": "",
+          "role": null,
+          "tag": "DIV"
+        },
+        "role": null,
+        "tag": "SPAN",
+        "text": "RMB 9,999"
+      }
+    ],
+    "headings": [
+      {
+        "autom": null,
+        "className": "rs-od-title",
+        "id": "",
+        "parent": {
+          "autom": null,
+          "className": "column large-9 small-12",
+          "id": "",
+          "role": null,
+          "tag": "DIV"
+        },
+        "role": null,
+        "tag": "H1",
+        "text": "你的订单详情。"
+      },
+      {
+        "autom": null,
+        "className": "rs-od-itemtitle",
+        "id": "",
+        "parent": {
+          "autom": null,
+          "className": "column large-7 small-12 rs-od-iteminfo",
+          "id": "",
+          "role": null,
+          "tag": "DIV"
+        },
+        "role": null,
+        "tag": "H2",
+        "text": "iPhone 18 Pro\n取货已取消"
+      },
+      {
+        "autom": null,
+        "className": "rs-display-item-name typography-body-reduced rs-od-itemsummary-canceled",
+        "id": "",
+        "parent": {
+          "autom": null,
+          "className": "rs-od-itemname column",
+          "id": "",
+          "role": null,
+          "tag": "DIV"
+        },
+        "role": null,
+        "tag": "H3",
+        "text": "iPhone 18 Pro 256GB 黑色"
+      },
+      {
+        "autom": null,
+        "className": "as-icondetails-label rs-pickuplocation-label",
+        "id": "",
+        "parent": {
+          "autom": null,
+          "className": "as-icondetails-detail rs-pickuplocation",
+          "id": "",
+          "role": null,
+          "tag": "DIV"
+        },
+        "role": null,
+        "tag": "H3",
+        "text": "店内取货地点："
+      }
+    ],
+    "host": "secure8.www.apple.com.cn",
+    "main": {
+      "autom": null,
+      "className": "as-l-fullwidth rs-od-container",
+      "id": "",
+      "role": "main",
+      "tag": "DIV"
+    },
+    "pathTemplate": "/shop/order/detail/[private]/[private]",
+    "referenceLabels": [
+      {
+        "autom": null,
+        "className": "",
+        "id": "",
+        "parent": {
+          "autom": null,
+          "className": "rs-label-value rs-od-order-number",
+          "id": "",
+          "role": null,
+          "tag": "DIV"
+        },
+        "role": null,
+        "tag": "SPAN",
+        "text": "[order-reference text withheld]"
+      }
+    ],
+    "title": "订单详情 - Apple (中国大陆)",
+    "unpaid": false
+  },
+  "quantityOrCurrentSlotOrExtrasProven": false,
+  "privateRefsCustomerIdentityContactsPaymentDataOrRawRequestsIncluded": false,
+  "researchTabsClosed": 3,
+  "newRealCartSlotOrderPaymentActions": false,
+  "fullGoalComplete": false
+}

@@ -1,8 +1,8 @@
 # 在这台电脑使用 AppleBuy
 
-当前已验收版本是 **C043，177 份源码**：984项测试、18个隔离原生场景通过，原Claude实际完整复审同意。完整模拟订单主链已跑通，查单短暂读取丢失可在首次开始内恢复；官网一键抢购尚未验收。[当前状态](status.md) · [限定验收](reviews/C-043-bounded-agreement.md) · [实际同步回执](reviews/C-043-publication-verification.json)
+当前已验收版本是 **C044，180 份源码**：1037项测试、24个隔离原生场景通过，原Claude实际完整复审同意。模拟订单主链和查单恢复已跑通；已补官网观察到的详情路由形状及历史取消／取货状态保护，真实未付款页、新回执和官网一键抢购尚未验收。[当前状态](status.md) · [限定验收](reviews/C-044-bounded-agreement.md) · [实际同步回执](reviews/C-044-publication-verification.json)
 
-本目录 `E:\Apple Store\web\checkout-connector` 会随开发变化，当前字节已核对为C043验收清单；重新加载前仍要核对当时版本。旧安装清单C016—C020都是历史身份，不能证明当前Chrome已加载这份代码。已加载插件的代码身份和完整原生Chrome API链路仍待核对。历史步骤完整保留在[旧记录](history/checkout-chrome-runbook-through-C020.md)。
+本目录 `E:\Apple Store\web\checkout-connector` 会随开发变化，当前字节已核对为C044验收清单；重新加载前仍要核对当时版本。旧安装清单C016—C020都是历史身份，不能证明当前Chrome已加载这份代码。已加载插件的代码身份和完整原生Chrome API链路仍待核对。历史步骤完整保留在[旧记录](history/checkout-chrome-runbook-through-C020.md)。
 
 ## 当前可以自主跑的验证
 
@@ -11,6 +11,7 @@
 ```powershell
 node test/c040-native-order.mjs
 node review/c043-independent-native-lookup.mjs
+node review/c044-native-order-route.mjs
 ```
 
 它们用隔离临时Chrome、虚构页面与权限运行真实执行器代码：自提 → 初始首日末档 → 虚构取货资料 → 模拟支付宝 → 一张未付款模拟订单 → 从回执链接独立查单。正常和查单短暂丢失场景在首次开始内确认；失提交回执、错误详情和页面切换场景不会重复提交，输出PASS及清理结果。它们不使用你的个人Chrome资料，不操作官网或真实订单，计时也不是官网速度。

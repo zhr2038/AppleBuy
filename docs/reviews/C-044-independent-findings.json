@@ -1,0 +1,217 @@
+{
+  "task": "C-044",
+  "authorship": "Root independent protected test; no Root production delta",
+  "command": "node review/c044-native-order-route.mjs",
+  "baselinePassed": true,
+  "deepAliasFirstStartPassed": false,
+  "terminalNegativeCasesReachedIndependentDetail": false,
+  "realReceiptAndUnpaidContractProven": false,
+  "rootCause": "Page-program order-detail phase and observed-link regex accept only one path segment, while current official normal account detail uses order/detail/two opaque refs. ChromePort outer allow-list already accepts deep order paths; do not falsely say that guard is the failing layer.",
+  "checks": [
+    {
+      "name": "legacy-route-baseline",
+      "passed": true,
+      "runs": [
+        {
+          "kind": "start",
+          "state": "CONFIRMED_UNPAID",
+          "reason": null,
+          "phase": "ORDER_RECEIPT",
+          "pending": null
+        },
+        {
+          "kind": "consumed-grant",
+          "state": "CONFIRMED_UNPAID",
+          "reason": null,
+          "phase": "ORDER_RECEIPT",
+          "pending": null
+        }
+      ],
+      "actions": [
+        "checkout",
+        "selectPickup",
+        "chooseSlot",
+        "fillDetails",
+        "selectPayment",
+        "continuePayment",
+        "submitOrder"
+      ],
+      "effects": {
+        "checkout": 1,
+        "summaryOpen": 5,
+        "summaryClose": 5,
+        "pickup": 1,
+        "time": 1,
+        "slotContinue": 1,
+        "detailsContinue": 1,
+        "payment": 1,
+        "paymentContinue": 1,
+        "submit": 1
+      },
+      "orders": 1,
+      "navigations": [
+        "https://www.apple.com.cn/shop/order/FAKE-C040-0001"
+      ],
+      "readStages": {
+        "bag": 4,
+        "checkout": 11,
+        "details": 6,
+        "payment": 9,
+        "review": 8,
+        "receipt": 2,
+        "order": 1
+      },
+      "error": null
+    },
+    {
+      "name": "observed-deep-route-with-fake-unpaid-proof",
+      "passed": false,
+      "runs": [
+        {
+          "kind": "start",
+          "state": "NEEDS_VERIFICATION",
+          "reason": "final-result-unconfirmed; no resubmission",
+          "phase": "ORDER_RECEIPT",
+          "pending": "submitOrder"
+        }
+      ],
+      "actions": [
+        "checkout",
+        "selectPickup",
+        "chooseSlot",
+        "fillDetails",
+        "selectPayment",
+        "continuePayment",
+        "submitOrder"
+      ],
+      "effects": {
+        "checkout": 1,
+        "summaryOpen": 5,
+        "summaryClose": 5,
+        "pickup": 1,
+        "time": 1,
+        "slotContinue": 1,
+        "detailsContinue": 1,
+        "payment": 1,
+        "paymentContinue": 1,
+        "submit": 1
+      },
+      "orders": 1,
+      "navigations": [],
+      "readStages": {
+        "bag": 4,
+        "checkout": 11,
+        "details": 6,
+        "payment": 9,
+        "review": 8,
+        "receipt": 2
+      },
+      "error": "AssertionError [ERR_ASSERTION]: the normal final processing must be reconciled in the initial run (final-result-unconfirmed; no resubmission)\n+ actual - expected\n\n+ 'NEEDS_VERIFICATION'\n- 'CONFIRMED_UNPAID'\n\n    at scenario (file:///E:/Apple%20Store/review/c044-native-order-route.mjs:189:63)\n    at async file:///E:/Apple%20Store/review/c044-native-order-route.mjs:221:14"
+    },
+    {
+      "name": "observed-cancelled-native-status-conflicting-fake-pending",
+      "passed": false,
+      "runs": [
+        {
+          "kind": "start",
+          "state": "NEEDS_VERIFICATION",
+          "reason": "final-result-unconfirmed; no resubmission",
+          "phase": "ORDER_RECEIPT",
+          "pending": "submitOrder"
+        }
+      ],
+      "actions": [
+        "checkout",
+        "selectPickup",
+        "chooseSlot",
+        "fillDetails",
+        "selectPayment",
+        "continuePayment",
+        "submitOrder"
+      ],
+      "effects": {
+        "checkout": 1,
+        "summaryOpen": 5,
+        "summaryClose": 5,
+        "pickup": 1,
+        "time": 1,
+        "slotContinue": 1,
+        "detailsContinue": 1,
+        "payment": 1,
+        "paymentContinue": 1,
+        "submit": 1
+      },
+      "orders": 1,
+      "navigations": [],
+      "readStages": {
+        "bag": 4,
+        "checkout": 11,
+        "details": 6,
+        "payment": 9,
+        "review": 8,
+        "receipt": 2
+      },
+      "error": "AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:\n+ actual - expected\n\n+ []\n- [\n-   'https://secure8.www.apple.com.cn/shop/order/detail/FAKE-ORDER/FAKE-LOOKUP'\n- ]\n\n    at scenario (file:///E:/Apple%20Store/review/c044-native-order-route.mjs:191:12)\n    at async file:///E:/Apple%20Store/review/c044-native-order-route.mjs:221:14"
+    },
+    {
+      "name": "observed-picked-up-native-status-conflicting-fake-pending",
+      "passed": false,
+      "runs": [
+        {
+          "kind": "start",
+          "state": "NEEDS_VERIFICATION",
+          "reason": "final-result-unconfirmed; no resubmission",
+          "phase": "ORDER_RECEIPT",
+          "pending": "submitOrder"
+        }
+      ],
+      "actions": [
+        "checkout",
+        "selectPickup",
+        "chooseSlot",
+        "fillDetails",
+        "selectPayment",
+        "continuePayment",
+        "submitOrder"
+      ],
+      "effects": {
+        "checkout": 1,
+        "summaryOpen": 5,
+        "summaryClose": 5,
+        "pickup": 1,
+        "time": 1,
+        "slotContinue": 1,
+        "detailsContinue": 1,
+        "payment": 1,
+        "paymentContinue": 1,
+        "submit": 1
+      },
+      "orders": 1,
+      "navigations": [],
+      "readStages": {
+        "bag": 4,
+        "checkout": 11,
+        "details": 6,
+        "payment": 9,
+        "review": 8,
+        "receipt": 2
+      },
+      "error": "AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:\n+ actual - expected\n\n+ []\n- [\n-   'https://secure8.www.apple.com.cn/shop/order/detail/FAKE-ORDER/FAKE-LOOKUP'\n- ]\n\n    at scenario (file:///E:/Apple%20Store/review/c044-native-order-route.mjs:191:12)\n    at async file:///E:/Apple%20Store/review/c044-native-order-route.mjs:221:14"
+    }
+  ],
+  "expected": "Retain old single-segment compatibility; follow only a link actually present on a verified receipt, recognize the observed deep route when separately read, confirm only exact fresh FAKE unpaid proof; native picked-up/cancelled status must never confirm unpaid even beside conflicting FAKE pending prose.",
+  "fixtureLimits": "Route shape, order heading and terminal selectors/text observed. Receipt and unpaid detail/quantity/slot/proof, refs, Chrome/storage/grants/backend/dynamics/timing all FAKE; contradictory pending prose is a deliberate invented fault, not an observed Apple case.",
+  "initialNegativeFailures": "Both terminal tests were unconfirmed but failed because no independent detail navigation/read happened; not evidence of current false confirmation.",
+  "cleanup": {
+    "contextsClosed": 4,
+    "browserClosed": true,
+    "serverClosed": true,
+    "errors": []
+  },
+  "guard": {
+    "outcome": "aborted",
+    "blockedRequests": 1,
+    "serverHits": 0
+  },
+  "timestampUtc": "2026-10-04T11:54:17.029988+00:00"
+}

@@ -216,11 +216,21 @@ export async function merchantDocument(plan,command=null,internal=null){
   // C-019: bag availability prose (store name, 今天取货, 店内取货) is not a selected fulfillment or store in the observed bag.
   // C035: the verified empty bag names no purchased goods; nothing outside its scope can lend it an item.
   const purchase=emptyBag?{itemVerified:false,verified:false,model:null,capacity:null,color:null,quantity:null,totalCny:null,store:null,fulfillment:null}:{itemVerified:exactProduct&&qty===1&&Number.isFinite(total),verified:!bagScoped&&exactProduct&&qty===1&&Number.isFinite(total)&&!!store&&pickupShown,model:exactProduct?plan.product.model:null,capacity:exactProduct?plan.product.capacity:null,color:exactProduct?plan.product.color:null,quantity:qty,totalCny:total,store:bagScoped?null:store,fulfillment:!bagScoped&&pickupShown?'pickup':null};
+  // C044 (Claude): order-detail address. The single-segment alias is kept for the bounded C023-C043 software (FAKE). The current
+  // official account detail address (C-044 normal Chrome evidence, secure8) is /shop/order/detail/ plus exactly two opaque segments.
+  // order/list and a bare order/detail are not an order. The address alone never proves an order; the decoded page facts do.
+  const orderDetailPath=/^\/shop\/order\/(?:(?!(?:list|detail)(?:\/|$))[^/]+|detail\/[^/]+\/[^/]+)\/?$/;
+  // C044 (Claude): current official native order detail (C-044 evidence, historical Pro records only): each item's own state is
+  // span.rs-od-itemstatus in h2.rs-od-itemtitle (observed 取货已取消 and a picked-up text); a cancelled item also carries
+  // .rs-od-itemsummary-canceled. That native state outranks page prose: any native status in main (any visibility) that is not a
+  // pending word, or any cancelled marker, means no unpaid order is shown, whatever pending or help text is beside it.
+  const PENDING=['待付款','等待付款','请完成付款'];
+  const nativeNotUnpaid=()=>[...main.querySelectorAll('.rs-od-itemstatus')].some(e=>!PENDING.includes(norm(e.textContent)))||!!main.querySelector('.rs-od-itemsummary-canceled');
   let phase='UNKNOWN';
   if(main.querySelector('input[type="password"],input[autocomplete="one-time-code"]')||texts.includes('以游客身份继续'))phase='AUTH';
   else if(texts.some(t=>t==='Apple 和你的数据隐私'))phase='CONSENT';
   else if(main.querySelector('[aria-busy="true"]'))phase='PROCESSING';
-  else if(texts.some(t=>['待付款','等待付款','请完成付款'].includes(t)))phase=/^\/shop\/order\/(?!list(?:\/|$))[^/]+\/?$/.test(u.pathname)?'ORDER_DETAIL':u.pathname==='/shop/checkout'?'ORDER_RECEIPT':'UNKNOWN';
+  else if(texts.some(t=>PENDING.includes(t))){const route=orderDetailPath.test(u.pathname)?'ORDER_DETAIL':u.pathname==='/shop/checkout'?'ORDER_RECEIPT':'UNKNOWN';phase=route!=='UNKNOWN'&&nativeNotUnpaid()?'UNKNOWN':route;}
   // C-020 (Claude): on /shop/bag a purchased-list anchor makes the cart itself the only stage evidence. Only the recognized bag
   // with its proved checkout is BAG; any other anchored cart is UNKNOWN. Review/details/slots/payment/fulfillment or navigation
   // labels never become step authority there. The human/processing gates and order-state line above keep priority.
@@ -311,7 +321,7 @@ export async function merchantDocument(plan,command=null,internal=null){
     if(known)out.orderRefHash=known;else if(internal?.hashes)referenceChanged=true;
     else{const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(orderLabels[0]));
       return merchantDocument(plan,command,{hashes:new Map([[orderLabels[0],[...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('')]])});}}
-  const detailLinks=[...new Set([...main.querySelectorAll('a[href]')].filter(a=>visible(a)&&['查看订单','查看订单详情'].includes(name(a))).flatMap(a=>{try{const h=new URL(a.href);return h.protocol==='https:'&&(h.hostname==='www.apple.com.cn'||/^secure(?:\d+)?\.www\.apple\.com\.cn$/.test(h.hostname))&&/^\/shop\/order\/(?!list(?:\/|$))[^/]+(?:\/)?$/.test(h.pathname)?[h.href]:[];}catch{return [];}}))];
+  const detailLinks=[...new Set([...main.querySelectorAll('a[href]')].filter(a=>visible(a)&&['查看订单','查看订单详情'].includes(name(a))).flatMap(a=>{try{const h=new URL(a.href);return h.protocol==='https:'&&(h.hostname==='www.apple.com.cn'||/^secure(?:\d+)?\.www\.apple\.com\.cn$/.test(h.hostname))&&orderDetailPath.test(h.pathname)?[h.href]:[];}catch{return [];}}))];
   if(detailLinks.length===1)out.orderDetailLink=detailLinks[0];
   out.receiptVerified=phase==='ORDER_RECEIPT'&&!!out.orderRefHash&&purchase.verified;
   // Official refusal anchors are not yet observed: real alerts remain unknown rather than invented rejection.

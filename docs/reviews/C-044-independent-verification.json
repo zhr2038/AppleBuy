@@ -1,0 +1,1641 @@
+{
+  "task": "C-044",
+  "status": "Root independently verified current180; actual fresh agreement pending",
+  "sourceFiles": 180,
+  "sourceSha256": "71a90f598480a2d6625f7d4aa0ed843cdfdbdb0bf1d5956625127f263394714e",
+  "lastAcceptedMainTask": "C-043",
+  "rootNodeTotals": [
+    "ℹ tests 1037",
+    "ℹ pass 1037",
+    "ℹ fail 0",
+    "ℹ cancelled 0",
+    "ℹ skipped 0",
+    "ℹ todo 0",
+    "ℹ duration_ms 8680.9273"
+  ],
+  "rootNativePassed": 24,
+  "rootNativeSuites": [
+    {
+      "suite": "rootObservedRoute",
+      "passed": 4,
+      "checks": [
+        {
+          "name": "legacy-route-baseline",
+          "passed": true,
+          "durationMs": 1153,
+          "runs": [
+            {
+              "kind": "start",
+              "state": "CONFIRMED_UNPAID",
+              "reason": null,
+              "phase": "ORDER_RECEIPT",
+              "pending": null
+            },
+            {
+              "kind": "consumed-grant",
+              "state": "CONFIRMED_UNPAID",
+              "reason": null,
+              "phase": "ORDER_RECEIPT",
+              "pending": null
+            }
+          ],
+          "final": {
+            "state": "CONFIRMED_UNPAID",
+            "reason": null,
+            "phase": "ORDER_RECEIPT",
+            "pending": null
+          },
+          "actions": [
+            "checkout",
+            "selectPickup",
+            "chooseSlot",
+            "fillDetails",
+            "selectPayment",
+            "continuePayment",
+            "submitOrder"
+          ],
+          "summaryReads": 5,
+          "effects": {
+            "checkout": 1,
+            "summaryOpen": 5,
+            "summaryClose": 5,
+            "pickup": 1,
+            "time": 1,
+            "slotContinue": 1,
+            "detailsContinue": 1,
+            "payment": 1,
+            "paymentContinue": 1,
+            "submit": 1
+          },
+          "orders": 1,
+          "orderRecordExact": true,
+          "detailsWrittenOnceByNativeEvents": true,
+          "detailsAbsentFromDurableTask": true,
+          "navigations": [
+            "https://www.apple.com.cn/shop/order/FAKE-C040-0001"
+          ],
+          "readStages": {
+            "bag": 4,
+            "checkout": 11,
+            "details": 6,
+            "payment": 9,
+            "review": 8,
+            "receipt": 2,
+            "order": 1
+          },
+          "lostSubmitResults": 0,
+          "frameRemoved": [],
+          "detailOverride": [],
+          "realAcceptanceClaimed": false
+        },
+        {
+          "name": "observed-deep-route-with-fake-unpaid-proof",
+          "passed": true,
+          "durationMs": 1066,
+          "runs": [
+            {
+              "kind": "start",
+              "state": "CONFIRMED_UNPAID",
+              "reason": null,
+              "phase": "ORDER_RECEIPT",
+              "pending": null
+            },
+            {
+              "kind": "consumed-grant",
+              "state": "CONFIRMED_UNPAID",
+              "reason": null,
+              "phase": "ORDER_RECEIPT",
+              "pending": null
+            }
+          ],
+          "final": {
+            "state": "CONFIRMED_UNPAID",
+            "reason": null,
+            "phase": "ORDER_RECEIPT",
+            "pending": null
+          },
+          "actions": [
+            "checkout",
+            "selectPickup",
+            "chooseSlot",
+            "fillDetails",
+            "selectPayment",
+            "continuePayment",
+            "submitOrder"
+          ],
+          "summaryReads": 5,
+          "effects": {
+            "checkout": 1,
+            "summaryOpen": 5,
+            "summaryClose": 5,
+            "pickup": 1,
+            "time": 1,
+            "slotContinue": 1,
+            "detailsContinue": 1,
+            "payment": 1,
+            "paymentContinue": 1,
+            "submit": 1
+          },
+          "orders": 1,
+          "orderRecordExact": true,
+          "detailsWrittenOnceByNativeEvents": true,
+          "detailsAbsentFromDurableTask": true,
+          "navigations": [
+            "https://secure8.www.apple.com.cn/shop/order/detail/FAKE-ORDER/FAKE-LOOKUP"
+          ],
+          "readStages": {
+            "bag": 4,
+            "checkout": 11,
+            "details": 6,
+            "payment": 9,
+            "review": 8,
+            "receipt": 2,
+            "order": 1
+          },
+          "lostSubmitResults": 0,
+          "frameRemoved": [],
+          "detailOverride": [],
+          "realAcceptanceClaimed": false
+        },
+        {
+          "name": "observed-cancelled-native-status-conflicting-fake-pending",
+          "passed": true,
+          "durationMs": 1078,
+          "runs": [
+            {
+              "kind": "start",
+              "state": "NEEDS_VERIFICATION",
+              "reason": "final-result-unconfirmed; no resubmission",
+              "phase": "ORDER_RECEIPT",
+              "pending": "submitOrder"
+            }
+          ],
+          "final": {
+            "state": "NEEDS_VERIFICATION",
+            "reason": "final-result-unconfirmed; no resubmission",
+            "phase": "ORDER_RECEIPT",
+            "pending": "submitOrder"
+          },
+          "actions": [
+            "checkout",
+            "selectPickup",
+            "chooseSlot",
+            "fillDetails",
+            "selectPayment",
+            "continuePayment",
+            "submitOrder"
+          ],
+          "summaryReads": 5,
+          "effects": {
+            "checkout": 1,
+            "summaryOpen": 5,
+            "summaryClose": 5,
+            "pickup": 1,
+            "time": 1,
+            "slotContinue": 1,
+            "detailsContinue": 1,
+            "payment": 1,
+            "paymentContinue": 1,
+            "submit": 1
+          },
+          "orders": 1,
+          "orderRecordExact": true,
+          "detailsWrittenOnceByNativeEvents": true,
+          "detailsAbsentFromDurableTask": true,
+          "navigations": [
+            "https://secure8.www.apple.com.cn/shop/order/detail/FAKE-ORDER/FAKE-LOOKUP"
+          ],
+          "readStages": {
+            "bag": 4,
+            "checkout": 11,
+            "details": 6,
+            "payment": 9,
+            "review": 8,
+            "receipt": 2,
+            "order": 1
+          },
+          "lostSubmitResults": 0,
+          "frameRemoved": [],
+          "detailOverride": [],
+          "realAcceptanceClaimed": false
+        },
+        {
+          "name": "observed-picked-up-native-status-conflicting-fake-pending",
+          "passed": true,
+          "durationMs": 914,
+          "runs": [
+            {
+              "kind": "start",
+              "state": "NEEDS_VERIFICATION",
+              "reason": "final-result-unconfirmed; no resubmission",
+              "phase": "ORDER_RECEIPT",
+              "pending": "submitOrder"
+            }
+          ],
+          "final": {
+            "state": "NEEDS_VERIFICATION",
+            "reason": "final-result-unconfirmed; no resubmission",
+            "phase": "ORDER_RECEIPT",
+            "pending": "submitOrder"
+          },
+          "actions": [
+            "checkout",
+            "selectPickup",
+            "chooseSlot",
+            "fillDetails",
+            "selectPayment",
+            "continuePayment",
+            "submitOrder"
+          ],
+          "summaryReads": 5,
+          "effects": {
+            "checkout": 1,
+            "summaryOpen": 5,
+            "summaryClose": 5,
+            "pickup": 1,
+            "time": 1,
+            "slotContinue": 1,
+            "detailsContinue": 1,
+            "payment": 1,
+            "paymentContinue": 1,
+            "submit": 1
+          },
+          "orders": 1,
+          "orderRecordExact": true,
+          "detailsWrittenOnceByNativeEvents": true,
+          "detailsAbsentFromDurableTask": true,
+          "navigations": [
+            "https://secure8.www.apple.com.cn/shop/order/detail/FAKE-ORDER/FAKE-LOOKUP"
+          ],
+          "readStages": {
+            "bag": 4,
+            "checkout": 11,
+            "details": 6,
+            "payment": 9,
+            "review": 8,
+            "receipt": 2,
+            "order": 1
+          },
+          "lostSubmitResults": 0,
+          "frameRemoved": [],
+          "detailOverride": [],
+          "realAcceptanceClaimed": false
+        }
+      ],
+      "cleanup": {
+        "contextsClosed": 4,
+        "browserClosed": true,
+        "serverClosed": true,
+        "errors": []
+      },
+      "guard": {
+        "outcome": "aborted",
+        "blockedRequests": 1,
+        "serverHits": 0
+      }
+    },
+    {
+      "suite": "rootStatusGuardIsolation",
+      "passed": 2,
+      "checks": [
+        {
+          "name": "cancelled-guard-isolated-from-product-ambiguity",
+          "passed": true,
+          "durationMs": 1041,
+          "runs": [
+            {
+              "kind": "start",
+              "state": "NEEDS_VERIFICATION",
+              "reason": "final-result-unconfirmed; no resubmission",
+              "phase": "ORDER_RECEIPT",
+              "pending": "submitOrder"
+            }
+          ],
+          "final": {
+            "state": "NEEDS_VERIFICATION",
+            "reason": "final-result-unconfirmed; no resubmission",
+            "phase": "ORDER_RECEIPT",
+            "pending": "submitOrder"
+          },
+          "actions": [
+            "checkout",
+            "selectPickup",
+            "chooseSlot",
+            "fillDetails",
+            "selectPayment",
+            "continuePayment",
+            "submitOrder"
+          ],
+          "summaryReads": 5,
+          "effects": {
+            "checkout": 1,
+            "summaryOpen": 5,
+            "summaryClose": 5,
+            "pickup": 1,
+            "time": 1,
+            "slotContinue": 1,
+            "detailsContinue": 1,
+            "payment": 1,
+            "paymentContinue": 1,
+            "submit": 1
+          },
+          "orders": 1,
+          "orderRecordExact": true,
+          "detailsWrittenOnceByNativeEvents": true,
+          "detailsAbsentFromDurableTask": true,
+          "navigations": [
+            "https://secure8.www.apple.com.cn/shop/order/detail/FAKE-ORDER/FAKE-LOOKUP"
+          ],
+          "readStages": {
+            "bag": 4,
+            "checkout": 11,
+            "details": 6,
+            "payment": 9,
+            "review": 8,
+            "receipt": 2,
+            "order": 1
+          },
+          "lostSubmitResults": 0,
+          "frameRemoved": [],
+          "terminalDecode": {
+            "phase": "UNKNOWN",
+            "purchaseVerified": true,
+            "slotVerified": true,
+            "refHash": "0539cb0a02c0c13635f6470358c90d5fda2bc41693aeecf8962eaf4da3be3ebb"
+          },
+          "detailOverride": [],
+          "realAcceptanceClaimed": false
+        },
+        {
+          "name": "pickedup-guard-isolated-from-product-ambiguity",
+          "passed": true,
+          "durationMs": 895,
+          "runs": [
+            {
+              "kind": "start",
+              "state": "NEEDS_VERIFICATION",
+              "reason": "final-result-unconfirmed; no resubmission",
+              "phase": "ORDER_RECEIPT",
+              "pending": "submitOrder"
+            }
+          ],
+          "final": {
+            "state": "NEEDS_VERIFICATION",
+            "reason": "final-result-unconfirmed; no resubmission",
+            "phase": "ORDER_RECEIPT",
+            "pending": "submitOrder"
+          },
+          "actions": [
+            "checkout",
+            "selectPickup",
+            "chooseSlot",
+            "fillDetails",
+            "selectPayment",
+            "continuePayment",
+            "submitOrder"
+          ],
+          "summaryReads": 5,
+          "effects": {
+            "checkout": 1,
+            "summaryOpen": 5,
+            "summaryClose": 5,
+            "pickup": 1,
+            "time": 1,
+            "slotContinue": 1,
+            "detailsContinue": 1,
+            "payment": 1,
+            "paymentContinue": 1,
+            "submit": 1
+          },
+          "orders": 1,
+          "orderRecordExact": true,
+          "detailsWrittenOnceByNativeEvents": true,
+          "detailsAbsentFromDurableTask": true,
+          "navigations": [
+            "https://secure8.www.apple.com.cn/shop/order/detail/FAKE-ORDER/FAKE-LOOKUP"
+          ],
+          "readStages": {
+            "bag": 4,
+            "checkout": 11,
+            "details": 6,
+            "payment": 9,
+            "review": 8,
+            "receipt": 2,
+            "order": 1
+          },
+          "lostSubmitResults": 0,
+          "frameRemoved": [],
+          "terminalDecode": {
+            "phase": "UNKNOWN",
+            "purchaseVerified": true,
+            "slotVerified": true,
+            "refHash": "0539cb0a02c0c13635f6470358c90d5fda2bc41693aeecf8962eaf4da3be3ebb"
+          },
+          "detailOverride": [],
+          "realAcceptanceClaimed": false
+        }
+      ],
+      "cleanup": {
+        "contextsClosed": 2,
+        "browserClosed": true,
+        "serverClosed": true,
+        "errors": []
+      },
+      "guard": {
+        "outcome": "aborted",
+        "blockedRequests": 1,
+        "serverHits": 0
+      }
+    },
+    {
+      "suite": "rootLookupRegression",
+      "passed": 2,
+      "checks": [
+        {
+          "name": "baseline-first-start-confirmation",
+          "passed": true,
+          "durationMs": 941,
+          "runs": [
+            {
+              "kind": "start",
+              "state": "CONFIRMED_UNPAID",
+              "reason": null,
+              "phase": "ORDER_RECEIPT",
+              "pending": null
+            },
+            {
+              "kind": "consumed-grant",
+              "state": "CONFIRMED_UNPAID",
+              "reason": null,
+              "phase": "ORDER_RECEIPT",
+              "pending": null
+            }
+          ],
+          "final": {
+            "state": "CONFIRMED_UNPAID",
+            "reason": null,
+            "phase": "ORDER_RECEIPT",
+            "pending": null
+          },
+          "actions": [
+            "checkout",
+            "selectPickup",
+            "chooseSlot",
+            "fillDetails",
+            "selectPayment",
+            "continuePayment",
+            "submitOrder"
+          ],
+          "summaryReads": 5,
+          "effects": {
+            "checkout": 1,
+            "summaryOpen": 5,
+            "summaryClose": 5,
+            "pickup": 1,
+            "time": 1,
+            "slotContinue": 1,
+            "detailsContinue": 1,
+            "payment": 1,
+            "paymentContinue": 1,
+            "submit": 1
+          },
+          "orders": 1,
+          "orderRecordExact": true,
+          "detailsWrittenOnceByNativeEvents": true,
+          "detailsAbsentFromDurableTask": true,
+          "navigations": [
+            "https://www.apple.com.cn/shop/order/FAKE-C040-0001"
+          ],
+          "readStages": {
+            "bag": 4,
+            "checkout": 11,
+            "details": 6,
+            "payment": 9,
+            "review": 8,
+            "receipt": 2,
+            "order": 1
+          },
+          "lostSubmitResults": 0,
+          "frameRemoved": [],
+          "lookupReadLossInjected": false,
+          "detailOverride": [],
+          "realAcceptanceClaimed": false
+        },
+        {
+          "name": "lookup-one-transient-read-loss-first-start",
+          "passed": true,
+          "durationMs": 957,
+          "runs": [
+            {
+              "kind": "start",
+              "state": "CONFIRMED_UNPAID",
+              "reason": null,
+              "phase": "ORDER_RECEIPT",
+              "pending": null
+            },
+            {
+              "kind": "consumed-grant",
+              "state": "CONFIRMED_UNPAID",
+              "reason": null,
+              "phase": "ORDER_RECEIPT",
+              "pending": null
+            }
+          ],
+          "final": {
+            "state": "CONFIRMED_UNPAID",
+            "reason": null,
+            "phase": "ORDER_RECEIPT",
+            "pending": null
+          },
+          "actions": [
+            "checkout",
+            "selectPickup",
+            "chooseSlot",
+            "fillDetails",
+            "selectPayment",
+            "continuePayment",
+            "submitOrder"
+          ],
+          "summaryReads": 5,
+          "effects": {
+            "checkout": 1,
+            "summaryOpen": 5,
+            "summaryClose": 5,
+            "pickup": 1,
+            "time": 1,
+            "slotContinue": 1,
+            "detailsContinue": 1,
+            "payment": 1,
+            "paymentContinue": 1,
+            "submit": 1
+          },
+          "orders": 1,
+          "orderRecordExact": true,
+          "detailsWrittenOnceByNativeEvents": true,
+          "detailsAbsentFromDurableTask": true,
+          "navigations": [
+            "https://www.apple.com.cn/shop/order/FAKE-C040-0001"
+          ],
+          "readStages": {
+            "bag": 4,
+            "checkout": 11,
+            "details": 6,
+            "payment": 9,
+            "review": 8,
+            "receipt": 2,
+            "order": 1
+          },
+          "lostSubmitResults": 0,
+          "frameRemoved": [],
+          "lookupReadLossInjected": true,
+          "detailOverride": [],
+          "realAcceptanceClaimed": false
+        }
+      ],
+      "cleanup": {
+        "contextsClosed": 2,
+        "browserClosed": true,
+        "serverClosed": true,
+        "errors": []
+      },
+      "guard": {
+        "outcome": "aborted",
+        "blockedRequests": 1,
+        "serverHits": 0
+      }
+    },
+    {
+      "suite": "currentNativeOrder",
+      "passed": 8,
+      "checks": [
+        {
+          "name": "native-order-confirmed-unpaid",
+          "passed": true,
+          "durationMs": 969,
+          "runs": [
+            {
+              "kind": "start",
+              "state": "CONFIRMED_UNPAID",
+              "reason": null,
+              "phase": "ORDER_RECEIPT",
+              "pending": null
+            },
+            {
+              "kind": "consumed-grant",
+              "state": "CONFIRMED_UNPAID",
+              "reason": null,
+              "phase": "ORDER_RECEIPT",
+              "pending": null
+            }
+          ],
+          "final": {
+            "state": "CONFIRMED_UNPAID",
+            "reason": null,
+            "phase": "ORDER_RECEIPT",
+            "pending": null
+          },
+          "actions": [
+            "checkout",
+            "selectPickup",
+            "chooseSlot",
+            "fillDetails",
+            "selectPayment",
+            "continuePayment",
+            "submitOrder"
+          ],
+          "summaryReads": 5,
+          "effects": {
+            "checkout": 1,
+            "summaryOpen": 5,
+            "summaryClose": 5,
+            "pickup": 1,
+            "time": 1,
+            "slotContinue": 1,
+            "detailsContinue": 1,
+            "payment": 1,
+            "paymentContinue": 1,
+            "submit": 1
+          },
+          "orders": 1,
+          "orderRecordExact": true,
+          "detailsWrittenOnceByNativeEvents": true,
+          "detailsAbsentFromDurableTask": true,
+          "navigations": [
+            "https://www.apple.com.cn/shop/order/FAKE-C040-0001"
+          ],
+          "readStages": {
+            "bag": 4,
+            "checkout": 11,
+            "details": 6,
+            "payment": 9,
+            "review": 8,
+            "receipt": 2,
+            "order": 1
+          },
+          "lostSubmitResults": 0,
+          "frameRemoved": [],
+          "detailOverride": [],
+          "realAcceptanceClaimed": false
+        },
+        {
+          "name": "submit-result-lost-readonly-revoked-resume",
+          "passed": true,
+          "durationMs": 861,
+          "runs": [
+            {
+              "kind": "start",
+              "state": "NEEDS_VERIFICATION",
+              "reason": "mutation-transport-lost; reconcile before proceeding",
+              "phase": "REVIEW",
+              "pending": "submitOrder"
+            },
+            {
+              "kind": "readonly",
+              "state": "NEEDS_VERIFICATION",
+              "reason": "final-result-unconfirmed; no resubmission",
+              "phase": "ORDER_RECEIPT",
+              "pending": "submitOrder"
+            },
+            {
+              "kind": "revoked-grant",
+              "state": "BLOCKED",
+              "reason": "advance-authorization-cleared-by-human-intervention",
+              "phase": "ORDER_RECEIPT",
+              "pending": "submitOrder"
+            },
+            {
+              "kind": "resume",
+              "state": "CONFIRMED_UNPAID",
+              "reason": null,
+              "phase": "ORDER_RECEIPT",
+              "pending": null
+            },
+            {
+              "kind": "consumed-grant",
+              "state": "CONFIRMED_UNPAID",
+              "reason": null,
+              "phase": "ORDER_RECEIPT",
+              "pending": null
+            }
+          ],
+          "final": {
+            "state": "CONFIRMED_UNPAID",
+            "reason": null,
+            "phase": "ORDER_RECEIPT",
+            "pending": null
+          },
+          "actions": [
+            "checkout",
+            "selectPickup",
+            "chooseSlot",
+            "fillDetails",
+            "selectPayment",
+            "continuePayment",
+            "submitOrder"
+          ],
+          "summaryReads": 5,
+          "effects": {
+            "checkout": 1,
+            "summaryOpen": 5,
+            "summaryClose": 5,
+            "pickup": 1,
+            "time": 1,
+            "slotContinue": 1,
+            "detailsContinue": 1,
+            "payment": 1,
+            "paymentContinue": 1,
+            "submit": 1
+          },
+          "orders": 1,
+          "orderRecordExact": true,
+          "detailsWrittenOnceByNativeEvents": true,
+          "detailsAbsentFromDurableTask": true,
+          "navigations": [
+            "https://www.apple.com.cn/shop/order/FAKE-C040-0001"
+          ],
+          "readStages": {
+            "bag": 4,
+            "checkout": 11,
+            "details": 6,
+            "payment": 9,
+            "review": 5,
+            "receipt": 3,
+            "order": 1
+          },
+          "lostSubmitResults": 1,
+          "frameRemoved": [],
+          "detailOverride": [],
+          "realAcceptanceClaimed": false
+        },
+        {
+          "name": "detail-quantity-two-unconfirmed",
+          "passed": true,
+          "durationMs": 883,
+          "runs": [
+            {
+              "kind": "start",
+              "state": "NEEDS_VERIFICATION",
+              "reason": "final-result-unconfirmed; no resubmission",
+              "phase": "ORDER_RECEIPT",
+              "pending": "submitOrder"
+            }
+          ],
+          "final": {
+            "state": "NEEDS_VERIFICATION",
+            "reason": "final-result-unconfirmed; no resubmission",
+            "phase": "ORDER_RECEIPT",
+            "pending": "submitOrder"
+          },
+          "actions": [
+            "checkout",
+            "selectPickup",
+            "chooseSlot",
+            "fillDetails",
+            "selectPayment",
+            "continuePayment",
+            "submitOrder"
+          ],
+          "summaryReads": 5,
+          "effects": {
+            "checkout": 1,
+            "summaryOpen": 5,
+            "summaryClose": 5,
+            "pickup": 1,
+            "time": 1,
+            "slotContinue": 1,
+            "detailsContinue": 1,
+            "payment": 1,
+            "paymentContinue": 1,
+            "submit": 1
+          },
+          "orders": 1,
+          "orderRecordExact": true,
+          "detailsWrittenOnceByNativeEvents": true,
+          "detailsAbsentFromDurableTask": true,
+          "navigations": [
+            "https://www.apple.com.cn/shop/order/FAKE-C040-0001"
+          ],
+          "readStages": {
+            "bag": 4,
+            "checkout": 11,
+            "details": 6,
+            "payment": 9,
+            "review": 8,
+            "receipt": 2,
+            "order": 1
+          },
+          "lostSubmitResults": 0,
+          "frameRemoved": [],
+          "detailOverride": [
+            "quantity"
+          ],
+          "realAcceptanceClaimed": false
+        },
+        {
+          "name": "detail-price-over-cap-unconfirmed",
+          "passed": true,
+          "durationMs": 866,
+          "runs": [
+            {
+              "kind": "start",
+              "state": "NEEDS_VERIFICATION",
+              "reason": "final-result-unconfirmed; no resubmission",
+              "phase": "ORDER_RECEIPT",
+              "pending": "submitOrder"
+            }
+          ],
+          "final": {
+            "state": "NEEDS_VERIFICATION",
+            "reason": "final-result-unconfirmed; no resubmission",
+            "phase": "ORDER_RECEIPT",
+            "pending": "submitOrder"
+          },
+          "actions": [
+            "checkout",
+            "selectPickup",
+            "chooseSlot",
+            "fillDetails",
+            "selectPayment",
+            "continuePayment",
+            "submitOrder"
+          ],
+          "summaryReads": 5,
+          "effects": {
+            "checkout": 1,
+            "summaryOpen": 5,
+            "summaryClose": 5,
+            "pickup": 1,
+            "time": 1,
+            "slotContinue": 1,
+            "detailsContinue": 1,
+            "payment": 1,
+            "paymentContinue": 1,
+            "submit": 1
+          },
+          "orders": 1,
+          "orderRecordExact": true,
+          "detailsWrittenOnceByNativeEvents": true,
+          "detailsAbsentFromDurableTask": true,
+          "navigations": [
+            "https://www.apple.com.cn/shop/order/FAKE-C040-0001"
+          ],
+          "readStages": {
+            "bag": 4,
+            "checkout": 11,
+            "details": 6,
+            "payment": 9,
+            "review": 8,
+            "receipt": 2,
+            "order": 1
+          },
+          "lostSubmitResults": 0,
+          "frameRemoved": [],
+          "detailOverride": [
+            "totalCny"
+          ],
+          "realAcceptanceClaimed": false
+        },
+        {
+          "name": "detail-other-spec-unconfirmed",
+          "passed": true,
+          "durationMs": 866,
+          "runs": [
+            {
+              "kind": "start",
+              "state": "NEEDS_VERIFICATION",
+              "reason": "final-result-unconfirmed; no resubmission",
+              "phase": "ORDER_RECEIPT",
+              "pending": "submitOrder"
+            }
+          ],
+          "final": {
+            "state": "NEEDS_VERIFICATION",
+            "reason": "final-result-unconfirmed; no resubmission",
+            "phase": "ORDER_RECEIPT",
+            "pending": "submitOrder"
+          },
+          "actions": [
+            "checkout",
+            "selectPickup",
+            "chooseSlot",
+            "fillDetails",
+            "selectPayment",
+            "continuePayment",
+            "submitOrder"
+          ],
+          "summaryReads": 5,
+          "effects": {
+            "checkout": 1,
+            "summaryOpen": 5,
+            "summaryClose": 5,
+            "pickup": 1,
+            "time": 1,
+            "slotContinue": 1,
+            "detailsContinue": 1,
+            "payment": 1,
+            "paymentContinue": 1,
+            "submit": 1
+          },
+          "orders": 1,
+          "orderRecordExact": true,
+          "detailsWrittenOnceByNativeEvents": true,
+          "detailsAbsentFromDurableTask": true,
+          "navigations": [
+            "https://www.apple.com.cn/shop/order/FAKE-C040-0001"
+          ],
+          "readStages": {
+            "bag": 4,
+            "checkout": 11,
+            "details": 6,
+            "payment": 9,
+            "review": 8,
+            "receipt": 2,
+            "order": 1
+          },
+          "lostSubmitResults": 0,
+          "frameRemoved": [],
+          "detailOverride": [
+            "title"
+          ],
+          "realAcceptanceClaimed": false
+        },
+        {
+          "name": "detail-other-slot-unconfirmed",
+          "passed": true,
+          "durationMs": 944,
+          "runs": [
+            {
+              "kind": "start",
+              "state": "NEEDS_VERIFICATION",
+              "reason": "final-result-unconfirmed; no resubmission",
+              "phase": "ORDER_RECEIPT",
+              "pending": "submitOrder"
+            }
+          ],
+          "final": {
+            "state": "NEEDS_VERIFICATION",
+            "reason": "final-result-unconfirmed; no resubmission",
+            "phase": "ORDER_RECEIPT",
+            "pending": "submitOrder"
+          },
+          "actions": [
+            "checkout",
+            "selectPickup",
+            "chooseSlot",
+            "fillDetails",
+            "selectPayment",
+            "continuePayment",
+            "submitOrder"
+          ],
+          "summaryReads": 5,
+          "effects": {
+            "checkout": 1,
+            "summaryOpen": 5,
+            "summaryClose": 5,
+            "pickup": 1,
+            "time": 1,
+            "slotContinue": 1,
+            "detailsContinue": 1,
+            "payment": 1,
+            "paymentContinue": 1,
+            "submit": 1
+          },
+          "orders": 1,
+          "orderRecordExact": true,
+          "detailsWrittenOnceByNativeEvents": true,
+          "detailsAbsentFromDurableTask": true,
+          "navigations": [
+            "https://www.apple.com.cn/shop/order/FAKE-C040-0001"
+          ],
+          "readStages": {
+            "bag": 4,
+            "checkout": 11,
+            "details": 6,
+            "payment": 9,
+            "review": 8,
+            "receipt": 2,
+            "order": 1
+          },
+          "lostSubmitResults": 0,
+          "frameRemoved": [],
+          "detailOverride": [
+            "time"
+          ],
+          "realAcceptanceClaimed": false
+        },
+        {
+          "name": "detail-slot-proof-missing-unconfirmed",
+          "passed": true,
+          "durationMs": 883,
+          "runs": [
+            {
+              "kind": "start",
+              "state": "NEEDS_VERIFICATION",
+              "reason": "final-result-unconfirmed; no resubmission",
+              "phase": "ORDER_RECEIPT",
+              "pending": "submitOrder"
+            }
+          ],
+          "final": {
+            "state": "NEEDS_VERIFICATION",
+            "reason": "final-result-unconfirmed; no resubmission",
+            "phase": "ORDER_RECEIPT",
+            "pending": "submitOrder"
+          },
+          "actions": [
+            "checkout",
+            "selectPickup",
+            "chooseSlot",
+            "fillDetails",
+            "selectPayment",
+            "continuePayment",
+            "submitOrder"
+          ],
+          "summaryReads": 5,
+          "effects": {
+            "checkout": 1,
+            "summaryOpen": 5,
+            "summaryClose": 5,
+            "pickup": 1,
+            "time": 1,
+            "slotContinue": 1,
+            "detailsContinue": 1,
+            "payment": 1,
+            "paymentContinue": 1,
+            "submit": 1
+          },
+          "orders": 1,
+          "orderRecordExact": true,
+          "detailsWrittenOnceByNativeEvents": true,
+          "detailsAbsentFromDurableTask": true,
+          "navigations": [
+            "https://www.apple.com.cn/shop/order/FAKE-C040-0001"
+          ],
+          "readStages": {
+            "bag": 4,
+            "checkout": 11,
+            "details": 6,
+            "payment": 9,
+            "review": 8,
+            "receipt": 2,
+            "order": 1
+          },
+          "lostSubmitResults": 0,
+          "frameRemoved": [],
+          "detailOverride": [
+            "time"
+          ],
+          "realAcceptanceClaimed": false
+        },
+        {
+          "name": "document-route-read-loss-recovered",
+          "passed": true,
+          "durationMs": 1160,
+          "runs": [
+            {
+              "kind": "start",
+              "state": "CONFIRMED_UNPAID",
+              "reason": null,
+              "phase": "ORDER_RECEIPT",
+              "pending": null
+            },
+            {
+              "kind": "consumed-grant",
+              "state": "CONFIRMED_UNPAID",
+              "reason": null,
+              "phase": "ORDER_RECEIPT",
+              "pending": null
+            }
+          ],
+          "final": {
+            "state": "CONFIRMED_UNPAID",
+            "reason": null,
+            "phase": "ORDER_RECEIPT",
+            "pending": null
+          },
+          "actions": [
+            "checkout",
+            "selectPickup",
+            "chooseSlot",
+            "fillDetails",
+            "selectPayment",
+            "continuePayment",
+            "submitOrder"
+          ],
+          "summaryReads": 5,
+          "effects": {
+            "checkout": 1,
+            "summaryOpen": 5,
+            "summaryClose": 5,
+            "pickup": 1,
+            "time": 1,
+            "slotContinue": 1,
+            "detailsContinue": 1,
+            "payment": 1,
+            "paymentContinue": 1,
+            "submit": 1
+          },
+          "orders": 1,
+          "orderRecordExact": true,
+          "detailsWrittenOnceByNativeEvents": true,
+          "detailsAbsentFromDurableTask": true,
+          "navigations": [
+            "https://www.apple.com.cn/shop/order/FAKE-C040-0001"
+          ],
+          "readStages": {
+            "bag": 4,
+            "checkout": 10,
+            "details": 5,
+            "payment": 8,
+            "review": 5,
+            "receipt": 2,
+            "order": 1
+          },
+          "lostSubmitResults": 0,
+          "frameRemoved": [
+            "chooseSlot",
+            "fillDetails",
+            "continuePayment",
+            "submitOrder"
+          ],
+          "detailOverride": [],
+          "realAcceptanceClaimed": false
+        }
+      ],
+      "cleanup": {
+        "contextsClosed": 8,
+        "browserClosed": true,
+        "serverClosed": true,
+        "errors": []
+      },
+      "guard": {
+        "outcome": "aborted",
+        "blockedRequests": 1,
+        "serverHits": 0
+      }
+    },
+    {
+      "suite": "priorNativePrefix",
+      "passed": 8,
+      "checks": [
+        {
+          "name": "empty-native-complete-prefix",
+          "passed": true,
+          "durationMs": 1084,
+          "state": "NEEDS_VERIFICATION",
+          "phase": "UNKNOWN",
+          "reason": "slot-result-unconfirmed; no resubmission",
+          "pendingAction": "chooseSlot",
+          "effects": {
+            "noTrade": 1,
+            "noCare": 1,
+            "addBag": 1,
+            "viewBag": 1,
+            "checkout": 1,
+            "summaryOpen": 2,
+            "summaryClose": 2,
+            "pickup": 1,
+            "store": 1,
+            "date": 1,
+            "time": 1,
+            "slotContinue": 1
+          },
+          "commands": [
+            "openProduct",
+            "configureProduct",
+            "configureProduct",
+            "configureProduct",
+            "configureProduct",
+            "addBag",
+            "viewBag",
+            "checkout",
+            "readOrderSummary",
+            "selectPickup",
+            "readOrderSummary",
+            "selectStore",
+            "selectDate",
+            "chooseSlot"
+          ],
+          "navigations": [
+            "product"
+          ],
+          "sideCreated": 1,
+          "sideClosed": 1,
+          "sideReads": 2,
+          "sideFailures": 0,
+          "sideDecoded": [
+            {
+              "phase": "EMPTY_BAG",
+              "quantity": null,
+              "verified": false,
+              "extras": null
+            },
+            {
+              "phase": "EMPTY_BAG",
+              "quantity": null,
+              "verified": false,
+              "extras": null
+            }
+          ],
+          "lossInjected": false,
+          "initialDates": [
+            "October 4",
+            "October 5",
+            "October 6"
+          ],
+          "restart": false,
+          "realAcceptanceClaimed": false
+        },
+        {
+          "name": "matching-native-openBag-zero-add",
+          "passed": true,
+          "durationMs": 815,
+          "state": "NEEDS_VERIFICATION",
+          "phase": "UNKNOWN",
+          "reason": "slot-result-unconfirmed; no resubmission",
+          "pendingAction": "chooseSlot",
+          "effects": {
+            "noTrade": 1,
+            "noCare": 1,
+            "checkout": 1,
+            "summaryOpen": 2,
+            "summaryClose": 2,
+            "pickup": 1,
+            "store": 1,
+            "date": 1,
+            "time": 1,
+            "slotContinue": 1
+          },
+          "commands": [
+            "configureProduct",
+            "configureProduct",
+            "configureProduct",
+            "configureProduct",
+            "openBag",
+            "checkout",
+            "readOrderSummary",
+            "selectPickup",
+            "readOrderSummary",
+            "selectStore",
+            "selectDate",
+            "chooseSlot"
+          ],
+          "navigations": [
+            "bag"
+          ],
+          "sideCreated": 1,
+          "sideClosed": 1,
+          "sideReads": 2,
+          "sideFailures": 0,
+          "sideDecoded": [
+            {
+              "phase": "BAG",
+              "quantity": 1,
+              "verified": true,
+              "extras": false
+            },
+            {
+              "phase": "BAG",
+              "quantity": 1,
+              "verified": true,
+              "extras": false
+            }
+          ],
+          "lossInjected": false,
+          "initialDates": [
+            "October 4",
+            "October 5",
+            "October 6"
+          ],
+          "restart": false,
+          "realAcceptanceClaimed": false
+        },
+        {
+          "name": "native-navigation-read-loss-recovers",
+          "passed": true,
+          "durationMs": 1003,
+          "state": "NEEDS_VERIFICATION",
+          "phase": "UNKNOWN",
+          "reason": "slot-result-unconfirmed; no resubmission",
+          "pendingAction": "chooseSlot",
+          "effects": {
+            "noTrade": 1,
+            "noCare": 1,
+            "addBag": 1,
+            "viewBag": 1,
+            "checkout": 1,
+            "summaryOpen": 2,
+            "summaryClose": 2,
+            "pickup": 1,
+            "store": 1,
+            "date": 1,
+            "time": 1,
+            "slotContinue": 1
+          },
+          "commands": [
+            "openProduct",
+            "configureProduct",
+            "configureProduct",
+            "configureProduct",
+            "configureProduct",
+            "addBag",
+            "viewBag",
+            "checkout",
+            "readOrderSummary",
+            "selectPickup",
+            "readOrderSummary",
+            "selectStore",
+            "selectDate",
+            "chooseSlot"
+          ],
+          "navigations": [
+            "product"
+          ],
+          "sideCreated": 1,
+          "sideClosed": 1,
+          "sideReads": 2,
+          "sideFailures": 0,
+          "sideDecoded": [
+            {
+              "phase": "EMPTY_BAG",
+              "quantity": null,
+              "verified": false,
+              "extras": null
+            },
+            {
+              "phase": "EMPTY_BAG",
+              "quantity": null,
+              "verified": false,
+              "extras": null
+            }
+          ],
+          "lossInjected": true,
+          "initialDates": [
+            "October 4",
+            "October 5",
+            "October 6"
+          ],
+          "restart": false,
+          "realAcceptanceClaimed": false
+        },
+        {
+          "name": "wrong-cart-stops",
+          "passed": true,
+          "durationMs": 435,
+          "state": "BLOCKED",
+          "phase": "VARIANT",
+          "reason": "current-bag-holds-other-items; nothing added, removed or bought",
+          "effects": {
+            "noTrade": 1,
+            "noCare": 1
+          },
+          "commands": [
+            "configureProduct",
+            "configureProduct",
+            "configureProduct",
+            "configureProduct"
+          ],
+          "navigations": [],
+          "sideCreated": 1,
+          "sideClosed": 1,
+          "sideReads": 2,
+          "sideFailures": 0,
+          "sideDecoded": [
+            {
+              "phase": "BAG",
+              "quantity": 1,
+              "verified": false,
+              "extras": null
+            },
+            {
+              "phase": "BAG",
+              "quantity": 1,
+              "verified": false,
+              "extras": null
+            }
+          ],
+          "lossInjected": false,
+          "initialDates": null,
+          "restart": false,
+          "realAcceptanceClaimed": false
+        },
+        {
+          "name": "two-cart-items-stop",
+          "passed": true,
+          "durationMs": 415,
+          "state": "BLOCKED",
+          "phase": "VARIANT",
+          "reason": "current-bag-holds-other-items; nothing added, removed or bought",
+          "effects": {
+            "noTrade": 1,
+            "noCare": 1
+          },
+          "commands": [
+            "configureProduct",
+            "configureProduct",
+            "configureProduct",
+            "configureProduct"
+          ],
+          "navigations": [],
+          "sideCreated": 1,
+          "sideClosed": 1,
+          "sideReads": 2,
+          "sideFailures": 0,
+          "sideDecoded": [
+            {
+              "phase": "BAG",
+              "quantity": null,
+              "verified": false,
+              "extras": true
+            },
+            {
+              "phase": "BAG",
+              "quantity": null,
+              "verified": false,
+              "extras": true
+            }
+          ],
+          "lossInjected": false,
+          "initialDates": null,
+          "restart": false,
+          "realAcceptanceClaimed": false
+        },
+        {
+          "name": "persistent-native-side-read-loss-stops",
+          "passed": true,
+          "durationMs": 16514,
+          "state": "NEEDS_VERIFICATION",
+          "phase": "VARIANT",
+          "reason": "current-bag-not-verified-before-add; nothing added",
+          "effects": {
+            "noTrade": 1,
+            "noCare": 1
+          },
+          "commands": [
+            "configureProduct",
+            "configureProduct",
+            "configureProduct",
+            "configureProduct"
+          ],
+          "navigations": [],
+          "sideCreated": 1,
+          "sideClosed": 1,
+          "sideReads": 0,
+          "sideFailures": 150,
+          "sideDecoded": [],
+          "lossInjected": false,
+          "initialDates": null,
+          "restart": false,
+          "realAcceptanceClaimed": false
+        },
+        {
+          "name": "late-slot-result-restart-no-repeat",
+          "passed": true,
+          "durationMs": 1065,
+          "state": "NEEDS_VERIFICATION",
+          "phase": "UNKNOWN",
+          "reason": "slot-result-unconfirmed; no resubmission",
+          "pendingAction": "chooseSlot",
+          "effects": {
+            "noTrade": 1,
+            "noCare": 1,
+            "addBag": 1,
+            "viewBag": 1,
+            "checkout": 1,
+            "summaryOpen": 2,
+            "summaryClose": 2,
+            "pickup": 1,
+            "store": 1,
+            "date": 1,
+            "time": 1,
+            "slotContinue": 1
+          },
+          "commands": [
+            "openProduct",
+            "configureProduct",
+            "configureProduct",
+            "configureProduct",
+            "configureProduct",
+            "addBag",
+            "viewBag",
+            "checkout",
+            "readOrderSummary",
+            "selectPickup",
+            "readOrderSummary",
+            "selectStore",
+            "selectDate",
+            "chooseSlot"
+          ],
+          "navigations": [
+            "product"
+          ],
+          "sideCreated": 1,
+          "sideClosed": 1,
+          "sideReads": 2,
+          "sideFailures": 0,
+          "sideDecoded": [
+            {
+              "phase": "EMPTY_BAG",
+              "quantity": null,
+              "verified": false,
+              "extras": null
+            },
+            {
+              "phase": "EMPTY_BAG",
+              "quantity": null,
+              "verified": false,
+              "extras": null
+            }
+          ],
+          "lossInjected": true,
+          "initialDates": [
+            "October 4",
+            "October 5",
+            "October 6"
+          ],
+          "restart": true,
+          "realAcceptanceClaimed": false
+        },
+        {
+          "name": "new-host-permission-stops",
+          "passed": true,
+          "durationMs": 914,
+          "state": "NEEDS_USER",
+          "phase": "BAG",
+          "reason": "current-host-permission-missing; no automatic action",
+          "pendingAction": "checkout",
+          "effects": {
+            "noTrade": 1,
+            "noCare": 1,
+            "addBag": 1,
+            "viewBag": 1,
+            "checkout": 1
+          },
+          "commands": [
+            "openProduct",
+            "configureProduct",
+            "configureProduct",
+            "configureProduct",
+            "configureProduct",
+            "addBag",
+            "viewBag",
+            "checkout"
+          ],
+          "navigations": [
+            "product"
+          ],
+          "sideCreated": 1,
+          "sideClosed": 1,
+          "sideReads": 2,
+          "sideFailures": 0,
+          "sideDecoded": [
+            {
+              "phase": "EMPTY_BAG",
+              "quantity": null,
+              "verified": false,
+              "extras": null
+            },
+            {
+              "phase": "EMPTY_BAG",
+              "quantity": null,
+              "verified": false,
+              "extras": null
+            }
+          ],
+          "lossInjected": false,
+          "initialDates": null,
+          "restart": false,
+          "realAcceptanceClaimed": false
+        }
+      ],
+      "cleanup": {
+        "contextsClosed": 8,
+        "browserClosed": true,
+        "serverClosed": true,
+        "errors": []
+      }
+    }
+  ],
+  "rootInitialReproduction": "legacy green;3 deep-route cases red because no separate detail read; not prior false confirmation",
+  "rootGuardIsolation": "additional entirely FAKE status-only h2 makes purchase/slot/ref proof true; cancelled/pickedup still UNKNOWN and sent intent preserved",
+  "runtimeUnchangedAfterNodeRun": true,
+  "postNodeAddition": "only one Root independent native-isolation .mjs; no runtime/unit source changed, so no redundant full Node repeat",
+  "changedProduction": [
+    "web/checkout-connector/page-program.js"
+  ],
+  "inputProtectedUnchanged": 177,
+  "rootNativeFixtureCrossAuthorReviewRequired": true,
+  "implementationInputReadsNotCurrentTipReview": true,
+  "actualOfficialDetailPathAndCancelledSelectorsObserved": true,
+  "actualCurrentUnpaidOrReceiptProven": false,
+  "receiptUnpaidFieldsAndApiAuthorityBackendRefsTimingFake": true,
+  "actualQuantityExtrasCurrentSlotNotProven": true,
+  "duplicateNativeModelMentionsRemainUnverifiedForFutureUnpaid": true,
+  "realRefusalCatalogStillEmpty": true,
+  "personalInstalledApiDuoCheckoutOfficialSpeedVerified": false,
+  "newRealOrderSlotPaymentPermissionActions": false,
+  "fullGoalComplete": false,
+  "actualFinalAgreement": false,
+  "shutdownRequested": false,
+  "timestampUtc": "2026-10-04T12:17:12.081842+00:00"
+}

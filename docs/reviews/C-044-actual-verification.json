@@ -1,0 +1,75 @@
+{
+  "task": "C-044-OBSERVED-ORDER-ROUTE",
+  "status": "returned_for_review",
+  "modelVerified": true,
+  "provider": "firstParty",
+  "canonicalModel": "claude-opus-5-5",
+  "actualCliEffort": "xhigh",
+  "isError": false,
+  "subtype": "success",
+  "primaryModelsActual": [
+    "claude-opus-5-5"
+  ],
+  "durationSeconds": 942.86,
+  "actualTurns": 46,
+  "configuredTurns": 48,
+  "wallCapSeconds": 1200,
+  "cliDollarCap": 8.0,
+  "timedOut": false,
+  "permissionDenials": 0,
+  "privateReadAttempts": 0,
+  "toolCounts": {
+    "Read": 23,
+    "Grep": 8,
+    "Write": 2,
+    "Bash": 8,
+    "Edit": 2
+  },
+  "writeAttemptsPublicPaths": [
+    "docs/claude/C-044-report.md",
+    "test/checkout-c044-order-route.test.ts",
+    "web/checkout-connector/page-program.js"
+  ],
+  "actualCommands": [
+    "node --test test/checkout-c044-order-route.test.ts test/checkout-c043-lookup.test.ts test/checkout-c023-final-lookup.test.ts",
+    "node review/c044-native-order-route.mjs",
+    "node --test test/checkout-c044-order-route.test.ts test/checkout-c043-lookup.test.ts test/checkout-c023-final-lookup.test.ts",
+    "node review/c044-native-order-route.mjs",
+    "node review/c043-independent-native-lookup.mjs",
+    "node test/c040-native-order.mjs",
+    "node test/c039-native-pipeline.mjs",
+    "node --test \"test/*.test.ts\" \"review/*.test.ts\""
+  ],
+  "toolErrors": [
+    {
+      "tool": "Bash",
+      "publicPath": null
+    },
+    {
+      "tool": "Bash",
+      "publicPath": null
+    }
+  ],
+  "completeInputReadCount": 15,
+  "inputMissingLines": {},
+  "inputCoverageNotCurrentTipReview": true,
+  "changedInputSourcePaths": [
+    "web/checkout-connector/page-program.js"
+  ],
+  "newSourcePaths": [
+    "test/checkout-c044-order-route.test.ts"
+  ],
+  "sourceFiles": 179,
+  "sourceSha256": "bed983a240d85d911233fb372fff9d69361ac16744ceb647293b672764af0374",
+  "actualSourceChangesUnaccepted": true,
+  "historicalAggregateModelUsageNotCurrentBilling": true,
+  "fullGoalComplete": false,
+  "shutdownRequested": false,
+  "providerQuotaError": false,
+  "ownedCleanupConfirmed": true,
+  "timestampUtc": "2026-10-04T12:11:40.323767+00:00",
+  "commandDeviations": [],
+  "actualCommandsAreAuthorNotRootRuns": true,
+  "fullSuiteCountsUnreadByAuthor": true,
+  "scope": "C044 implementation179 before Root added one status-isolation regression; not current180 final review"
+}
