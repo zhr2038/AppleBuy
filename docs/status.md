@@ -1,3 +1,5 @@
+**当前验收版已实际同步main和检查点分支。** C037源码提交 `73baecde4f0e1244b4f23123f818a711726ba2ec`，最终171文件SHA `05831e2ff72645f1d79cd1d2f3878b23868a0b8b8d931f9639739df7a2ff17b9`，全部工作文件／Git blob／远端身份匹配，无私密发布；936项和37个隔离场景通过、实际双审已完成，仅限定软件范围。[发布回执](reviews/C-037-publication-verification.json)。
+
 **README状态修正也已实际Opus复审AGREE并接受。** 最终171文件SHA `05831e2ff72645f1d79cd1d2f3878b23868a0b8b8d931f9639739df7a2ff17b9`，仅README与上面的业务验收身份不同，其他170字节一致。5必读及前一公共清单全部完整读取，实际7回合／79.12秒，零错误／拒绝／私有读取／命令／写入；Node936及原生37结果不因纯文案变更重复。[实际文案复审](reviews/C-037-doc-actual-review.md) · [精确验证](reviews/C-037-doc-verification.json)。目前无在途Claude调用，按当前准确身份发布；以下保留验收和历史。
 
 **C035-R1＋C036＋C037软件限定范围已实际验收：936项／37隔离原生场景。** 原Opus5.5/xhigh最终复审真实AGREE，完整36份公共输入逐行核验；源码171文件SHA `1e0b45f78bb3ef77395c327c752b5d6f21c23fb67d50956d1900368e2b636eb8` 与实际复审一致，零权限拒绝／私有读取／写入，所属调用已终止。Codex独立复现门店未默认选中故障，再审查修复和异常场景；Claude交叉审查Codex额度接手代码。接受范围为当场空袋核对、只加一台、同款唯一一台自动回袋结账、当前Pro自提摘要及大连原生门店自动选择。[限定验收](reviews/C-037-bounded-agreement.md) · [真实复审](reviews/C-037-actual-cross-review.md) · [验证回执](reviews/C-037-cross-review-verification.json)。

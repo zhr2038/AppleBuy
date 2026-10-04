@@ -1,0 +1,19 @@
+{
+  "task": "C-037",
+  "scope": "Actually accepted bounded C035-R1/C036/C037 software plus actually reviewed README status-only delta; not full/live goal",
+  "sourceCommit": "73baecde4f0e1244b4f23123f818a711726ba2ec",
+  "sourceFiles": 171,
+  "sourceSha256": "05831e2ff72645f1d79cd1d2f3878b23868a0b8b8d931f9639739df7a2ff17b9",
+  "atomicNonForceMainAndCheckpointPush": true,
+  "allSourceWorkingAndGitBlobsVerified": true,
+  "mainRemoteMatches": true,
+  "checkpointRemoteMatches": true,
+  "workingTreeCleanAtSourcePublication": true,
+  "privateDataPublished": false,
+  "actualOpusAgreement": true,
+  "independentNodePassed": 936,
+  "nativeScenariosPassed": 37,
+  "fullGoalComplete": false,
+  "liveOneStartVerified": false,
+  "timestampUtc": "2026-10-04T04:11:39.493912+00:00"
+}
