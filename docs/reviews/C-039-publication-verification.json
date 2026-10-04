@@ -1,0 +1,14 @@
+{
+  "task": "C-039",
+  "scope": "Actually accepted exact173 native execution-prefix/software recovery; not full/live goal",
+  "sourceCommit": "e2bee18bf1627e8cf11961d9d7995e61271ab2f0",
+  "sourceFiles": 173,
+  "sourceSha256": "832c840415d16f658b75b5898c93dd4b53661bef80e739e541e5e4cdcd5a00cf",
+  "atomicNonForceMainAndCheckpointPush": true,
+  "allWorkingAndGitBlobsMatched": true,
+  "bothRemotesMatch": true,
+  "privateDataPublished": false,
+  "actualOpusAgreement": true,
+  "root943AndBoth8NativeVerified": true,
+  "timestampUtc": "2026-10-04T07:53:10.347549+00:00"
+}
