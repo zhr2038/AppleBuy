@@ -1,0 +1,17 @@
+{
+  "task": "C-042 current desktop run instructions",
+  "scope": "Manager documentation correction for actual accepted/pending identities and safe install handoff, no runtime change",
+  "previousGuideArchivedByteExact": true,
+  "archiveSha256": "7c64519edbd55f6f896508fb892286e71c3792337bcf9fec31541aff30cbbda3",
+  "oldMisleadingCurrentIdentity": "C020139/553 and mutable development folder treated as installed accepted code",
+  "correctAccepted": "C039173 main32f41dede29808430624f6db837b619a4ef95b67",
+  "pendingCandidate175Sha256": "0597f4e1b30e60bf862b50b3d43034509be18c7334f37da649c5c25ac645b992",
+  "noFreshTestRunNeededForDocumentationOnly": true,
+  "actual953Native8Plus8FromC040IndependentEvidence": true,
+  "installedRuntimeIdentityStillUnverified": true,
+  "realRefusalCatalogStillEmpty": true,
+  "weeklyReviewStillPendingOct7": true,
+  "allRuntimeSource175Unchanged": true,
+  "goalComplete": false,
+  "timestampUtc": "2026-10-04T10:22:55.591011+00:00"
+}
