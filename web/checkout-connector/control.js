@@ -4,6 +4,9 @@ import {withPurchaseOwner} from './owner.js';
 const $=id=>document.getElementById(id);let job=null;
 const store={async get(k){return (await chrome.storage.local.get(k))[k]??null;},async put(k,v){await chrome.storage.local.set({[k]:v});}};
 const status=s=>{$('state').textContent=s;};
+// C049: restore only the existing active public target at boot, never a grant; preserve a human choice made while awaiting storage.
+const bootProduct=$('product').value;let productEdited=false;
+$('product').oninput=$('product').onchange=$('product').onpointerdown=()=>{productEdited=true;};
 // The fixed user condition is part of the bound intent: no trade-in and no AppleCare+.
 const plan=()=>({schema:'applebuy-intent/v1',product:$('product').value==='duo'?{model:'iPhone Duo',capacity:'256GB',color:'星光白色'}:{model:'iPhone 18 Pro',capacity:'256GB',color:'黑色'},quantity:1,maxTotalCny:$('product').value==='duo'?15999:9999,city:'大连',fulfillment:'pickup',stores:['Apple 大连恒隆广场'],dateRule:'initial-first-three-terminal',paymentMethod:'支付宝',extras:{...NO_EXTRAS}});
 // Only tabs whose URL Chrome discloses AND that are supported official pages are listed; opaque tabs stay undisclosed.
@@ -30,6 +33,22 @@ $('savePrivate').onclick=async()=>{const v={};for(const k of ['firstName','lastN
 const actionName={configureProduct:'选择商品配置',continueProduct:'继续商品配置',addBag:'加入购物袋',viewBag:'查看购物袋',checkout:'结账',selectPickup:'选择自提',selectStore:'选择门店',selectDate:'选择日期',chooseSlot:'选择时段',fillDetails:'取货详情',selectPayment:'选择付款方式',continuePayment:'继续付款方式',submitOrder:'提交订单',openProduct:'从空购物袋打开商品页',openBag:'核对已有商品并打开购物袋'};
 // Only fixed public models and safe tab numbers are shown, never arbitrary persisted strings or private customer fields.
 const bindingSummary=s=>{const model=['iPhone Duo','iPhone 18 Pro'].includes(s?.plan?.product?.model)?s.plan.product.model:'型号记录无法确认';const tab=Number.isSafeInteger(s?.tabId)&&s.tabId>0?s.tabId:'标签页记录无法确认';return `${model} · 标签页 ${tab}`;};
+// C047 Codex genuine-quota takeover: diagnostic only. The job's binding checks and saved task stay unchanged.
+// Only fixed labels/booleans are rendered; unknown record fields, digests and private values are never echoed.
+const diagnosticJson=v=>JSON.stringify(v,(k,x)=>x!==null&&typeof x==='object'&&!Array.isArray(x)?Object.fromEntries(Object.keys(x).sort().map(n=>[n,x[n]])):x);
+const diagnosticPlan=v=>{if(!v||typeof v!=='object'||Array.isArray(v))return null;const {extras,...rest}=v;return {...rest,extras:{...NO_EXTRAS}};};
+function bindingDiagnostic(previous,p,tabId,digest){
+  let same=null,fields=[];
+  try{
+    const old=previous?.plan,oldExtras=old?.extras===undefined?{...NO_EXTRAS}:old.extras;
+    same=diagnosticJson(diagnosticPlan(old))===diagnosticJson(diagnosticPlan(p))&&diagnosticJson(oldExtras)===diagnosticJson(p.extras);
+    const checks=[['机型',old?.product?.model,p.product.model],['容量',old?.product?.capacity,p.product.capacity],['颜色',old?.product?.color,p.product.color],['数量',old?.quantity,p.quantity],['总价上限',old?.maxTotalCny,p.maxTotalCny],['城市',old?.city,p.city],['收货方式',old?.fulfillment,p.fulfillment],['门店',old?.stores,p.stores],['日期时段规则',old?.dateRule,p.dateRule],['付款方式',old?.paymentMethod,p.paymentMethod],['附加项',oldExtras,p.extras]];
+    fields=checks.filter(([,a,b])=>diagnosticJson(a)!==diagnosticJson(b)).map(([label])=>label);
+    if(same===false&&fields.length===0)fields=['其他记录字段'];
+  }catch{same=null;fields=['记录无法确认'];}
+  const yes=v=>v===null?'无法确认':v?'是':'否';
+  return `程序诊断 C047；标签页一致：${yes(previous?.tabId===tabId)}；购买摘要一致：${yes(previous?.planDigest===digest)}；条件记录一致：${yes(same)}；差异项：${fields.length?fields.join('、'):'无'}；原任务：${bindingSummary(previous)}；当前：${bindingSummary({plan:p,tabId})}`;
+}
 // C034 (Claude): ending a read-only cart task never empties the official bag; later tasks say so and never add to it.
 // C035-R1 (Claude): only a current empty-bag read taken right before Add to Bag lets the program add the one planned item.
 // C037 (Claude): a matching one-item read there is opened in the bag and checked out automatically without Add (no help entry needed).
@@ -72,7 +91,7 @@ async function run(starting=false,{rebind=false,finalGrant=null,live=ticket()}={
       // C029: the purchase run may read the ordinary order-summary disclosure for its quantity; a rebound read-only tab may not.
       const port=new ChromePort(chrome,tabId,{authorized:!rebind,initialSequence:previous?.lastRead??0,acceptedSlot:previous?.acceptedSlot??null,pending:previous?.pending??null,privatePickupData,reviewGrant:useGrant,orderSummary:!rebind});
       job=new PurchaseJob({store,port,maxSteps:300,onState});
-      const result=await job.run(p,{tabId,planDigest:digest,grant:useGrant,taskId:useGrant?.taskId??null,rebind});$('final').disabled=result.lastPhase!=='REVIEW'||result.finalIntent?.sent===true||!!result.reconcileOnly;if(result.lastPhase==='REVIEW'&&port.last?.raw.termsLinks?.length){$('terms').href=port.last.raw.termsLinks[0];}
+      const result=await job.run(p,{tabId,planDigest:digest,grant:useGrant,taskId:useGrant?.taskId??null,rebind});$('final').disabled=result.lastPhase!=='REVIEW'||result.finalIntent?.sent===true||!!result.reconcileOnly;if(result.lastPhase==='REVIEW'&&port.last?.raw.termsLinks?.length){$('terms').href=port.last.raw.termsLinks[0];}if(live()&&result.reason==='existing-task-binding-differs')status($('state').textContent+'；'+bindingDiagnostic(previous,p,tabId,digest));
     }catch{status('执行已停止，请核实当前任务；已发送的动作不会自动重试');}
     finally{job=null;}
   });}catch{status('执行未能安全开始；记录保持不变，已发送的动作不会自动重试');return;}
@@ -87,10 +106,10 @@ $('reconcile').onclick=async()=>{
     if(!live()){halted();return;}const p=plan(),tabId=Number($('tab').value),previous=await store.get(TASK_KEY);if(!live()){halted();return;}
     if(!previous||previous.state==='RETIRED'){status('没有可核对的原任务；未创建新任务，也未点击官网');return;}
     const digest=await boundDigest(p,previous);if(!live()){halted();return;}
-    if(previous.planDigest!==digest){status(`购买条件与原任务不同；原任务：${bindingSummary(previous)}；当前：${bindingSummary({plan:p,tabId})}。记录保持不变；只读核对需使用原任务条件，改绑标签页不能改变商品`);return;}
-    if(previous.tabId!==tabId){status(`标签页与原任务不同；原任务：${bindingSummary(previous)}；当前：${bindingSummary({plan:p,tabId})}。记录保持不变；原标签页仍在时应选回原页；原页已关闭时，另行明确确认改绑仅只读，旧任务不能因此恢复购买`);return;}
+    if(previous.planDigest!==digest){status(`购买条件与原任务不同；原任务：${bindingSummary(previous)}；当前：${bindingSummary({plan:p,tabId})}。记录保持不变；只读核对需使用原任务条件，改绑标签页不能改变商品；${bindingDiagnostic(previous,p,tabId,digest)}`);return;}
+    if(previous.tabId!==tabId){status(`标签页与原任务不同；原任务：${bindingSummary(previous)}；当前：${bindingSummary({plan:p,tabId})}。记录保持不变；原标签页仍在时应选回原页；原页已关闭时，另行明确确认改绑仅只读，旧任务不能因此恢复购买；${bindingDiagnostic(previous,p,tabId,digest)}`);return;}
     const port=new ChromePort(chrome,tabId,{authorized:false,mode:'observe',initialSequence:previous.lastRead??0,acceptedSlot:previous.acceptedSlot??null,pending:previous.pending??null});
-    job=new PurchaseJob({store,port,maxSteps:20,onState});await job.run(p,{tabId,planDigest:digest,mode:'reconcile'});
+    job=new PurchaseJob({store,port,maxSteps:20,onState});const result=await job.run(p,{tabId,planDigest:digest,mode:'reconcile'});if(live()&&result.reason==='existing-task-binding-differs')status($('state').textContent+'；'+bindingDiagnostic(previous,p,tabId,digest));
   }catch{status('只读核对未完成；原任务和已发送动作保留，请核实标签页、主机权限或任务记录');}finally{job=null;}});if(!ownership.owned)status('另一控制页正在执行；本页没有核对或点击');}
   catch{status('只读核对未能安全开始；记录保持不变');}
 };
@@ -146,4 +165,7 @@ $('final').onclick=async()=>{
   await run(false,{finalGrant,live});
 };
 // No delete/reset: completed and unknown purchase history cannot be erased by reopening a control page.
-const saved=await store.get(TASK_KEY);if(saved)status(`保留的任务：${saved.state}；原绑定：${bindingSummary(saved)}；重新打开不会清除购买或未知记录`);
+status('AppleBuy C047 绑定诊断已加载；C049 自提适配已加载；保留全部旧任务记录');
+const saved=await store.get(TASK_KEY);
+if(saved&&saved.state!=='RETIRED'&&!productEdited&&$('product').value===bootProduct&&['iPhone Duo','iPhone 18 Pro'].includes(saved.plan?.product?.model))$('product').value=saved.plan.product.model==='iPhone 18 Pro'?'pro':'duo';
+if(saved)status(`AppleBuy C047 绑定诊断已加载；C049 自提适配已加载；保留的任务：${saved.state}；原绑定：${bindingSummary(saved)}；重新打开不会清除购买或未知记录`);

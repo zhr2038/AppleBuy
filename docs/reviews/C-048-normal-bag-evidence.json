@@ -1,0 +1,61 @@
+{
+  "scope": "normal authorized read-only Chrome bag public structure; no raw account/client/favorite product values",
+  "publicPath": "/shop/bag",
+  "purchasedListCount": 1,
+  "purchasedTitleExactPro256Black": true,
+  "quantityControl": {
+    "label": "数量",
+    "selected": 1,
+    "insidePurchasedLine": true,
+    "hiddenCloneExcluded": true
+  },
+  "labelledTotalCny": 9999,
+  "remove": {
+    "tag": "BUTTON",
+    "autom": "bag-item-remove-button",
+    "children": [
+      {
+        "tag": "SPAN",
+        "publicText": "移除"
+      },
+      {
+        "tag": "SPAN",
+        "class": "visuallyhidden",
+        "publicText": "iPhone 18 Pro 256GB 黑色"
+      }
+    ],
+    "joinedPublicText": "移除iPhone 18 Pro 256GB 黑色"
+  },
+  "saveLater": {
+    "tag": "BUTTON",
+    "autom": "bag-item-savelater-button",
+    "children": [
+      {
+        "tag": "SPAN",
+        "publicText": "移入收藏"
+      },
+      {
+        "tag": "SPAN",
+        "class": "visuallyhidden",
+        "publicText": "iPhone 18 Pro 256GB 黑色"
+      }
+    ]
+  },
+  "favorites": {
+    "scope": "DIV.rs-savedbyyou",
+    "outsidePurchasedList": true,
+    "heading": "H2.rs-savedbyyou-title",
+    "publicHeading": "个人收藏",
+    "list": "UL.rs-savedbyyou-tiles[role=list]",
+    "row": "LI.rs-product-list-item[role=listitem]",
+    "buyEntry": "A.rs-product-list-item-buybtn[data-autom=bag-item-buybtn]",
+    "publicActionText": "继续",
+    "actualItemTitlesAndIdentifiers": "not captured in this report or fixtures",
+    "quantityPurchasedRemoveOrCheckedControl": false,
+    "emptyTile": "LI.rs-product-list-emptytile[role=listitem], no text/children"
+  },
+  "codeReproductionUsesOnlyFakeFavoriteItems": true,
+  "checkoutSlotFinalPaymentOrAddByRoot": false,
+  "actualProgramFinalOutcome": "not observed; pending old viewBag preserved",
+  "timestampUtc": "2026-10-04T13:59:06.302845+00:00"
+}

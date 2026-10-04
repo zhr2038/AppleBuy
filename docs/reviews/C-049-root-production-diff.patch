@@ -1,0 +1,60 @@
+--- a/web/checkout-connector/control.js
++++ b/web/checkout-connector/control.js
+@@ -4,6 +4,9 @@
+ const $=id=>document.getElementById(id);let job=null;
+ const store={async get(k){return (await chrome.storage.local.get(k))[k]??null;},async put(k,v){await chrome.storage.local.set({[k]:v});}};
+ const status=s=>{$('state').textContent=s;};
++// C049: restore only the existing active public target at boot, never a grant; preserve a human choice made while awaiting storage.
++const bootProduct=$('product').value;let productEdited=false;
++$('product').oninput=$('product').onchange=$('product').onpointerdown=()=>{productEdited=true;};
+ // The fixed user condition is part of the bound intent: no trade-in and no AppleCare+.
+ const plan=()=>({schema:'applebuy-intent/v1',product:$('product').value==='duo'?{model:'iPhone Duo',capacity:'256GB',color:'星光白色'}:{model:'iPhone 18 Pro',capacity:'256GB',color:'黑色'},quantity:1,maxTotalCny:$('product').value==='duo'?15999:9999,city:'大连',fulfillment:'pickup',stores:['Apple 大连恒隆广场'],dateRule:'initial-first-three-terminal',paymentMethod:'支付宝',extras:{...NO_EXTRAS}});
+ // Only tabs whose URL Chrome discloses AND that are supported official pages are listed; opaque tabs stay undisclosed.
+@@ -162,5 +165,7 @@
+   await run(false,{finalGrant,live});
+ };
+ // No delete/reset: completed and unknown purchase history cannot be erased by reopening a control page.
+-status('AppleBuy C047 绑定诊断已加载；保留全部旧任务记录');
+-const saved=await store.get(TASK_KEY);if(saved)status(`AppleBuy C047 绑定诊断已加载；保留的任务：${saved.state}；原绑定：${bindingSummary(saved)}；重新打开不会清除购买或未知记录`);
++status('AppleBuy C047 绑定诊断已加载；C049 自提适配已加载；保留全部旧任务记录');
++const saved=await store.get(TASK_KEY);
++if(saved&&saved.state!=='RETIRED'&&!productEdited&&$('product').value===bootProduct&&['iPhone Duo','iPhone 18 Pro'].includes(saved.plan?.product?.model))$('product').value=saved.plan.product.model==='iPhone 18 Pro'?'pro':'duo';
++if(saved)status(`AppleBuy C047 绑定诊断已加载；C049 自提适配已加载；保留的任务：${saved.state}；原绑定：${bindingSummary(saved)}；重新打开不会清除购买或未知记录`);
+--- a/web/checkout-connector/page-program.js
++++ b/web/checkout-connector/page-program.js
+@@ -24,11 +24,11 @@
+   const u=new URL(location.href);
+   const safe=u.protocol==='https:'&&(u.hostname==='www.apple.com.cn'||/^secure(?:\d+)?\.www\.apple\.com\.cn$/.test(u.hostname))&&/^\/shop\/(?:buy-iphone\/(?:iphone-18-pro|iphone-duo)(?:\/[^/]+\/a)?|bag|checkout|order(?:\/[^?#]*)?|signIn(?:\/orders)?)(?:\/)?$/.test(u.pathname);
+   if(!safe)return command?.structured===true?report('UnsupportedOfficialUrl'):{schema:'applebuy-merchant-read/v1',phase:'UNKNOWN',reason:'unsupported-official-url'};
+-  if(/^\/shop\/signIn\/orders\/?$/.test(u.pathname)){
++  if(/^\/shop\/signIn(?:\/orders)?\/?$/.test(u.pathname)){
+     // C-013-R1: same-document delivery evidence survives the AUTH route. A memoized command is never positively
+     // untouched. Only the memo is consulted: no authentication DOM or field is read and no action is taken.
+     if(command)return report('AuthenticationRequired');
+-    return {schema:'applebuy-merchant-read/v1',phase:'AUTH',verifiedStep:false,reason:'official-order-sign-in-required',dates:[],times:[]};
++    return {schema:'applebuy-merchant-read/v1',phase:'AUTH',verifiedStep:false,reason:u.pathname.includes('/orders')?'official-order-sign-in-required':'official-checkout-sign-in-required',dates:[],times:[]};
+   }
+   const main=document.querySelector('main,[role="main"]');if(!main)return command?.structured===true?report('MainNotFound'):{schema:'applebuy-merchant-read/v1',phase:'UNKNOWN',reason:'main-not-found'};
+   const norm=s=>String(s??'').normalize('NFKC').replace(/[\s\u{200B}\u{200C}\u{200D}\u{2060}]+/gu,' ').trim();
+@@ -218,7 +218,20 @@
+   // C036 Codex quota adaptation: current normal pickup uses numbered native store-locator radios. The independently observed
+   // mainland Dalian label and public R609 identifier must BOTH match; never infer a store from its ID or a substring alone.
+   const nativeStore=e=>e.tagName==='INPUT'&&e.getAttribute('name')==='store-locator-result';
+-  const nativeStoreName=e=>{const m=/^\d+\s+(Apple .+)\s+今天 可取货 店内取货$/.exec(name(e));return m&&m[1]==='Apple 大连恒隆广场'&&e.value==='R609'?m[1]:null;};
++  const nativeStoreName=e=>{
++    if(e.value!=='R609')return null;
++    // C049 Root genuine-quota adaptation: native label SPANs join without spaces and now say 明天.
++    // Exact associated public title and R609 are identity; availability prose never binds a date or quantity.
++    const nativeLabel=l=>/(?:^|\s)form-selector-label(?:\s|$)/.test(l.getAttribute('class')??'');
++    const labels=[...e.labels??[]],hasNative=labels.some(l=>nativeLabel(l)||l.querySelectorAll('span.form-selector-title').length>0);
++    if(hasNative){
++      const l=labels.length===1?labels[0]:null,ts=l?[...l.querySelectorAll('span.form-selector-title')]:[];
++      return norm(e.getAttribute('type')).toLowerCase()==='radio'&&l?.tagName==='LABEL'&&visible(l)&&nativeLabel(l)&&
++        ts.length===1&&visible(ts[0])&&norm(ts[0].textContent)==='Apple 大连恒隆广场'&&name(e)===norm(l.textContent)&&
++        /^\d+\s*Apple 大连恒隆广场\s*(?:今天|明天)\s*可取货\s*店内取货$/.test(name(e))?'Apple 大连恒隆广场':null;
++    }
++    const m=/^\d+\s+(Apple .+)\s+今天 可取货 店内取货$/.exec(name(e));return m&&m[1]==='Apple 大连恒隆广场'?m[1]:null;
++  };
+   const storeRadios=radios.filter(e=>/^Apple\s/.test(name(e))||nativeStore(e)),checkedStores=storeRadios.filter(checked);
+   const radioStore=checkedStores.length===1&&!disabled(checkedStores[0])?planStore(nativeStore(checkedStores[0])?nativeStoreName(checkedStores[0])??'':name(checkedStores[0])):null;
+   const fieldValues=[...new Set(texts.flatMap(t=>{const m=/^(?:取货地点|取货门店|自提门店|店内取货地点)\s*[:：]?\s*(.*)$/.exec(t);return m&&/Apple\s/.test(m[1])?[m[1]]:[];}))];

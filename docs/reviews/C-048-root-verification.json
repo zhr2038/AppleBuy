@@ -1,0 +1,335 @@
+{
+  "task": "C-048",
+  "status": "Root author self-verification, not cross-author acceptance or real unpaid completion",
+  "sourceFiles": 184,
+  "sourceSha256": "5b2b036915a905d95c3768b92f37cdd285e272c7a1d00d50a07c0cbde43b5e3a",
+  "quotaEvidence": "docs/reviews/C-045-actual-quota.json",
+  "changedFromC047": [
+    "web/checkout-connector/page-program.js"
+  ],
+  "newTests": [
+    "test/c048-native-bag.mjs"
+  ],
+  "protectedC047PathsUnchanged": 182,
+  "initialNative": {
+    "scope": "FAKE isolated native bag replay; author self-check",
+    "realAppleVisited": false,
+    "personalProfileUsed": false,
+    "realOrderCreated": false,
+    "results": [
+      {
+        "name": "legacy-one-bag-baseline",
+        "pass": true,
+        "phase": "BAG",
+        "quantity": 1,
+        "itemVerified": true,
+        "extras": false,
+        "actions": [
+          "checkout"
+        ]
+      },
+      {
+        "name": "observed-action-captions",
+        "pass": false,
+        "error": "Expected values to be strictly equal:\n\nfalse !== true\n"
+      },
+      {
+        "name": "observed-actions-and-private-free-favorites",
+        "pass": false,
+        "error": "Expected values to be strictly equal:\n\nfalse !== true\n"
+      },
+      {
+        "name": "wrong-remove-variant",
+        "pass": true,
+        "phase": "BAG",
+        "quantity": 1,
+        "itemVerified": false,
+        "extras": true,
+        "actions": []
+      },
+      {
+        "name": "second-purchased-line",
+        "pass": true,
+        "phase": "BAG",
+        "quantity": null,
+        "itemVerified": false,
+        "extras": true,
+        "actions": []
+      },
+      {
+        "name": "two-units",
+        "pass": true,
+        "phase": "BAG",
+        "quantity": 2,
+        "itemVerified": false,
+        "extras": true,
+        "actions": []
+      },
+      {
+        "name": "favorite-with-purchased-control",
+        "pass": true,
+        "phase": "BAG",
+        "quantity": 1,
+        "itemVerified": false,
+        "extras": true,
+        "actions": []
+      },
+      {
+        "name": "duplicate-favorite-scope",
+        "pass": true,
+        "phase": "BAG",
+        "quantity": 1,
+        "itemVerified": false,
+        "extras": true,
+        "actions": []
+      },
+      {
+        "name": "unrecognized-extra-product-outside-favorites",
+        "pass": true,
+        "phase": "BAG",
+        "quantity": 1,
+        "itemVerified": false,
+        "extras": true,
+        "actions": []
+      }
+    ],
+    "cleanup": {
+      "contextsClosed": 9,
+      "browserClosed": true,
+      "serverClosed": true,
+      "errors": []
+    }
+  },
+  "finalNative": {
+    "scope": "FAKE isolated native bag replay; author self-check",
+    "realAppleVisited": false,
+    "personalProfileUsed": false,
+    "realOrderCreated": false,
+    "results": [
+      {
+        "name": "legacy-one-bag-baseline",
+        "pass": true,
+        "phase": "BAG",
+        "quantity": 1,
+        "itemVerified": true,
+        "extras": false,
+        "actions": [
+          "checkout"
+        ]
+      },
+      {
+        "name": "observed-action-captions",
+        "pass": true,
+        "phase": "BAG",
+        "quantity": 1,
+        "itemVerified": true,
+        "extras": false,
+        "actions": [
+          "checkout"
+        ]
+      },
+      {
+        "name": "observed-actions-and-private-free-favorites",
+        "pass": true,
+        "phase": "BAG",
+        "quantity": 1,
+        "itemVerified": true,
+        "extras": false,
+        "actions": [
+          "checkout"
+        ]
+      },
+      {
+        "name": "wrong-remove-variant",
+        "pass": true,
+        "phase": "BAG",
+        "quantity": 1,
+        "itemVerified": false,
+        "extras": true,
+        "actions": []
+      },
+      {
+        "name": "wrong-save-later-variant",
+        "pass": true,
+        "phase": "BAG",
+        "quantity": 1,
+        "itemVerified": false,
+        "extras": true,
+        "actions": []
+      },
+      {
+        "name": "duplicate-native-remove",
+        "pass": true,
+        "phase": "BAG",
+        "quantity": 1,
+        "itemVerified": false,
+        "extras": true,
+        "actions": []
+      },
+      {
+        "name": "hidden-duplicate-native-save",
+        "pass": true,
+        "phase": "BAG",
+        "quantity": 1,
+        "itemVerified": false,
+        "extras": true,
+        "actions": []
+      },
+      {
+        "name": "unknown-unstructured-adjacent-label",
+        "pass": true,
+        "phase": "BAG",
+        "quantity": 1,
+        "itemVerified": false,
+        "extras": true,
+        "actions": []
+      },
+      {
+        "name": "second-purchased-line",
+        "pass": true,
+        "phase": "BAG",
+        "quantity": null,
+        "itemVerified": false,
+        "extras": true,
+        "actions": []
+      },
+      {
+        "name": "two-units",
+        "pass": true,
+        "phase": "BAG",
+        "quantity": 2,
+        "itemVerified": false,
+        "extras": null,
+        "actions": []
+      },
+      {
+        "name": "favorite-with-purchased-control",
+        "pass": true,
+        "phase": "BAG",
+        "quantity": 1,
+        "itemVerified": false,
+        "extras": true,
+        "actions": []
+      },
+      {
+        "name": "duplicate-favorite-scope",
+        "pass": true,
+        "phase": "BAG",
+        "quantity": 1,
+        "itemVerified": false,
+        "extras": true,
+        "actions": []
+      },
+      {
+        "name": "favorites-moved-inside-purchased-line",
+        "pass": true,
+        "phase": "BAG",
+        "quantity": 1,
+        "itemVerified": false,
+        "extras": true,
+        "actions": []
+      },
+      {
+        "name": "hidden-favorite-scope",
+        "pass": true,
+        "phase": "BAG",
+        "quantity": 1,
+        "itemVerified": false,
+        "extras": true,
+        "actions": []
+      },
+      {
+        "name": "duplicate-favorite-heading",
+        "pass": true,
+        "phase": "BAG",
+        "quantity": 1,
+        "itemVerified": false,
+        "extras": true,
+        "actions": []
+      },
+      {
+        "name": "unknown-favorite-heading",
+        "pass": true,
+        "phase": "BAG",
+        "quantity": 1,
+        "itemVerified": false,
+        "extras": true,
+        "actions": []
+      },
+      {
+        "name": "unknown-favorite-entry-caption",
+        "pass": true,
+        "phase": "BAG",
+        "quantity": 1,
+        "itemVerified": false,
+        "extras": true,
+        "actions": []
+      },
+      {
+        "name": "checked-favorite-input",
+        "pass": true,
+        "phase": "BAG",
+        "quantity": 1,
+        "itemVerified": false,
+        "extras": true,
+        "actions": []
+      },
+      {
+        "name": "unrecognized-extra-product-outside-favorites",
+        "pass": true,
+        "phase": "BAG",
+        "quantity": 1,
+        "itemVerified": false,
+        "extras": true,
+        "actions": []
+      }
+    ],
+    "cleanup": {
+      "contextsClosed": 19,
+      "browserClosed": true,
+      "serverClosed": true,
+      "errors": []
+    }
+  },
+  "otherNative": [
+    {
+      "suite": "prefix",
+      "checks": 8,
+      "pass": 8,
+      "cleanup": {
+        "contextsClosed": 8,
+        "browserClosed": true,
+        "serverClosed": true,
+        "errors": []
+      }
+    },
+    {
+      "suite": "order",
+      "checks": 8,
+      "pass": 8,
+      "cleanup": {
+        "contextsClosed": 8,
+        "browserClosed": true,
+        "serverClosed": true,
+        "errors": []
+      }
+    }
+  ],
+  "nativePassTotal": 35,
+  "fullNodeTests": 1092,
+  "fullNodeFail": 0,
+  "allOldTestsUnchanged": true,
+  "jobPortManifestPermissionsUnchanged": true,
+  "C045RootNativeIdentityDeltaStillPending": true,
+  "C047ControllerDiagnosticDeltaStillPending": true,
+  "installedByteIdentityVerified": false,
+  "realBAGOneUnitObserved": true,
+  "realProgramPendingViewBag": "preserved; latest human NEEDS_VERIFICATION BAG before C048 reload",
+  "realProgramCheckoutOrOrderObserved": false,
+  "coordinatorCheckoutSent": false,
+  "actualClaudeAgreement": false,
+  "lastAcceptedMain": "C044",
+  "newPublication": false,
+  "shutdownRequested": false,
+  "timestampUtc": "2026-10-04T13:59:06.302845+00:00"
+}

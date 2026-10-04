@@ -1,0 +1,223 @@
+{
+  "task": "C049",
+  "status": "Root author self-verification only",
+  "sourceFiles": 186,
+  "sourceSha256": "0af172a36ed59f6f1385c16d01df2e00d1f0df54c91b855c47f729cce373f90f",
+  "quotaEvidence": "docs/reviews/C-045-actual-quota.json",
+  "changedFromC048": [
+    "web/checkout-connector/control.js",
+    "web/checkout-connector/page-program.js"
+  ],
+  "newRootTests": [
+    "test/c049-native-store.mjs",
+    "test/checkout-c049-boot-auth.test.ts"
+  ],
+  "protectedC048PathsUnchanged": 182,
+  "allProtectedOldTestsUnchanged": true,
+  "jobPortManifestPermissionsUnchanged": true,
+  "nodePassed": 1102,
+  "newBootAuthUnitCases": 10,
+  "initialNative": {
+    "scope": "FAKE native store/AUTH self-check; explicit quantity line synthetic",
+    "personalProfileUsed": false,
+    "realAppleVisited": false,
+    "realPurchase": false,
+    "results": [
+      {
+        "name": "legacy-spaced-today-control",
+        "pass": true,
+        "phase": "SLOTS",
+        "store": "Apple 大连恒隆广场"
+      },
+      {
+        "name": "observed-compact-tomorrow",
+        "pass": false,
+        "error": "Expected values to be strictly equal:\n+ actual - expected\n\n+ null\n- 'Apple 大连恒隆广场'\n"
+      },
+      {
+        "name": "observed-unchecked-native-choice",
+        "pass": false,
+        "error": "Expected values to be strictly equal:\n\nfalse !== true\n"
+      },
+      {
+        "name": "wrong-store-id",
+        "pass": true,
+        "phase": "FULFILLMENT",
+        "store": null
+      },
+      {
+        "name": "wrong-complete-title",
+        "pass": true,
+        "phase": "FULFILLMENT",
+        "store": null
+      },
+      {
+        "name": "hidden-native-title",
+        "pass": true,
+        "phase": "FULFILLMENT",
+        "store": null
+      },
+      {
+        "name": "duplicate-native-title",
+        "pass": true,
+        "phase": "FULFILLMENT",
+        "store": null
+      },
+      {
+        "name": "duplicate-associated-label",
+        "pass": true,
+        "phase": "FULFILLMENT",
+        "store": null
+      },
+      {
+        "name": "wrong-current-day-caption",
+        "pass": true,
+        "phase": "FULFILLMENT",
+        "store": null
+      },
+      {
+        "name": "plain-official-sign-in-auth",
+        "pass": false,
+        "error": "Expected values to be strictly equal:\n+ actual - expected\n\n+ 'FULFILLMENT'\n- 'AUTH'\n"
+      },
+      {
+        "name": "existing-order-sign-in-auth",
+        "pass": true,
+        "phase": "AUTH",
+        "store": null
+      }
+    ],
+    "cleanup": {
+      "contextsClosed": 11,
+      "browserClosed": true,
+      "serverClosed": true,
+      "errors": []
+    }
+  },
+  "finalNative": {
+    "scope": "FAKE native store/AUTH self-check; explicit quantity line synthetic",
+    "personalProfileUsed": false,
+    "realAppleVisited": false,
+    "realPurchase": false,
+    "results": [
+      {
+        "name": "legacy-spaced-today-control",
+        "pass": true,
+        "phase": "SLOTS",
+        "store": "Apple 大连恒隆广场"
+      },
+      {
+        "name": "observed-compact-tomorrow",
+        "pass": true,
+        "phase": "SLOTS",
+        "store": "Apple 大连恒隆广场"
+      },
+      {
+        "name": "observed-unchecked-native-choice",
+        "pass": true,
+        "phase": "FULFILLMENT",
+        "store": null
+      },
+      {
+        "name": "wrong-store-id",
+        "pass": true,
+        "phase": "FULFILLMENT",
+        "store": null
+      },
+      {
+        "name": "wrong-complete-title",
+        "pass": true,
+        "phase": "FULFILLMENT",
+        "store": null
+      },
+      {
+        "name": "hidden-native-title",
+        "pass": true,
+        "phase": "FULFILLMENT",
+        "store": null
+      },
+      {
+        "name": "duplicate-native-title",
+        "pass": true,
+        "phase": "FULFILLMENT",
+        "store": null
+      },
+      {
+        "name": "duplicate-associated-label",
+        "pass": true,
+        "phase": "FULFILLMENT",
+        "store": null
+      },
+      {
+        "name": "wrong-current-day-caption",
+        "pass": true,
+        "phase": "FULFILLMENT",
+        "store": null
+      },
+      {
+        "name": "plain-official-sign-in-auth",
+        "pass": true,
+        "phase": "AUTH",
+        "store": null
+      },
+      {
+        "name": "existing-order-sign-in-auth",
+        "pass": true,
+        "phase": "AUTH",
+        "store": null
+      }
+    ],
+    "cleanup": {
+      "contextsClosed": 11,
+      "browserClosed": true,
+      "serverClosed": true,
+      "errors": []
+    }
+  },
+  "bagNativeCases": 19,
+  "bagNativeCleanup": {
+    "contextsClosed": 19,
+    "browserClosed": true,
+    "serverClosed": true,
+    "errors": []
+  },
+  "otherNative": [
+    {
+      "suite": "prefix",
+      "pass": 8,
+      "cleanup": {
+        "contextsClosed": 8,
+        "browserClosed": true,
+        "serverClosed": true,
+        "errors": []
+      }
+    },
+    {
+      "suite": "order",
+      "pass": 8,
+      "cleanup": {
+        "contextsClosed": 8,
+        "browserClosed": true,
+        "serverClosed": true,
+        "errors": []
+      }
+    }
+  ],
+  "nativePassed": 46,
+  "allPositiveAPIStorageAuthorityQuantityAndSlots": "FAKE; actual summary quantity was separately observed normal read-only",
+  "realProgramProgressObserved": [
+    "Checkout",
+    "selectPickup",
+    "one normal Resume cleared pending pickup after stable summary"
+  ],
+  "realProgramUnpaidOrderObserved": false,
+  "coordinatorPurchaseMutation": false,
+  "realSessionExpiryObserved": true,
+  "actualControllerRevisionObservedBeforeReload": "C047; C049 not yet observed loaded",
+  "fullInstalledByteIdentityVerified": false,
+  "actualClaudeReview": false,
+  "mainAccepted": "C044",
+  "published": false,
+  "shutdownRequested": false,
+  "timestampUtc": "2026-10-04T14:50:15.816479+00:00"
+}

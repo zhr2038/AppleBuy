@@ -1,0 +1,54 @@
+{
+  "task": "C-047",
+  "status": "Root author self-verification only; no actual Claude C047 review",
+  "sourceFiles": 183,
+  "sourceSha256": "f408dcd2b7bf09c0a03186a62064c0f1551b113857cd8dd3cd0c3f493501c2ad",
+  "quotaEvidence": "docs/reviews/C-045-actual-quota.json",
+  "changedFromC045": [
+    "web/checkout-connector/control.js"
+  ],
+  "newTests": [
+    "test/checkout-c047-binding-diagnostic.test.ts"
+  ],
+  "protectedC045PathsUnchanged": 181,
+  "rootFocused": {
+    "tests": 89,
+    "pass": 89,
+    "fail": 0,
+    "skip": 0,
+    "command": "node --test test/checkout-c047-binding-diagnostic.test.ts test/checkout-c021-auth-handoff.test.ts test/checkout-c013-cancellation.test.ts test/checkout-c022-status-truth.test.ts"
+  },
+  "newBehavioralCases": 16,
+  "rootFull": {
+    "tests": 1092,
+    "pass": 1092,
+    "fail": 0,
+    "countEvidence": "1092 dots from complete output; exit 0",
+    "command": "node --test --test-reporter=dot \"test/*.test.ts\" \"review/*.test.ts\""
+  },
+  "initialFocused": {
+    "tests": 89,
+    "pass": 86,
+    "fail": 3,
+    "failures": [
+      "diagnostic revision overwritten by pre-existing boot status; fixed revision status text",
+      "new harness counted no boot read; corrected new test to account for existing read",
+      "new harness expected one reconciliation read; corrected new assertion for two bounded read-only observations"
+    ],
+    "protectedOldTestsChanged": false
+  },
+  "merchantMutationLogicChanged": false,
+  "jobPortPagePermissionsChanged": false,
+  "realSourceScope": "controller diagnostic only; C045 page-program work still unreviewed",
+  "allPositiveAPIStorageRowsAndObservations": "FAKE",
+  "personalExtensionStorageReadByRoot": false,
+  "installedControllerRevisionVerified": false,
+  "fullInstalledByteIdentityVerified": false,
+  "realBindingCause": "unresolved: observed closed old tab; read-only rebind also blocked",
+  "actualOrderCreatedByProgram": "not observed; old pending preserved",
+  "claudeAgreement": false,
+  "lastAcceptedMain": "C044",
+  "newPublication": false,
+  "shutdownRequested": false,
+  "timestampUtc": "2026-10-04T13:46:50.679298+00:00"
+}

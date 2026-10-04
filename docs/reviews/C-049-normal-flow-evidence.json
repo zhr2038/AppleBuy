@@ -1,0 +1,46 @@
+{
+  "scope": "normal authorized current official Chrome public structure only; no private values",
+  "officialHost": "secure8.www.apple.com.cn",
+  "signIn": {
+    "path": "/shop/signIn",
+    "normalOfficialAccountIframePresent": true,
+    "coordinatorNormalLoginCompleted": true,
+    "noAuthValueCaptured": true
+  },
+  "store": {
+    "inputName": "store-locator-result",
+    "publicValue": "R609",
+    "checked": true,
+    "disabled": false,
+    "associatedLabelCount": 1,
+    "labelClass": "form-selector-label",
+    "exactPublicLabel": "1Apple 大连恒隆广场明天 可取货店内取货",
+    "titleTag": "SPAN",
+    "titleClass": "form-selector-title",
+    "title": "Apple 大连恒隆广场",
+    "nativeForIdAssociationCheck": "unverified because subsequent page had already expired; native labels association was observed earlier"
+  },
+  "datesObserved": {
+    "count": 3,
+    "timeSelectCount": 1,
+    "dateLabelsAndOptions": "not captured in this evidence; no order/time mutation by Root"
+  },
+  "summary": {
+    "goodsCount": 1,
+    "subtotalCny": 9999,
+    "totalCny": 9999,
+    "shippingRows": 0,
+    "normalCloseCompleted": true,
+    "programInitialReadFailureCause": "not proven; later Resume passed that gate"
+  },
+  "latestExpiredPath": "/shop/sorry/session_expired",
+  "freshBagAfterExpiry": {
+    "sameBoundTab": true,
+    "onePurchasedPro256Black": true,
+    "quantity": 1,
+    "totalCny": 9999
+  },
+  "rootCheckoutStoreTimeOrderPayment": false,
+  "newUnpaidOrderObserved": false,
+  "timestampUtc": "2026-10-04T14:50:15.816479+00:00"
+}

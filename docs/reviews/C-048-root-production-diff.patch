@@ -1,0 +1,51 @@
+diff --git a/web/checkout-connector/page-program.js b/web/checkout-connector/page-program.js
+index a2be772..1bd4d51 100644
+--- a/web/checkout-connector/page-program.js
++++ b/web/checkout-connector/page-program.js
+@@ -64,15 +64,42 @@ export async function merchantDocument(plan,command=null,internal=null){
+     const heads=inside(line,'h2').filter(visible),title=heads.length===1?heads[0]:null;
+     const offers=inside(line,'.rs-inline-recommendation').filter(o=>visible(o)&&norm(o.textContent).startsWith('添加')&&!heads.some(h=>o===h||within(o,h)||within(h,o))&&!inside(o,'select').length&&
+       !inside(o,'button,a').some(b=>name(b).startsWith('移除'))&&!inside(o,'input,[role="checkbox"],[role="radio"]').some(checked));
+-    const free=e=>!offers.some(o=>o===e||within(o,e));
+-    const strip=e=>{let s=String(e.textContent??'');for(const o of offers)if(within(e,o))s=s.replace(String(o.textContent??''),' ');return norm(s);};
+-    const stray=textEls.some(x=>productRe.test(x.t)&&free(x.e)&&!(title&&(x.e===title||within(title,x.e)||within(x.e,title))));
++    // C048 Codex genuine-quota takeover: the current bag repeats its exact item in the normal Remove/Save Later
++    // buttons, and separately lists non-purchased favorites. Neither counterpart supplies item count or quantity.
++    const nativeActionButtons=[],actionCopies=[];
++    for(const [autom,caption] of [['bag-item-remove-button','移除'],['bag-item-savelater-button','移入收藏']]){
++      const matches=inside(line,`[data-autom="${autom}"]`),b=matches.length===1?matches[0]:null,kids=b?[...b.children]:[];
++      if(b?.tagName==='BUTTON'&&visible(b)&&kids.length===2&&kids.every(k=>k.tagName==='SPAN'&&visible(k))&&
++        norm(kids[0].textContent)===caption&&kids[1].matches('.visuallyhidden')&&norm(kids[1].textContent)===fullVariant&&
++        inside(b,'.visuallyhidden').length===1&&name(b)===caption+fullVariant){nativeActionButtons.push(b);actionCopies.push(kids[1]);}
++    }
++    const savedScopes=inside(main,'.rs-savedbyyou'),savedLists=inside(main,'ul.rs-savedbyyou-tiles'),savedHeads=inside(main,'h2.rs-savedbyyou-title');
++    const saved=savedScopes.length===1?savedScopes[0]:null,savedList=savedLists.length===1?savedLists[0]:null,savedHead=savedHeads.length===1?savedHeads[0]:null;
++    const savedRows=savedList?[...savedList.children]:[];
++    const knownSaved=!!(saved?.tagName==='DIV'&&visible(saved)&&savedList&&visible(savedList)&&savedList.getAttribute('role')==='list'&&
++      savedHead&&visible(savedHead)&&norm(savedHead.textContent)==='个人收藏'&&within(saved,savedHead)&&within(saved,savedList)&&
++      !within(bagLists[0],saved)&&!within(saved,bagLists[0])&&
++      !inside(saved,'[data-autom="bag-items"],select,[data-autom="item-quantity-dropdown"],[data-autom="bag-item-remove-button"],[data-autom="checkout"]').length&&
++      !inside(saved,'input,[role="checkbox"],[role="radio"]').some(checked)&&savedRows.length>0&&savedRows.every(r=>{
++        if(r.tagName!=='LI'||r.getAttribute('role')!=='listitem')return false;
++        if(r.matches('.rs-product-list-emptytile'))return r.children.length===0&&norm(r.textContent)==='';
++        const buys=inside(r,'[data-autom="bag-item-buybtn"]'),b=buys.length===1?buys[0]:null,names=inside(r,'h3.rs-product-list-item-productname');
++        return r.matches('.rs-product-list-item')&&visible(r)&&/^product-list-item-[a-z0-9/]+$/i.test(r.getAttribute('data-autom')??'')&&
++          names.length===1&&visible(names[0])&&b?.tagName==='A'&&visible(b)&&b.matches('.rs-product-list-item-buybtn')&&
++          norm([...b.childNodes].filter(n=>n.nodeType===3).map(n=>n.textContent).join(''))==='继续';
++      }));
++    const badSavedScope=savedScopes.length+savedLists.length+savedHeads.length>0&&!knownSaved;
++    const notPurchased=[...offers,...(knownSaved?[saved]:[])];
++    const free=e=>!notPurchased.some(o=>o===e||within(o,e));
++    const strip=e=>{let s=String(e.textContent??'');for(const o of notPurchased)if(within(e,o))s=s.replace(String(o.textContent??''),' ');return norm(s);};
++    const stray=badSavedScope||textEls.some(x=>productRe.test(x.t)&&free(x.e)&&
++      !(title&&(x.e===title||within(title,x.e)||within(x.e,title)))&&!actionCopies.some(c=>c===x.e||within(c,x.e)));
+     const removes=inside(line,'button,a').filter(b=>visible(b)&&name(b).startsWith('移除'));
+     const named=inside(main,'button,a,input[type="submit"],[data-autom="checkout"]').filter(b=>['结账','安全结账'].includes(name(b))||b.getAttribute('data-autom')==='checkout');
+     const row=(b,c)=>!!b.closest('.'+c),ok=b=>visible(b)&&!disabled(b);
+     const header=named.filter(b=>row(b,'rs-bag-checkoutbutton-header')&&!row(b,'rs-bag-checkoutbutton-bottom')),bottom=named.filter(b=>row(b,'rs-bag-checkoutbutton-bottom')&&!row(b,'rs-bag-checkoutbutton-header'));
+     const pair=named.length===2&&header.length===1&&bottom.length===1&&named.every(b=>ok(b)&&name(b)==='结账'&&b.getAttribute('data-autom')==='checkout');
+-    return {items:items.length,line,title,offers,free,strip,stray,otherRemove:removes.length>1||removes.some(b=>!['移除','移除 '+fullVariant].includes(name(b))),
++    return {items:items.length,line,title,offers,free,strip,stray,otherRemove:removes.length>1||removes.some(b=>!['移除','移除 '+fullVariant].includes(name(b))&&!nativeActionButtons.includes(b)),
+       checkout:named.length===1&&ok(named[0])&&['结账','安全结账'].includes(name(named[0]))?named[0]:pair?bottom[0]:null};
+   })();
+   // C-019-R1 (Claude): on /shop/bag any purchased-list anchor commits the page to the observed cart scope. A duplicated or

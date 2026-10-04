@@ -32,6 +32,8 @@ October 4 user steering: routine already authorized development, normal configur
 
 ## Functional requirements
 
+October4 renewed human authorization (C046): the user specifically requests one new Pro256GB black, <=CNY9999, existing Dalian Henglong official pickup/initial first-three terminal slots/Alipay/no extras, ending unpaid with no payment. AppleBuy itself must perform Checkout and all later purchase actions; coordinator browser clicks cannot substitute. C008's old used authority remains historical. Preserve all old unknown/pending records, reuse a matching one-unit bag, and confirm current merchant terms only at the actual review action under browser-tool rules. Current C046 program result is still pending, with no new unpaid order observed; normal preparation/login/observation is allowed, no Duo real order follows. No shutdown.
+
 | ID | Required behavior |
 | --- | --- |
 | R01 | Complete purchase plan: authorized product/specification alternatives, quantity exactly one, maximum tax-inclusive total, named official stores and authorized backup stores, dates, time windows and priorities. Never silently change city, specification, price, date, or fulfillment type. Support launch-day earliest-success priority within arrival constraints without invented competition estimates. |
