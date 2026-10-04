@@ -1,3 +1,5 @@
+**175待审C040-R1检查点已实际同步；main保持173／C039。** 源码提交 `706f680c0174ed6282b0f79865029fdcd43a6483`，全175 Gitblob与远端匹配，无私密发布／强推；最终复审尚无AGREE，周额度10月7日17:00恢复。[真实检查点回执](reviews/C-040-R1-checkpoint-publication.json)。
+
 **C040-R1当前执行器整段订单候选已独立验证，最终复审被周额度中断。** 正常first job.run到一张未付款FAKE订单，原生回执链接到独立详情核对完成；四种读注入丢失恢复不重发。953／953＋新订单8／8＋原前段8／8和cleanup通过。175候选SHA `0597f4e1b30e60bf862b50b3d43034509be18c7334f37da649c5c25ac645b992`，171其他已验收源不变；真实官网接口／后段／Duo／拒绝／速度未验收，所有后段和权限API等明确FAKE。[独立验证](reviews/C-040-R1-independent-verification.json)。
 
 原Opus实际最后调用完整读16当前输入后，115.62秒21回合收到firstParty weekly quota，报告10月7日17:00北京时间恢复；没有最终AGREE。不能把完整读取／绿测试／先前173同意当175批准。模型terminal synthetic使model_verified假、is_error真，非wall/turn/USD；所属全部清理且source未变。[真实周额度](reviews/C-040-R1-cross-weekly-quota.json)。main仍C039／173，175只待审检查点。C0402privateGrep拒绝、R1实际num_turns60/argv48差异、初始RED/fixture失败均保留，不伪称安全权限获准或cap内。无新官网slot/order/pay/host权限，不关机；准确原会话和恢复launcher在ignored.local，届时报价窗口后只唯一原session实际复审。

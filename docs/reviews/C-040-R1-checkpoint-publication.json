@@ -1,0 +1,18 @@
+{
+  "scope": "C040-R1 independent175 software/native unpaid completion checkpoint; weekly-quota final verdict missing, not accepted main/live",
+  "sourceCommit": "706f680c0174ed6282b0f79865029fdcd43a6483",
+  "sourceFiles": 175,
+  "sourceSha256": "0597f4e1b30e60bf862b50b3d43034509be18c7334f37da649c5c25ac645b992",
+  "nonForceCheckpointPush": true,
+  "allWorkingAndGitSourceBlobsVerified": true,
+  "checkpointRemoteMatches": true,
+  "acceptedMainUnchanged": true,
+  "mainCommit": "32f41dede29808430624f6db837b619a4ef95b67",
+  "privateDataPublished": false,
+  "actualFinalOpusVerdict": null,
+  "independentNodePassed": 953,
+  "nativeCompletionPassed": 8,
+  "priorNativePrefixPassed": 8,
+  "resetReportedLocal": "2026-10-07T17:00:00+08:00",
+  "timestampUtc": "2026-10-04T08:59:25.667544+00:00"
+}
