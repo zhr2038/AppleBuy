@@ -1,0 +1,184 @@
+{
+  "task": "C-035-EMPTY-CART",
+  "status": "returned_for_review",
+  "model_requested": "claude-opus-5-5",
+  "effort_requested": "xhigh",
+  "models_actual": [
+    "claude-opus-5-5"
+  ],
+  "primary_models_actual": [
+    "claude-opus-5-5"
+  ],
+  "auxiliary_models_actual": [],
+  "model_verified": true,
+  "exit_code": 0,
+  "subtype": "success",
+  "is_error": false,
+  "timed_out": false,
+  "duration_seconds": 1278.56,
+  "cleanup_confirmed": true,
+  "provider": "firstParty",
+  "permissionDenialCount": 0,
+  "privateReadCount": 0,
+  "sourceWrites": [
+    "E:\\Apple Store\\web\\checkout-connector\\page-program.js",
+    "E:\\Apple Store\\web\\checkout-connector\\page-program.js",
+    "E:\\Apple Store\\web\\checkout-connector\\page-program.js",
+    "E:\\Apple Store\\web\\checkout-connector\\page-program.js",
+    "E:\\Apple Store\\web\\checkout-connector\\job.js",
+    "E:\\Apple Store\\web\\checkout-connector\\job.js",
+    "E:\\Apple Store\\web\\checkout-connector\\job.js",
+    "E:\\Apple Store\\web\\checkout-connector\\job.js",
+    "E:\\Apple Store\\web\\checkout-connector\\job.js",
+    "E:\\Apple Store\\web\\checkout-connector\\job.js",
+    "E:\\Apple Store\\web\\checkout-connector\\job.js",
+    "E:\\Apple Store\\web\\checkout-connector\\job.js",
+    "E:\\Apple Store\\web\\checkout-connector\\job.js",
+    "E:\\Apple Store\\web\\checkout-connector\\chrome-port.js",
+    "E:\\Apple Store\\web\\checkout-connector\\chrome-port.js",
+    "E:\\Apple Store\\web\\checkout-connector\\chrome-port.js",
+    "E:\\Apple Store\\web\\checkout-connector\\page-program.js",
+    "E:\\Apple Store\\web\\checkout-connector\\page-program.js",
+    "E:\\Apple Store\\web\\checkout-connector\\control.js",
+    "E:\\Apple Store\\web\\checkout-connector\\control.js",
+    "E:\\Apple Store\\web\\checkout-connector\\control.js",
+    "E:\\Apple Store\\web\\checkout-connector\\control.js",
+    "E:\\Apple Store\\web\\checkout-connector\\control.html",
+    "E:\\Apple Store\\README.md",
+    "E:\\Apple Store\\web\\checkout-connector\\job.js",
+    "E:\\Apple Store\\test\\checkout-c035-empty.test.ts",
+    "E:\\Apple Store\\test\\checkout-c035-empty.test.ts",
+    "E:\\Apple Store\\test\\checkout-c035-empty.test.ts",
+    "E:\\Apple Store\\test\\checkout-c035-empty.test.ts",
+    "E:\\Apple Store\\test\\checkout-c035-empty.test.ts",
+    "E:\\Apple Store\\test\\checkout-c035-empty.test.ts",
+    "E:\\Apple Store\\test\\checkout-c035-empty.test.ts",
+    "E:\\Apple Store\\docs\\claude\\C-035-report.md"
+  ],
+  "readCalls": [
+    {
+      "file_path": "E:\\Apple Store\\docs\\tasks\\C-035-EMPTY-CART.md",
+      "offset": null,
+      "limit": null
+    },
+    {
+      "file_path": "E:\\Apple Store\\docs\\reviews\\C-035-official-cart-evidence.json",
+      "offset": null,
+      "limit": null
+    },
+    {
+      "file_path": "E:\\Apple Store\\docs\\reviews\\C-035-parser-reproduced.json",
+      "offset": null,
+      "limit": null
+    },
+    {
+      "file_path": "E:\\Apple Store\\review\\browser-c035-empty-repro.mjs",
+      "offset": null,
+      "limit": null
+    },
+    {
+      "file_path": "E:\\Apple Store\\docs\\reviews\\C-034-bounded-agreement.md",
+      "offset": null,
+      "limit": null
+    },
+    {
+      "file_path": "E:\\Apple Store\\docs\\reviews\\C-034-cross-review-verification.json",
+      "offset": null,
+      "limit": null
+    },
+    {
+      "file_path": "E:\\Apple Store\\docs\\reviews\\C-035-input-candidate-manifest.json",
+      "offset": null,
+      "limit": null
+    },
+    {
+      "file_path": "E:\\Apple Store\\web\\checkout-connector\\page-program.js",
+      "offset": null,
+      "limit": null
+    },
+    {
+      "file_path": "E:\\Apple Store\\docs\\reviews\\C-035-official-cart-evidence.json",
+      "offset": null,
+      "limit": null
+    },
+    {
+      "file_path": "E:\\Apple Store\\web\\checkout-connector\\job.js",
+      "offset": null,
+      "limit": null
+    },
+    {
+      "file_path": "E:\\Apple Store\\web\\checkout-connector\\chrome-port.js",
+      "offset": null,
+      "limit": null
+    },
+    {
+      "file_path": "E:\\Apple Store\\web\\checkout-connector\\control.js",
+      "offset": null,
+      "limit": null
+    },
+    {
+      "file_path": "E:\\Apple Store\\test\\checkout-c034-successor.test.ts",
+      "offset": null,
+      "limit": null
+    },
+    {
+      "file_path": "E:\\Apple Store\\web\\checkout-connector\\control.html",
+      "offset": null,
+      "limit": null
+    },
+    {
+      "file_path": "E:\\Apple Store\\README.md",
+      "offset": null,
+      "limit": 30
+    },
+    {
+      "file_path": "E:\\Apple Store\\docs\\requirements.md",
+      "offset": 34,
+      "limit": 10
+    }
+  ],
+  "actualCommands": [
+    "python tools/delegation/verify_candidate_manifest.py docs/reviews/C-035-input-candidate-manifest.json",
+    "node review/browser-c035-empty-repro.mjs",
+    "node --test test/checkout-c035-empty.test.ts",
+    "node --test test/checkout-c035-empty.test.ts",
+    "node --test --test-reporter=dot \"test/*.test.ts\" \"review/*.test.ts\"",
+    "node review/browser-summary-self-check.mjs",
+    "node review/browser-retirement-self-check.mjs",
+    "node review/browser-c035-empty-repro.mjs",
+    "python tools/delegation/verify_candidate_manifest.py docs/reviews/C-035-input-candidate-manifest.json"
+  ],
+  "toolCounts": {
+    "Grep": 6,
+    "Edit": 31,
+    "Read": 16,
+    "Bash": 9,
+    "Write": 2
+  },
+  "protectedInputPaths": 98,
+  "changedProtectedPaths": [],
+  "independentAcceptance": false,
+  "canonicalModel": "claude-opus-5-5",
+  "requestedCliEffortVerified": true,
+  "independentParserChecks": 9,
+  "independentAuthorTests": 19,
+  "blockedFinding": "Known current item can be appended to during the60-second empty-proof window; post-Add rejection permits2 items",
+  "independentFullExitCode": 1,
+  "independentFullTotals": [
+    "\u2139 tests 904",
+    "\u2139 pass 902",
+    "\u2139 fail 2",
+    "\u2139 cancelled 0",
+    "\u2139 skipped 0",
+    "\u2139 todo 0",
+    "\u2139 duration_ms 8527.5688"
+  ],
+  "independentFinding": {
+    "controlledFailures": 2,
+    "controlledPositive": 1,
+    "formalAcceptance": false,
+    "findings": "docs/reviews/C-035-current-cart-finding.md",
+    "repairInputFiles": 166,
+    "repairInputSha256": "a47f96f13e24ba502defbfa0eee84a3ddfe0cc64eefb6b7d266a95b3f6ac6b91"
+  }
+}

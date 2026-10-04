@@ -1,0 +1,72 @@
+{
+  "scope": "independent C035 FAKE-loopback current-parser reproduction from sanitized native empty structure",
+  "personalProfileUsed": false,
+  "actualApplePageVisited": false,
+  "actualExtensionInstalledOrGranted": false,
+  "realOrderCreated": false,
+  "checks": [
+    {
+      "name": "observed-minimal-empty-cart-is-explicitly-verified",
+      "passed": false,
+      "error": "recognized explicit empty phase must match only the observed complete current empty scope\n\nfalse !== true\n"
+    },
+    {
+      "name": "empty-cart-with-saved-products-still-explicitly-empty",
+      "passed": false,
+      "error": "recognized explicit empty phase must match only the observed complete current empty scope\n\nfalse !== true\n"
+    },
+    {
+      "name": "heading-alone-without-observed-anchor-is-not-empty-proof",
+      "passed": true,
+      "phase": "UNKNOWN",
+      "verifiedStep": false
+    },
+    {
+      "name": "missing-continue-shopping-anchor-is-not-empty-proof",
+      "passed": true,
+      "phase": "UNKNOWN",
+      "verifiedStep": false
+    },
+    {
+      "name": "processing-with-stale-empty-block-is-not-empty-proof",
+      "passed": true,
+      "phase": "UNKNOWN",
+      "verifiedStep": false
+    },
+    {
+      "name": "contradictory-purchased-list-is-not-empty-proof",
+      "passed": true,
+      "phase": "UNKNOWN",
+      "verifiedStep": false
+    },
+    {
+      "name": "duplicated-empty-scopes-are-not-empty-proof",
+      "passed": true,
+      "phase": "UNKNOWN",
+      "verifiedStep": false
+    },
+    {
+      "name": "hidden-empty-block-is-not-empty-proof",
+      "passed": true,
+      "phase": "UNKNOWN",
+      "verifiedStep": false
+    },
+    {
+      "name": "observed-404-is-not-empty-proof",
+      "passed": true,
+      "phase": "UNKNOWN"
+    }
+  ],
+  "network": {
+    "allowed": 9,
+    "blocked": 0
+  },
+  "cleanup": {
+    "contextsClosed": 9,
+    "browserClosed": true,
+    "serverClosed": true,
+    "errors": []
+  },
+  "browserVersion": "154.0.8037.93",
+  "passed": false
+}

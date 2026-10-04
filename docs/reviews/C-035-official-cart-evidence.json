@@ -1,0 +1,48 @@
+{
+  "scope": "Current normal rendered mainland Apple bag observations; sanitized DOM facts only, not an installed-executor or order test",
+  "observedAtUtc": "2026-10-03T23:39:36.323Z",
+  "source": "https://www.apple.com.cn/shop/bag",
+  "authorization": "The person specifically authorized removing and adding back only the existing one Pro. No new order, payment or pickup-slot submission was performed.",
+  "sequence": [
+    "Initial current bag: one purchased Pro 256GB black, selected quantity 1, header total CNY 9999; no added AppleCare or trade-in",
+    "First normal Remove click: processing was visible, then /shop/404 with heading '很抱歉，你要查找的网页找不到。'; no empty-cart inference",
+    "Normal read-only return to /shop/bag: the same one-item purchased list and quantity 1 remained, processing ended",
+    "One bounded retry from that fresh normal bag: native processing, then explicit removal notice and the empty structure below",
+    "Normal observed Pro product link /shop/product/mjt74ch/a redirected to /shop/buy-iphone/iphone-18-pro/mjt74ch/a; Pro/black/256GB already selected; ordinary no-trade-in enabled no-AppleCare, then Add to Bag enabled",
+    "One normal Add to Bag click, normal accessories page, then View Bag; current purchased list again contains exactly one Pro 256GB black with selected quantity 1 and total CNY 9999"
+  ],
+  "empty": {
+    "url": "https://www.apple.com.cn/shop/bag",
+    "main": {"tag": "DIV", "role": "main"},
+    "bagContent": {"tag": "DIV", "id": "bag-content", "class": "rs-bag-content as-l-container rs-zoom-content"},
+    "container": {"tag": "DIV", "class": "rs-bagempty large-9 small-12", "visible": true},
+    "heading": {"tag": "H1", "class": "rs-bag-header", "text": "你的购物袋中没有商品。", "visible": true},
+    "continueShopping": {"tag": "A", "text": "继续购物", "href": "/store", "dataAutom": "bag-empty-continueshopping-button", "visible": true},
+    "purchasedListCount": 0,
+    "quantitySelectsInBagContent": 0,
+    "checkoutButtonsInBagContent": 0,
+    "visibleProcessingCount": 0,
+    "visibleNonemptyAlerts": [],
+    "savedProductsOutsideBagContent": true,
+    "removalNotice": "iPhone 18 Pro 256GB 黑色 已从购物袋中移除。",
+    "sanitizedBlockHtml": "<div class=\"rs-bagempty large-9 small-12\"><h1 class=\"rs-bag-header\" tabindex=\"-1\">你的购物袋中没有商品。</h1><div class=\"rs-bagempty-message\">在线购物并享受免费的送货上门服务。</div><div class=\"rs-bagempty-actions\"><div class=\"row\"><div class=\"column rs-bagempty-button\"><a href=\"/store\" class=\"form-button form-button-secondary\" data-autom=\"bag-empty-continueshopping-button\">继续购物</a></div></div></div></div>"
+  },
+  "restored": {
+    "observedAtUtc": "2026-10-03T23:41:37.334Z",
+    "url": "https://www.apple.com.cn/shop/bag",
+    "purchasedList": {"tag": "OL", "class": "rs-bag-items rs-iteminfos", "count": 1},
+    "product": "iPhone 18 Pro 256GB 黑色",
+    "selectedQuantity": 1,
+    "nativeQuantityClones": 2,
+    "headerTotalCny": 9999,
+    "visibleProcessingCount": 0,
+    "addBagClicks": 1
+  },
+  "limits": [
+    "The first /shop/404 was not an empty bag or explicit purchase/slot refusal.",
+    "Favorites and recommendations can remain outside bag-content even when the purchased cart is empty; their titles, prices and add controls are not purchased lines.",
+    "An empty observation is a current fact, not permission to buy, not server exactly-once, and not a durable promise that another tab or human will never change the cart.",
+    "No raw authenticated traffic, cookies, saved-item identifiers, input values, real screenshots, private session IDs or customer data are included.",
+    "This was Codex normal Chrome operation, not proof that the installed extension executed the flow. Duo slots/refusal, real order and real speed remain unverified."
+  ]
+}

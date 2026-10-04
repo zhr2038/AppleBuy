@@ -13,6 +13,7 @@
 // C-019-R1 (Claude): a duplicated or hidden purchased-list anchor is unknown cart scope, never a generic/legacy bag proof.
 // C-019-R2 (Claude): an anchored cart that is not a recognized checkout bag never falls through to View Bag/Add to Bag navigation.
 // C-020 (Claude): an anchored cart is BAG (recognized, proved checkout) or UNKNOWN; no other stage label there is step authority.
+// C035 (Claude): the observed complete normal empty bag is EMPTY_BAG; there only openProduct is accepted, as a write-free re-verification.
 export async function merchantDocument(plan,command=null,internal=null){
   // `internal` is set only by this program's own re-entry; ChromePort passes plan and command only.
   // A structured command always receives a structured report. Nothing was written unless this id was already delivered.
@@ -102,7 +103,19 @@ export async function merchantDocument(plan,command=null,internal=null){
   // text. Only a count is derived; no page text is returned or kept.
   const mentions=e=>(norm(e?.textContent).match(/iphone/gi)??[]).length;
   const anchors=[...new Set(groups.length>0?[strip,copy]:lines(productRe).map(x=>x.e))].filter(Boolean);
-  const soleMentions=mentions(main)<=anchors.filter(e=>!anchors.some(o=>o!==e&&within(o,e))).reduce((n,e)=>n+mentions(e),0);
+  // C036 Codex quota adaptation: current native pickup adds a model-only date LEGEND beside the single selected-store product row.
+  // It is metadata, not another purchased item. Whitelist only this observed structural counterpart; every other iPhone mention,
+  // duplicate/hidden product scope or mismatching caption still conflicts. Neither this row nor the caption supplies quantity.
+  const pickupLists=checkoutScope&&groups.length===0?[...main.querySelectorAll('.rt-storelocator-store-multipleavailability-list')]:[];
+  const pickupRows=pickupLists.length===1?[...pickupLists[0].querySelectorAll('.rt-storelocator-store-multipleavailability-item')]:[];
+  const pickupTitles=pickupRows.length===1?[...pickupRows[0].querySelectorAll('div.column.large-7')]:[];
+  const pickupCaptions=checkoutScope&&groups.length===0?[...main.querySelectorAll('legend.rs-pickup-slottitle')]:[];
+  const pc=pickupCaptions.length===1?pickupCaptions[0]:null,pf=pc?.parentElement;
+  const knownPickupCaption=pickupLists.length===1&&pickupLists[0].tagName==='UL'&&visible(pickupLists[0])&&pickupRows.length===1&&pickupRows[0].tagName==='LI'&&visible(pickupRows[0])&&
+    pickupTitles.length===1&&visible(pickupTitles[0])&&norm(pickupTitles[0].textContent)===fullVariant&&pc&&visible(pc)&&norm(pc.textContent)===norm('为你的 '+plan.product.model+' 选择取货日期：')&&
+    pf?.tagName==='FIELDSET'&&pf.querySelectorAll('input[name="bartPickupDateSelectorButtonGroup"]').length>0&&pf.querySelectorAll('select[data-autom="pickup-availablewindow-dropdown"]').length===1;
+  const mentionAnchors=[...anchors,...(knownPickupCaption?[pc]:[])];
+  const soleMentions=mentions(main)<=mentionAnchors.filter(e=>!mentionAnchors.some(o=>o!==e&&within(o,e))).reduce((n,e)=>n+mentions(e),0);
   // C027 (Codex quota completion): the recognized strip/copy supply exact titles. Their real-DOM ancestors also contain
   // native option labels; that aggregate is not another title. Generic pages retain the strict textual proof.
   const exactProduct=bag?!!bag.title&&norm(bag.title.textContent)===fullVariant&&!bag.stray:!bagScoped&&oneLine&&soleMentions&&
@@ -155,8 +168,12 @@ export async function merchantDocument(plan,command=null,internal=null){
   // Store proof: one enabled checked store choice or one exact labelled value. Any other checked store,
   // store-like labelled value, container listing several stores or disagreement leaves the store unproven.
   const planStore=n=>plan.stores.find(s=>n===norm(s))??null;
-  const storeRadios=radios.filter(e=>/^Apple\s/.test(name(e))),checkedStores=storeRadios.filter(checked);
-  const radioStore=checkedStores.length===1&&!disabled(checkedStores[0])?planStore(name(checkedStores[0])):null;
+  // C036 Codex quota adaptation: current normal pickup uses numbered native store-locator radios. The independently observed
+  // mainland Dalian label and public R609 identifier must BOTH match; never infer a store from its ID or a substring alone.
+  const nativeStore=e=>e.tagName==='INPUT'&&e.getAttribute('name')==='store-locator-result';
+  const nativeStoreName=e=>{const m=/^\d+\s+(Apple .+)\s+今天 可取货 店内取货$/.exec(name(e));return m&&m[1]==='Apple 大连恒隆广场'&&e.value==='R609'?m[1]:null;};
+  const storeRadios=radios.filter(e=>/^Apple\s/.test(name(e))||nativeStore(e)),checkedStores=storeRadios.filter(checked);
+  const radioStore=checkedStores.length===1&&!disabled(checkedStores[0])?planStore(nativeStore(checkedStores[0])?nativeStoreName(checkedStores[0])??'':name(checkedStores[0])):null;
   const fieldValues=[...new Set(texts.flatMap(t=>{const m=/^(?:取货地点|取货门店|自提门店|店内取货地点)\s*[:：]?\s*(.*)$/.exec(t);return m&&/Apple\s/.test(m[1])?[m[1]]:[];}))];
   const fieldStores=fieldValues.map(v=>plan.stores.find(s=>v===norm(s))??null);
   const storeConflict=checkedStores.length>1||(checkedStores.length===1&&!radioStore)||fieldStores.some(x=>x===null);
@@ -170,8 +187,34 @@ export async function merchantDocument(plan,command=null,internal=null){
   const fulfillmentChoice=pickupRadios.length+deliveryRadios.length===0?null:pickupRadios.length>1?'ambiguous':pickupRadios.length===1&&disabled(pickupRadios[0])?'disabled':pickupRadios.length===1&&checked(pickupRadios[0])?(deliveryChecked.length?'conflict':'pickup'):deliveryChecked.length>1?'conflict':deliveryChecked.length===1?'delivery':'unselected';
   const deliveryProse=texts.some(t=>/^(?:送货|配送)/.test(t));
   const pickupShown=fulfillmentChoice!==null?fulfillmentChoice==='pickup':(texts.includes('店内取货')||texts.includes('到店取货'))&&!deliveryProse;
+  // C035 (Claude): observed normal empty bag (October 3 authorized normal observation, sanitized in C-035-official-cart-evidence.json).
+  // Only /shop/bag with no purchased-list anchor (any visibility) and exactly one visible #bag-content holding exactly one visible
+  // DIV.rs-bagempty with its one H1.rs-bag-header 你的购物袋中没有商品。 and its one A 继续购物 (bag-empty-continueshopping-button
+  // to /store). Inside #bag-content no other control and no goods/money text; its live regions are empty or carry only the observed
+  // removal notice. Anywhere in main: no checkout control, alert/error text or processing marker; no visible dialog in the page.
+  // Saved/recommended products outside #bag-content are ignored and are never purchased goods. Anything else is not empty proof.
+  const emptyBag=/^\/shop\/bag\/?$/.test(u.pathname)&&!bagScoped&&(()=>{
+    const all=(r,s)=>[...r.querySelectorAll(s)],text=e=>norm(e?.textContent);
+    if(all(main,'[data-autom="bag-items"],.rs-bag-items,.rs-iteminfos').length)return false;
+    const contents=all(main,'#bag-content'),boxes=all(main,'.rs-bagempty'),heads=all(main,'.rs-bag-header'),links=all(main,'[data-autom="bag-empty-continueshopping-button"]');
+    if(contents.length!==1||boxes.length!==1||heads.length!==1||links.length!==1)return false;
+    const [content]=contents,[box]=boxes,[head]=heads,[link]=links;let href=null;try{href=new URL(link.getAttribute('href')??'',u.href);}catch{}
+    if(![content,box,head,link].every(visible)||!within(content,box)||!within(box,head)||!within(box,link)||box.tagName!=='DIV'||head.tagName!=='H1'||text(head)!=='你的购物袋中没有商品。'||
+      link.tagName!=='A'||text(link)!=='继续购物'||href?.origin!=='https://www.apple.com.cn'||href.pathname!=='/store')return false;
+    if(all(content,'button,a,select,input,textarea,[role="button"],[role="checkbox"],[role="radio"],[role="option"],[role="spinbutton"]').some(e=>e!==link))return false;
+    if(all(main,'button,a,input[type="submit"],[data-autom="checkout"]').some(b=>['结账','安全结账'].includes(name(b))||b.getAttribute('data-autom')==='checkout'))return false;
+    const dialogs=shownDialogs();if(dialogs===null||dialogs.length)return false;
+    const busy=/正在处理|处理中|正在加载|加载中/;
+    if(textEls.some(x=>busy.test(x.t))||all(main,'[alt],[aria-label]').some(e=>visible(e)&&busy.test(norm(e.getAttribute('alt'))+' '+norm(e.getAttribute('aria-label')))))return false;
+    const notice=/^iPhone [^。]{1,80} 已从购物袋中移除。$/,notices=[];
+    for(const r of all(main,'[role="status"],[role="alert"],[role="alertdialog"],[aria-live]').filter(visible)){const t=text(r);if(!t)continue;
+      if(['alert','alertdialog'].includes(r.getAttribute('role'))||!within(content,r)||!notice.test(t))return false;notices.push(r);}
+    let rest=String(content.textContent??'');for(const e of [box,...notices])rest=rest.replace(String(e.textContent??''),' ');
+    return !/iphone|ipad|mac|airpods|watch|vision|RMB|¥|￥|件商品|数量/i.test(norm(rest));
+  })();
   // C-019: bag availability prose (store name, 今天取货, 店内取货) is not a selected fulfillment or store in the observed bag.
-  const purchase={itemVerified:exactProduct&&qty===1&&Number.isFinite(total),verified:!bagScoped&&exactProduct&&qty===1&&Number.isFinite(total)&&!!store&&pickupShown,model:exactProduct?plan.product.model:null,capacity:exactProduct?plan.product.capacity:null,color:exactProduct?plan.product.color:null,quantity:qty,totalCny:total,store:bagScoped?null:store,fulfillment:!bagScoped&&pickupShown?'pickup':null};
+  // C035: the verified empty bag names no purchased goods; nothing outside its scope can lend it an item.
+  const purchase=emptyBag?{itemVerified:false,verified:false,model:null,capacity:null,color:null,quantity:null,totalCny:null,store:null,fulfillment:null}:{itemVerified:exactProduct&&qty===1&&Number.isFinite(total),verified:!bagScoped&&exactProduct&&qty===1&&Number.isFinite(total)&&!!store&&pickupShown,model:exactProduct?plan.product.model:null,capacity:exactProduct?plan.product.capacity:null,color:exactProduct?plan.product.color:null,quantity:qty,totalCny:total,store:bagScoped?null:store,fulfillment:!bagScoped&&pickupShown?'pickup':null};
   let phase='UNKNOWN';
   if(main.querySelector('input[type="password"],input[autocomplete="one-time-code"]')||texts.includes('以游客身份继续'))phase='AUTH';
   else if(texts.some(t=>t==='Apple 和你的数据隐私'))phase='CONSENT';
@@ -181,6 +224,7 @@ export async function merchantDocument(plan,command=null,internal=null){
   // with its proved checkout is BAG; any other anchored cart is UNKNOWN. Review/details/slots/payment/fulfillment or navigation
   // labels never become step authority there. The human/processing gates and order-state line above keep priority.
   else if(bagScoped)phase=bag&&bag.checkout?'BAG':'UNKNOWN';
+  else if(emptyBag)phase='EMPTY_BAG';
   else if(exact('立即下单').length===1)phase='REVIEW';
   else if(exact('继续选择付款方式').length===1)phase='DETAILS';
   else if(exact('继续填写取货详情').length===1&&purchase.fulfillment==='pickup'&&purchase.store)phase='SLOTS';
@@ -195,7 +239,7 @@ export async function merchantDocument(plan,command=null,internal=null){
   out.fulfillmentChoice=fulfillmentChoice;
   // C029: sanitized summary facts only (a count, money and the reading port's random key); never page text, IDs or URLs.
   out.quantitySource=quantitySource;
-  out.orderSummary=summaryCurrent?{state:'current',goodsCount:summaryMemo.count,subtotalCny:summaryMemo.subtotal,totalCny:summaryMemo.total,shipping:'免费',readBy:summaryMemo.readBy}:{state:summaryMemo?'not-current':'not-read'};
+  out.orderSummary=summaryCurrent?{state:'current',goodsCount:summaryMemo.count,subtotalCny:summaryMemo.subtotal,totalCny:summaryMemo.total,shipping:summaryMemo.shipping??'免费',readBy:summaryMemo.readBy}:{state:summaryMemo?'not-current':'not-read'};
   // A disclosure read could supply the only missing fact: exact product, positive capped companion total, no main quantity, no dialog.
   out.summaryReadable=checkoutScope&&!bagScoped&&!mainQtyShown&&['FULFILLMENT','SLOTS','DETAILS','PAYMENT','REVIEW'].includes(phase)&&exactProduct&&
     dialogs?.length===0&&bars.length===1&&bars[0].tagName==='BUTTON'&&visible(bars[0])&&!disabled(bars[0])&&barTotal>0&&total===barTotal&&total<=plan.maxTotalCny;
@@ -310,10 +354,16 @@ export async function merchantDocument(plan,command=null,internal=null){
       if(titles.length!==1||!section||item?.tagName!=='SPAN'||!visible(item)||row?.tagName!=='P'||!details||!orderTotal||!within(section,orderTotal)||!within(orderTotal,details)||!within(details,row))return null;
       const count=/^(\d{1,2}) ?件商品$/.exec(norm(item.textContent));if(!count||(norm(dialog.textContent).match(/件商品/g)??[]).length!==1)return null;
       const rows=['rs-companionbar-summary-subtotal','rs-companionbar-summary-shipping','rs-companionbar-total-row'].map(c=>one(dialog,'.'+c));
-      if(rows.some(r=>r?.tagName!=='DIV'||!visible(r)))return null;
+      if([rows[0],rows[2]].some(r=>r?.tagName!=='DIV'||!visible(r)))return null;
+      // C036: the observed normal pickup summary has subtotal/total and an explicit piece label, with no shipping row. That shape
+      // is allowed only under a current unambiguous pickup choice; a missing delivery row remains unknown. No amount implies count.
+      const shippingRows=[...dialog.querySelectorAll('.rs-companionbar-summary-shipping')];
+      const pickupNoShipping=shippingRows.length===0&&fulfillmentChoice==='pickup';
+      const freeShipping=shippingRows.length===1&&rows[1]?.tagName==='DIV'&&visible(rows[1])&&/^运费\s*免费$/.test(norm(rows[1].textContent));
+      if(!pickupNoShipping&&!freeShipping)return null;
       const sub=/^小计\s*(.+)$/.exec(norm(rows[0].textContent)),tot=/^总计\s*(.+)$/.exec(norm(rows[2].textContent));
       const subtotal=sub?money(sub[1]):null,sum=tot?money(tot[1]):null;
-      return /^运费\s*免费$/.test(norm(rows[1].textContent))&&subtotal!==null&&sum!==null?{count:Number(count[1]),subtotal,total:sum}:null;
+      return subtotal!==null&&sum!==null?{count:Number(count[1]),subtotal,total:sum,shipping:pickupNoShipping?'pickup-no-shipping-row':'免费'}:null;
     })();
     const closers=[...dialog.querySelectorAll('button,[role="button"]')].filter(b=>visible(b)&&/关闭|close/i.test(name(b)));
     if(closers.length!==1||closers[0].tagName!=='BUTTON'||name(closers[0])!=='关闭'||disabled(closers[0]))throw new Error('OrderSummaryCloseUnrecognized');closers[0].click();
@@ -321,8 +371,8 @@ export async function merchantDocument(plan,command=null,internal=null){
     if(!facts)throw new Error('OrderSummaryUnrecognized');
     if(facts.subtotal!==facts.total||facts.total!==total)throw new Error('OrderSummaryMoneyDiffers');
     if(document.querySelector('main,[role="main"]')!==main||new URL(location.href).href!==u.href||sig()!==before)throw new Error('OrderSummaryContextChanged');
-    globalThis.__applebuySummary={readBy:command.summaryKey,main,href:u.href,context,at:Date.now(),count:facts.count,subtotal:facts.subtotal,total:facts.total};
-    return {delivered:true,summary:{goodsCount:facts.count,subtotalCny:facts.subtotal,totalCny:facts.total,shipping:'免费'}};
+    globalThis.__applebuySummary={readBy:command.summaryKey,main,href:u.href,context,at:Date.now(),count:facts.count,subtotal:facts.subtotal,total:facts.total,shipping:facts.shipping};
+    return {delivered:true,summary:{goodsCount:facts.count,subtotalCny:facts.subtotal,totalCny:facts.total,shipping:facts.shipping}};
   };
   // One value per pass, to its original receiver while it is still the current binding, then a task boundary and re-entry.
   // Synchronous handlers, every microtask they queue and zero-delay timers queued earlier have run before the next decision.
@@ -423,6 +473,12 @@ export async function merchantDocument(plan,command=null,internal=null){
     else if(command.action==='submitOrder'&&phase==='REVIEW'&&purchase.verified&&out.paymentMethod==='支付宝'){
       const g=command.finalGrant;if(!g||g.termsAccepted!==true||g.taskId!==command.taskId||g.planDigest!==command.planDigest||g.expiry<=Date.now()||g.existingOrdersChecked!==true||g.noExtras!==true||!out.termsLinks.includes(g.termsUrl)||!out.slotSummary)throw new Error('CurrentFinalGrantMissing');click('立即下单');
     }
+    // C035 (Claude): openProduct is only re-verified here: this exact document still decodes as the expected verified empty bag. No
+    // control is touched; ChromePort then navigates the tab to the plan's public entry. Later additions use fresh product reads.
+    else if(command.action==='openProduct'&&phase==='EMPTY_BAG'&&emptyBag){}
+    // C035-R1 Codex quota completion: ordinary navigation back to the bag after a current side read found one matching item. It
+    // does not Add or Checkout here; the configured original document must still be unchanged and a fresh BAG check follows.
+    else if(command.action==='openBag'&&phase==='VARIANT'&&out.variantVerified===true&&Number.isFinite(out.quotedCny)&&out.quotedCny>0&&out.quotedCny<=plan.maxTotalCny&&!out.extrasConflict){}
     else if(command.action==='readOrderSummary'&&out.summaryReadable===true&&typeof command.summaryKey==='string'&&command.summaryKey.length>0)return await readSummary();
     else throw new Error('ActionNotRecognizedForCurrentStage');
   }catch(e){

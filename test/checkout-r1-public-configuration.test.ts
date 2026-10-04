@@ -52,8 +52,13 @@ function publicPage({hydrated=true}={}){
 }
 function chromeApi(page,{beforeAct,afterAct}={}){
   const fn=mount(page),log=[];
-  const api={tabs:{async get(){return {url:page.url};}},permissions:{async contains(){return true;}},scripting:{async executeScript({world,func,args}){
+  // Codex C035-R1 quota completion: extend only this legacy FAKE Chrome transport for the new read-only side-tab capability.
+  // Its existing scenario starts with an empty cart. All original test bodies/assertions remain unchanged; native decoding of
+  // the true empty structure and changing-cart rejection are exercised by the separate C035 rendered/current-cart checks.
+  let sideOpen=false;
+  const api={tabs:{async get(id){return id===8?{url:'https://www.apple.com.cn/shop/bag',status:'complete'}:{url:page.url};},async create(o){assert.deepEqual(o,{url:'https://www.apple.com.cn/shop/bag',active:false});sideOpen=true;return {id:8};},async remove(id){assert.equal(id,8);assert.equal(sideOpen,true);sideOpen=false;}},permissions:{async contains(){return true;}},scripting:{async executeScript({world,func,args,target}){
     assert.equal(world,'ISOLATED');assert.equal(func,merchantDocument);
+    if(target.tabId===8){assert.equal(sideOpen,true);assert.equal(args.length,1);log.push({observe:true,syntheticSideBag:true});return [{frameId:0,documentId:'FAKE-current-empty-bag',result:{schema:'applebuy-merchant-read/v1',phase:'EMPTY_BAG',verifiedStep:true,path:'/shop/bag',purchase:null,extras:null}}];}
     const command=args[1]??null;log.push(command?{act:command.action,choice:command.choice??null}:{observe:true});
     if(command)await beforeAct?.(command);
     const result=await fn(...args);if(command)await afterAct?.(command,result);

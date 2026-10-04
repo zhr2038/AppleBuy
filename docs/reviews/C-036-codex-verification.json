@@ -1,0 +1,79 @@
+{
+  "scope": "Codex author self-verification, actual Opus combined review still pending",
+  "sourceFiles": 169,
+  "sourceSha256": "885c23b8b5966479828bf9536e23a348f2d70d2906701c390b0f3c3014ed2625",
+  "nodeTotals": [
+    "\u2139 tests 913",
+    "\u2139 pass 913",
+    "\u2139 fail 0",
+    "\u2139 cancelled 0",
+    "\u2139 skipped 0",
+    "\u2139 todo 0",
+    "\u2139 duration_ms 9868.3859"
+  ],
+  "testsPassed": 913,
+  "testsFailed": 0,
+  "originalInputProtectedPaths": 98,
+  "unchangedInputProtectedPaths": 97,
+  "changedInputProtectedHelper": "test/checkout-r1-public-configuration.test.ts",
+  "originalLegacyTestBodiesAndAssertionsUnchanged": true,
+  "nativeChecks": {
+    "emptyParser": {
+      "checks": 9,
+      "passed": true,
+      "cleanup": {
+        "contextsClosed": 9,
+        "browserClosed": true,
+        "serverClosed": true,
+        "errors": []
+      }
+    },
+    "boundary": {
+      "checks": 5,
+      "passed": true,
+      "cleanup": {
+        "contextsClosed": 4,
+        "browserClosed": true,
+        "serverClosed": true,
+        "errors": []
+      }
+    },
+    "summary": {
+      "checks": 8,
+      "passed": true,
+      "cleanup": {
+        "contextsClosed": 8,
+        "browserClosed": true,
+        "serverClosed": true,
+        "errors": []
+      }
+    },
+    "retirement": {
+      "checks": 4,
+      "passed": true,
+      "cleanup": {
+        "contextsClosed": 4,
+        "browserClosed": true,
+        "serverClosed": true,
+        "errors": []
+      }
+    },
+    "pickup": {
+      "checks": 7,
+      "passed": true,
+      "cleanup": {
+        "contextsClosed": 7,
+        "browserClosed": true,
+        "serverClosed": true,
+        "errors": []
+      }
+    }
+  },
+  "accepted": false,
+  "fullGoalComplete": false,
+  "newRealOrder": false,
+  "slotSelectedOrSubmitted": false,
+  "paymentAttempted": false,
+  "shutdown": false,
+  "lineEndingsMatchExistingSourceOrNewLF": true
+}

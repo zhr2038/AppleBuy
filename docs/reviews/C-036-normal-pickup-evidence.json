@@ -1,0 +1,857 @@
+{
+  "scope": "Current normal Pro pickup preview in personal Chrome; not an installed executor, slot acceptance/refusal, hold, Duo or order test",
+  "source": "https://secure8.www.apple.com.cn/shop/checkout",
+  "observedAtUtc": "2026-10-03T23:49:08.880Z",
+  "authorization": "The person requested autonomous routine operation and passed the pending normal pickup/store preview; exact one Pro256 black/9999/no-extras conditions retained. No new order or payment performed.",
+  "product": {
+    "model": "iPhone 18 Pro",
+    "capacity": "256GB",
+    "color": "黑色",
+    "bagVerifiedQuantity": 1,
+    "totalCny": 9999
+  },
+  "selectedFulfillment": "我要取货",
+  "selectedStore": {
+    "label": "Apple 大连恒隆广场",
+    "nativeValue": "R609",
+    "selection": "already checked after normal pickup choice; no other store selected"
+  },
+  "initialDates": [
+    {
+      "label": "October 4",
+      "nativeValue": "4"
+    },
+    {
+      "label": "October 5",
+      "nativeValue": "5"
+    },
+    {
+      "label": "October 6",
+      "nativeValue": "6"
+    }
+  ],
+  "dateStructure": [
+    {
+      "checked": false,
+      "disabled": false,
+      "html": "<input id=\"bartPickupDateSelector4\" class=\"form-selector-input as-buttongroup-radio\" type=\"radio\" value=\"4\" checked=\"\" name=\"bartPickupDateSelectorButtonGroup\">",
+      "label": "October\n4",
+      "name": "bartPickupDateSelectorButtonGroup",
+      "tag": "INPUT",
+      "type": "radio",
+      "value": "4"
+    },
+    {
+      "checked": false,
+      "disabled": false,
+      "html": "<input id=\"bartPickupDateSelector5\" class=\"form-selector-input as-buttongroup-radio\" type=\"radio\" value=\"5\" name=\"bartPickupDateSelectorButtonGroup\">",
+      "label": "October\n5",
+      "name": "bartPickupDateSelectorButtonGroup",
+      "tag": "INPUT",
+      "type": "radio",
+      "value": "5"
+    },
+    {
+      "checked": true,
+      "disabled": false,
+      "html": "<input id=\"bartPickupDateSelector6\" class=\"form-selector-input as-buttongroup-radio\" type=\"radio\" value=\"6\" name=\"bartPickupDateSelectorButtonGroup\">",
+      "label": "October\n6",
+      "name": "bartPickupDateSelectorButtonGroup",
+      "tag": "INPUT",
+      "type": "radio",
+      "value": "6"
+    }
+  ],
+  "timeControl": {
+    "tag": "SELECT",
+    "id": "checkout.fulfillment.pickupTab.pickup.timeSlot.dateTimeSlots.timeSlotValue",
+    "dataAutom": "pickup-availablewindow-dropdown",
+    "ariaLabelledBy": "rs-pickup-slottitle"
+  },
+  "dayObservations": [
+    {
+      "label": "October 4",
+      "enabledSlots": 46,
+      "firstKey": "4-10:00-10:15",
+      "lastKey": "4-21:15-21:30",
+      "lastText": "21:15 – 21:30",
+      "timePlaceholderSelected": true
+    },
+    {
+      "label": "October 5",
+      "enabledSlots": 46,
+      "options": [
+        {
+          "disabled": true,
+          "selected": true,
+          "text": "可选时段",
+          "value": ""
+        },
+        {
+          "disabled": false,
+          "selected": false,
+          "text": "10:00 – 10:15",
+          "value": "5-10:00-10:15"
+        },
+        {
+          "disabled": false,
+          "selected": false,
+          "text": "10:15 – 10:30",
+          "value": "5-10:15-10:30"
+        },
+        {
+          "disabled": false,
+          "selected": false,
+          "text": "10:30 – 10:45",
+          "value": "5-10:30-10:45"
+        },
+        {
+          "disabled": false,
+          "selected": false,
+          "text": "10:45 – 11:00",
+          "value": "5-10:45-11:00"
+        },
+        {
+          "disabled": false,
+          "selected": false,
+          "text": "11:00 – 11:15",
+          "value": "5-11:00-11:15"
+        },
+        {
+          "disabled": false,
+          "selected": false,
+          "text": "11:15 – 11:30",
+          "value": "5-11:15-11:30"
+        },
+        {
+          "disabled": false,
+          "selected": false,
+          "text": "11:30 – 11:45",
+          "value": "5-11:30-11:45"
+        },
+        {
+          "disabled": false,
+          "selected": false,
+          "text": "11:45 – 12:00",
+          "value": "5-11:45-12:00"
+        },
+        {
+          "disabled": false,
+          "selected": false,
+          "text": "12:00 – 12:15",
+          "value": "5-12:00-12:15"
+        },
+        {
+          "disabled": false,
+          "selected": false,
+          "text": "12:15 – 12:30",
+          "value": "5-12:15-12:30"
+        },
+        {
+          "disabled": false,
+          "selected": false,
+          "text": "12:30 – 12:45",
+          "value": "5-12:30-12:45"
+        },
+        {
+          "disabled": false,
+          "selected": false,
+          "text": "12:45 – 13:00",
+          "value": "5-12:45-13:00"
+        },
+        {
+          "disabled": false,
+          "selected": false,
+          "text": "13:00 – 13:15",
+          "value": "5-13:00-13:15"
+        },
+        {
+          "disabled": false,
+          "selected": false,
+          "text": "13:15 – 13:30",
+          "value": "5-13:15-13:30"
+        },
+        {
+          "disabled": false,
+          "selected": false,
+          "text": "13:30 – 13:45",
+          "value": "5-13:30-13:45"
+        },
+        {
+          "disabled": false,
+          "selected": false,
+          "text": "13:45 – 14:00",
+          "value": "5-13:45-14:00"
+        },
+        {
+          "disabled": false,
+          "selected": false,
+          "text": "14:00 – 14:15",
+          "value": "5-14:00-14:15"
+        },
+        {
+          "disabled": false,
+          "selected": false,
+          "text": "14:15 – 14:30",
+          "value": "5-14:15-14:30"
+        },
+        {
+          "disabled": false,
+          "selected": false,
+          "text": "14:30 – 14:45",
+          "value": "5-14:30-14:45"
+        },
+        {
+          "disabled": false,
+          "selected": false,
+          "text": "14:45 – 15:00",
+          "value": "5-14:45-15:00"
+        },
+        {
+          "disabled": false,
+          "selected": false,
+          "text": "15:00 – 15:15",
+          "value": "5-15:00-15:15"
+        },
+        {
+          "disabled": false,
+          "selected": false,
+          "text": "15:15 – 15:30",
+          "value": "5-15:15-15:30"
+        },
+        {
+          "disabled": false,
+          "selected": false,
+          "text": "15:30 – 15:45",
+          "value": "5-15:30-15:45"
+        },
+        {
+          "disabled": false,
+          "selected": false,
+          "text": "15:45 – 16:00",
+          "value": "5-15:45-16:00"
+        },
+        {
+          "disabled": false,
+          "selected": false,
+          "text": "16:00 – 16:15",
+          "value": "5-16:00-16:15"
+        },
+        {
+          "disabled": false,
+          "selected": false,
+          "text": "16:15 – 16:30",
+          "value": "5-16:15-16:30"
+        },
+        {
+          "disabled": false,
+          "selected": false,
+          "text": "16:30 – 16:45",
+          "value": "5-16:30-16:45"
+        },
+        {
+          "disabled": false,
+          "selected": false,
+          "text": "16:45 – 17:00",
+          "value": "5-16:45-17:00"
+        },
+        {
+          "disabled": false,
+          "selected": false,
+          "text": "17:00 – 17:15",
+          "value": "5-17:00-17:15"
+        },
+        {
+          "disabled": false,
+          "selected": false,
+          "text": "17:15 – 17:30",
+          "value": "5-17:15-17:30"
+        },
+        {
+          "disabled": false,
+          "selected": false,
+          "text": "17:30 – 17:45",
+          "value": "5-17:30-17:45"
+        },
+        {
+          "disabled": false,
+          "selected": false,
+          "text": "17:45 – 18:00",
+          "value": "5-17:45-18:00"
+        },
+        {
+          "disabled": false,
+          "selected": false,
+          "text": "18:00 – 18:15",
+          "value": "5-18:00-18:15"
+        },
+        {
+          "disabled": false,
+          "selected": false,
+          "text": "18:15 – 18:30",
+          "value": "5-18:15-18:30"
+        },
+        {
+          "disabled": false,
+          "selected": false,
+          "text": "18:30 – 18:45",
+          "value": "5-18:30-18:45"
+        },
+        {
+          "disabled": false,
+          "selected": false,
+          "text": "18:45 – 19:00",
+          "value": "5-18:45-19:00"
+        },
+        {
+          "disabled": false,
+          "selected": false,
+          "text": "19:00 – 19:15",
+          "value": "5-19:00-19:15"
+        },
+        {
+          "disabled": false,
+          "selected": false,
+          "text": "19:15 – 19:30",
+          "value": "5-19:15-19:30"
+        },
+        {
+          "disabled": false,
+          "selected": false,
+          "text": "19:30 – 19:45",
+          "value": "5-19:30-19:45"
+        },
+        {
+          "disabled": false,
+          "selected": false,
+          "text": "19:45 – 20:00",
+          "value": "5-19:45-20:00"
+        },
+        {
+          "disabled": false,
+          "selected": false,
+          "text": "20:00 – 20:15",
+          "value": "5-20:00-20:15"
+        },
+        {
+          "disabled": false,
+          "selected": false,
+          "text": "20:15 – 20:30",
+          "value": "5-20:15-20:30"
+        },
+        {
+          "disabled": false,
+          "selected": false,
+          "text": "20:30 – 20:45",
+          "value": "5-20:30-20:45"
+        },
+        {
+          "disabled": false,
+          "selected": false,
+          "text": "20:45 – 21:00",
+          "value": "5-20:45-21:00"
+        },
+        {
+          "disabled": false,
+          "selected": false,
+          "text": "21:00 – 21:15",
+          "value": "5-21:00-21:15"
+        },
+        {
+          "disabled": false,
+          "selected": false,
+          "text": "21:15 – 21:30",
+          "value": "5-21:15-21:30"
+        }
+      ],
+      "lastText": "21:15 – 21:30",
+      "timePlaceholderSelected": true
+    },
+    {
+      "label": "October 6",
+      "enabledSlots": 46,
+      "options": [
+        {
+          "disabled": true,
+          "selected": true,
+          "text": "可选时段",
+          "value": ""
+        },
+        {
+          "disabled": false,
+          "selected": false,
+          "text": "10:00 – 10:15",
+          "value": "6-10:00-10:15"
+        },
+        {
+          "disabled": false,
+          "selected": false,
+          "text": "10:15 – 10:30",
+          "value": "6-10:15-10:30"
+        },
+        {
+          "disabled": false,
+          "selected": false,
+          "text": "10:30 – 10:45",
+          "value": "6-10:30-10:45"
+        },
+        {
+          "disabled": false,
+          "selected": false,
+          "text": "10:45 – 11:00",
+          "value": "6-10:45-11:00"
+        },
+        {
+          "disabled": false,
+          "selected": false,
+          "text": "11:00 – 11:15",
+          "value": "6-11:00-11:15"
+        },
+        {
+          "disabled": false,
+          "selected": false,
+          "text": "11:15 – 11:30",
+          "value": "6-11:15-11:30"
+        },
+        {
+          "disabled": false,
+          "selected": false,
+          "text": "11:30 – 11:45",
+          "value": "6-11:30-11:45"
+        },
+        {
+          "disabled": false,
+          "selected": false,
+          "text": "11:45 – 12:00",
+          "value": "6-11:45-12:00"
+        },
+        {
+          "disabled": false,
+          "selected": false,
+          "text": "12:00 – 12:15",
+          "value": "6-12:00-12:15"
+        },
+        {
+          "disabled": false,
+          "selected": false,
+          "text": "12:15 – 12:30",
+          "value": "6-12:15-12:30"
+        },
+        {
+          "disabled": false,
+          "selected": false,
+          "text": "12:30 – 12:45",
+          "value": "6-12:30-12:45"
+        },
+        {
+          "disabled": false,
+          "selected": false,
+          "text": "12:45 – 13:00",
+          "value": "6-12:45-13:00"
+        },
+        {
+          "disabled": false,
+          "selected": false,
+          "text": "13:00 – 13:15",
+          "value": "6-13:00-13:15"
+        },
+        {
+          "disabled": false,
+          "selected": false,
+          "text": "13:15 – 13:30",
+          "value": "6-13:15-13:30"
+        },
+        {
+          "disabled": false,
+          "selected": false,
+          "text": "13:30 – 13:45",
+          "value": "6-13:30-13:45"
+        },
+        {
+          "disabled": false,
+          "selected": false,
+          "text": "13:45 – 14:00",
+          "value": "6-13:45-14:00"
+        },
+        {
+          "disabled": false,
+          "selected": false,
+          "text": "14:00 – 14:15",
+          "value": "6-14:00-14:15"
+        },
+        {
+          "disabled": false,
+          "selected": false,
+          "text": "14:15 – 14:30",
+          "value": "6-14:15-14:30"
+        },
+        {
+          "disabled": false,
+          "selected": false,
+          "text": "14:30 – 14:45",
+          "value": "6-14:30-14:45"
+        },
+        {
+          "disabled": false,
+          "selected": false,
+          "text": "14:45 – 15:00",
+          "value": "6-14:45-15:00"
+        },
+        {
+          "disabled": false,
+          "selected": false,
+          "text": "15:00 – 15:15",
+          "value": "6-15:00-15:15"
+        },
+        {
+          "disabled": false,
+          "selected": false,
+          "text": "15:15 – 15:30",
+          "value": "6-15:15-15:30"
+        },
+        {
+          "disabled": false,
+          "selected": false,
+          "text": "15:30 – 15:45",
+          "value": "6-15:30-15:45"
+        },
+        {
+          "disabled": false,
+          "selected": false,
+          "text": "15:45 – 16:00",
+          "value": "6-15:45-16:00"
+        },
+        {
+          "disabled": false,
+          "selected": false,
+          "text": "16:00 – 16:15",
+          "value": "6-16:00-16:15"
+        },
+        {
+          "disabled": false,
+          "selected": false,
+          "text": "16:15 – 16:30",
+          "value": "6-16:15-16:30"
+        },
+        {
+          "disabled": false,
+          "selected": false,
+          "text": "16:30 – 16:45",
+          "value": "6-16:30-16:45"
+        },
+        {
+          "disabled": false,
+          "selected": false,
+          "text": "16:45 – 17:00",
+          "value": "6-16:45-17:00"
+        },
+        {
+          "disabled": false,
+          "selected": false,
+          "text": "17:00 – 17:15",
+          "value": "6-17:00-17:15"
+        },
+        {
+          "disabled": false,
+          "selected": false,
+          "text": "17:15 – 17:30",
+          "value": "6-17:15-17:30"
+        },
+        {
+          "disabled": false,
+          "selected": false,
+          "text": "17:30 – 17:45",
+          "value": "6-17:30-17:45"
+        },
+        {
+          "disabled": false,
+          "selected": false,
+          "text": "17:45 – 18:00",
+          "value": "6-17:45-18:00"
+        },
+        {
+          "disabled": false,
+          "selected": false,
+          "text": "18:00 – 18:15",
+          "value": "6-18:00-18:15"
+        },
+        {
+          "disabled": false,
+          "selected": false,
+          "text": "18:15 – 18:30",
+          "value": "6-18:15-18:30"
+        },
+        {
+          "disabled": false,
+          "selected": false,
+          "text": "18:30 – 18:45",
+          "value": "6-18:30-18:45"
+        },
+        {
+          "disabled": false,
+          "selected": false,
+          "text": "18:45 – 19:00",
+          "value": "6-18:45-19:00"
+        },
+        {
+          "disabled": false,
+          "selected": false,
+          "text": "19:00 – 19:15",
+          "value": "6-19:00-19:15"
+        },
+        {
+          "disabled": false,
+          "selected": false,
+          "text": "19:15 – 19:30",
+          "value": "6-19:15-19:30"
+        },
+        {
+          "disabled": false,
+          "selected": false,
+          "text": "19:30 – 19:45",
+          "value": "6-19:30-19:45"
+        },
+        {
+          "disabled": false,
+          "selected": false,
+          "text": "19:45 – 20:00",
+          "value": "6-19:45-20:00"
+        },
+        {
+          "disabled": false,
+          "selected": false,
+          "text": "20:00 – 20:15",
+          "value": "6-20:00-20:15"
+        },
+        {
+          "disabled": false,
+          "selected": false,
+          "text": "20:15 – 20:30",
+          "value": "6-20:15-20:30"
+        },
+        {
+          "disabled": false,
+          "selected": false,
+          "text": "20:30 – 20:45",
+          "value": "6-20:30-20:45"
+        },
+        {
+          "disabled": false,
+          "selected": false,
+          "text": "20:45 – 21:00",
+          "value": "6-20:45-21:00"
+        },
+        {
+          "disabled": false,
+          "selected": false,
+          "text": "21:00 – 21:15",
+          "value": "6-21:00-21:15"
+        },
+        {
+          "disabled": false,
+          "selected": false,
+          "text": "21:15 – 21:30",
+          "value": "6-21:15-21:30"
+        }
+      ],
+      "lastText": "21:15 – 21:30",
+      "timePlaceholderSelected": true
+    }
+  ],
+  "normalActions": [
+    "Checkout once from fresh one-item bag",
+    "Existing credential routine login, no account-security changes",
+    "Check 我要取货",
+    "Normal date radio October 5",
+    "Normal date radio October 6"
+  ],
+  "selectedOrSubmittedTime": false,
+  "continuedToPickupDetails": false,
+  "orderCreated": false,
+  "paymentAttempted": false,
+  "latestPhase": "pickup/date/time selection before choosing time",
+  "limits": [
+    "Native values are bare day numbers; visible labels provide October, not an explicit year. Observation clock is October4 2026 Asia/Shanghai; do not invent a merchant ISO date or a Duo release-date binding.",
+    "DOM checked attribute remained on the initial day4 radio after property.checked moved to day6. Live checked property, not serialized initial attribute, is current selection.",
+    "The visible native option list was complete for the selected day at that read; it does not prove server capacity, a held slot or eventual acceptance.",
+    "No explicit real refusal observed; timeout/error is not a refusal.",
+    "Same layout for Duo is still an unverified user expectation. Real screenshots, auth fields, raw requests and session identifiers stay private.",
+    "Runtime extension secure8 permission was not granted or expanded; a future actual persistent access action must obey the tool policy.",
+    "The pickup layout has zero earlier delivery shipment-group/product-strip anchors; its product is under the selected-store availability list. Current normal pickup summary shows1 piece and9999 subtotal/total but no visible shipping row. Existing C029 delivery-scope/explicit-free-shipping assumptions require actual scoped validation; not yet an independently reproduced code finding."
+  ],
+  "currentPickupLayout": {
+    "shipmentGroupCount": 0,
+    "productStripCount": 0,
+    "productNodes": [
+      {
+        "class": "column large-7",
+        "grandparent": {
+          "class": "rt-storelocator-store-multipleavailability-list",
+          "role": "list",
+          "tag": "UL"
+        },
+        "parent": {
+          "class": "row rt-storelocator-store-multipleavailability-item",
+          "role": "listitem",
+          "tag": "LI"
+        },
+        "role": null,
+        "tag": "DIV",
+        "text": "iPhone 18 Pro 256GB 黑色"
+      }
+    ],
+    "fulfillmentRadios": [
+      {
+        "tag": "BUTTON",
+        "role": "radio",
+        "class": "rc-segmented-control-button",
+        "ariaChecked": "false",
+        "text": "为我送货"
+      },
+      {
+        "tag": "BUTTON",
+        "role": "radio",
+        "class": "rc-segmented-control-button rc-segmented-control-selected",
+        "ariaChecked": "true",
+        "text": "我要取货"
+      }
+    ],
+    "selectedStore": {
+      "tag": "INPUT",
+      "nativeValue": "R609",
+      "label": {
+        "class": "form-selector-label",
+        "tag": "LABEL",
+        "text": "1\nApple 大连恒隆广场\n今天 可取货\n店内取货"
+      }
+    },
+    "summaryButton": {
+      "disabled": false,
+      "tag": "BUTTON",
+      "text": "显示订单摘要： RMB 9,999"
+    }
+  },
+  "currentPickupSummary": {
+    "observedAtUtc": "2026-10-03T23:59:09.103Z",
+    "normalOpenReadCloseCompleted": true,
+    "visibleDialogCount": 1,
+    "outsideMain": true,
+    "modal": "true",
+    "pieceLabels": [
+      {
+        "tag": "SPAN",
+        "text": "1 件商品"
+      }
+    ],
+    "subtotalCny": 9999,
+    "totalCny": 9999,
+    "shippingLineVisible": false,
+    "closeButtons": [
+      {
+        "label": "关闭",
+        "tag": "BUTTON",
+        "text": ""
+      }
+    ],
+    "normalVisibleText": "订单摘要\n订单总计\n\n1 件商品\n修改购物袋\n\n小计\nRMB 9,999\n总计\nRMB 9,999\n订单详情\n送货选项\n取货\n付款方式\n检查订单",
+    "shape": {
+      "itemAncestors": [
+        {
+          "class": "row rs-companionbar-bagitemrow",
+          "tag": "P"
+        },
+        {
+          "class": "rs-order-item-details",
+          "tag": "DIV"
+        },
+        {
+          "class": "rs-companionbar-ordertotal",
+          "tag": "DIV"
+        },
+        {
+          "class": "rs-companionbar-ordersummary-section",
+          "tag": "DIV"
+        }
+      ],
+      "items": [
+        {
+          "class": "column large-6 rs-companionbar-items",
+          "tag": "SPAN",
+          "text": "1 件商品"
+        }
+      ],
+      "shipping": [],
+      "subtotal": [
+        {
+          "class": "row rs-companionbar-summary-subtotal",
+          "tag": "DIV",
+          "text": "小计\nRMB 9,999"
+        }
+      ],
+      "total": [
+        {
+          "class": "row rs-companionbar-total-row rs-companionbar-webinstallment-total",
+          "tag": "DIV",
+          "text": "总计\nRMB 9,999"
+        }
+      ]
+    }
+  },
+  "normalCurrentDateCaption": {
+    "captions": [
+      {
+        "class": "rs-pickup-slottitle typography-body-reduced-tight",
+        "html": "<legend class=\"rs-pickup-slottitle typography-body-reduced-tight\">为你的 iPhone 18 Pro 选择取货日期：</legend>",
+        "id": "",
+        "parent": {
+          "class": "",
+          "role": null,
+          "tag": "FIELDSET"
+        },
+        "role": null,
+        "tag": "LEGEND"
+      }
+    ],
+    "dateAncestors": [
+      {
+        "class": "rs-pickup-button form-selector",
+        "role": null,
+        "tag": "DIV"
+      },
+      {
+        "class": "rs-pickup-slot",
+        "role": null,
+        "tag": "LI"
+      },
+      {
+        "class": "rs-pickup-slotgroup",
+        "role": null,
+        "tag": "UL"
+      },
+      {
+        "class": "",
+        "role": null,
+        "tag": "FIELDSET"
+      }
+    ],
+    "observedAtUtc": "2026-10-04T00:44:54.899Z",
+    "path": "https://secure8.www.apple.com.cn/shop/checkout",
+    "storeAncestors": [
+      {
+        "class": "form-selector",
+        "role": null,
+        "tag": "DIV"
+      },
+      {
+        "class": "rt-storelocator-store-group form-selector-group",
+        "role": null,
+        "tag": "DIV"
+      },
+      {
+        "class": "",
+        "role": null,
+        "tag": "FIELDSET"
+      }
+    ]
+  }
+}

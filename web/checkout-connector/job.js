@@ -10,9 +10,13 @@ export const TASK_KEY='applebuy-single-personal-purchase/v1';
 export const VALIDATION_KEY='applebuy-public-configuration-validation/v1';
 export const NO_EXTRAS=Object.freeze({tradeIn:'none',appleCare:'none'});
 const STOP=new Set(['AUTH','CONSENT','CHALLENGE','THROTTLE','UNKNOWN','DETAILS_UNSUPPORTED']);
-const ACTIONS=['configureProduct','continueProduct','addBag','viewBag','checkout','selectPickup','selectStore','selectDate','chooseSlot','fillDetails','selectPayment','continuePayment','submitOrder'];
+const ACTIONS=['configureProduct','continueProduct','addBag','viewBag','checkout','selectPickup','selectStore','selectDate','chooseSlot','fillDetails','selectPayment','continuePayment','submitOrder','openProduct','openBag'];
 // Public product-page choices create no merchant resource. Every other action is a merchant mutation.
 const PUBLIC=new Set(['configureProduct','continueProduct']);
+// C035 (Claude): openProduct is ordinary navigation of the bound tab from a verified empty bag to the plan's public product entry.
+// It creates no merchant resource, yet it is not a public-configuration action: validation and observe ports can never send it.
+const NAVIGATION=new Set(['openProduct','openBag']);
+const productPathOf=P=>new RegExp('^/shop/buy-iphone/'+(P.product.model==='iPhone Duo'?'iphone-duo':'iphone-18-pro')+'(?:/[^/]+/a)?/?$');
 const SLOT=/^(?:[01]\d|2[0-3]):[0-5]\d$/;
 const clone=x=>structuredClone(x);
 // C021 quota takeover: diagnostics carry only this fixed official origin grammar, never raw errors or URL queries.
@@ -53,7 +57,8 @@ function resolvedReadOnlyBag(s){
     (s.retiredHistory??[]).every(r=>validStored(r)&&!unsafe(r));
 }
 // C034 (Claude): retirement never empties the real cart. The newest resolved read-only BAG retirement in a retired chain (or the
-// fact a later task carried forward) is the last verified cart content. Nothing observed can clear it: no empty-bag contract exists.
+// fact a later task carried forward) is the last verified cart content. It is never cleared or rewritten. C035-R1: only a current
+// verified empty bag read taken at the Add boundary itself (never stored as clearance) lets that one Add pass it; see run().
 export function retiredCartFact(history){
   for(const r of [...(history??[])].reverse()){
     if(r?.readOnlyRetirement?.kind==='resolved-pre-slot-bag'){const p=r.plan?.product;return {kind:'resolved-pre-slot-bag',fromTaskId:r.taskId,product:{model:p?.model,capacity:p?.capacity,color:p?.color},quantity:1,totalCny:r.bagTotalCny??r.quotedCny??null,readSequence:r.readOnlyRetirement.readSequence??null,retiredAt:r.retiredAt??null};}
@@ -156,6 +161,9 @@ export class PurchaseJob {
     s.state='RUNNING';s.reason=null;await this.save(s);
     // storeWait marks a wait episode for an already selected store; untouchedRun is this run's absolute untouched count.
     let step=0,polls=0,waitSince=null,polling=false,storeWait=false,untouchedRun=0,summaryReads=0;
+    // C035-R1 (Claude): no earlier empty observation is carried to Add. emptyStarted only records that this run itself started from a
+    // verified empty bag, so its Add (like every successor's) first needs a current bag read at the Add boundary (below).
+    const productPath=productPathOf(P);let emptyStarted=false;
     // Waits are bounded by elapsed time per episode and an absolute poll cap; they never consume semantic steps.
     const poll=async(limit)=>{if(!this.port.wait||polls>=this.maxPolls)return false;waitSince??=this.now();if(this.now()-waitSince>=limit)return false;polls++;await this.port.wait(50);return polling=true;};
     for(;;){
@@ -201,6 +209,22 @@ export class PurchaseJob {
           if(order?.independent===true&&order.state==='unpaid'&&s.orderRefHash&&order.orderRefHash===s.orderRefHash&&purchaseMatches(P,order.purchase)&&order.acceptedSlot?.date===s.acceptedSlot?.date&&order.acceptedSlot?.start===s.acceptedSlot?.start&&order.acceptedSlot?.end===s.acceptedSlot?.end){s.pending=null;s.state='CONFIRMED_UNPAID';s.reason=null;await this.save(s);return clone(s);}
           return this.gate(s,'final-result-unconfirmed; no resubmission','NEEDS_VERIFICATION');
         }
+        // C035 (Claude): navigation only. Arrival on this plan's product page clears it; while the empty bag or processing is still
+        // shown it waits within its deadline; otherwise it is dropped with a history note (no merchant resource can depend on it).
+        if(pending.action==='openProduct'){
+          if(['ENTRY','VARIANT','PRELAUNCH'].includes(o.phase)&&o.verifiedStep===true&&typeof o.path==='string'&&productPath.test(o.path)){s.pending=null;await this.save(s);continue;}
+          if(!readOnly&&(o.phase==='EMPTY_BAG'||o.phase==='PROCESSING')&&this.now()<pending.deadline&&await poll(this.maxWaitMs))continue;
+          s.pending=null;s.history=[...(s.history??[]),{event:'product-page-not-reached',readSequence:o.seq}].slice(-50);
+          return this.gate(s,'product-page-not-reached; navigation only, nothing added','NEEDS_VERIFICATION');
+        }
+        // C035-R1 Codex quota completion: a current matching bag found before Add needs ordinary navigation, not another addition or
+        // a permanent manual handoff. Reconcile navigation only; subsequent fresh BAG checks still enforce the plan and extras.
+        if(pending.action==='openBag'){
+          if(['BAG','EMPTY_BAG'].includes(o.phase)&&o.verifiedStep===true&&/^\/shop\/bag\/?$/.test(o.path??'')){s.pending=null;await this.save(s);continue;}
+          if(!readOnly&&['ENTRY','VARIANT','PROCESSING'].includes(o.phase)&&this.now()<pending.deadline&&await poll(this.maxWaitMs))continue;
+          s.pending=null;s.history=[...(s.history??[]),{event:'bag-page-not-reached',readSequence:o.seq}].slice(-50);
+          return this.gate(s,'bag-page-not-reached; navigation only, nothing added','NEEDS_VERIFICATION');
+        }
         if(pending.action==='chooseSlot'){
           if(o.feedback?.kind==='slot-refused'&&o.feedback.verified===true&&o.feedback.ref===pending.ref&&o.feedback.generation>pending.generation){
             s.rejected.push({date:pending.date,start:pending.start,end:pending.end,generation:pending.generation});s.refusals++;s.pending=null;s.dateCursor++;await this.save(s);
@@ -241,9 +265,37 @@ export class PurchaseJob {
           if(validating)return this.gate(s,'public-configuration-validated; stopped before Add to Bag','VALIDATED');
           // C034 (Claude): the cart still holds the earlier task's item, so public choices above remain but Add to Bag does not.
           // Only a fresh bag read of exactly this plan's one item continues, by Checkout.
-          if(s.retiredCart)return this.gate(s,'retired-cart-holds-earlier-item; no second addition; open the bag page for a fresh read','NEEDS_USER');
-          command={action:'addBag'};
+          // C035-R1 (Claude): a successor, or a run that started from a verified empty bag, adds only after a current read of the
+          // normal official bag page at this Add boundary (port.readBag: separate inactive tab, read-only, closed after; the configured
+          // product page stays as read). Only a settled verified EMPTY_BAG lets this one Add go out now. An item already there, an
+          // unknown/failed/stale read or a pause during the read adds nothing; a port without that read keeps the C034 stop.
+          // Codex quota completion: every production ChromePort Add has this capability, even on a brand-new task with no history.
+          // Older explicitly synthetic ports retain their test contract; no live ChromePort is exempt from the current cart read.
+          if(typeof this.port.readBag==='function'||s.retiredCart||emptyStarted||s.history?.some(h=>h?.event==='verified-empty-bag')){
+            if(typeof this.port.readBag!=='function')return this.gate(s,s.retiredCart?'retired-cart-holds-earlier-item; no second addition; open the bag page for a fresh read':'current-bag-not-verified-before-add; nothing added','NEEDS_USER');
+            let b=null;try{b=await this.port.readBag(P);}catch{}
+            if(this.paused||this.stopped)return this.gate(s,'control-changed-during-bag-read; nothing added',this.stopped?'STOPPED':'PAUSED');
+            const fresh=b?.schema==='applebuy-merchant-read/v1'&&b.verifiedStep===true&&['EMPTY_BAG','BAG'].includes(b.phase)&&Number.isSafeInteger(b.seq)&&b.seq>s.lastRead&&
+              typeof b.documentId==='string'&&!!b.documentId&&b.documentId!==o.documentId;
+            if(fresh)s.lastRead=b.seq;
+            s.history=[...(s.history??[]),{event:'add-boundary-bag-read',phase:fresh?b.phase:'UNKNOWN',readSequence:fresh?b.seq:null}].slice(-50);
+            if(!fresh)return this.gate(s,'current-bag-not-verified-before-add; nothing added','NEEDS_VERIFICATION');
+            if(b.phase==='BAG'){
+              if(!itemMatches(P,b.purchase)||b.extras!==false)return this.gate(s,'current-bag-holds-other-items; nothing added, removed or bought','BLOCKED');
+              command={action:'openBag'};
+            }
+          }
+          command??={action:'addBag'};
         }
+      }else if(o.phase==='EMPTY_BAG'){
+        // C035 (Claude): a fresh verified empty bag in a purchase run that never started its own addition: ordinary navigation to the
+        // plan's product page, then the normal public preparation and, after the Add-boundary bag read, one Add to Bag. A task whose
+        // addition already started never adds again, whatever the bag shows now.
+        if(s.bagAddStarted)return this.gate(s,'bag-addition-already-started; an empty bag does not authorize a second addition','NEEDS_VERIFICATION');
+        if(o.verifiedStep!==true)return this.gate(s,'unknown');
+        emptyStarted=true;
+        s.history=[...(s.history??[]),{event:'verified-empty-bag',readSequence:o.seq,at:this.now()}].slice(-50);
+        command={action:'openProduct'};
       }else if(o.phase==='ACCESSORIES')command={action:'viewBag'};
       else if(o.phase==='BAG'){if(!itemMatches(P,o.purchase)||o.extras===true)return this.gate(s,s.retiredCart?'retired-cart-bag-not-exactly-this-plan; nothing removed, bought or added':'bag-conditions-not-verified','BLOCKED');command={action:'checkout'};}
       else if(o.phase==='FULFILLMENT'){
@@ -291,7 +343,7 @@ export class PurchaseJob {
       if(command.action==='addBag'){s.bagAddStarted=true;s.quotedCny=o.quotedCny;}
       // C-019 (Claude): checkout leaves a bag that already holds the item; this task never adds afterwards (kept if untouched).
       if(command.action==='checkout'){s.bagAddStarted=true;s.bagTotalCny=o.purchase.totalCny;}
-      if(!PUBLIC.has(command.action))s.resourceWritten=true;
+      if(!PUBLIC.has(command.action)&&!NAVIGATION.has(command.action))s.resourceWritten=true;
       // C-022-R1 (Claude): a committed command may change the page; until the next valid read it is no longer current.
       s.observationCurrent=false;
       await this.save(s);

@@ -25,15 +25,23 @@ async function digestPlan(p){const bytes=new TextEncoder().encode(JSON.stringify
 // Constrained migration: a preserved task bound before the explicit field keeps its digest only when it is the same
 // intent without the field (which already meant no extras). Any other digest stays a binding difference.
 async function boundDigest(p,previous){const {extras,...legacy}=p;const digest=await digestPlan(p);return previous&&previous.state!=='RETIRED'&&previous.planDigest===await digestPlan(legacy)?previous.planDigest:digest;}
-$('prepare').onclick=async()=>{try{const p=plan(),tabId=Number($('tab').value),previous=await store.get(TASK_KEY),digest=await boundDigest(p,previous),port=new ChromePort(chrome,tabId,{mode:'observe',initialSequence:previous?.lastRead??0});const o=await port.observe(p);if(!o.termsLinks?.length){prepared=null;status('该页面未识别当前商店条款；可推进到官网复核页后再确认');return;}const reuse=previous&&previous.state!=='RETIRED';prepared={taskId:reuse?previous.taskId:crypto.randomUUID(),planDigest:digest,tabId,entryDocumentId:reuse?previous.entryDocumentId??o.documentId:o.documentId,termsUrl:o.termsLinks[0]};$('terms').href=prepared.termsUrl;const cart=[previous,...(previous?.retiredHistory??[])].some(r=>r?.retiredCart||r?.readOnlyRetirement?.kind==='resolved-pre-slot-bag');status('只读预检完成。核对购买条件和条款后可一键开始；尚未提交任何购买动作'+(cart?'。旧任务结束时购物袋中有一件已核对商品，本任务不会再加入购物袋，需在购物袋页核对后结账':''));}catch{prepared=null;status('预检未完成；请核实当前标签页和主机授权');}};
+$('prepare').onclick=async()=>{try{const p=plan(),tabId=Number($('tab').value),previous=await store.get(TASK_KEY),digest=await boundDigest(p,previous),port=new ChromePort(chrome,tabId,{mode:'observe',initialSequence:previous?.lastRead??0});const o=await port.observe(p);if(!o.termsLinks?.length){prepared=null;status('该页面未识别当前商店条款；可推进到官网复核页后再确认');return;}const reuse=previous&&previous.state!=='RETIRED';prepared={taskId:reuse?previous.taskId:crypto.randomUUID(),planDigest:digest,tabId,entryDocumentId:reuse?previous.entryDocumentId??o.documentId:o.documentId,termsUrl:o.termsLinks[0]};$('terms').href=prepared.termsUrl;const cart=[previous,...(previous?.retiredHistory??[])].some(r=>r?.retiredCart||r?.readOnlyRetirement?.kind==='resolved-pre-slot-bag');status('只读预检完成。核对购买条件和条款后可一键开始；尚未提交任何购买动作'+(cart?'。旧任务结束时购物袋中有一件已核对商品，本任务不会再加入购物袋，需在购物袋页核对后结账。唯一例外：加入购物袋前，程序在后台新标签页打开官网购物袋页当场读取，读完即关闭；只有官网显示“你的购物袋中没有商品。”时才只加入一件，读到任何商品或无法确认都不加入':''));}catch{prepared=null;status('预检未完成；请核实当前标签页和主机授权');}};
 $('savePrivate').onclick=async()=>{const v={};for(const k of ['firstName','lastName','phone','email','identitySuffix'])if($(k).value)v[k]=$(k).value;if(v.identitySuffix&&!/^\d{4}$/.test(v.identitySuffix)){status('证件后四位格式不正确');return;}await chrome.storage.session.set({applebuyPickupSession:v});status('自提资料已仅保留在本次 Chrome 会话，不进入购买记录或日志');};
-const actionName={configureProduct:'选择商品配置',continueProduct:'继续商品配置',addBag:'加入购物袋',viewBag:'查看购物袋',checkout:'结账',selectPickup:'选择自提',selectStore:'选择门店',selectDate:'选择日期',chooseSlot:'选择时段',fillDetails:'取货详情',selectPayment:'选择付款方式',continuePayment:'继续付款方式',submitOrder:'提交订单'};
+const actionName={configureProduct:'选择商品配置',continueProduct:'继续商品配置',addBag:'加入购物袋',viewBag:'查看购物袋',checkout:'结账',selectPickup:'选择自提',selectStore:'选择门店',selectDate:'选择日期',chooseSlot:'选择时段',fillDetails:'取货详情',selectPayment:'选择付款方式',continuePayment:'继续付款方式',submitOrder:'提交订单',openProduct:'从空购物袋打开商品页',openBag:'核对已有商品并打开购物袋'};
 // Only fixed public models and safe tab numbers are shown, never arbitrary persisted strings or private customer fields.
 const bindingSummary=s=>{const model=['iPhone Duo','iPhone 18 Pro'].includes(s?.plan?.product?.model)?s.plan.product.model:'型号记录无法确认';const tab=Number.isSafeInteger(s?.tabId)&&s.tabId>0?s.tabId:'标签页记录无法确认';return `${model} · 标签页 ${tab}`;};
 // C034 (Claude): ending a read-only cart task never empties the official bag; later tasks say so and never add to it.
-const cartHelp=s=>s.reason?.startsWith('retired-cart-holds-earlier-item')?'旧任务结束时已核对购物袋中有一件商品，程序不会把它当作已清空，也不会再加入购物袋；请本人打开官网购物袋页后点“恢复本任务”，只有重新读到与当前计划一致的唯一一件商品且无附加项时才继续结账'
-  :s.reason?.startsWith('retired-cart-bag-not-exactly-this-plan')?'购物袋内容不是当前计划的唯一一件商品；程序不会移除、结账或再加入任何商品，改选型号也不授权处理旧商品。程序目前无法确认购物袋已清空，需本人整理购物袋后在购物袋页恢复'
-  :s.retiredCart?'注意：旧任务结束时购物袋中有一件已核对商品，本任务不会再加入购物袋':'';
+// C035-R1 (Claude): only a current empty-bag read taken right before Add to Bag lets the program add the one planned item.
+const cartHelp=s=>s.reason?.startsWith('retired-cart-holds-earlier-item')?'旧任务结束时已核对购物袋中有一件商品，程序不会把它当作已清空，也不会再加入购物袋；请本人打开官网购物袋页后点“恢复本任务”，只有重新读到与当前计划一致的唯一一件商品且无附加项时才继续结账；若官网当场显示“你的购物袋中没有商品。”，程序会自动打开商品页、按计划配置，加入前再次读取购物袋，仍为空才只加入一件，无需手动加入'
+  :s.reason?.startsWith('current-bag-not-verified-before-add')?'加入购物袋前未能当场确认官网购物袋为空（读取失败、超时或无法识别），未加入任何商品；可点“恢复本任务”重新读取'
+  :s.reason?.startsWith('current-bag-already-holds-this-plan-item')?'加入购物袋前读到购物袋中已有与当前计划一致的唯一一件商品，未再加入；请打开官网购物袋页后点“恢复本任务”，核对后继续结账'
+  :s.reason?.startsWith('current-bag-holds-other-items')?'加入购物袋前读到购物袋中已有其他或多件商品，未加入，也不会移除或结账；请本人整理购物袋后，在购物袋页点“恢复本任务”重新读取'
+  :s.reason?.startsWith('control-changed-during-bag-read')?'读取购物袋期间已暂停或停止，未加入购物袋；恢复后会重新读取'
+  :s.reason?.startsWith('retired-cart-bag-not-exactly-this-plan')?'购物袋内容不是当前计划的唯一一件商品；程序不会移除、结账或再加入任何商品，改选型号也不授权处理旧商品。当前读到的不是空购物袋，程序无法确认购物袋已清空；本人整理购物袋后，在购物袋页点“恢复本任务”重新读取'
+  :s.reason?.startsWith('bag-page-not-reached')?'打开官网购物袋未确认到达，未加入或结账；恢复后只读核对当前页面'
+  :s.reason?.startsWith('product-page-not-reached')?'从空购物袋打开商品页未确认到达，未加入购物袋；请在购物袋页点“恢复本任务”重新读取'
+  :s.reason?.startsWith('bag-addition-already-started; an empty bag')?'本任务已开始过加入购物袋，现在读到空购物袋也不会再次加入；结果需本人核对'
+  :s.retiredCart?'注意：旧任务结束时购物袋中有一件已核对商品，本任务不会再加入购物袋，除非加入前当场读到官网空购物袋':'';
 const onState=s=>{const pending=actionName[s.pendingAction];const host=exactHost(s.permissionOrigin);if(host&&$('hostOrigin'))$('hostOrigin').value=host;const help=[host?`当前主机尚未获访问权限：${host}；点击授权按钮并处理 Chrome 提示，再只读核对原任务`:s.reason==='auth'?'官网要求 Apple 账户登录／验证；完成后点“登录后核对原任务（只读）”':s.state==='NOT_RELEASED'?'官网明确显示尚未发售；已选公开配置保留，未发购买动作，开放后需重新明确开始':'',cartHelp(s)].filter(Boolean).join('；');status(`状态：${s.state}；${s.observationCurrent?'页面':'最近已读页面'}：${s.phase??'尚未读取'}；${pending?`待确认动作：${pending}；请勿重复执行；`:''}${help?help+'；':''}${s.reason??''}`);};
 // C-013-R2: Pause/Stop advance a cancellation epoch. Each handler captures the epoch synchronously at its click and
 // re-checks it after its awaits; an older handler then creates no job, uses no grant and sends nothing. A running job
@@ -120,7 +128,7 @@ async function finishReadOnlyBag(previous,live){
     job=new PurchaseJob({store,port:new ChromePort(chrome,tabId,{mode:'observe',initialSequence:previous?.lastRead??0}),onState});
     await job.retireReadOnlyBag(p,{tabId,planDigest:digest,live});
     prepared=null;$('approve').checked=false;$('finalReview').checked=false;$('final').disabled=true;
-    status('已结束核对完成的只读购物袋任务，全部记录保留；那一件商品仍留在官网购物袋中，程序不会当作已清空。未点击官网或发出购买动作。新的购买需重新预检和确认，且不会再加入购物袋：只有在购物袋页读到与当前计划一致的唯一一件商品时才结账');
+    status('已结束核对完成的只读购物袋任务，全部记录保留；那一件商品仍留在官网购物袋中，程序不会当作已清空。未点击官网或发出购买动作。新的购买需重新预检和确认：在购物袋页读到与当前计划一致的唯一一件商品时直接结账，不再加入；读到官网空购物袋时，才自动打开商品页、按计划配置，并在加入前再次确认购物袋仍为空后只加入一件');
   }catch{status(live()?'旧任务未能确认结束；请读取保留记录核对结果，未发购买动作':'已暂停或停止，未发购买动作；任务管理结果请读取保留记录核对');}finally{job=null;}
 }
 $('start').onclick=()=>run(true);$('resume').onclick=()=>run(false);

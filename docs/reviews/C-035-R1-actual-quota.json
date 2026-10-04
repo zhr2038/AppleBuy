@@ -1,0 +1,29 @@
+{
+  "task": "C-035-R1",
+  "status": "failed",
+  "model_requested": "claude-opus-5-5",
+  "effort_requested": "xhigh",
+  "models_actual": [
+    "claude-opus-5-5"
+  ],
+  "primary_models_actual": [
+    "<synthetic>",
+    "claude-opus-5-5"
+  ],
+  "model_verified": false,
+  "is_error": true,
+  "timed_out": false,
+  "subtype": "success",
+  "duration_seconds": 431.23,
+  "cleanup_confirmed": true,
+  "provider": "firstParty",
+  "canonicalModel": "claude-opus-5-5",
+  "actualProviderMessage": "You've hit your session limit \u00b7 resets 10:20am (Asia/Shanghai)",
+  "resetReportedAsiaShanghai": "2026-10-04 10:20",
+  "verdict": "no completed repair or agreement; partial useful Opus edits then synthetic provider quota error",
+  "takeoverAuthorized": true,
+  "sourceAtQuotaFiles": 166,
+  "sourceAtQuotaSha256": "8bc0d22d2f03554d3c7a2a3d4b711fb8c7b5fc0c6d6eab0be8bcfaf42d966bc9",
+  "usageValuesAreHistoryAggregates": true,
+  "shutdownAllowed": false
+}
