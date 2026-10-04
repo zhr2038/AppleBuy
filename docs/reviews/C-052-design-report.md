@@ -1,3 +1,5 @@
+> Root qualification: this is an actual proposal, not accepted recovery code or a merchant no-order/no-hold certificate. The author statement that no real unpaid order exists was not verified; Root only knows no new unpaid order is observed. Expiry and visible absence cannot authorize a successor or unknown-slot replay. Latest direct conditional shutdown steering supersedes historical no-shutdown task text.
+
 I couldn't find a safe automatic way to resume the paused C046 Pro test under the current code. The design below makes it possible, but the main path still depends on official pages nobody has captured yet. This was a proposal-only task: I wrote no files, ran no commands, used no browser or network, and had no permission denials.
 
 ## Where the saved C046 task stands now (from the current source)

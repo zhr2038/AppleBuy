@@ -1,0 +1,15 @@
+{
+  "sourceCommit": "6bb5397146eb49a6c11f95891dc9d58d44181cce",
+  "candidateFiles": 189,
+  "candidateSha256": "f630e2b64a9ef9c9769eb3e08863a5cbbfdb84a41108cf21639070174ee71905",
+  "atomicNonForcePushExitCode": 0,
+  "previousMain": "d4b390c3f071e835467181470728e48b93d9a527",
+  "timestampUtc": "2026-10-04T16:50:58.344288+00:00",
+  "status": "accepted source published and remote refs verified",
+  "main": "6bb5397146eb49a6c11f95891dc9d58d44181cce",
+  "checkpoint": "6bb5397146eb49a6c11f95891dc9d58d44181cce",
+  "workingAndHeadAll189MatchAccepted": true,
+  "privatePublished": false,
+  "scope": "bounded software only; actual Pro programme unpaid order not verified; human recovery required",
+  "receiptStatus": "source publication verified; this document records that completed source push"
+}
