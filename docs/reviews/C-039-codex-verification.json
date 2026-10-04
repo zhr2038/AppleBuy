@@ -1,0 +1,508 @@
+{
+  "task": "C-039 quota takeover",
+  "candidateFiles": 173,
+  "candidateSha256": "832c840415d16f658b75b5898c93dd4b53661bef80e739e541e5e4cdcd5a00cf",
+  "codexAuthoredBusinessDelta": [],
+  "claudeAuthoredBusinessDelta": [
+    "web/checkout-connector/job.js"
+  ],
+  "codexAuthoredNewTestDelta": [
+    "two scripted-stage entries in test/checkout-c038-navigation.test.ts",
+    "test/c039-native-pipeline.mjs"
+  ],
+  "protectedAcceptedOtherSourceFilesUnchanged": 170,
+  "independentNodeTotals": [
+    "ℹ tests 943",
+    "ℹ pass 943",
+    "ℹ fail 0",
+    "ℹ cancelled 0",
+    "ℹ skipped 0",
+    "ℹ todo 0",
+    "ℹ duration_ms 8325.9548"
+  ],
+  "nativePipelinePassed": 8,
+  "nativePipelineChecks": [
+    {
+      "name": "empty-native-complete-prefix",
+      "passed": true,
+      "durationMs": 975,
+      "state": "NEEDS_VERIFICATION",
+      "phase": "UNKNOWN",
+      "reason": "slot-result-unconfirmed; no resubmission",
+      "pendingAction": "chooseSlot",
+      "effects": {
+        "noTrade": 1,
+        "noCare": 1,
+        "addBag": 1,
+        "viewBag": 1,
+        "checkout": 1,
+        "summaryOpen": 2,
+        "summaryClose": 2,
+        "pickup": 1,
+        "store": 1,
+        "date": 1,
+        "time": 1,
+        "slotContinue": 1
+      },
+      "commands": [
+        "openProduct",
+        "configureProduct",
+        "configureProduct",
+        "configureProduct",
+        "configureProduct",
+        "addBag",
+        "viewBag",
+        "checkout",
+        "readOrderSummary",
+        "selectPickup",
+        "readOrderSummary",
+        "selectStore",
+        "selectDate",
+        "chooseSlot"
+      ],
+      "navigations": [
+        "product"
+      ],
+      "sideCreated": 1,
+      "sideClosed": 1,
+      "sideReads": 2,
+      "sideFailures": 0,
+      "sideDecoded": [
+        {
+          "phase": "EMPTY_BAG",
+          "quantity": null,
+          "verified": false,
+          "extras": null
+        },
+        {
+          "phase": "EMPTY_BAG",
+          "quantity": null,
+          "verified": false,
+          "extras": null
+        }
+      ],
+      "lossInjected": false,
+      "initialDates": [
+        "October 4",
+        "October 5",
+        "October 6"
+      ],
+      "restart": false,
+      "realAcceptanceClaimed": false
+    },
+    {
+      "name": "matching-native-openBag-zero-add",
+      "passed": true,
+      "durationMs": 828,
+      "state": "NEEDS_VERIFICATION",
+      "phase": "UNKNOWN",
+      "reason": "slot-result-unconfirmed; no resubmission",
+      "pendingAction": "chooseSlot",
+      "effects": {
+        "noTrade": 1,
+        "noCare": 1,
+        "checkout": 1,
+        "summaryOpen": 2,
+        "summaryClose": 2,
+        "pickup": 1,
+        "store": 1,
+        "date": 1,
+        "time": 1,
+        "slotContinue": 1
+      },
+      "commands": [
+        "configureProduct",
+        "configureProduct",
+        "configureProduct",
+        "configureProduct",
+        "openBag",
+        "checkout",
+        "readOrderSummary",
+        "selectPickup",
+        "readOrderSummary",
+        "selectStore",
+        "selectDate",
+        "chooseSlot"
+      ],
+      "navigations": [
+        "bag"
+      ],
+      "sideCreated": 1,
+      "sideClosed": 1,
+      "sideReads": 2,
+      "sideFailures": 0,
+      "sideDecoded": [
+        {
+          "phase": "BAG",
+          "quantity": 1,
+          "verified": true,
+          "extras": false
+        },
+        {
+          "phase": "BAG",
+          "quantity": 1,
+          "verified": true,
+          "extras": false
+        }
+      ],
+      "lossInjected": false,
+      "initialDates": [
+        "October 4",
+        "October 5",
+        "October 6"
+      ],
+      "restart": false,
+      "realAcceptanceClaimed": false
+    },
+    {
+      "name": "native-navigation-read-loss-recovers",
+      "passed": true,
+      "durationMs": 1008,
+      "state": "NEEDS_VERIFICATION",
+      "phase": "UNKNOWN",
+      "reason": "slot-result-unconfirmed; no resubmission",
+      "pendingAction": "chooseSlot",
+      "effects": {
+        "noTrade": 1,
+        "noCare": 1,
+        "addBag": 1,
+        "viewBag": 1,
+        "checkout": 1,
+        "summaryOpen": 2,
+        "summaryClose": 2,
+        "pickup": 1,
+        "store": 1,
+        "date": 1,
+        "time": 1,
+        "slotContinue": 1
+      },
+      "commands": [
+        "openProduct",
+        "configureProduct",
+        "configureProduct",
+        "configureProduct",
+        "configureProduct",
+        "addBag",
+        "viewBag",
+        "checkout",
+        "readOrderSummary",
+        "selectPickup",
+        "readOrderSummary",
+        "selectStore",
+        "selectDate",
+        "chooseSlot"
+      ],
+      "navigations": [
+        "product"
+      ],
+      "sideCreated": 1,
+      "sideClosed": 1,
+      "sideReads": 2,
+      "sideFailures": 0,
+      "sideDecoded": [
+        {
+          "phase": "EMPTY_BAG",
+          "quantity": null,
+          "verified": false,
+          "extras": null
+        },
+        {
+          "phase": "EMPTY_BAG",
+          "quantity": null,
+          "verified": false,
+          "extras": null
+        }
+      ],
+      "lossInjected": true,
+      "initialDates": [
+        "October 4",
+        "October 5",
+        "October 6"
+      ],
+      "restart": false,
+      "realAcceptanceClaimed": false
+    },
+    {
+      "name": "wrong-cart-stops",
+      "passed": true,
+      "durationMs": 408,
+      "state": "BLOCKED",
+      "phase": "VARIANT",
+      "reason": "current-bag-holds-other-items; nothing added, removed or bought",
+      "effects": {
+        "noTrade": 1,
+        "noCare": 1
+      },
+      "commands": [
+        "configureProduct",
+        "configureProduct",
+        "configureProduct",
+        "configureProduct"
+      ],
+      "navigations": [],
+      "sideCreated": 1,
+      "sideClosed": 1,
+      "sideReads": 2,
+      "sideFailures": 0,
+      "sideDecoded": [
+        {
+          "phase": "BAG",
+          "quantity": 1,
+          "verified": false,
+          "extras": null
+        },
+        {
+          "phase": "BAG",
+          "quantity": 1,
+          "verified": false,
+          "extras": null
+        }
+      ],
+      "lossInjected": false,
+      "initialDates": null,
+      "restart": false,
+      "realAcceptanceClaimed": false
+    },
+    {
+      "name": "two-cart-items-stop",
+      "passed": true,
+      "durationMs": 415,
+      "state": "BLOCKED",
+      "phase": "VARIANT",
+      "reason": "current-bag-holds-other-items; nothing added, removed or bought",
+      "effects": {
+        "noTrade": 1,
+        "noCare": 1
+      },
+      "commands": [
+        "configureProduct",
+        "configureProduct",
+        "configureProduct",
+        "configureProduct"
+      ],
+      "navigations": [],
+      "sideCreated": 1,
+      "sideClosed": 1,
+      "sideReads": 2,
+      "sideFailures": 0,
+      "sideDecoded": [
+        {
+          "phase": "BAG",
+          "quantity": null,
+          "verified": false,
+          "extras": true
+        },
+        {
+          "phase": "BAG",
+          "quantity": null,
+          "verified": false,
+          "extras": true
+        }
+      ],
+      "lossInjected": false,
+      "initialDates": null,
+      "restart": false,
+      "realAcceptanceClaimed": false
+    },
+    {
+      "name": "persistent-native-side-read-loss-stops",
+      "passed": true,
+      "durationMs": 16467,
+      "state": "NEEDS_VERIFICATION",
+      "phase": "VARIANT",
+      "reason": "current-bag-not-verified-before-add; nothing added",
+      "effects": {
+        "noTrade": 1,
+        "noCare": 1
+      },
+      "commands": [
+        "configureProduct",
+        "configureProduct",
+        "configureProduct",
+        "configureProduct"
+      ],
+      "navigations": [],
+      "sideCreated": 1,
+      "sideClosed": 1,
+      "sideReads": 0,
+      "sideFailures": 150,
+      "sideDecoded": [],
+      "lossInjected": false,
+      "initialDates": null,
+      "restart": false,
+      "realAcceptanceClaimed": false
+    },
+    {
+      "name": "late-slot-result-restart-no-repeat",
+      "passed": true,
+      "durationMs": 1000,
+      "state": "NEEDS_VERIFICATION",
+      "phase": "UNKNOWN",
+      "reason": "slot-result-unconfirmed; no resubmission",
+      "pendingAction": "chooseSlot",
+      "effects": {
+        "noTrade": 1,
+        "noCare": 1,
+        "addBag": 1,
+        "viewBag": 1,
+        "checkout": 1,
+        "summaryOpen": 2,
+        "summaryClose": 2,
+        "pickup": 1,
+        "store": 1,
+        "date": 1,
+        "time": 1,
+        "slotContinue": 1
+      },
+      "commands": [
+        "openProduct",
+        "configureProduct",
+        "configureProduct",
+        "configureProduct",
+        "configureProduct",
+        "addBag",
+        "viewBag",
+        "checkout",
+        "readOrderSummary",
+        "selectPickup",
+        "readOrderSummary",
+        "selectStore",
+        "selectDate",
+        "chooseSlot"
+      ],
+      "navigations": [
+        "product"
+      ],
+      "sideCreated": 1,
+      "sideClosed": 1,
+      "sideReads": 2,
+      "sideFailures": 0,
+      "sideDecoded": [
+        {
+          "phase": "EMPTY_BAG",
+          "quantity": null,
+          "verified": false,
+          "extras": null
+        },
+        {
+          "phase": "EMPTY_BAG",
+          "quantity": null,
+          "verified": false,
+          "extras": null
+        }
+      ],
+      "lossInjected": true,
+      "initialDates": [
+        "October 4",
+        "October 5",
+        "October 6"
+      ],
+      "restart": true,
+      "realAcceptanceClaimed": false
+    },
+    {
+      "name": "new-host-permission-stops",
+      "passed": true,
+      "durationMs": 752,
+      "state": "NEEDS_USER",
+      "phase": "BAG",
+      "reason": "current-host-permission-missing; no automatic action",
+      "pendingAction": "checkout",
+      "effects": {
+        "noTrade": 1,
+        "noCare": 1,
+        "addBag": 1,
+        "viewBag": 1,
+        "checkout": 1
+      },
+      "commands": [
+        "openProduct",
+        "configureProduct",
+        "configureProduct",
+        "configureProduct",
+        "configureProduct",
+        "addBag",
+        "viewBag",
+        "checkout"
+      ],
+      "navigations": [
+        "product"
+      ],
+      "sideCreated": 1,
+      "sideClosed": 1,
+      "sideReads": 2,
+      "sideFailures": 0,
+      "sideDecoded": [
+        {
+          "phase": "EMPTY_BAG",
+          "quantity": null,
+          "verified": false,
+          "extras": null
+        },
+        {
+          "phase": "EMPTY_BAG",
+          "quantity": null,
+          "verified": false,
+          "extras": null
+        }
+      ],
+      "lossInjected": false,
+      "initialDates": null,
+      "restart": false,
+      "realAcceptanceClaimed": false
+    }
+  ],
+  "nativeCleanup": {
+    "contextsClosed": 8,
+    "browserClosed": true,
+    "serverClosed": true,
+    "errors": []
+  },
+  "network": {
+    "allowed": 38,
+    "blocked": 0
+  },
+  "simulationFlags": {
+    "actualAppleVisited": false,
+    "personalProfileUsed": false,
+    "extensionInstalledOrGranted": false,
+    "realSlotSubmitted": false,
+    "realOrderCreated": false,
+    "realSpeedMeasured": false
+  },
+  "fixtureFacts": {
+    "observed": "sanitized empty block; explicit bag anchors; native pickup R609 label/date LEGEND/options and current piece summary",
+    "invented": "product markup, ordinary owned-page transitions/timing, delivery-to-pickup rendering, initially unselected store, local endpoint, all Chrome interfaces/authority/identity/storage/merchant events"
+  },
+  "initialPartialUnitRun": {
+    "tests": 7,
+    "pass": 5,
+    "fail": 2,
+    "cause": "FAKE scripts advanced next-page phase before the separate pending reconciliation and next semantic observation; corrected duplicate stage entries, assertions retained"
+  },
+  "initialNativeRun": {
+    "checks": 8,
+    "pass": 6,
+    "fail": 2,
+    "cause": "Incorrect expected state for verified-side-read failure and Fake browser document/handler readiness race; no production changes from these fixture repairs",
+    "cleanupContextsClosed": 8,
+    "cleanupErrors": []
+  },
+  "independentRootNavigationReproduction": {
+    "formerFunctionalRed": 2,
+    "nowProgressWithoutReplay": 2,
+    "normalAndPermissionControlsPassed": 3,
+    "scope": "actual PurchaseJob, FAKE port/page/clock/authority, not native/official"
+  },
+  "deniedReviewPathAbsent": true,
+  "deniedInputReadOrCopied": false,
+  "privatePermissionSettingsUnchanged": true,
+  "newArtifactOwnership": "ordinary test-owned integration in an explicit new quota scope; no writer/permission expansion or retry at denied review resource",
+  "allClaudeInvocationsTerminal": true,
+  "actualOpusCrossReviewPending": true,
+  "independentAcceptance": false,
+  "fullGoalAccepted": false,
+  "liveOneStartVerified": false,
+  "latestAcceptedMainTask": "C-037",
+  "timestampUtc": "2026-10-04T05:13:02.346931+00:00"
+}

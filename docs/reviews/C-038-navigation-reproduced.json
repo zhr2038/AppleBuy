@@ -1,0 +1,72 @@
+{
+  "scope": "actual PurchaseJob; FAKE port/page/clock/authority, not native or Apple",
+  "results": [
+    {
+      "after": "addBag",
+      "kind": "none",
+      "actions": [
+        "addBag",
+        "checkout"
+      ],
+      "waits": 0,
+      "state": "NEEDS_USER",
+      "reason": "auth",
+      "pendingAction": "checkout",
+      "recoveredWithoutReplay": true
+    },
+    {
+      "after": "checkout",
+      "kind": "none",
+      "actions": [
+        "checkout"
+      ],
+      "waits": 0,
+      "state": "NEEDS_USER",
+      "reason": "auth",
+      "pendingAction": "checkout",
+      "recoveredWithoutReplay": true
+    },
+    {
+      "after": "addBag",
+      "kind": "transport",
+      "actions": [
+        "addBag"
+      ],
+      "waits": 0,
+      "state": "NEEDS_VERIFICATION",
+      "reason": "observation-transport-failed",
+      "pendingAction": "addBag",
+      "recoveredWithoutReplay": false
+    },
+    {
+      "after": "checkout",
+      "kind": "transport",
+      "actions": [
+        "checkout"
+      ],
+      "waits": 0,
+      "state": "NEEDS_VERIFICATION",
+      "reason": "observation-transport-failed",
+      "pendingAction": "checkout",
+      "recoveredWithoutReplay": false
+    },
+    {
+      "after": "checkout",
+      "kind": "permission",
+      "actions": [
+        "checkout"
+      ],
+      "waits": 0,
+      "state": "NEEDS_USER",
+      "reason": "current-host-permission-missing; no automatic action",
+      "pendingAction": "checkout",
+      "recoveredWithoutReplay": false
+    }
+  ],
+  "expectedTransportRecoveryRed": 2,
+  "positiveAndPermissionControlsPassed": 3,
+  "currentAcceptedBaseSha256": "05831e2ff72645f1d79cd1d2f3878b23868a0b8b8d931f9639739df7a2ff17b9",
+  "status": "Independent FAKE-port Node reproduction, two functional recovery failures; three controls pass. Not a native or official observation.",
+  "expectedBehavior": "After a sent navigation-producing Add/checkout, one transient read-only transport loss inside the existing pending deadline should wait/read again without resending the action. A current-host permission loss must stop immediately; deadline, pause, expiry, invalid/stale/unknown observations, slots and final orders retain safety limits.",
+  "sourceChanged": false
+}

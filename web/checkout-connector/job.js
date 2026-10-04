@@ -16,6 +16,8 @@ const PUBLIC=new Set(['configureProduct','continueProduct']);
 // C035 (Claude): openProduct is ordinary navigation of the bound tab from a verified empty bag to the plan's public product entry.
 // It creates no merchant resource, yet it is not a public-configuration action: validation and observe ports can never send it.
 const NAVIGATION=new Set(['openProduct','openBag']);
+// C038-R1 (Claude): sent actions whose normal result is a new document. Between documents a read can briefly find none.
+const NAVIGATING=new Set(['openProduct','openBag','addBag','viewBag','checkout']);
 const productPathOf=P=>new RegExp('^/shop/buy-iphone/'+(P.product.model==='iPhone Duo'?'iphone-duo':'iphone-18-pro')+'(?:/[^/]+/a)?/?$');
 const SLOT=/^(?:[01]\d|2[0-3]):[0-5]\d$/;
 const clone=x=>structuredClone(x);
@@ -174,7 +176,11 @@ export class PurchaseJob {
       if(this.stopped)return this.gate(s,'stopped; sent operations may still complete','STOPPED');
       if(this.paused)return this.gate(s,'paused; sent operations may still complete','PAUSED');
       s.observationCurrent=false;delete s.permissionOrigin;
-      let o;try{o=await this.port.observe(P);}catch(error){const origin=error?.message==='CurrentHostPermissionMissing'?safePermissionOrigin(error.origin):null;if(origin){s.permissionOrigin=origin;return this.gate(s,'current-host-permission-missing; no automatic action','NEEDS_USER');}return this.gate(s,'observation-transport-failed','NEEDS_VERIFICATION');}
+      let o;try{o=await this.port.observe(P);}catch(error){const origin=error?.message==='CurrentHostPermissionMissing'?safePermissionOrigin(error.origin):null;if(origin){s.permissionOrigin=origin;return this.gate(s,'current-host-permission-missing; no automatic action','NEEDS_USER');}
+        // C038-R1 (Claude): only the read is repeated, only for a delivered navigating action inside its own deadline and the existing
+        // wait bounds; the action is never sent again. Slot/final/unknown results and read-only runs keep the immediate stop.
+        if(!readOnly&&s.pending&&s.pending.dispatched!==false&&NAVIGATING.has(s.pending.action)&&this.now()<s.pending.deadline&&await poll(this.maxWaitMs))continue;
+        return this.gate(s,'observation-transport-failed','NEEDS_VERIFICATION');}
       if(!o||o.schema!=='applebuy-merchant-read/v1'||!o.documentId||!Number.isSafeInteger(o.seq)||o.seq<=s.lastRead)return this.gate(s,'invalid-or-stale-observation','NEEDS_VERIFICATION');
       s.lastRead=o.seq;s.lastPhase=o.phase;s.lastDocumentId=o.documentId;s.entryDocumentId??=o.documentId;s.observationCurrent=true;delete s.permissionOrigin;await this.save(s);
       if(this.paused||this.stopped)return this.gate(s,'control-changed-during-read; sent operations preserved',this.stopped?'STOPPED':'PAUSED');

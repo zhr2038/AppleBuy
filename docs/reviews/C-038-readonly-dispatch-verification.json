@@ -1,0 +1,25 @@
+{
+  "task": "C-038-MAIN-CHAIN first invocation",
+  "outcome": "Not implemented; dispatcher profile mistake selected proposal instead of implementation",
+  "actualModel": "claude-opus-5-5",
+  "provider": "firstParty",
+  "canonicalModel": "claude-opus-5-5",
+  "actualCliEffort": "xhigh",
+  "actualTools": [
+    "Glob",
+    "Grep",
+    "Read",
+    "WebFetch"
+  ],
+  "actualTurns": 22,
+  "durationSeconds": 350.25,
+  "actualWrites": 0,
+  "actualCommands": 0,
+  "permissionDenials": 0,
+  "quotaError": false,
+  "cleanupConfirmed": true,
+  "protectedSourceChanged": false,
+  "noAcceptance": true,
+  "correction": "Explicit implementation profile in the original-session R1 continuation; no Codex business takeover",
+  "timestampUtc": "2026-10-04T04:27:50.925070+00:00"
+}

@@ -1,0 +1,53 @@
+{
+  "task": "C-038-R1",
+  "status": "failed provider session quota after useful partial work",
+  "quotaResult": "You've hit your session limit \u00b7 resets 3:30pm (Asia/Shanghai)",
+  "provider": "firstParty",
+  "canonicalModel": "claude-opus-5-5",
+  "modelRequested": "claude-opus-5-5",
+  "actualCliEffort": "xhigh",
+  "primaryModelsActual": [
+    "<synthetic>",
+    "claude-opus-5-5"
+  ],
+  "modelVerifiedAtTerminal": false,
+  "isError": true,
+  "subtype": "success",
+  "durationSeconds": 1211.91,
+  "wallCapSeconds": 1500,
+  "actualTurns": 24,
+  "turnCap": 48,
+  "cliDollarCap": 10,
+  "timedOut": false,
+  "cleanupConfirmed": true,
+  "freeOsLeaseVerified": true,
+  "permissionDenialCount": 1,
+  "permissionDenial": {
+    "tool": "Write",
+    "target": "review/browser-c038-main-chain.mjs",
+    "actualReason": "File is in a directory that is denied by your permission settings.",
+    "artifactCreated": false,
+    "deniedContentNotPublished": true,
+    "deniedOperationNotRetried": true
+  },
+  "actualSuccessfulBusinessWrites": [
+    "web/checkout-connector/job.js"
+  ],
+  "actualSuccessfulNewTest": [
+    "test/checkout-c038-navigation.test.ts"
+  ],
+  "actualSuccessfulCommands": [
+    "python tools/delegation/verify_candidate_manifest.py docs/reviews/C-038-R1-input-candidate-manifest.json"
+  ],
+  "nodeOrNativeTestsExecuted": false,
+  "completeAuthorReport": false,
+  "actualAgreement": false,
+  "partialCandidateFiles": 172,
+  "partialCandidateSha256": "4f4ea0836d7f088546c6882ce25584f3319d9392bf3cee890544ded73a23f02b",
+  "original170ProtectedFilesUnchanged": true,
+  "resetReported": "2026-10-04T15:30:00+08:00",
+  "historicalAggregateUsageNotCurrentBilling": true,
+  "codexTakeoverAuthorizedByEarlierUser": true,
+  "shutdownRequested": false,
+  "timestampUtc": "2026-10-04T04:51:58.089220+00:00"
+}
