@@ -5,6 +5,7 @@
 // C-013-R1 (Claude): durable consecutive untouched bound reset only by verified progress plus a per-run absolute
 // bound; an already selected exact allowed pickup store waits within a bound instead of being clicked again.
 // C-018 (Claude): a persisted plan is compared independent of object-member order only.
+// C051 (Claude): a sent slot continues through the observed contact-only details step only with this task's own bound facts.
 export const TASK_KEY='applebuy-single-personal-purchase/v1';
 // Public-configuration validation never uses the purchase task key, so it cannot consume a purchase task.
 export const VALIDATION_KEY='applebuy-public-configuration-validation/v1';
@@ -52,6 +53,27 @@ export function purchaseMatches(p,c){
     c.quantity===1&&c.fulfillment==='pickup'&&p.stores.includes(c.store)&&Number.isFinite(c.totalCny)&&c.totalCny>0&&c.totalCny<=p.maxTotalCny;
 }
 export function itemMatches(p,c){return !!c&&c.itemVerified===true&&c.model===p.product.model&&c.capacity===p.product.capacity&&c.color===p.product.color&&c.quantity===1&&Number.isFinite(c.totalCny)&&c.totalCny>0&&c.totalCny<=p.maxTotalCny;}
+// C051 (Claude): the current normal contact-only details step (C-051 evidence) shows no product, store, quantity or slot. It may carry
+// THIS task's earlier verified identity only to continue this task: the page's own recognized step, no current identity/quantity/store/
+// slot/order fact at all (pickup prose only), and its current total equal to the task's explicit one-unit money basis (bag total at
+// checkout, else the Add to Bag quote) within the cap. Never in read-only/rebound runs, with a final intent or without a started
+// checkout. Inherited identity is labelled separately and never authorizes REVIEW, a final order or an order confirmation.
+export const CONTACT_SLOT_BASIS='contact-only-details-after-sent-slot; inherited task identity; not a hold guarantee';
+function contactStepCurrent(P,s,o){
+  const c=o?.contactStep,p=o?.purchase,basis=s.bagTotalCny??s.quotedCny??null;
+  return o?.phase==='DETAILS'&&o.verifiedStep===true&&c?.kind==='contact-only-details'&&c.verified===true&&!!p&&p.verified===false&&p.itemVerified===false&&
+    p.model===null&&p.capacity===null&&p.color===null&&p.quantity===null&&p.store===null&&(p.fulfillment===null||p.fulfillment==='pickup')&&
+    Number.isFinite(basis)&&basis>0&&basis<=P.maxTotalCny&&p.totalCny===basis&&c.totalCny===basis&&o.slotSummary==null&&o.extras==null&&o.orderRefHash==null&&
+    s.reconcileOnly!==true&&s.finalIntent===null&&s.bagAddStarted===true;
+}
+// The sent chooseSlot must be this task's own current SLOTS decision: written from SLOTS (where purchaseMatches held), the frozen
+// date at the cursor, its own terminal floor, never refused, and no slot accepted before. A legacy/absent/contradictory record stops.
+function sentSlotBound(s,q){
+  return q?.action==='chooseSlot'&&q.beforePhase==='SLOTS'&&q.dispatched===undefined&&typeof q.date==='string'&&SLOT.test(q.start)&&SLOT.test(q.end)&&q.start<q.end&&
+    Array.isArray(s.initialDates)&&s.initialDates[s.dateCursor]===q.date&&s.floors?.[q.date]===q.start&&!s.acceptedSlot&&
+    !s.rejected.some(r=>r.date===q.date&&r.start===q.start&&r.end===q.end);
+}
+const inheritedIdentity=(P,s,o,source)=>({kind:'inherited-task-identity',step:'contact-only-details',fresh:false,source,product:{...P.product},quantity:P.quantity,stores:[...P.stores],fulfillment:P.fulfillment,basisCny:s.bagTotalCny??s.quotedCny,readSequence:o.seq});
 // Retirement is allowed only when no merchant mutation was ever written; legacy records without the fields are not provable.
 export function retirable(s){return s.resourceWritten===false&&s.bagAddStarted===false&&s.finalIntent===null&&(s.pending===null||PUBLIC.has(s.pending.action));}
 // C030: only this narrow cart-only history can be finished; a marker never overrides a final/slot/unknown fact.
@@ -244,6 +266,11 @@ export class PurchaseJob {
             if(s.refusals>5)return this.gate(s,'refusal-bound-reached','EXHAUSTED');continue;
           }
           if(['DETAILS','PAYMENT','REVIEW'].includes(o.phase)&&o.acceptedSlot?.verified===true&&purchaseMatches(P,o.purchase)&&o.acceptedSlot.date===pending.date&&o.acceptedSlot.start===pending.start&&o.acceptedSlot.end===pending.end){s.acceptedSlot=clone(o.acceptedSlot);s.pending=null;s.untouchedStreak=0;await this.save(s);continue;}
+          // C051 (Claude): normal progression from this task's own bound slot send to the contact-only step. Not a hold guarantee.
+          if(!readOnly&&sentSlotBound(s,pending)&&contactStepCurrent(P,s,o)){
+            s.acceptedSlot={date:pending.date,start:pending.start,end:pending.end,verified:true,basis:CONTACT_SLOT_BASIS};s.inheritedIdentity=inheritedIdentity(P,s,o,'purchase-verified-at-slot-send');
+            s.pending=null;s.untouchedStreak=0;s.history=[...(s.history??[]),{event:'slot-continued-to-contact-only-details',readSequence:o.seq,inherited:true}].slice(-50);await this.save(s);continue;
+          }
           if(!readOnly&&(o.phase==='PROCESSING'||o.phase===pending.beforePhase)&&this.now()<pending.deadline&&await poll(this.maxWaitMs))continue;
           return this.gate(s,'slot-result-unconfirmed; no resubmission','NEEDS_VERIFICATION');
         }
@@ -321,6 +348,8 @@ export class PurchaseJob {
         command=o.purchase.fulfillment!=='pickup'?{action:'selectPickup'}:{action:'selectStore',store:P.stores[0]};
       }
       else if(o.phase==='SLOTS'){
+        // C051: a slot continued on inherited identity is never followed by a second slot choice.
+        if(s.acceptedSlot?.basis===CONTACT_SLOT_BASIS)return this.gate(s,'slot-already-continued; no second slot','NEEDS_VERIFICATION');
         if(!purchaseMatches(P,o.purchase)||o.listComplete!==true||!Number.isSafeInteger(o.generation)||!Array.isArray(o.dates)||o.dates.length===0||o.dates.some(d=>typeof d.label!=='string'||!d.label||typeof d.ref!=='string')||new Set(o.dates.map(d=>d.label)).size!==o.dates.length)return this.gate(s,'slot-list-or-conditions-not-verified','BLOCKED');
         // Freeze the first three ENABLED offered labels once, in merchant order. Never invent a year or roll to a fourth date.
         if(!s.initialDates){const offered=o.dates.filter(d=>d.enabled===true).slice(0,3).map(d=>d.label);if(!offered.length)return this.gate(s,'no-offered-pickup-date-yet; availability not established','NOT_READY');s.initialDates=offered;await this.save(s);}
@@ -335,7 +364,11 @@ export class PurchaseJob {
           command={action:'chooseSlot',date,start:t.start,end:t.end,ref:t.ref,generation:o.generation};
         }
       }else if(o.phase==='DETAILS'){
-        if(!s.acceptedSlot||!purchaseMatches(P,o.purchase))return this.gate(s,'accepted-slot-or-details-conditions-missing','BLOCKED');command={action:'fillDetails'};
+        // C051: a contact-only step needs this task's verified accepted slot and the same current bounds; fresh full evidence keeps priority.
+        const contact=!purchaseMatches(P,o.purchase)&&s.acceptedSlot?.verified===true&&contactStepCurrent(P,s,o);
+        if(!s.acceptedSlot||!purchaseMatches(P,o.purchase)&&!contact)return this.gate(s,'accepted-slot-or-details-conditions-missing','BLOCKED');
+        if(contact&&!s.inheritedIdentity)s.inheritedIdentity=inheritedIdentity(P,s,o,'purchase-verified-at-slot-acceptance');
+        command=contact?{action:'fillDetails',contactOnly:true}:{action:'fillDetails'};
       }else if(o.phase==='PAYMENT'){
         if(!s.acceptedSlot||!purchaseMatches(P,o.purchase))return this.gate(s,'payment-conditions-not-verified','BLOCKED');command={action:o.paymentMethod===P.paymentMethod?'continuePayment':'selectPayment'};
       }else if(o.phase==='REVIEW'){

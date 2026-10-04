@@ -1,0 +1,40 @@
+{
+  "source": "Root normal supported Chrome DOM observation, no customer values, order references or authentication values",
+  "timestampUtc": "2026-10-04T16:32:37.298224+00:00",
+  "expiredPage": {
+    "origin": "https://www.apple.com.cn",
+    "path": "/shop/sorry/session_expired",
+    "readyState": "complete",
+    "h1": "你的操作已超时。",
+    "visibleReturnBagLink": true,
+    "forms": 1,
+    "iphoneTextMentions": 2
+  },
+  "orderList": {
+    "origin": "https://secure8.www.apple.com.cn",
+    "path": "/shop/order/list",
+    "h1": "你已订购的产品。",
+    "mainTagCount": 0,
+    "sameModelNameAnchor": "A.rs-ol-tile-name",
+    "sameModelContainer": "LI.rs-ol-tile.as-grid-item",
+    "sameModelRows": [
+      {
+        "model": "iPhone 18 Pro",
+        "status": "已取货"
+      },
+      {
+        "model": "iPhone 18 Pro",
+        "status": "已取消"
+      }
+    ],
+    "visiblePagingControlsFound": false,
+    "visibleLoadingOrErrorFound": false,
+    "newUnpaidSameModelRowObserved": false,
+    "fullAccountListCompletenessProved": false,
+    "noOrderExistenceOrRemoteHoldCertificate": false
+  },
+  "login": "one normal authorized existing-credential UI sign-in; no new saving or permission",
+  "buyerActionsByRoot": 0,
+  "savedSlotResult": "still unknown, never replayed",
+  "rootDecision": "Do not implement or enable automatic successor from observed absence. The proposal no-real-unpaid-order wording is not a verified existence claim. Preserve pending and exact date restrictions; first finish bounded software cross-review. Contact/payment/review/receipt and private execution recovery still need human/live facts."
+}

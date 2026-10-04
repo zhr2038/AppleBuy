@@ -1,0 +1,378 @@
+diff --git a/web/checkout-connector/control.js b/web/checkout-connector/control.js
+index 9d326c6..4f6ccfb 100644
+--- a/web/checkout-connector/control.js
++++ b/web/checkout-connector/control.js
+@@ -4,6 +4,9 @@ import {withPurchaseOwner} from './owner.js';
+ const $=id=>document.getElementById(id);let job=null;
+ const store={async get(k){return (await chrome.storage.local.get(k))[k]??null;},async put(k,v){await chrome.storage.local.set({[k]:v});}};
+ const status=s=>{$('state').textContent=s;};
++// C049: restore only the existing active public target at boot, never a grant; preserve a human choice made while awaiting storage.
++const bootProduct=$('product').value;let productEdited=false;
++$('product').oninput=$('product').onchange=$('product').onpointerdown=()=>{productEdited=true;};
+ // The fixed user condition is part of the bound intent: no trade-in and no AppleCare+.
+ const plan=()=>({schema:'applebuy-intent/v1',product:$('product').value==='duo'?{model:'iPhone Duo',capacity:'256GB',color:'星光白色'}:{model:'iPhone 18 Pro',capacity:'256GB',color:'黑色'},quantity:1,maxTotalCny:$('product').value==='duo'?15999:9999,city:'大连',fulfillment:'pickup',stores:['Apple 大连恒隆广场'],dateRule:'initial-first-three-terminal',paymentMethod:'支付宝',extras:{...NO_EXTRAS}});
+ // Only tabs whose URL Chrome discloses AND that are supported official pages are listed; opaque tabs stay undisclosed.
+@@ -30,6 +33,22 @@ $('savePrivate').onclick=async()=>{const v={};for(const k of ['firstName','lastN
+ const actionName={configureProduct:'选择商品配置',continueProduct:'继续商品配置',addBag:'加入购物袋',viewBag:'查看购物袋',checkout:'结账',selectPickup:'选择自提',selectStore:'选择门店',selectDate:'选择日期',chooseSlot:'选择时段',fillDetails:'取货详情',selectPayment:'选择付款方式',continuePayment:'继续付款方式',submitOrder:'提交订单',openProduct:'从空购物袋打开商品页',openBag:'核对已有商品并打开购物袋'};
+ // Only fixed public models and safe tab numbers are shown, never arbitrary persisted strings or private customer fields.
+ const bindingSummary=s=>{const model=['iPhone Duo','iPhone 18 Pro'].includes(s?.plan?.product?.model)?s.plan.product.model:'型号记录无法确认';const tab=Number.isSafeInteger(s?.tabId)&&s.tabId>0?s.tabId:'标签页记录无法确认';return `${model} · 标签页 ${tab}`;};
++// C047 Codex genuine-quota takeover: diagnostic only. The job's binding checks and saved task stay unchanged.
++// Only fixed labels/booleans are rendered; unknown record fields, digests and private values are never echoed.
++const diagnosticJson=v=>JSON.stringify(v,(k,x)=>x!==null&&typeof x==='object'&&!Array.isArray(x)?Object.fromEntries(Object.keys(x).sort().map(n=>[n,x[n]])):x);
++const diagnosticPlan=v=>{if(!v||typeof v!=='object'||Array.isArray(v))return null;const {extras,...rest}=v;return {...rest,extras:{...NO_EXTRAS}};};
++function bindingDiagnostic(previous,p,tabId,digest){
++  let same=null,fields=[];
++  try{
++    const old=previous?.plan,oldExtras=old?.extras===undefined?{...NO_EXTRAS}:old.extras;
++    same=diagnosticJson(diagnosticPlan(old))===diagnosticJson(diagnosticPlan(p))&&diagnosticJson(oldExtras)===diagnosticJson(p.extras);
++    const checks=[['机型',old?.product?.model,p.product.model],['容量',old?.product?.capacity,p.product.capacity],['颜色',old?.product?.color,p.product.color],['数量',old?.quantity,p.quantity],['总价上限',old?.maxTotalCny,p.maxTotalCny],['城市',old?.city,p.city],['收货方式',old?.fulfillment,p.fulfillment],['门店',old?.stores,p.stores],['日期时段规则',old?.dateRule,p.dateRule],['付款方式',old?.paymentMethod,p.paymentMethod],['附加项',oldExtras,p.extras]];
++    fields=checks.filter(([,a,b])=>diagnosticJson(a)!==diagnosticJson(b)).map(([label])=>label);
++    if(same===false&&fields.length===0)fields=['其他记录字段'];
++  }catch{same=null;fields=['记录无法确认'];}
++  const yes=v=>v===null?'无法确认':v?'是':'否';
++  return `程序诊断 C047；标签页一致：${yes(previous?.tabId===tabId)}；购买摘要一致：${yes(previous?.planDigest===digest)}；条件记录一致：${yes(same)}；差异项：${fields.length?fields.join('、'):'无'}；原任务：${bindingSummary(previous)}；当前：${bindingSummary({plan:p,tabId})}`;
++}
+ // C034 (Claude): ending a read-only cart task never empties the official bag; later tasks say so and never add to it.
+ // C035-R1 (Claude): only a current empty-bag read taken right before Add to Bag lets the program add the one planned item.
+ // C037 (Claude): a matching one-item read there is opened in the bag and checked out automatically without Add (no help entry needed).
+@@ -72,7 +91,7 @@ async function run(starting=false,{rebind=false,finalGrant=null,live=ticket()}={
+       // C029: the purchase run may read the ordinary order-summary disclosure for its quantity; a rebound read-only tab may not.
+       const port=new ChromePort(chrome,tabId,{authorized:!rebind,initialSequence:previous?.lastRead??0,acceptedSlot:previous?.acceptedSlot??null,pending:previous?.pending??null,privatePickupData,reviewGrant:useGrant,orderSummary:!rebind});
+       job=new PurchaseJob({store,port,maxSteps:300,onState});
+-      const result=await job.run(p,{tabId,planDigest:digest,grant:useGrant,taskId:useGrant?.taskId??null,rebind});$('final').disabled=result.lastPhase!=='REVIEW'||result.finalIntent?.sent===true||!!result.reconcileOnly;if(result.lastPhase==='REVIEW'&&port.last?.raw.termsLinks?.length){$('terms').href=port.last.raw.termsLinks[0];}
++      const result=await job.run(p,{tabId,planDigest:digest,grant:useGrant,taskId:useGrant?.taskId??null,rebind});$('final').disabled=result.lastPhase!=='REVIEW'||result.finalIntent?.sent===true||!!result.reconcileOnly;if(result.lastPhase==='REVIEW'&&port.last?.raw.termsLinks?.length){$('terms').href=port.last.raw.termsLinks[0];}if(live()&&result.reason==='existing-task-binding-differs')status($('state').textContent+'；'+bindingDiagnostic(previous,p,tabId,digest));
+     }catch{status('执行已停止，请核实当前任务；已发送的动作不会自动重试');}
+     finally{job=null;}
+   });}catch{status('执行未能安全开始；记录保持不变，已发送的动作不会自动重试');return;}
+@@ -87,10 +106,10 @@ $('reconcile').onclick=async()=>{
+     if(!live()){halted();return;}const p=plan(),tabId=Number($('tab').value),previous=await store.get(TASK_KEY);if(!live()){halted();return;}
+     if(!previous||previous.state==='RETIRED'){status('没有可核对的原任务；未创建新任务，也未点击官网');return;}
+     const digest=await boundDigest(p,previous);if(!live()){halted();return;}
+-    if(previous.planDigest!==digest){status(`购买条件与原任务不同；原任务：${bindingSummary(previous)}；当前：${bindingSummary({plan:p,tabId})}。记录保持不变；只读核对需使用原任务条件，改绑标签页不能改变商品`);return;}
+-    if(previous.tabId!==tabId){status(`标签页与原任务不同；原任务：${bindingSummary(previous)}；当前：${bindingSummary({plan:p,tabId})}。记录保持不变；原标签页仍在时应选回原页；原页已关闭时，另行明确确认改绑仅只读，旧任务不能因此恢复购买`);return;}
++    if(previous.planDigest!==digest){status(`购买条件与原任务不同；原任务：${bindingSummary(previous)}；当前：${bindingSummary({plan:p,tabId})}。记录保持不变；只读核对需使用原任务条件，改绑标签页不能改变商品；${bindingDiagnostic(previous,p,tabId,digest)}`);return;}
++    if(previous.tabId!==tabId){status(`标签页与原任务不同；原任务：${bindingSummary(previous)}；当前：${bindingSummary({plan:p,tabId})}。记录保持不变；原标签页仍在时应选回原页；原页已关闭时，另行明确确认改绑仅只读，旧任务不能因此恢复购买；${bindingDiagnostic(previous,p,tabId,digest)}`);return;}
+     const port=new ChromePort(chrome,tabId,{authorized:false,mode:'observe',initialSequence:previous.lastRead??0,acceptedSlot:previous.acceptedSlot??null,pending:previous.pending??null});
+-    job=new PurchaseJob({store,port,maxSteps:20,onState});await job.run(p,{tabId,planDigest:digest,mode:'reconcile'});
++    job=new PurchaseJob({store,port,maxSteps:20,onState});const result=await job.run(p,{tabId,planDigest:digest,mode:'reconcile'});if(live()&&result.reason==='existing-task-binding-differs')status($('state').textContent+'；'+bindingDiagnostic(previous,p,tabId,digest));
+   }catch{status('只读核对未完成；原任务和已发送动作保留，请核实标签页、主机权限或任务记录');}finally{job=null;}});if(!ownership.owned)status('另一控制页正在执行；本页没有核对或点击');}
+   catch{status('只读核对未能安全开始；记录保持不变');}
+ };
+@@ -146,4 +165,7 @@ $('final').onclick=async()=>{
+   await run(false,{finalGrant,live});
+ };
+ // No delete/reset: completed and unknown purchase history cannot be erased by reopening a control page.
+-const saved=await store.get(TASK_KEY);if(saved)status(`保留的任务：${saved.state}；原绑定：${bindingSummary(saved)}；重新打开不会清除购买或未知记录`);
++status('AppleBuy C047 绑定诊断已加载；C049 自提适配已加载；C050 日期适配已加载；保留全部旧任务记录');
++const saved=await store.get(TASK_KEY);
++if(saved&&saved.state!=='RETIRED'&&!productEdited&&$('product').value===bootProduct&&['iPhone Duo','iPhone 18 Pro'].includes(saved.plan?.product?.model))$('product').value=saved.plan.product.model==='iPhone 18 Pro'?'pro':'duo';
++if(saved)status(`AppleBuy C047 绑定诊断已加载；C049 自提适配已加载；C050 日期适配已加载；保留的任务：${saved.state}；原绑定：${bindingSummary(saved)}；重新打开不会清除购买或未知记录`);
+diff --git a/web/checkout-connector/job.js b/web/checkout-connector/job.js
+index 0094b66..d218030 100644
+--- a/web/checkout-connector/job.js
++++ b/web/checkout-connector/job.js
+@@ -5,6 +5,7 @@
+ // C-013-R1 (Claude): durable consecutive untouched bound reset only by verified progress plus a per-run absolute
+ // bound; an already selected exact allowed pickup store waits within a bound instead of being clicked again.
+ // C-018 (Claude): a persisted plan is compared independent of object-member order only.
++// C051 (Claude): a sent slot continues through the observed contact-only details step only with this task's own bound facts.
+ export const TASK_KEY='applebuy-single-personal-purchase/v1';
+ // Public-configuration validation never uses the purchase task key, so it cannot consume a purchase task.
+ export const VALIDATION_KEY='applebuy-public-configuration-validation/v1';
+@@ -52,6 +53,27 @@ export function purchaseMatches(p,c){
+     c.quantity===1&&c.fulfillment==='pickup'&&p.stores.includes(c.store)&&Number.isFinite(c.totalCny)&&c.totalCny>0&&c.totalCny<=p.maxTotalCny;
+ }
+ export function itemMatches(p,c){return !!c&&c.itemVerified===true&&c.model===p.product.model&&c.capacity===p.product.capacity&&c.color===p.product.color&&c.quantity===1&&Number.isFinite(c.totalCny)&&c.totalCny>0&&c.totalCny<=p.maxTotalCny;}
++// C051 (Claude): the current normal contact-only details step (C-051 evidence) shows no product, store, quantity or slot. It may carry
++// THIS task's earlier verified identity only to continue this task: the page's own recognized step, no current identity/quantity/store/
++// slot/order fact at all (pickup prose only), and its current total equal to the task's explicit one-unit money basis (bag total at
++// checkout, else the Add to Bag quote) within the cap. Never in read-only/rebound runs, with a final intent or without a started
++// checkout. Inherited identity is labelled separately and never authorizes REVIEW, a final order or an order confirmation.
++export const CONTACT_SLOT_BASIS='contact-only-details-after-sent-slot; inherited task identity; not a hold guarantee';
++function contactStepCurrent(P,s,o){
++  const c=o?.contactStep,p=o?.purchase,basis=s.bagTotalCny??s.quotedCny??null;
++  return o?.phase==='DETAILS'&&o.verifiedStep===true&&c?.kind==='contact-only-details'&&c.verified===true&&!!p&&p.verified===false&&p.itemVerified===false&&
++    p.model===null&&p.capacity===null&&p.color===null&&p.quantity===null&&p.store===null&&(p.fulfillment===null||p.fulfillment==='pickup')&&
++    Number.isFinite(basis)&&basis>0&&basis<=P.maxTotalCny&&p.totalCny===basis&&c.totalCny===basis&&o.slotSummary==null&&o.extras==null&&o.orderRefHash==null&&
++    s.reconcileOnly!==true&&s.finalIntent===null&&s.bagAddStarted===true;
++}
++// The sent chooseSlot must be this task's own current SLOTS decision: written from SLOTS (where purchaseMatches held), the frozen
++// date at the cursor, its own terminal floor, never refused, and no slot accepted before. A legacy/absent/contradictory record stops.
++function sentSlotBound(s,q){
++  return q?.action==='chooseSlot'&&q.beforePhase==='SLOTS'&&q.dispatched===undefined&&typeof q.date==='string'&&SLOT.test(q.start)&&SLOT.test(q.end)&&q.start<q.end&&
++    Array.isArray(s.initialDates)&&s.initialDates[s.dateCursor]===q.date&&s.floors?.[q.date]===q.start&&!s.acceptedSlot&&
++    !s.rejected.some(r=>r.date===q.date&&r.start===q.start&&r.end===q.end);
++}
++const inheritedIdentity=(P,s,o,source)=>({kind:'inherited-task-identity',step:'contact-only-details',fresh:false,source,product:{...P.product},quantity:P.quantity,stores:[...P.stores],fulfillment:P.fulfillment,basisCny:s.bagTotalCny??s.quotedCny,readSequence:o.seq});
+ // Retirement is allowed only when no merchant mutation was ever written; legacy records without the fields are not provable.
+ export function retirable(s){return s.resourceWritten===false&&s.bagAddStarted===false&&s.finalIntent===null&&(s.pending===null||PUBLIC.has(s.pending.action));}
+ // C030: only this narrow cart-only history can be finished; a marker never overrides a final/slot/unknown fact.
+@@ -244,6 +266,11 @@ export class PurchaseJob {
+             if(s.refusals>5)return this.gate(s,'refusal-bound-reached','EXHAUSTED');continue;
+           }
+           if(['DETAILS','PAYMENT','REVIEW'].includes(o.phase)&&o.acceptedSlot?.verified===true&&purchaseMatches(P,o.purchase)&&o.acceptedSlot.date===pending.date&&o.acceptedSlot.start===pending.start&&o.acceptedSlot.end===pending.end){s.acceptedSlot=clone(o.acceptedSlot);s.pending=null;s.untouchedStreak=0;await this.save(s);continue;}
++          // C051 (Claude): normal progression from this task's own bound slot send to the contact-only step. Not a hold guarantee.
++          if(!readOnly&&sentSlotBound(s,pending)&&contactStepCurrent(P,s,o)){
++            s.acceptedSlot={date:pending.date,start:pending.start,end:pending.end,verified:true,basis:CONTACT_SLOT_BASIS};s.inheritedIdentity=inheritedIdentity(P,s,o,'purchase-verified-at-slot-send');
++            s.pending=null;s.untouchedStreak=0;s.history=[...(s.history??[]),{event:'slot-continued-to-contact-only-details',readSequence:o.seq,inherited:true}].slice(-50);await this.save(s);continue;
++          }
+           if(!readOnly&&(o.phase==='PROCESSING'||o.phase===pending.beforePhase)&&this.now()<pending.deadline&&await poll(this.maxWaitMs))continue;
+           return this.gate(s,'slot-result-unconfirmed; no resubmission','NEEDS_VERIFICATION');
+         }
+@@ -321,6 +348,8 @@ export class PurchaseJob {
+         command=o.purchase.fulfillment!=='pickup'?{action:'selectPickup'}:{action:'selectStore',store:P.stores[0]};
+       }
+       else if(o.phase==='SLOTS'){
++        // C051: a slot continued on inherited identity is never followed by a second slot choice.
++        if(s.acceptedSlot?.basis===CONTACT_SLOT_BASIS)return this.gate(s,'slot-already-continued; no second slot','NEEDS_VERIFICATION');
+         if(!purchaseMatches(P,o.purchase)||o.listComplete!==true||!Number.isSafeInteger(o.generation)||!Array.isArray(o.dates)||o.dates.length===0||o.dates.some(d=>typeof d.label!=='string'||!d.label||typeof d.ref!=='string')||new Set(o.dates.map(d=>d.label)).size!==o.dates.length)return this.gate(s,'slot-list-or-conditions-not-verified','BLOCKED');
+         // Freeze the first three ENABLED offered labels once, in merchant order. Never invent a year or roll to a fourth date.
+         if(!s.initialDates){const offered=o.dates.filter(d=>d.enabled===true).slice(0,3).map(d=>d.label);if(!offered.length)return this.gate(s,'no-offered-pickup-date-yet; availability not established','NOT_READY');s.initialDates=offered;await this.save(s);}
+@@ -335,7 +364,11 @@ export class PurchaseJob {
+           command={action:'chooseSlot',date,start:t.start,end:t.end,ref:t.ref,generation:o.generation};
+         }
+       }else if(o.phase==='DETAILS'){
+-        if(!s.acceptedSlot||!purchaseMatches(P,o.purchase))return this.gate(s,'accepted-slot-or-details-conditions-missing','BLOCKED');command={action:'fillDetails'};
++        // C051: a contact-only step needs this task's verified accepted slot and the same current bounds; fresh full evidence keeps priority.
++        const contact=!purchaseMatches(P,o.purchase)&&s.acceptedSlot?.verified===true&&contactStepCurrent(P,s,o);
++        if(!s.acceptedSlot||!purchaseMatches(P,o.purchase)&&!contact)return this.gate(s,'accepted-slot-or-details-conditions-missing','BLOCKED');
++        if(contact&&!s.inheritedIdentity)s.inheritedIdentity=inheritedIdentity(P,s,o,'purchase-verified-at-slot-acceptance');
++        command=contact?{action:'fillDetails',contactOnly:true}:{action:'fillDetails'};
+       }else if(o.phase==='PAYMENT'){
+         if(!s.acceptedSlot||!purchaseMatches(P,o.purchase))return this.gate(s,'payment-conditions-not-verified','BLOCKED');command={action:o.paymentMethod===P.paymentMethod?'continuePayment':'selectPayment'};
+       }else if(o.phase==='REVIEW'){
+diff --git a/web/checkout-connector/page-program.js b/web/checkout-connector/page-program.js
+index 2aecc0b..b2298fb 100644
+--- a/web/checkout-connector/page-program.js
++++ b/web/checkout-connector/page-program.js
+@@ -15,6 +15,7 @@
+ // C-020 (Claude): an anchored cart is BAG (recognized, proved checkout) or UNKNOWN; no other stage label there is step authority.
+ // C035 (Claude): the observed complete normal empty bag is EMPTY_BAG; there only openProduct is accepted, as a write-free re-verification.
+ // C037 (Claude): selectStore can choose the observed numbered native Dalian radio when it is not preselected, by the same exact proof.
++// C051 (Claude): the observed contact-only details step is a recognized step (contactStep), never purchase proof; see below.
+ export async function merchantDocument(plan,command=null,internal=null){
+   // `internal` is set only by this program's own re-entry; ChromePort passes plan and command only.
+   // A structured command always receives a structured report. Nothing was written unless this id was already delivered.
+@@ -24,11 +25,11 @@ export async function merchantDocument(plan,command=null,internal=null){
+   const u=new URL(location.href);
+   const safe=u.protocol==='https:'&&(u.hostname==='www.apple.com.cn'||/^secure(?:\d+)?\.www\.apple\.com\.cn$/.test(u.hostname))&&/^\/shop\/(?:buy-iphone\/(?:iphone-18-pro|iphone-duo)(?:\/[^/]+\/a)?|bag|checkout|order(?:\/[^?#]*)?|signIn(?:\/orders)?)(?:\/)?$/.test(u.pathname);
+   if(!safe)return command?.structured===true?report('UnsupportedOfficialUrl'):{schema:'applebuy-merchant-read/v1',phase:'UNKNOWN',reason:'unsupported-official-url'};
+-  if(/^\/shop\/signIn\/orders\/?$/.test(u.pathname)){
++  if(/^\/shop\/signIn(?:\/orders)?\/?$/.test(u.pathname)){
+     // C-013-R1: same-document delivery evidence survives the AUTH route. A memoized command is never positively
+     // untouched. Only the memo is consulted: no authentication DOM or field is read and no action is taken.
+     if(command)return report('AuthenticationRequired');
+-    return {schema:'applebuy-merchant-read/v1',phase:'AUTH',verifiedStep:false,reason:'official-order-sign-in-required',dates:[],times:[]};
++    return {schema:'applebuy-merchant-read/v1',phase:'AUTH',verifiedStep:false,reason:u.pathname.includes('/orders')?'official-order-sign-in-required':'official-checkout-sign-in-required',dates:[],times:[]};
+   }
+   const main=document.querySelector('main,[role="main"]');if(!main)return command?.structured===true?report('MainNotFound'):{schema:'applebuy-merchant-read/v1',phase:'UNKNOWN',reason:'main-not-found'};
+   const norm=s=>String(s??'').normalize('NFKC').replace(/[\s\u{200B}\u{200C}\u{200D}\u{2060}]+/gu,' ').trim();
+@@ -64,15 +65,42 @@ export async function merchantDocument(plan,command=null,internal=null){
+     const heads=inside(line,'h2').filter(visible),title=heads.length===1?heads[0]:null;
+     const offers=inside(line,'.rs-inline-recommendation').filter(o=>visible(o)&&norm(o.textContent).startsWith('添加')&&!heads.some(h=>o===h||within(o,h)||within(h,o))&&!inside(o,'select').length&&
+       !inside(o,'button,a').some(b=>name(b).startsWith('移除'))&&!inside(o,'input,[role="checkbox"],[role="radio"]').some(checked));
+-    const free=e=>!offers.some(o=>o===e||within(o,e));
+-    const strip=e=>{let s=String(e.textContent??'');for(const o of offers)if(within(e,o))s=s.replace(String(o.textContent??''),' ');return norm(s);};
+-    const stray=textEls.some(x=>productRe.test(x.t)&&free(x.e)&&!(title&&(x.e===title||within(title,x.e)||within(x.e,title))));
++    // C048 Codex genuine-quota takeover: the current bag repeats its exact item in the normal Remove/Save Later
++    // buttons, and separately lists non-purchased favorites. Neither counterpart supplies item count or quantity.
++    const nativeActionButtons=[],actionCopies=[];
++    for(const [autom,caption] of [['bag-item-remove-button','移除'],['bag-item-savelater-button','移入收藏']]){
++      const matches=inside(line,`[data-autom="${autom}"]`),b=matches.length===1?matches[0]:null,kids=b?[...b.children]:[];
++      if(b?.tagName==='BUTTON'&&visible(b)&&kids.length===2&&kids.every(k=>k.tagName==='SPAN'&&visible(k))&&
++        norm(kids[0].textContent)===caption&&kids[1].matches('.visuallyhidden')&&norm(kids[1].textContent)===fullVariant&&
++        inside(b,'.visuallyhidden').length===1&&name(b)===caption+fullVariant){nativeActionButtons.push(b);actionCopies.push(kids[1]);}
++    }
++    const savedScopes=inside(main,'.rs-savedbyyou'),savedLists=inside(main,'ul.rs-savedbyyou-tiles'),savedHeads=inside(main,'h2.rs-savedbyyou-title');
++    const saved=savedScopes.length===1?savedScopes[0]:null,savedList=savedLists.length===1?savedLists[0]:null,savedHead=savedHeads.length===1?savedHeads[0]:null;
++    const savedRows=savedList?[...savedList.children]:[];
++    const knownSaved=!!(saved?.tagName==='DIV'&&visible(saved)&&savedList&&visible(savedList)&&savedList.getAttribute('role')==='list'&&
++      savedHead&&visible(savedHead)&&norm(savedHead.textContent)==='个人收藏'&&within(saved,savedHead)&&within(saved,savedList)&&
++      !within(bagLists[0],saved)&&!within(saved,bagLists[0])&&
++      !inside(saved,'[data-autom="bag-items"],select,[data-autom="item-quantity-dropdown"],[data-autom="bag-item-remove-button"],[data-autom="checkout"]').length&&
++      !inside(saved,'input,[role="checkbox"],[role="radio"]').some(checked)&&savedRows.length>0&&savedRows.every(r=>{
++        if(r.tagName!=='LI'||r.getAttribute('role')!=='listitem')return false;
++        if(r.matches('.rs-product-list-emptytile'))return r.children.length===0&&norm(r.textContent)==='';
++        const buys=inside(r,'[data-autom="bag-item-buybtn"]'),b=buys.length===1?buys[0]:null,names=inside(r,'h3.rs-product-list-item-productname');
++        return r.matches('.rs-product-list-item')&&visible(r)&&/^product-list-item-[a-z0-9/]+$/i.test(r.getAttribute('data-autom')??'')&&
++          names.length===1&&visible(names[0])&&b?.tagName==='A'&&visible(b)&&b.matches('.rs-product-list-item-buybtn')&&
++          norm([...b.childNodes].filter(n=>n.nodeType===3).map(n=>n.textContent).join(''))==='继续';
++      }));
++    const badSavedScope=savedScopes.length+savedLists.length+savedHeads.length>0&&!knownSaved;
++    const notPurchased=[...offers,...(knownSaved?[saved]:[])];
++    const free=e=>!notPurchased.some(o=>o===e||within(o,e));
++    const strip=e=>{let s=String(e.textContent??'');for(const o of notPurchased)if(within(e,o))s=s.replace(String(o.textContent??''),' ');return norm(s);};
++    const stray=badSavedScope||textEls.some(x=>productRe.test(x.t)&&free(x.e)&&
++      !(title&&(x.e===title||within(title,x.e)||within(x.e,title)))&&!actionCopies.some(c=>c===x.e||within(c,x.e)));
+     const removes=inside(line,'button,a').filter(b=>visible(b)&&name(b).startsWith('移除'));
+     const named=inside(main,'button,a,input[type="submit"],[data-autom="checkout"]').filter(b=>['结账','安全结账'].includes(name(b))||b.getAttribute('data-autom')==='checkout');
+     const row=(b,c)=>!!b.closest('.'+c),ok=b=>visible(b)&&!disabled(b);
+     const header=named.filter(b=>row(b,'rs-bag-checkoutbutton-header')&&!row(b,'rs-bag-checkoutbutton-bottom')),bottom=named.filter(b=>row(b,'rs-bag-checkoutbutton-bottom')&&!row(b,'rs-bag-checkoutbutton-header'));
+     const pair=named.length===2&&header.length===1&&bottom.length===1&&named.every(b=>ok(b)&&name(b)==='结账'&&b.getAttribute('data-autom')==='checkout');
+-    return {items:items.length,line,title,offers,free,strip,stray,otherRemove:removes.length>1||removes.some(b=>!['移除','移除 '+fullVariant].includes(name(b))),
++    return {items:items.length,line,title,offers,free,strip,stray,otherRemove:removes.length>1||removes.some(b=>!['移除','移除 '+fullVariant].includes(name(b))&&!nativeActionButtons.includes(b)),
+       checkout:named.length===1&&ok(named[0])&&['结账','安全结账'].includes(name(named[0]))?named[0]:pair?bottom[0]:null};
+   })();
+   // C-019-R1 (Claude): on /shop/bag any purchased-list anchor commits the page to the observed cart scope. A duplicated or
+@@ -96,14 +124,33 @@ export async function merchantDocument(plan,command=null,internal=null){
+     visible(copy)&&norm(copy.textContent)===fullVariant);
+   const groupLine=!!(group&&strip&&strip.tagName==='DIV'&&visible(strip)&&within(group,strip)&&norm(strip.textContent)===fullVariant&&knownLegend&&
+     textEls.filter(x=>productRe.test(x.t)).every(x=>related(x.e,strip)||related(x.e,copy)));
+-  const oneLine=groups.length===0?lines(productRe).length===1:groupLine;
++  // C045 (Codex authorized quota takeover): current historical order detail (normal Chrome evidence) pairs a model-only H2 with
++  // one full-title H3 in the SAME LI.rs-od-itemdetail/order-item-N. The item summary is identity scope, never a piece count.
++  // Count every native marker including hidden/duplicate/misplaced ones. A present but incomplete native scope cannot borrow the
++  // generic text fallback; every other iPhone mention still conflicts below. Real quantity/unpaid/slot/extras remain unverified.
++  const nativeOrderPage=/^\/shop\/order\/detail\/[^/]+\/[^/]+\/?$/.test(u.pathname);
++  const nativeItems=nativeOrderPage?[...main.querySelectorAll('.rs-od-itemdetail')]:[];
++  const nativeSummaries=nativeOrderPage?[...main.querySelectorAll('.rs-od-itemsummary')]:[];
++  const nativeNames=nativeOrderPage?[...main.querySelectorAll('.rs-display-item-name')]:[];
++  const nativeHeads=nativeOrderPage?[...main.querySelectorAll('.rs-od-itemtitle')]:[];
++  const nativeInfos=nativeOrderPage?[...main.querySelectorAll('.rs-od-iteminfo')]:[];
++  const nativeScope=nativeItems.length>0||nativeSummaries.length>0||nativeNames.length>0;
++  const ni=nativeItems.length===1?nativeItems[0]:null,ns=nativeSummaries.length===1?nativeSummaries[0]:null;
++  const nn=nativeNames.length===1?nativeNames[0]:null,nh=nativeHeads.length===1?nativeHeads[0]:null,nf=nativeInfos.length===1?nativeInfos[0]:null;
++  const nativeStates=nh?[...nh.querySelectorAll('.rs-od-itemstatus')]:[],st=nativeStates.length===1?nativeStates[0]:null;
++  let nativeHeaderText=String(nh?.textContent??'');if(st)nativeHeaderText=nativeHeaderText.replace(String(st.textContent??''),' ');
++  const nativeLine=!!(ni&&ni.tagName==='LI'&&/^order-item-\d+$/.test(ni.getAttribute('data-autom')??'')&&visible(ni)&&
++    ns&&ns.tagName==='DIV'&&visible(ns)&&within(ni,ns)&&nn&&nn.tagName==='H3'&&visible(nn)&&within(ns,nn)&&norm(nn.textContent)===fullVariant&&
++    nf&&nf.tagName==='DIV'&&visible(nf)&&within(ni,nf)&&nh&&nh.tagName==='H2'&&visible(nh)&&within(nf,nh)&&
++    st&&st.tagName==='SPAN'&&visible(st)&&within(nh,st)&&!/iphone/i.test(norm(st.textContent))&&norm(nativeHeaderText)===norm(plan.product.model));
++  const oneLine=nativeScope?nativeLine:groups.length===0?lines(productRe).length===1:groupLine;
+   // C028-R1 (Claude): the line rules above see only visible h1-h3/p/span/div text of at most 180 characters. Outside the observed
+   // bag (which keeps its own structural purchased-line count), every iPhone mention in main's whole text - hidden, bare text,
+   // any element type or long text - must be an accepted anchor's own mention: the recognized strip/copy pair, or the single
+   // generic title line. Nested anchors count once. An ancestor holding the known copy lends no identity to further product
+   // text. Only a count is derived; no page text is returned or kept.
+   const mentions=e=>(norm(e?.textContent).match(/iphone/gi)??[]).length;
+-  const anchors=[...new Set(groups.length>0?[strip,copy]:lines(productRe).map(x=>x.e))].filter(Boolean);
++  const anchors=[...new Set(nativeScope?[nn]:groups.length>0?[strip,copy]:lines(productRe).map(x=>x.e))].filter(Boolean);
+   // C036 Codex quota adaptation: current native pickup adds a model-only date LEGEND beside the single selected-store product row.
+   // It is metadata, not another purchased item. Whitelist only this observed structural counterpart; every other iPhone mention,
+   // duplicate/hidden product scope or mismatching caption still conflicts. Neither this row nor the caption supplies quantity.
+@@ -115,12 +162,12 @@ export async function merchantDocument(plan,command=null,internal=null){
+   const knownPickupCaption=pickupLists.length===1&&pickupLists[0].tagName==='UL'&&visible(pickupLists[0])&&pickupRows.length===1&&pickupRows[0].tagName==='LI'&&visible(pickupRows[0])&&
+     pickupTitles.length===1&&visible(pickupTitles[0])&&norm(pickupTitles[0].textContent)===fullVariant&&pc&&visible(pc)&&norm(pc.textContent)===norm('为你的 '+plan.product.model+' 选择取货日期：')&&
+     pf?.tagName==='FIELDSET'&&pf.querySelectorAll('input[name="bartPickupDateSelectorButtonGroup"]').length>0&&pf.querySelectorAll('select[data-autom="pickup-availablewindow-dropdown"]').length===1;
+-  const mentionAnchors=[...anchors,...(knownPickupCaption?[pc]:[])];
++  const mentionAnchors=[...anchors,...(knownPickupCaption?[pc]:[]),...(nativeLine?[nh]:[])];
+   const soleMentions=mentions(main)<=mentionAnchors.filter(e=>!mentionAnchors.some(o=>o!==e&&within(o,e))).reduce((n,e)=>n+mentions(e),0);
+   // C027 (Codex quota completion): the recognized strip/copy supply exact titles. Their real-DOM ancestors also contain
+   // native option labels; that aggregate is not another title. Generic pages retain the strict textual proof.
+   const exactProduct=bag?!!bag.title&&norm(bag.title.textContent)===fullVariant&&!bag.stray:!bagScoped&&oneLine&&soleMentions&&
+-    (groups.length>0?groupLine:productLines.some(t=>t===fullVariant)&&productLines.every(t=>t===fullVariant));
++    (nativeScope?nativeLine:groups.length>0?groupLine:productLines.some(t=>t===fullVariant)&&productLines.every(t=>t===fullVariant));
+   // C022 (Codex quota takeover): wrapper text includes every option, even hidden native clones (observed 数量121).
+   // Remove descendant select text only; literal quantity outside those controls still conflicts with selected values.
+   // Strip outermost controls once, before the length bound, so long/nested option lists cannot hide a real contradiction.
+@@ -172,7 +219,20 @@ export async function merchantDocument(plan,command=null,internal=null){
+   // C036 Codex quota adaptation: current normal pickup uses numbered native store-locator radios. The independently observed
+   // mainland Dalian label and public R609 identifier must BOTH match; never infer a store from its ID or a substring alone.
+   const nativeStore=e=>e.tagName==='INPUT'&&e.getAttribute('name')==='store-locator-result';
+-  const nativeStoreName=e=>{const m=/^\d+\s+(Apple .+)\s+今天 可取货 店内取货$/.exec(name(e));return m&&m[1]==='Apple 大连恒隆广场'&&e.value==='R609'?m[1]:null;};
++  const nativeStoreName=e=>{
++    if(e.value!=='R609')return null;
++    // C049 Root genuine-quota adaptation: native label SPANs join without spaces and now say 明天.
++    // Exact associated public title and R609 are identity; availability prose never binds a date or quantity.
++    const nativeLabel=l=>/(?:^|\s)form-selector-label(?:\s|$)/.test(l.getAttribute('class')??'');
++    const labels=[...e.labels??[]],hasNative=labels.some(l=>nativeLabel(l)||l.querySelectorAll('span.form-selector-title').length>0);
++    if(hasNative){
++      const l=labels.length===1?labels[0]:null,ts=l?[...l.querySelectorAll('span.form-selector-title')]:[];
++      return norm(e.getAttribute('type')).toLowerCase()==='radio'&&l?.tagName==='LABEL'&&visible(l)&&nativeLabel(l)&&
++        ts.length===1&&visible(ts[0])&&norm(ts[0].textContent)==='Apple 大连恒隆广场'&&name(e)===norm(l.textContent)&&
++        /^\d+\s*Apple 大连恒隆广场\s*(?:今天|明天)\s*可取货\s*店内取货$/.test(name(e))?'Apple 大连恒隆广场':null;
++    }
++    const m=/^\d+\s+(Apple .+)\s+今天 可取货 店内取货$/.exec(name(e));return m&&m[1]==='Apple 大连恒隆广场'?m[1]:null;
++  };
+   const storeRadios=radios.filter(e=>/^Apple\s/.test(name(e))||nativeStore(e)),checkedStores=storeRadios.filter(checked);
+   const radioStore=checkedStores.length===1&&!disabled(checkedStores[0])?planStore(nativeStore(checkedStores[0])?nativeStoreName(checkedStores[0])??'':name(checkedStores[0])):null;
+   const fieldValues=[...new Set(texts.flatMap(t=>{const m=/^(?:取货地点|取货门店|自提门店|店内取货地点)\s*[:：]?\s*(.*)$/.exec(t);return m&&/Apple\s/.test(m[1])?[m[1]]:[];}))];
+@@ -301,9 +361,22 @@ export async function merchantDocument(plan,command=null,internal=null){
+   const dateSummary=[...new Set(texts.flatMap(t=>{const m=/^取货日期\s*[:：]?\s*(.+)$/.exec(t);return m&&datePattern.test(m[1])?[m[1]]:[]}))];
+   const timeSummary=[...new Set(texts.flatMap(t=>{const m=/^取货时间\s*[:：]?\s*(\d{2}:\d{2})\s*[-–—至]\s*(\d{2}:\d{2})$/.exec(t);return m?[m[1]+'-'+m[2]]:[]}))];
+   if(dateSummary.length===1&&timeSummary.length===1){const [start,end]=timeSummary[0].split('-');if(start<end)out.slotSummary={date:dateSummary[0],start,end,verified:true};}
+-  const dateChoices=radios.filter(e=>datePattern.test(name(e)));
++  // C050 Root genuine-quota adaptation: current native labels are compact/lowercase (october5), not generic date prose.
++  // Their complete associated group, proved pickup fieldset and matching day values are required; no year is invented.
++  const nativeDateInputs=checkoutScope?[...main.querySelectorAll('input[name="bartPickupDateSelectorButtonGroup"]')]:[];
++  const nativeDateLabel=l=>/(?:^|\s)form-selector-label(?:\s|$)/.test(l.getAttribute('class')??'');
++  const nativeDateMode=nativeDateInputs.some(e=>[...e.labels??[]].some(nativeDateLabel));
++  const nativeDateKnown=e=>{
++    const ls=[...e.labels??[]],l=ls.length===1?ls[0]:null,m=/^(january|february|march|april|may|june|july|august|september|october|november|december)\s*([1-9]|[12]\d|3[01])$/i.exec(name(e));
++    const days={january:31,february:29,march:31,april:30,may:31,june:30,july:31,august:31,september:30,october:31,november:30,december:31};
++    return !!(knownPickupCaption&&pf&&within(pf,e)&&visible(e)&&norm(e.getAttribute('type')).toLowerCase()==='radio'&&
++      l?.tagName==='LABEL'&&visible(l)&&nativeDateLabel(l)&&within(pf,l)&&name(e)===norm(l.textContent)&&m&&
++      Number(m[2])<=days[m[1].toLowerCase()]&&e.value===m[2]);
++  };
++  const dateChoices=nativeDateMode?nativeDateInputs.filter(nativeDateKnown):radios.filter(e=>datePattern.test(name(e)));
++  const nativeDatesComplete=!nativeDateMode||nativeDateInputs.length===dateChoices.length&&new Set(dateChoices.map(name)).size===dateChoices.length;
+   const dateSelects=selects.filter(e=>e!==timeSelects[0]&&[...e.options].length>0&&[...e.options].every(o=>datePattern.test(norm(o.textContent))));
+-  if(phase==='SLOTS'&&timeSelects.length===1&&(dateChoices.length>0) !== (dateSelects.length===1)){
++  if(phase==='SLOTS'&&nativeDatesComplete&&timeSelects.length===1&&(dateChoices.length>0) !== (dateSelects.length===1)){
+     const ds=dateChoices.length?dateChoices:[...dateSelects[0].options];
+     out.dates=ds.map((d,i)=>({label:name(d),ref:'date:'+i,enabled:!disabled(d),selected:d.tagName==='OPTION'?d.selected:checked(d)}));
+     const one=out.dates.filter(d=>d.selected);out.selectedDate=one.length===1?one[0].label:null;
+@@ -323,6 +396,20 @@ export async function merchantDocument(plan,command=null,internal=null){
+       return merchantDocument(plan,command,{hashes:new Map([[orderLabels[0],[...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('')]])});}}
+   const detailLinks=[...new Set([...main.querySelectorAll('a[href]')].filter(a=>visible(a)&&['查看订单','查看订单详情'].includes(name(a))).flatMap(a=>{try{const h=new URL(a.href);return h.protocol==='https:'&&(h.hostname==='www.apple.com.cn'||/^secure(?:\d+)?\.www\.apple\.com\.cn$/.test(h.hostname))&&orderDetailPath.test(h.pathname)?[h.href]:[];}catch{return [];}}))];
+   if(detailLinks.length===1)out.orderDetailLink=detailLinks[0];
++  // C051 (Claude): current normal contact-only pickup-details step (C-051 normal Chrome evidence, secure8 /shop/checkout; public
++  // metadata only, no values): one live 继续选择付款方式, the five observed labelled required contact inputs, the companion-bar total and
++  // no other order fact. It repeats no product, store, quantity or slot, so it is a recognized STEP and purchase stays unverified.
++  // Any iPhone mention (any visibility), store/fulfillment/date/time/quantity/extras/order evidence, visible dialog, other money,
++  // duplicated or differently typed contact field means it is not this step. Only the job continues it, from its own bound slot send.
++  const CONTACT=[['姓氏',['','text']],['名字',['','text']],['电子邮件地址',['email']],['联系人手机号码',['tel']],['政府颁发的身份证件号码的后四位',['','text'],4]];
++  const shownInputs=[...main.querySelectorAll('input')].filter(visible);
++  const contactForm=CONTACT.every(([label,types,max])=>{const m=shownInputs.filter(e=>name(e)===label),e=m.length===1?m[0]:null;
++    return !!e&&!disabled(e)&&e.readOnly!==true&&e.required===true&&types.includes(norm(e.getAttribute('type')).toLowerCase())&&(max===undefined||e.maxLength===max);});
++  const contactOnly=checkoutScope&&!bagScoped&&phase==='DETAILS'&&contactForm&&mentions(main)===0&&productLines.length===0&&!mainQtyShown&&!/件商品|数量/.test(norm(main.textContent))&&
++    radios.length===0&&storeRadios.length===0&&fieldValues.length===0&&fulfillmentChoice===null&&!deliveryProse&&selects.length===0&&nativeDateInputs.length===0&&
++    !texts.some(t=>/^(?:取货(?:日期|时间|地点|门店)|自提门店|店内取货地点)|AppleCare|折抵|换购/.test(t))&&!out.slotSummary&&!out.extrasConflict&&orderLabels.length===0&&!out.orderRefHash&&
++    dialogs?.length===0&&bars.length===1&&bars[0].tagName==='BUTTON'&&visible(bars[0])&&!disabled(bars[0])&&barTotal>0&&totalLines.length===0&&total===barTotal;
++  out.contactStep=contactOnly?{kind:'contact-only-details',verified:true,totalCny:barTotal,fields:CONTACT.length}:null;
+   out.receiptVerified=phase==='ORDER_RECEIPT'&&!!out.orderRefHash&&purchase.verified;
+   // Official refusal anchors are not yet observed: real alerts remain unknown rather than invented rejection.
+   if(referenceChanged)return command?report('OperationEvidenceChanged'):{schema:'applebuy-merchant-read/v1',phase:'UNKNOWN',reason:'order-reference-changed'};
+@@ -338,9 +425,14 @@ export async function merchantDocument(plan,command=null,internal=null){
+   let touched=false;
+   // C-016: a pickup value goes only to the ONLY visible input carrying one of its key's labels, and only when that input is
+   // a native, enabled, writable text/tel/email field that is not an authentication field.
+-  const rules={firstName:['名字'],lastName:['姓氏'],phone:['手机号码','电话号码'],email:['电子邮件地址'],identitySuffix:['身份证件号码最后4位','身份证件号码后四位']};
++  // C051 (Claude): the observed contact labels 联系人手机号码 (tel) and 政府颁发的身份证件号码的后四位 (text, maxlength 4) bind only with
++  // that observed type/length. Any two allowed labels of one key on visible inputs are ambiguous; hidden inputs never receive a value.
++  const rules={firstName:['名字'],lastName:['姓氏'],phone:['手机号码','电话号码','联系人手机号码'],email:['电子邮件地址'],identitySuffix:['身份证件号码最后4位','身份证件号码后四位','政府颁发的身份证件号码的后四位']};
++  const observedBinding={'联系人手机号码':e=>norm(e.getAttribute('type')).toLowerCase()==='tel','政府颁发的身份证件号码的后四位':e=>['','text'].includes(norm(e.getAttribute('type')).toLowerCase())&&e.maxLength===4};
+   const bind=key=>{const m=[...main.querySelectorAll('input')].filter(e=>visible(e)&&rules[key].includes(name(e))),e=m.length===1?m[0]:null;
+-    return e&&e instanceof HTMLInputElement&&!disabled(e)&&e.readOnly!==true&&['','text','tel','email'].includes(norm(e.getAttribute('type')).toLowerCase())&&!/password|one-time-code/.test(norm(e.getAttribute('autocomplete')).toLowerCase())?e:null;};
++    return e&&e instanceof HTMLInputElement&&!disabled(e)&&e.readOnly!==true&&['','text','tel','email'].includes(norm(e.getAttribute('type')).toLowerCase())&&!/password|one-time-code/.test(norm(e.getAttribute('autocomplete')).toLowerCase())&&(observedBinding[name(e)]?.(e)??true)?e:null;};
++  // C051: a contact-only step continues only under the job's explicit contactOnly command and this decode's own recognized step.
++  const detailsStep=c=>phase==='DETAILS'&&(purchase.verified||c?.contactOnly===true&&out.contactStep?.verified===true);
+   // Labels and states of the visible inputs, never their values.
+   const inputSig=l=>JSON.stringify(l.map(e=>[name(e),norm(e.getAttribute('type')).toLowerCase(),norm(e.getAttribute('autocomplete')).toLowerCase(),disabled(e),e.required===true,e.readOnly===true]));
+   const requiredInvalid=()=>[...main.querySelectorAll('input[required]')].filter(visible).some(e=>!e.checkValidity());
+@@ -419,7 +511,7 @@ export async function merchantDocument(plan,command=null,internal=null){
+       // evidence (URL, same main, phase, purchase, slot summary), keep the identical visible input set and the same live
+       // Continue. Only then is the next value sent to its original, still unique allowed receiver, or Continue clicked.
+       const c=internal.details,live=exact('继续选择付款方式'),now=[...main.querySelectorAll('input')].filter(visible);touched=true;
+-      if(Date.now()-c.writtenAt>c.limit||u.href!==c.href||main!==c.main||phase!=='DETAILS'||!purchase.verified||JSON.stringify(out)!==c.expected||
++      if(Date.now()-c.writtenAt>c.limit||u.href!==c.href||main!==c.main||!detailsStep(c)||JSON.stringify(out)!==c.expected||
+         now.length!==c.inputs.length||now.some((e,i)=>e!==c.inputs[i])||inputSig(now)!==c.inputSig||live.length!==1||live[0]!==c.next||!c.next.isConnected)throw new Error('DetailsEvidenceChangedAfterInput');
+       if(c.keys.length)return await fillDetail(c);
+       if(requiredInvalid())throw new Error('PickupDetailsRequireHuman');c.next.click();return {delivered:true};
+@@ -478,14 +570,14 @@ export async function merchantDocument(plan,command=null,internal=null){
+       const SETTLE_LIMIT_MS=2000,changedAt=Date.now(),afterChange=snapshot();
+       await new Promise(r=>setTimeout(r,0));
+       return await merchantDocument(plan,command,{hashes:internal?.hashes??new Map(),slot:{select:s,next:next[0],main,out,afterChange,changedAt,limit:SETTLE_LIMIT_MS}});
+-    }else if(command.action==='fillDetails'&&phase==='DETAILS'&&purchase.verified){
++    }else if(command.action==='fillDetails'&&detailsStep(command)){
+       const supplied=command.privatePickupData??{};if(Object.keys(supplied).some(k=>!Object.hasOwn(rules,k)))throw new Error('PrivateFieldNotAllowed');
+       const bound={};for(const [key,value] of Object.entries(supplied)){if(typeof value!=='string'||value.length>100||(key==='identitySuffix'&&!/^\d{4}$/.test(value)))throw new Error('PrivateFieldInvalid');bound[key]=bind(key);if(!bound[key])throw new Error('PrivateFieldContractUnrecognized');}
+       // Validate all field bindings BEFORE transmitting the first value. Never return or persist values.
+       // Nothing supplied: nothing is written, so this synchronous decode is still current for Continue.
+       if(!Object.keys(bound).length){if(requiredInvalid())throw new Error('PickupDetailsRequireHuman');click('继续选择付款方式');}
+       else{const next=exact('继续选择付款方式'),inputs=[...main.querySelectorAll('input')].filter(visible);if(next.length!==1||!next[0].isConnected)throw new Error('CurrentControlUnrecognized');
+-        return await fillDetail({keys:Object.keys(bound),bound,main,href:u.href,expected:JSON.stringify(out),next:next[0],inputs,inputSig:inputSig(inputs),limit:2000});}
++        return await fillDetail({keys:Object.keys(bound),bound,main,href:u.href,expected:JSON.stringify(out),next:next[0],inputs,inputSig:inputSig(inputs),limit:2000,contactOnly:command.contactOnly===true});}
+     }else if(command.action==='selectPayment'&&phase==='PAYMENT'&&purchase.verified){pick('支付宝');}
+     else if(command.action==='continuePayment'&&phase==='PAYMENT'&&purchase.verified&&out.paymentMethod==='支付宝'){if(exact('继续查看订单').length===1)click('继续查看订单');else click('继续');}
+     else if(command.action==='submitOrder'&&phase==='REVIEW'&&purchase.verified&&out.paymentMethod==='支付宝'){

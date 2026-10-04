@@ -1,0 +1,58 @@
+{
+  "task": "C051 actual implementation",
+  "durationSeconds": 794.78,
+  "actualTurns": 43,
+  "configuredTurns": 48,
+  "profile": "implementation",
+  "firstPartyCanonicalOpus": true,
+  "actualXhigh": true,
+  "isError": false,
+  "timedOut": false,
+  "ownedCleanup": true,
+  "permissionDenialCount": 0,
+  "toolCounts": {
+    "Read": 17,
+    "Bash": 10,
+    "Glob": 1,
+    "Edit": 13,
+    "Write": 1
+  },
+  "commands": [
+    "python tools/delegation/verify_candidate_manifest.py docs/reviews/C-051-input-candidate-manifest.json",
+    "node --test test/checkout-c051-contact-transition.test.ts",
+    "node --test test/checkout-c051-contact-transition.test.ts",
+    "node test/c051-native-contact-repro.mjs",
+    "node test/c050-native-dates.mjs",
+    "node test/c049-native-store.mjs",
+    "node test/c048-native-bag.mjs",
+    "node test/c040-native-order.mjs",
+    "node test/c039-native-pipeline.mjs",
+    "node --test --test-reporter=dot \"test/*.test.ts\" \"review/*.test.ts\""
+  ],
+  "writes": [
+    "E:\\Apple Store\\web\\checkout-connector\\page-program.js",
+    "E:\\Apple Store\\web\\checkout-connector\\page-program.js",
+    "E:\\Apple Store\\web\\checkout-connector\\page-program.js",
+    "E:\\Apple Store\\web\\checkout-connector\\page-program.js",
+    "E:\\Apple Store\\web\\checkout-connector\\page-program.js",
+    "E:\\Apple Store\\web\\checkout-connector\\page-program.js",
+    "E:\\Apple Store\\web\\checkout-connector\\page-program.js",
+    "E:\\Apple Store\\web\\checkout-connector\\job.js",
+    "E:\\Apple Store\\web\\checkout-connector\\job.js",
+    "E:\\Apple Store\\web\\checkout-connector\\job.js",
+    "E:\\Apple Store\\web\\checkout-connector\\job.js",
+    "E:\\Apple Store\\web\\checkout-connector\\job.js",
+    "E:\\Apple Store\\test\\checkout-c051-contact-transition.test.ts",
+    "E:\\Apple Store\\test\\checkout-c051-contact-transition.test.ts"
+  ],
+  "privateReadAttempts": 0,
+  "toolErrorCount": 1,
+  "changedInputPaths": [
+    "web/checkout-connector/job.js",
+    "web/checkout-connector/page-program.js"
+  ],
+  "protectedInputPathsUnchanged": 186,
+  "historicalAggregateModelUsageNotCurrentCost": true,
+  "actualIndependentReview": "Root current 1125 full suite and 3 protected native checks pass; final agreement not yet obtained",
+  "fullRealGoalComplete": false
+}

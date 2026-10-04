@@ -90,3 +90,5 @@ Public product evidence can resolve U01 partially; unauthenticated pages cannot 
 ## Delivery
 
 Runnable offline vertical slice, real-entry minimal read-only adaptation, fault/concurrency coverage, reproducible benchmark and regression, Chinese install/run/rehearsal/config/troubleshooting instructions and honest limitations. Real formal purchase readiness requires verified current contract and explicit user plan authorization. Codex performs final independent acceptance. If quota forces Codex implementation, Claude must later review the exact changes and all findings must be resolved by both.
+
+October5 direct human sleep steering: continue useful development/review and, after genuine Claude provider quota, Codex may take over under the prior rule. If the next necessary step requires the human, save source/evidence/recovery, pause follow-up and perform normal shutdown until tomorrow. This supersedes previous no-shutdown steering conditionally; do not manufacture quota exhaustion or erase a pending merchant result.

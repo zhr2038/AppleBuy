@@ -1,0 +1,186 @@
+{
+  "task": "C053 exact actual cross-review",
+  "candidateFiles": 189,
+  "candidateSha256": "f630e2b64a9ef9c9769eb3e08863a5cbbfdb84a41108cf21639070174ee71905",
+  "structuredActualNumTurns": 67,
+  "configuredCliMaxTurns": 48,
+  "durationSeconds": 591.84,
+  "actualCanonicalModels": [
+    "claude-opus-5-5"
+  ],
+  "providerByModel": {
+    "claude-opus-5-5": "firstParty"
+  },
+  "actualXhigh": true,
+  "isError": false,
+  "subtype": "success",
+  "timedOut": false,
+  "cleanupConfirmed": true,
+  "permissionDenialCount": 0,
+  "toolErrorCount": 0,
+  "privateReadAttempts": 0,
+  "toolCounts": {
+    "Read": 48,
+    "Bash": 14,
+    "Grep": 2
+  },
+  "all43ReadToEof": true,
+  "commands": [
+    "python tools/delegation/verify_candidate_manifest.py docs/reviews/C-051-candidate-manifest.json",
+    "node test/c051-native-contact-repro.mjs",
+    "node test/c050-native-dates.mjs",
+    "node test/c049-native-store.mjs",
+    "node --test test/checkout-c049-boot-auth.test.ts test/checkout-c047-binding-diagnostic.test.ts test/checkout-c045-native-item.test.ts test/checkout-c044-order-route.test.ts test/checkout-c043-lookup.test.ts test/checkout-c051-contact-transition.test.ts",
+    "node test/c048-native-bag.mjs",
+    "node review/c045-native-item-identity.mjs",
+    "node review/c044-native-order-route.mjs",
+    "node review/c044-native-status-isolation.mjs",
+    "node review/c043-independent-native-lookup.mjs",
+    "node test/c040-native-order.mjs",
+    "node test/c039-native-pipeline.mjs",
+    "node --test --test-reporter=dot \"test/*.test.ts\" \"review/*.test.ts\"",
+    "python tools/delegation/verify_candidate_manifest.py docs/reviews/C-051-candidate-manifest.json"
+  ],
+  "unallowedCommands": [],
+  "targetedTests": {
+    "tests": 172,
+    "pass": 172,
+    "fail": 0
+  },
+  "fullSuiteDots": 1125,
+  "native": [
+    {
+      "command": "node test/c051-native-contact-repro.mjs",
+      "cases": 3,
+      "passed": 3,
+      "cleanup": {
+        "contextsClosed": 3,
+        "browserClosed": true,
+        "serverClosed": true,
+        "errors": []
+      },
+      "guardAborted": null
+    },
+    {
+      "command": "node test/c050-native-dates.mjs",
+      "cases": 9,
+      "passed": 9,
+      "cleanup": {
+        "contextsClosed": 9,
+        "browserClosed": true,
+        "serverClosed": true,
+        "errors": []
+      },
+      "guardAborted": null
+    },
+    {
+      "command": "node test/c049-native-store.mjs",
+      "cases": 11,
+      "passed": 11,
+      "cleanup": {
+        "contextsClosed": 11,
+        "browserClosed": true,
+        "serverClosed": true,
+        "errors": []
+      },
+      "guardAborted": null
+    },
+    {
+      "command": "node test/c048-native-bag.mjs",
+      "cases": 19,
+      "passed": 19,
+      "cleanup": {
+        "contextsClosed": 19,
+        "browserClosed": true,
+        "serverClosed": true,
+        "errors": []
+      },
+      "guardAborted": null
+    },
+    {
+      "command": "node review/c045-native-item-identity.mjs",
+      "cases": 7,
+      "passed": 7,
+      "cleanup": {
+        "contextsClosed": 7,
+        "browserClosed": true,
+        "serverClosed": true,
+        "errors": []
+      },
+      "guardAborted": true
+    },
+    {
+      "command": "node review/c044-native-order-route.mjs",
+      "cases": 4,
+      "passed": 4,
+      "cleanup": {
+        "contextsClosed": 4,
+        "browserClosed": true,
+        "serverClosed": true,
+        "errors": []
+      },
+      "guardAborted": true
+    },
+    {
+      "command": "node review/c044-native-status-isolation.mjs",
+      "cases": 2,
+      "passed": 2,
+      "cleanup": {
+        "contextsClosed": 2,
+        "browserClosed": true,
+        "serverClosed": true,
+        "errors": []
+      },
+      "guardAborted": true
+    },
+    {
+      "command": "node review/c043-independent-native-lookup.mjs",
+      "cases": 2,
+      "passed": 2,
+      "cleanup": {
+        "contextsClosed": 2,
+        "browserClosed": true,
+        "serverClosed": true,
+        "errors": []
+      },
+      "guardAborted": true
+    },
+    {
+      "command": "node test/c040-native-order.mjs",
+      "cases": 8,
+      "passed": 8,
+      "cleanup": {
+        "contextsClosed": 8,
+        "browserClosed": true,
+        "serverClosed": true,
+        "errors": []
+      },
+      "guardAborted": true
+    },
+    {
+      "command": "node test/c039-native-pipeline.mjs",
+      "cases": 8,
+      "passed": 8,
+      "cleanup": {
+        "contextsClosed": 8,
+        "browserClosed": true,
+        "serverClosed": true,
+        "errors": []
+      },
+      "guardAborted": null
+    }
+  ],
+  "parseFailures": [],
+  "sourceUnchanged": true,
+  "historicalAggregateUsageNotRunCost": true,
+  "actualVerdict": "AGREE",
+  "realUnpaidOrDuoGoal": false,
+  "timestampUtc": "2026-10-04T16:45:27.807807+00:00",
+  "explicitNativeCases": 73,
+  "explicitNativePassed": 73,
+  "targetedCommandAlsoRuns23NativeC051Tests": true,
+  "reportNoBrowserForTargetedCommandCorrected": true,
+  "capHitReportedByStructuredResult": false,
+  "freshCompleteRequiredFiles": 43,
+  "counterDisclosure": "Structured num_turns=67; CLI max-turns=48. Both retained. Actual subtype success, not an error_max_turns or quota response; no inference about consumption from the counter difference."
+}

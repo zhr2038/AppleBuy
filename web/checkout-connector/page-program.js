@@ -15,6 +15,7 @@
 // C-020 (Claude): an anchored cart is BAG (recognized, proved checkout) or UNKNOWN; no other stage label there is step authority.
 // C035 (Claude): the observed complete normal empty bag is EMPTY_BAG; there only openProduct is accepted, as a write-free re-verification.
 // C037 (Claude): selectStore can choose the observed numbered native Dalian radio when it is not preselected, by the same exact proof.
+// C051 (Claude): the observed contact-only details step is a recognized step (contactStep), never purchase proof; see below.
 export async function merchantDocument(plan,command=null,internal=null){
   // `internal` is set only by this program's own re-entry; ChromePort passes plan and command only.
   // A structured command always receives a structured report. Nothing was written unless this id was already delivered.
@@ -395,6 +396,20 @@ export async function merchantDocument(plan,command=null,internal=null){
       return merchantDocument(plan,command,{hashes:new Map([[orderLabels[0],[...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('')]])});}}
   const detailLinks=[...new Set([...main.querySelectorAll('a[href]')].filter(a=>visible(a)&&['查看订单','查看订单详情'].includes(name(a))).flatMap(a=>{try{const h=new URL(a.href);return h.protocol==='https:'&&(h.hostname==='www.apple.com.cn'||/^secure(?:\d+)?\.www\.apple\.com\.cn$/.test(h.hostname))&&orderDetailPath.test(h.pathname)?[h.href]:[];}catch{return [];}}))];
   if(detailLinks.length===1)out.orderDetailLink=detailLinks[0];
+  // C051 (Claude): current normal contact-only pickup-details step (C-051 normal Chrome evidence, secure8 /shop/checkout; public
+  // metadata only, no values): one live 继续选择付款方式, the five observed labelled required contact inputs, the companion-bar total and
+  // no other order fact. It repeats no product, store, quantity or slot, so it is a recognized STEP and purchase stays unverified.
+  // Any iPhone mention (any visibility), store/fulfillment/date/time/quantity/extras/order evidence, visible dialog, other money,
+  // duplicated or differently typed contact field means it is not this step. Only the job continues it, from its own bound slot send.
+  const CONTACT=[['姓氏',['','text']],['名字',['','text']],['电子邮件地址',['email']],['联系人手机号码',['tel']],['政府颁发的身份证件号码的后四位',['','text'],4]];
+  const shownInputs=[...main.querySelectorAll('input')].filter(visible);
+  const contactForm=CONTACT.every(([label,types,max])=>{const m=shownInputs.filter(e=>name(e)===label),e=m.length===1?m[0]:null;
+    return !!e&&!disabled(e)&&e.readOnly!==true&&e.required===true&&types.includes(norm(e.getAttribute('type')).toLowerCase())&&(max===undefined||e.maxLength===max);});
+  const contactOnly=checkoutScope&&!bagScoped&&phase==='DETAILS'&&contactForm&&mentions(main)===0&&productLines.length===0&&!mainQtyShown&&!/件商品|数量/.test(norm(main.textContent))&&
+    radios.length===0&&storeRadios.length===0&&fieldValues.length===0&&fulfillmentChoice===null&&!deliveryProse&&selects.length===0&&nativeDateInputs.length===0&&
+    !texts.some(t=>/^(?:取货(?:日期|时间|地点|门店)|自提门店|店内取货地点)|AppleCare|折抵|换购/.test(t))&&!out.slotSummary&&!out.extrasConflict&&orderLabels.length===0&&!out.orderRefHash&&
+    dialogs?.length===0&&bars.length===1&&bars[0].tagName==='BUTTON'&&visible(bars[0])&&!disabled(bars[0])&&barTotal>0&&totalLines.length===0&&total===barTotal;
+  out.contactStep=contactOnly?{kind:'contact-only-details',verified:true,totalCny:barTotal,fields:CONTACT.length}:null;
   out.receiptVerified=phase==='ORDER_RECEIPT'&&!!out.orderRefHash&&purchase.verified;
   // Official refusal anchors are not yet observed: real alerts remain unknown rather than invented rejection.
   if(referenceChanged)return command?report('OperationEvidenceChanged'):{schema:'applebuy-merchant-read/v1',phase:'UNKNOWN',reason:'order-reference-changed'};
@@ -410,9 +425,14 @@ export async function merchantDocument(plan,command=null,internal=null){
   let touched=false;
   // C-016: a pickup value goes only to the ONLY visible input carrying one of its key's labels, and only when that input is
   // a native, enabled, writable text/tel/email field that is not an authentication field.
-  const rules={firstName:['名字'],lastName:['姓氏'],phone:['手机号码','电话号码'],email:['电子邮件地址'],identitySuffix:['身份证件号码最后4位','身份证件号码后四位']};
+  // C051 (Claude): the observed contact labels 联系人手机号码 (tel) and 政府颁发的身份证件号码的后四位 (text, maxlength 4) bind only with
+  // that observed type/length. Any two allowed labels of one key on visible inputs are ambiguous; hidden inputs never receive a value.
+  const rules={firstName:['名字'],lastName:['姓氏'],phone:['手机号码','电话号码','联系人手机号码'],email:['电子邮件地址'],identitySuffix:['身份证件号码最后4位','身份证件号码后四位','政府颁发的身份证件号码的后四位']};
+  const observedBinding={'联系人手机号码':e=>norm(e.getAttribute('type')).toLowerCase()==='tel','政府颁发的身份证件号码的后四位':e=>['','text'].includes(norm(e.getAttribute('type')).toLowerCase())&&e.maxLength===4};
   const bind=key=>{const m=[...main.querySelectorAll('input')].filter(e=>visible(e)&&rules[key].includes(name(e))),e=m.length===1?m[0]:null;
-    return e&&e instanceof HTMLInputElement&&!disabled(e)&&e.readOnly!==true&&['','text','tel','email'].includes(norm(e.getAttribute('type')).toLowerCase())&&!/password|one-time-code/.test(norm(e.getAttribute('autocomplete')).toLowerCase())?e:null;};
+    return e&&e instanceof HTMLInputElement&&!disabled(e)&&e.readOnly!==true&&['','text','tel','email'].includes(norm(e.getAttribute('type')).toLowerCase())&&!/password|one-time-code/.test(norm(e.getAttribute('autocomplete')).toLowerCase())&&(observedBinding[name(e)]?.(e)??true)?e:null;};
+  // C051: a contact-only step continues only under the job's explicit contactOnly command and this decode's own recognized step.
+  const detailsStep=c=>phase==='DETAILS'&&(purchase.verified||c?.contactOnly===true&&out.contactStep?.verified===true);
   // Labels and states of the visible inputs, never their values.
   const inputSig=l=>JSON.stringify(l.map(e=>[name(e),norm(e.getAttribute('type')).toLowerCase(),norm(e.getAttribute('autocomplete')).toLowerCase(),disabled(e),e.required===true,e.readOnly===true]));
   const requiredInvalid=()=>[...main.querySelectorAll('input[required]')].filter(visible).some(e=>!e.checkValidity());
@@ -491,7 +511,7 @@ export async function merchantDocument(plan,command=null,internal=null){
       // evidence (URL, same main, phase, purchase, slot summary), keep the identical visible input set and the same live
       // Continue. Only then is the next value sent to its original, still unique allowed receiver, or Continue clicked.
       const c=internal.details,live=exact('继续选择付款方式'),now=[...main.querySelectorAll('input')].filter(visible);touched=true;
-      if(Date.now()-c.writtenAt>c.limit||u.href!==c.href||main!==c.main||phase!=='DETAILS'||!purchase.verified||JSON.stringify(out)!==c.expected||
+      if(Date.now()-c.writtenAt>c.limit||u.href!==c.href||main!==c.main||!detailsStep(c)||JSON.stringify(out)!==c.expected||
         now.length!==c.inputs.length||now.some((e,i)=>e!==c.inputs[i])||inputSig(now)!==c.inputSig||live.length!==1||live[0]!==c.next||!c.next.isConnected)throw new Error('DetailsEvidenceChangedAfterInput');
       if(c.keys.length)return await fillDetail(c);
       if(requiredInvalid())throw new Error('PickupDetailsRequireHuman');c.next.click();return {delivered:true};
@@ -550,14 +570,14 @@ export async function merchantDocument(plan,command=null,internal=null){
       const SETTLE_LIMIT_MS=2000,changedAt=Date.now(),afterChange=snapshot();
       await new Promise(r=>setTimeout(r,0));
       return await merchantDocument(plan,command,{hashes:internal?.hashes??new Map(),slot:{select:s,next:next[0],main,out,afterChange,changedAt,limit:SETTLE_LIMIT_MS}});
-    }else if(command.action==='fillDetails'&&phase==='DETAILS'&&purchase.verified){
+    }else if(command.action==='fillDetails'&&detailsStep(command)){
       const supplied=command.privatePickupData??{};if(Object.keys(supplied).some(k=>!Object.hasOwn(rules,k)))throw new Error('PrivateFieldNotAllowed');
       const bound={};for(const [key,value] of Object.entries(supplied)){if(typeof value!=='string'||value.length>100||(key==='identitySuffix'&&!/^\d{4}$/.test(value)))throw new Error('PrivateFieldInvalid');bound[key]=bind(key);if(!bound[key])throw new Error('PrivateFieldContractUnrecognized');}
       // Validate all field bindings BEFORE transmitting the first value. Never return or persist values.
       // Nothing supplied: nothing is written, so this synchronous decode is still current for Continue.
       if(!Object.keys(bound).length){if(requiredInvalid())throw new Error('PickupDetailsRequireHuman');click('继续选择付款方式');}
       else{const next=exact('继续选择付款方式'),inputs=[...main.querySelectorAll('input')].filter(visible);if(next.length!==1||!next[0].isConnected)throw new Error('CurrentControlUnrecognized');
-        return await fillDetail({keys:Object.keys(bound),bound,main,href:u.href,expected:JSON.stringify(out),next:next[0],inputs,inputSig:inputSig(inputs),limit:2000});}
+        return await fillDetail({keys:Object.keys(bound),bound,main,href:u.href,expected:JSON.stringify(out),next:next[0],inputs,inputSig:inputSig(inputs),limit:2000,contactOnly:command.contactOnly===true});}
     }else if(command.action==='selectPayment'&&phase==='PAYMENT'&&purchase.verified){pick('支付宝');}
     else if(command.action==='continuePayment'&&phase==='PAYMENT'&&purchase.verified&&out.paymentMethod==='支付宝'){if(exact('继续查看订单').length===1)click('继续查看订单');else click('继续');}
     else if(command.action==='submitOrder'&&phase==='REVIEW'&&purchase.verified&&out.paymentMethod==='支付宝'){

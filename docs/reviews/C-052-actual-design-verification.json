@@ -1,0 +1,26 @@
+{
+  "task": "C052 design only",
+  "actualTurns": 17,
+  "configuredTurns": 20,
+  "durationSeconds": 406.41,
+  "canonicalModel": [
+    "claude-opus-5-5"
+  ],
+  "firstParty": true,
+  "xhigh": true,
+  "isError": false,
+  "timedOut": false,
+  "ownedCleanup": true,
+  "permissionDenialCount": 0,
+  "actualReadCalls": 15,
+  "writesCommandsNetworkDelegates": 0,
+  "sourceFiles": 189,
+  "sourceSha256": "f630e2b64a9ef9c9769eb3e08863a5cbbfdb84a41108cf21639070174ee71905",
+  "proposalNotAcceptedCodeOrVerifiedMerchantOutcome": true,
+  "reportTurnEstimateCorrectedByStructuredResult": true,
+  "historicalAggregateUsageNotRunBilling": true,
+  "timestampUtc": "2026-10-04T16:32:37.298224+00:00",
+  "freshReadFiles": 14,
+  "fullReadToEofAtInvocation": true,
+  "rootLatestShutdownSteeringAppendedAfterC052Terminal": true
+}

@@ -1,0 +1,24 @@
+{
+  "timestampUtc": "2026-10-04T16:38:07.074229+00:00",
+  "scope": "normal supported Chrome read-only observation; purchased list only, no user values",
+  "readyState": "complete",
+  "origin": "https://www.apple.com.cn",
+  "path": "/shop/bag",
+  "purchasedList": "OL.rs-bag-items.rs-iteminfos",
+  "purchasedListCount": 1,
+  "purchasedLineCount": 1,
+  "productTitle": "iPhone 18 Pro 256GB 黑色",
+  "visibleQuantitySelections": [
+    "1",
+    "1"
+  ],
+  "summaryAmounts": [
+    "RMB 9,999",
+    "RMB 9,999"
+  ],
+  "checkedOptionalChoices": 0,
+  "rootCheckoutOrBagMutation": false,
+  "programInstallationProof": false,
+  "noOrderOrHoldCertificate": false,
+  "existingUnknownSlotPreserved": true
+}
