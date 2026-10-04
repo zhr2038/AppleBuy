@@ -1,0 +1,59 @@
+{
+  "task": "C-043",
+  "authorship": "Root independent protected reproduction; no Root production implementation",
+  "baseUnaccepted175Sha256": "0597f4e1b30e60bf862b50b3d43034509be18c7334f37da649c5c25ac645b992",
+  "reproCommand": "node review/c043-independent-native-lookup.mjs",
+  "baselinePassed": true,
+  "transientFaultFirstStartPassed": false,
+  "fault": "One executeScript read-only promise rejection after actual production receipt-link lookup navigation",
+  "actual": [
+    {
+      "kind": "start",
+      "state": "NEEDS_VERIFICATION",
+      "reason": "final-result-unconfirmed; no resubmission",
+      "phase": "ORDER_RECEIPT",
+      "pending": "submitOrder"
+    }
+  ],
+  "actions": [
+    "checkout",
+    "selectPickup",
+    "chooseSlot",
+    "fillDetails",
+    "selectPayment",
+    "continuePayment",
+    "submitOrder"
+  ],
+  "effects": {
+    "checkout": 1,
+    "summaryOpen": 5,
+    "summaryClose": 5,
+    "pickup": 1,
+    "time": 1,
+    "slotContinue": 1,
+    "detailsContinue": 1,
+    "payment": 1,
+    "paymentContinue": 1,
+    "submit": 1
+  },
+  "fakeOrders": 1,
+  "navigations": [
+    "https://www.apple.com.cn/shop/order/FAKE-C040-0001"
+  ],
+  "expected": "Confirm exact independent unpaid detail in the initial run after bounded transient read-only recovery; no repeated final or other mutation",
+  "guard": {
+    "outcome": "aborted",
+    "blockedRequests": 1,
+    "serverHits": 0
+  },
+  "cleanup": {
+    "contextsClosed": 2,
+    "browserClosed": true,
+    "serverClosed": true,
+    "errors": []
+  },
+  "allMerchantAndChromeDataFake": true,
+  "personalProfileOrAppleUsed": false,
+  "current175NotAccepted": true,
+  "timestampUtc": "2026-10-04T10:58:49.572453+00:00"
+}

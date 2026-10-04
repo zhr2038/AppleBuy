@@ -1,3 +1,9 @@
+**2026-10-04 19:21：C043完整模拟订单主链及查单恢复已实际双审接受，Claude额度已确认恢复。** 原Opus5.5/xhigh最终AGREE，21当前输入逐行完整读取、177源码未变、346.25秒／29回合、零错误／拒绝／私有读／写入／命令，所属清理已核实。Codex独立984／984及18隔离原生场景通过；首次一键开始可到唯一一张未付款FAKE订单，查单短暂读取丢失可自动恢复，不重复提交。准确SHA `b9d9b8f93edd2801ca922a3c152d3b145ec429b87db3d001088a35a5ae872672`。[限定接受](reviews/C-043-bounded-agreement.md) · [实际复审](reviews/C-043-actual-cross-review.md) · [读取与模型核验](reviews/C-043-cross-review-verification.json) · [独立验收](reviews/C-043-independent-verification.json)。
+
+官网完整一键抢购仍未验收：真实拒绝目录为空，Duo后段／最新时段／预占／个人插件API全链及官网速度未验证，官网审批／未开售／取货不可用／继续禁用的已观察门槛保留。本轮无新真实订单、付款、时段提交或主机权限，不关机。正式main同步身份以实际发布回执为准；下方175待审／C039main状态均是保留历史。
+
+**2026-10-04 19:01：Claude 周额度已通过真实有用调用确认恢复，C043 主链修复已实际派发。** 原 Opus5.5/xhigh 250.72 秒／17 回合成功返回；其175候选 AGREE 仅有14／16完整必读证据，未最终接受。Codex 复现查单跳转后一次读取丢失会令初次开始停在待确认：基线通过、故障失败、仅一张模拟订单且未重复提交，所属浏览器已清理。原会话正在实现有界只读恢复；main 仍 C039，不能称官网一键已就绪。全程未增加真实订单／时段／付款，不关机。[恢复回执](reviews/C-040-R1-user-restoration-verification.json) · [独立复现](reviews/C-043-independent-findings.json) · [实际修复任务](tasks/C-043-LOOKUP-RECOVERY.md)。
+
 **目标恢复后已取得新的正常官网证据。** 本次Chrome实际正常配好Duo256星光白／15999、不折抵、不加AppleCare；页面同时明确显示“机型将在获得批准后发售”、暂未发售／暂不提供门店取货，继续仍禁用。没有加购／时段／订单／付款，也未强开。旧审批门槛用例独立1／1通过，175源码不变；不能用公开配选成功当已能买。[新官方证据](reviews/C-041-normal-public-gate-evidence.json) · [实际恢复进展](reviews/C-041-goal-resume-progress.md)。Claude已知周额度仍10月7日17:00恢复，未空跑；175待实际一致、main仍C039，完整目标保持active未完成。
 
 **175待审C040-R1检查点已实际同步；main保持173／C039。** 源码提交 `706f680c0174ed6282b0f79865029fdcd43a6483`，全175 Gitblob与远端匹配，无私密发布／强推；最终复审尚无AGREE，周额度10月7日17:00恢复。[真实检查点回执](reviews/C-040-R1-checkpoint-publication.json)。

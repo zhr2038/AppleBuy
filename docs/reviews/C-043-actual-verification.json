@@ -1,0 +1,76 @@
+{
+  "task": "C-043-LOOKUP-RECOVERY",
+  "status": "returned_for_review",
+  "modelVerified": true,
+  "provider": "firstParty",
+  "canonicalModel": "claude-opus-5-5",
+  "actualCliEffort": "xhigh",
+  "isError": false,
+  "subtype": "success",
+  "primaryModelsActual": [
+    "claude-opus-5-5"
+  ],
+  "durationSeconds": 707.28,
+  "actualTurns": 33,
+  "configuredTurns": 48,
+  "wallCapSeconds": 1200,
+  "cliDollarCap": 8.0,
+  "timedOut": false,
+  "permissionDenials": 0,
+  "privateReadAttempts": 0,
+  "toolCounts": {
+    "Read": 19,
+    "Bash": 8,
+    "Write": 2,
+    "Edit": 1,
+    "Grep": 1
+  },
+  "writeAttemptsPublicPaths": [
+    "docs/claude/C-043-report.md",
+    "test/checkout-c043-lookup.test.ts",
+    "web/checkout-connector/chrome-port.js"
+  ],
+  "actualCommands": [
+    "node review/c043-independent-native-lookup.mjs",
+    "node --test test/checkout-c043-lookup.test.ts test/checkout-c040-recovery.test.ts test/checkout-c023-final-lookup.test.ts 2>&1 | grep -E \"^(not ok|ok|# )\" ",
+    "node --test test/checkout-c043-lookup.test.ts test/checkout-c040-recovery.test.ts test/checkout-c023-final-lookup.test.ts",
+    "node --test test/checkout-c043-lookup.test.ts test/checkout-c040-recovery.test.ts test/checkout-c023-final-lookup.test.ts",
+    "node review/c043-independent-native-lookup.mjs",
+    "node test/c040-native-order.mjs",
+    "node test/c039-native-pipeline.mjs",
+    "node --test \"test/*.test.ts\" \"review/*.test.ts\""
+  ],
+  "toolErrors": [
+    {
+      "tool": "Bash",
+      "publicPath": null
+    },
+    {
+      "tool": "Bash",
+      "publicPath": null
+    }
+  ],
+  "completeInputReadCount": 16,
+  "inputMissingLines": {},
+  "inputCoverageNotCurrentTipReview": true,
+  "changedInputSourcePaths": [
+    "web/checkout-connector/chrome-port.js"
+  ],
+  "newSourcePaths": [
+    "test/checkout-c043-lookup.test.ts"
+  ],
+  "sourceFiles": 177,
+  "sourceSha256": "b9d9b8f93edd2801ca922a3c152d3b145ec429b87db3d001088a35a5ae872672",
+  "actualSourceChangesUnaccepted": true,
+  "historicalAggregateModelUsageNotCurrentBilling": true,
+  "fullGoalComplete": false,
+  "shutdownRequested": false,
+  "providerQuotaError": false,
+  "ownedCleanupConfirmed": true,
+  "timestampUtc": "2026-10-04T11:11:13.724491+00:00",
+  "commandDeviations": [
+    "node --test test/checkout-c043-lookup.test.ts test/checkout-c040-recovery.test.ts test/checkout-c023-final-lookup.test.ts 2>&1 | grep -E \"^(not ok|ok|# )\" "
+  ],
+  "commandDeviationNotRetroactivelyAuthorized": true,
+  "actualCommandsAreNotRootRuns": true
+}

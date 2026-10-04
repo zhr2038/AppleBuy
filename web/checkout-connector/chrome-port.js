@@ -91,12 +91,18 @@ export class ChromePort {
     return {schema:'applebuy-merchant-read/v1',phase:read.phase,verifiedStep:true,path:'/shop/bag',purchase:read.purchase,extras:read.extras,documentId:read.documentId,seq:++this.seq};
   }
   async lookupOrder(plan,expectedRef){
-    let o=await this.observe(plan);
-    if(o.phase==='ORDER_RECEIPT'&&expectedRef&&o.orderRefHash===expectedRef&&o.receiptVerified&&o.orderDetailLink){
+    // C043 (Claude): every read here is a full observe (current address, host permission, one recognized frame result). Only a rejected
+    // injection (scriptTransport, e.g. the frame replaced while the followed detail document loads) is read again, read-only and never
+    // by navigating again, within this lookup's one existing bound of 40 waits of 50 ms. Any other failure, or a rejection at the
+    // bound, ends the lookup at once and the job keeps the sent final unconfirmed. A receipt read only at the bound is not followed.
+    let waits=0;
+    const read=async()=>{for(;;){try{return await this.observe(plan);}catch(error){if(error?.scriptTransport!==true||waits>=40)throw error;}waits++;await this.wait(50);}};
+    let o=await read();
+    if(waits<40&&o.phase==='ORDER_RECEIPT'&&expectedRef&&o.orderRefHash===expectedRef&&o.receiptVerified&&o.orderDetailLink){
       // Navigate ONLY the link observed in this exact receipt. No reconstructed order/account endpoint.
       const link=new URL(o.orderDetailLink);if(!allowedMerchantUrl(link.href)||!await this.api.permissions.contains({origins:[link.origin+'/*']}))return {state:'unknown',independent:false};
       await this.api.tabs.update(this.tabId,{url:link.href});
-      for(let n=0;n<40;n++){await this.wait(50);o=await this.observe(plan);if(o.phase!=='ORDER_RECEIPT'&&o.phase!=='PROCESSING')break;}
+      while(waits<40){waits++;await this.wait(50);o=await read();if(o.phase!=='ORDER_RECEIPT'&&o.phase!=='PROCESSING')break;}
     }
     if(o.phase!=='ORDER_DETAIL'||!expectedRef||o.orderRefHash!==expectedRef||!o.purchase?.verified||!o.slotSummary?.verified)return {state:'unknown',independent:false};
     // An actual separately opened detail route, exact hashed receipt identity, current fields and unpaid state.

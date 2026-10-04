@@ -1,0 +1,70 @@
+{
+  "task": "C-040-R1-CROSS-REVIEW",
+  "trigger": "direct user quota-restoration report",
+  "status": "returned_for_review",
+  "modelVerified": true,
+  "provider": "firstParty",
+  "canonicalModel": "claude-opus-5-5",
+  "actualCliEffort": "xhigh",
+  "modelsActual": [
+    "claude-opus-5-5"
+  ],
+  "primaryModelsActual": [
+    "claude-opus-5-5"
+  ],
+  "isError": false,
+  "subtype": "success",
+  "exitCode": 0,
+  "durationSeconds": 250.72,
+  "actualTurns": 17,
+  "configuredTurns": 32,
+  "wallCapSeconds": 900,
+  "cliDollarCap": 6.0,
+  "timedOut": false,
+  "permissionDenials": 0,
+  "toolErrorCount": 0,
+  "privateReadAttempts": 0,
+  "actualWrites": 0,
+  "actualCommands": 0,
+  "toolCounts": {
+    "Read": 16
+  },
+  "extraReadPaths": [],
+  "freshFullReadFiles": [
+    "docs/requirements.md",
+    "docs/tasks/C-040-R1.md",
+    "docs/reviews/C-040-R1-candidate-manifest.json",
+    "docs/reviews/C-040-R1-independent-verification.json",
+    "docs/reviews/C-040-actual-verification.json",
+    "docs/reviews/C-040-independent-findings.json",
+    "docs/claude/C-040-R1-report.md",
+    "web/checkout-connector/job.js",
+    "web/checkout-connector/chrome-port.js",
+    "web/checkout-connector/page-program.js",
+    "test/c040-native-order.mjs",
+    "test/checkout-c038-navigation.test.ts",
+    "test/checkout-c023-final-lookup.test.ts",
+    "test/c039-native-pipeline.mjs"
+  ],
+  "freshFullReadCount": 14,
+  "missingReadLines": {
+    "docs/tasks/C-040-R1-CROSS-REVIEW.md": 20,
+    "test/checkout-c040-recovery.test.ts": 94
+  },
+  "completeCurrentReadCoverageVerified": false,
+  "actualFinalVerdict": "AGREE",
+  "providerQuotaError": false,
+  "sourceUnchanged": true,
+  "sourceFiles": 175,
+  "sourceSha256": "0597f4e1b30e60bf862b50b3d43034509be18c7334f37da649c5c25ac645b992",
+  "allOwnedCallsTerminalCleanupAndFreeOsLease": true,
+  "historicalAggregateUsageNotCurrentBilling": true,
+  "fullGoalComplete": false,
+  "shutdownRequested": false,
+  "timestampUtc": "2026-10-04T10:55:52.280470+00:00",
+  "actualOpusAgreementIsNotFinalAcceptance": true,
+  "coverageClaimRejectedByRoot": "Actual delivered line coverage is14/16; the reported full16 assertion is unsupported.",
+  "rootNewReproduction": "baseline passes; one lookup scripting read loss fails first-start completion",
+  "lastAcceptedMainTask": "C-039",
+  "rootAcceptedCurrentCandidate": false
+}
