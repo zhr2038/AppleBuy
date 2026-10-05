@@ -18,7 +18,8 @@ export async function runDesktopSession(options){
  try{if(mode==='purchase'){if(typeof store.acquireOwner!=='function')throw Error('DesktopOwnerLeaseRequired');lease=await store.acquireOwner();if(lease?.owned!==true)throw Error('DesktopOwnerLeaseUnconfirmed');}return await executeSession(options);}
  finally{try{await lease?.release();}finally{activeStores.delete(store);}}
 }
-async function executeSession({api,tabId,store,mode='public-config',authority=null,onState=()=>{},privatePickupData={}}){
+async function executeSession({api,tabId,store,mode='public-config',authority=null,onState=()=>{},privatePickupData={},signal=null}){
+  if(signal?.aborted)throw Error('DesktopSessionCancelled');
   if(!['public-config','purchase'].includes(mode))throw Error('DesktopModeNotAuthorized');
   let old=null,grant=null;
   if(mode==='purchase'){
@@ -39,6 +40,9 @@ async function executeSession({api,tabId,store,mode='public-config',authority=nu
   const port=new ChromePort(api,tabId,{authorized:true,mode:mode==='public-config'?'public-config':'purchase',orderSummary:mode==='purchase',privatePickupData,pending:old?.pending,acceptedSlot:old?.acceptedSlot,initialSequence:old?.lastRead??0,reviewGrant:grant});
   const boundStore={get:k=>store.get(k),put:(k,v)=>store.put(k,k===TASK_KEY?{...v,desktopContext:api.sessionId}:v)};
   const job=new PurchaseJob({store:boundStore,port,maxSteps:100,maxWaitMs:15000});job.onState=s=>onState({state:s.state,phase:s.phase,reason:s.reason,pendingAction:s.pendingAction});
-  const result=await job.run(PRO_PLAN,{tabId,planDigest:proDigest,taskId:old?.state==='RETIRED'?randomUUID():old?.taskId??randomUUID(),mode,grant});
-  return {state:result.state,phase:result.lastPhase,reason:result.reason,realOrderVerified:result.state==='CONFIRMED_UNPAID',quoteCny:port.last?.raw.quotedCny??null,skuPath:port.last?.raw.productForm?.ready===true?port.last.raw.path:null};
+  const cancel=()=>job.pause();signal?.addEventListener('abort',cancel,{once:true});if(signal?.aborted)cancel();
+  try{
+    const result=await job.run(PRO_PLAN,{tabId,planDigest:proDigest,taskId:old?.state==='RETIRED'?randomUUID():old?.taskId??randomUUID(),mode,grant});
+    return {state:result.state,phase:result.lastPhase,reason:result.reason,realOrderVerified:result.state==='CONFIRMED_UNPAID',quoteCny:port.last?.raw.quotedCny??null,skuPath:port.last?.raw.productForm?.ready===true?port.last.raw.path:null};
+  }finally{signal?.removeEventListener('abort',cancel);}
 }

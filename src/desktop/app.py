@@ -15,8 +15,9 @@ from tkinter import filedialog
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from contained_child import ContainedChild
+from interactive_child import CheckoutRunner
 SCENARIO = "last-slot-three-dates"
-TITLE = "AppleBuy 桌面助手 · 离线测试候选"
+TITLE = "AppleBuy 桌面助手 · Pro 结账候选"
 
 def command(node: str) -> list[str]:
     return [node, str(ROOT / "src" / "cli.ts"), "rehearse", "--scenario", SCENARIO, "--json"]
@@ -124,15 +125,16 @@ class Runner:
 class App:
     def __init__(self, root: tk.Tk):
         self.root, self.runner = root, Runner()
+        self.checkout=CheckoutRunner()
         root.title(TITLE)
-        root.geometry("900x440")
+        root.geometry("980x570")
         root.minsize(620, 330)
         pane = ttk.Frame(root, padding=20)
         pane.pack(fill="both", expand=True)
         ttk.Label(pane, text="AppleBuy 桌面助手", font=("Microsoft YaHei UI", 17)).pack(anchor="w")
-        ttk.Label(pane, text="离线演练 / 官网公开配置预检；当前均止于加购前，不预占时段或下单。", wraplength=700).pack(anchor="w", pady=(12, 5))
+        ttk.Label(pane, text="先跑通一台 Pro 到未付款订单。旧未知动作保留；程序结账入口需先导入原任务。", wraplength=700).pack(anchor="w", pady=(12, 5))
         ttk.Label(pane, text="实际购买目标：Pro 256GB 黑色 · 1台 · 大连恒隆 · 上限 ¥9,999 · 支付宝", wraplength=620).pack(anchor="w")
-        ttk.Label(pane, text="本次测试使用虚构商品、门店、日期；验证每天末档、明确拒绝后的新列表重选。", wraplength=620).pack(anchor="w", pady=(8, 12))
+        ttk.Label(pane, text="离线按钮使用虚构数据；公开预检止于加购前；程序结账按上方真实条件推进。", wraplength=620).pack(anchor="w", pady=(8, 12))
         controls = ttk.Frame(pane)
         controls.pack(anchor="w")
         self.start_button = ttk.Button(controls, text="运行末档拒绝重选演练", command=self.start)
@@ -143,15 +145,27 @@ class App:
         self.import_button.pack(side="left",padx=6)
         self.stop_button = ttk.Button(controls, text="停止演练", command=self.stop, state="disabled")
         self.stop_button.pack(side="left", padx=10)
-        ttk.Button(controls, text="真实购买尚未启用", state="disabled").pack(side="left")
+        checkout_controls=ttk.Frame(pane);checkout_controls.pack(anchor="w",pady=(12,4))
+        self.checkout_button=ttk.Button(checkout_controls,text="开始 Pro 程序购买",command=self.open_checkout);self.checkout_button.pack(side="left")
+        self.advance_button=ttk.Button(checkout_controls,text="继续本次 Pro 购买",command=self.advance_checkout,state="disabled");self.advance_button.pack(side="left",padx=6)
+        self.checkout_stop_button=ttk.Button(checkout_controls,text="暂停程序结账",command=self.stop_checkout,state="disabled");self.checkout_stop_button.pack(side="left",padx=6)
+        private_fields=ttk.Frame(pane);private_fields.pack(anchor="w",pady=(8,0));self.pickup_values={}
+        for key,label in [('lastName','姓'),('firstName','名'),('phone','手机号'),('email','邮箱'),('identitySuffix','证件后四位')]:
+            ttk.Label(private_fields,text=label).pack(side="left");v=tk.StringVar();self.pickup_values[key]=v
+            ttk.Entry(private_fields,textvariable=v,width=10 if key in ('firstName','lastName','identitySuffix') else 18,show='*' if key=='identitySuffix' else '').pack(side="left",padx=(2,6))
+        ttk.Label(pane,text="取货资料仅用于本次程序会话。官网登录或验证请在程序打开的 Chrome 中完成。",wraplength=850).pack(anchor="w",pady=(5,0))
+        self.final_confirm=tk.BooleanVar(value=False)
+        ttk.Checkbutton(pane,text="本人核对当前唯一一台、无附加项及无重复订单，接受本次官网条款；只创建未付款订单",variable=self.final_confirm).pack(anchor="w",pady=(8,0))
+        self.submit_button=ttk.Button(pane,text="按当前条款创建这一张未付款订单",command=self.submit_checkout,state="disabled");self.submit_button.pack(anchor="w",pady=(4,0))
         self.status = tk.StringVar(value="等待演练。官网那次加购仍未确认，旧任务记录保持。")
         ttk.Label(pane, textvariable=self.status, wraplength=620).pack(anchor="w", pady=(20, 8))
-        self.result = tk.StringVar(value="尚未运行；此窗口不会读取或更改旧 Chrome 任务。")
+        self.result = tk.StringVar(value="尚未核实新的未付款订单；原插件记录只能通过本人导出交接，不会直接读取 Chrome 存储。")
         ttk.Label(pane, textvariable=self.result, wraplength=620).pack(anchor="w")
         root.protocol("WM_DELETE_WINDOW", self.close)
         self.timer = root.after(100, self.poll)
 
     def start(self):
+        if self.checkout.busy:return
         if self.runner.start():
             self.start_button.config(state="disabled")
             self.probe_button.config(state="disabled")
@@ -160,6 +174,7 @@ class App:
             self.result.set("本次使用虚构数据，真实订单 0。")
 
     def probe(self):
+        if self.checkout.busy:return
         if self.runner.start("public-probe"):
             self.start_button.config(state="disabled")
             self.probe_button.config(state="disabled")
@@ -168,7 +183,7 @@ class App:
             self.result.set("使用程序自己的临时 Chrome；不读取个人会话，不查看或清空旧购物袋。")
 
     def import_handoff(self):
-        if self.runner.busy:
+        if self.runner.busy or self.checkout.busy:
             self.status.set("当前执行尚未结束，暂不导入。")
             return
         path=filedialog.askopenfilename(title="选择原插件本地导出的任务文件",filetypes=[("任务文件","*.json")])
@@ -184,6 +199,40 @@ class App:
         except Exception:
             self.status.set("原任务导入未确认，旧记录保持；未开始新的购买。")
 
+    def open_checkout(self):
+        if self.runner.busy or self.checkout.busy:return
+        self.final_confirm.set(False)
+        try:
+            if self.checkout.open():
+                self.checkout_begin_pending=True
+                self.checkout_button.config(state='disabled');self.checkout_stop_button.config(state='normal')
+                self.start_button.config(state='disabled');self.probe_button.config(state='disabled')
+                self.status.set('正在读取原任务并打开程序结账；没有原任务或仍未知时不会新建购买。')
+                self.result.set('本次尚未核对真实未付款订单；历史演练结果不代表本次官网结果。')
+        except Exception:self.status.set('结账入口未确认，旧记录保持；没有开始新购买。')
+
+    def advance_checkout(self):
+        try:
+            data={k:v.get() for k,v in self.pickup_values.items() if v.get()}
+            if data.get('identitySuffix') and (len(data['identitySuffix'])!=4 or not data['identitySuffix'].isdigit()):
+                self.status.set('证件后四位格式不正确；未发动作。');return
+            self.advance_button.config(state='disabled');self.submit_button.config(state='disabled');self.final_confirm.set(False)
+            self.checkout.send({'action':'advance','checkoutApproved':True,'newContextConfirmed':True,'privatePickupData':data})
+        except Exception:self.status.set('推进未确认；保留原动作，不自动重复。')
+
+    def submit_checkout(self):
+        if not self.final_confirm.get():self.status.set('需要核对当前订单并接受本次条款；未提交。');return
+        self.submit_button.config(state='disabled');self.final_confirm.set(False)
+        try:self.checkout.send({'action':'submit','termsAccepted':True,'existingOrdersChecked':True,'noExtras':True})
+        except Exception:self.status.set('最终动作未确认，保留记录，不重复提交。')
+
+    def stop_checkout(self):
+        try:self.checkout.stop()
+        except Exception:self.status.set('结账进程清理未确认，不能再次启动；旧动作保持。');return
+        self.advance_button.config(state='disabled');self.submit_button.config(state='disabled');self.checkout_stop_button.config(state='disabled')
+        self.checkout_button.config(state='normal');self.start_button.config(state='normal');self.probe_button.config(state='normal')
+        self.status.set('本次程序结账已停止；已发送动作可能仍完成，未知记录保持。')
+
     def stop(self):
         try:
             self.runner.stop()
@@ -198,6 +247,29 @@ class App:
         self.status.set("已停止本次执行。旧购买记录保持；已开始的只读浏览器请求可能已完成。")
 
     def poll(self):
+        try:
+            while True:
+                v=self.checkout.events.get_nowait()
+                if v.get('generation')!=self.checkout.generation:continue
+                kind=v.get('type')
+                if kind=='worker-ended':
+                    if self.checkout.terminal():
+                        self.checkout_button.config(state='normal');self.start_button.config(state='normal');self.probe_button.config(state='normal')
+                        self.advance_button.config(state='disabled');self.submit_button.config(state='disabled');self.checkout_stop_button.config(state='disabled')
+                    else:self.status.set('结账清理未确认，禁止再次启动。')
+                elif kind=='ready':
+                    self.status.set(v['message']);self.advance_button.config(state='normal')
+                    if getattr(self,'checkout_begin_pending',False):
+                        self.checkout_begin_pending=False;self.advance_checkout()
+                elif kind=='blocked':self.status.set(v['message']);self.advance_button.config(state='normal' if self.checkout.busy else 'disabled');self.submit_button.config(state='disabled')
+                elif kind in ('progress','result'):
+                    phase=v.get('phase','UNKNOWN');name={'AUTH':'等待本人登录/验证','SLOTS':'选择末档','DETAILS':'取货资料','PAYMENT':'付款方式','REVIEW':'核对订单','ORDER_DETAIL':'核对未付款订单'}.get(phase,phase)
+                    self.status.set('程序结账：'+name+'；'+v.get('state','NEEDS_VERIFICATION'))
+                    if kind=='result':
+                        self.advance_button.config(state='normal' if v.get('realOrderVerified') is not True else 'disabled')
+                        self.submit_button.config(state='normal' if v.get('reviewReady') is True and v.get('realOrderVerified') is not True else 'disabled')
+                        if v.get('realOrderVerified') is True:self.result.set('已由程序另行核对同一张未付款订单；未支付，不再下单。')
+        except queue.Empty:pass
         try:
             while True:
                 generation, kind, value = self.runner.events.get_nowait()
@@ -219,6 +291,7 @@ class App:
 
     def close(self):
         try:
+            self.checkout.stop()
             self.runner.stop()
         except Exception:
             self.status.set("执行进程清理尚未确认；窗口保持，不能再次启动。")

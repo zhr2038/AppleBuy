@@ -1,0 +1,67 @@
+{
+  "sourceFiles": 230,
+  "sha256": "a74b1b48e83f4a231f3854e4ac866378808e2a1cd381fa723d839b89d51b9192",
+  "baselineRejectedFiles": 222,
+  "baselineRejectedSha256": "77dddf6f12fa37f6af81b8f04a4247e01b1ef5e7f33b02453482e54c42d93e82",
+  "changedBasePaths": [
+    "src/desktop/app.py",
+    "src/desktop/browser-session.mjs",
+    "web/checkout-connector/control.js",
+    "web/checkout-connector/desktop-handoff.js",
+    "web/checkout-connector/job.js",
+    "web/checkout-connector/pre-final-restart.js"
+  ],
+  "newPaths": [
+    "src/desktop/auth-continuation.mjs",
+    "src/desktop/checkout-runtime.mjs",
+    "src/desktop/interactive_child.py",
+    "src/desktop/purchase-worker.mjs",
+    "test/desktop-c078-auth.test.ts",
+    "test/desktop-c078-handoff-repro.test.ts",
+    "test/desktop-c078-runtime.test.ts",
+    "test/desktop_c078_test.py"
+  ],
+  "implementationOwner": "Codex under latest direct goal; Claude reviews",
+  "N1InitialRepros": {
+    "pass": 0,
+    "fail": 6,
+    "allFake": true
+  },
+  "N1FinalRepros": 7,
+  "newRuntimeAndAuthTests": 9,
+  "fullNodePass": 1411,
+  "pythonPass": 9,
+  "native": {
+    "C060": {
+      "checks": 2,
+      "cleanupConfirmed": true
+    },
+    "C040": {
+      "checks": 8,
+      "cleanupConfirmed": true
+    },
+    "allAPIAndMerchantEffectsFake": true
+  },
+  "actualEntrySmoke": "purchase-worker emits missing-handoff and exit1 before launching Chrome; not a successful purchase",
+  "liveBagObservation": {
+    "origin": "https://www.apple.com.cn",
+    "path": "/shop/bag",
+    "visibleHeading": "你的购物袋中没有商品。",
+    "merchantMutations": 0,
+    "oldAddOutcome": "unknown"
+  },
+  "desktopUIRealClickVerified": false,
+  "realProgrammeUnpaidOrderVerified": false,
+  "newActualReviewerAgreement": false,
+  "accepted": false,
+  "humanExportFilePending": true,
+  "protectedOldAssertionsChanged": false,
+  "notes": [
+    "C077 real DISAGREE saved separately; complete actual old-source101 EOF audit, no denied commands/private reads/edits",
+    "C078 adds durable owned browser session and private stdin worker/GUI entry, automatic post-auth continuation and fresh review consent",
+    "Imported unknown/readonly cannot become a buyer; actual legacy handoff and merchant reconciliation remain necessary",
+    "Actor DOM APIs and context in new full-chain tests are FAKE; no current GUI or live checkout validation claim",
+    "Playwright remains loaded from the existing Codex runtime; stale owner after forced death still fails closed"
+  ],
+  "verifiedAtUtc": "2026-10-05T19:17:36.259532+00:00"
+}

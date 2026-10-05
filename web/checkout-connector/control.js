@@ -8,6 +8,9 @@ import {exportDesktopHandoff} from './desktop-handoff.js';
 const $=id=>document.getElementById(id);let job=null;
 const store={async get(k){return (await chrome.storage.local.get(k))[k]??null;},async put(k,v){await chrome.storage.local.set({[k]:v});}};
 const status=s=>{$('state').textContent=s;};
+// This UI also refuses stale successors. Read-only observation and explicit rebind remain available.
+function sourceHandedOff(record){const pending=[record],seen=new Set();let n=0;while(pending.length){const v=pending.pop();if(!v||typeof v!=='object'||seen.has(v))continue;seen.add(v);if(++n>3000||Object.hasOwn(v,'desktopHandoff')||Array.isArray(v)&&v.length>200)return true;pending.push(...Object.values(v));}return false;}
+const handoffStatus=()=>status('该任务已交给桌面程序；原插件购买权限已停止，仅可只读核对，全部记录保持。');
 // C049: restore only the existing active public target at boot, never a grant; preserve a human choice made while awaiting storage.
 const bootProduct=$('product').value;let productEdited=false;
 $('product').oninput=$('product').onchange=$('product').onpointerdown=()=>{productEdited=true;};
@@ -32,7 +35,7 @@ async function digestPlan(p){const bytes=new TextEncoder().encode(JSON.stringify
 // Constrained migration: a preserved task bound before the explicit field keeps its digest only when it is the same
 // intent without the field (which already meant no extras). Any other digest stays a binding difference.
 async function boundDigest(p,previous){const {extras,...legacy}=p;const digest=await digestPlan(p);return previous&&previous.state!=='RETIRED'&&previous.planDigest===await digestPlan(legacy)?previous.planDigest:digest;}
-$('prepare').onclick=async()=>{try{const p=plan(),tabId=Number($('tab').value),previous=await store.get(TASK_KEY),digest=await boundDigest(p,previous),port=new ChromePort(chrome,tabId,{mode:'observe',initialSequence:previous?.lastRead??0});const o=await port.observe(p);if(!o.termsLinks?.length){prepared=null;status('该页面未识别当前商店条款；可推进到官网复核页后再确认');return;}const reuse=previous&&previous.state!=='RETIRED';prepared={taskId:reuse?previous.taskId:crypto.randomUUID(),planDigest:digest,tabId,entryDocumentId:reuse?previous.entryDocumentId??o.documentId:o.documentId,termsUrl:o.termsLinks[0]};$('terms').href=prepared.termsUrl;const cart=[previous,...(previous?.retiredHistory??[])].some(r=>r?.retiredCart||r?.readOnlyRetirement?.kind==='resolved-pre-slot-bag');status('只读预检完成。核对购买条件和条款后可一键开始；尚未提交任何购买动作'+(cart?'。旧任务结束时购物袋中有一件已核对商品，本任务不会再加入购物袋，需在购物袋页核对后结账：加入前读到与当前计划一致的唯一一件商品且无附加项时，程序自动打开购物袋页重新核对后结账，不再加入。唯一例外：加入购物袋前，程序在后台新标签页打开官网购物袋页当场读取，读完即关闭；只有官网显示“你的购物袋中没有商品。”时才只加入一件，读到任何商品或无法确认都不加入':''));}catch{prepared=null;status('预检未完成；请核实当前标签页和主机授权');}};
+$('prepare').onclick=async()=>{try{const previous=await store.get(TASK_KEY);if(sourceHandedOff(previous)){prepared=null;handoffStatus();return;}const p=plan(),tabId=Number($('tab').value),digest=await boundDigest(p,previous),port=new ChromePort(chrome,tabId,{mode:'observe',initialSequence:previous?.lastRead??0});const o=await port.observe(p);if(!o.termsLinks?.length){prepared=null;status('该页面未识别当前商店条款；可推进到官网复核页后再确认');return;}const reuse=previous&&previous.state!=='RETIRED';prepared={taskId:reuse?previous.taskId:crypto.randomUUID(),planDigest:digest,tabId,entryDocumentId:reuse?previous.entryDocumentId??o.documentId:o.documentId,termsUrl:o.termsLinks[0]};$('terms').href=prepared.termsUrl;const cart=[previous,...(previous?.retiredHistory??[])].some(r=>r?.retiredCart||r?.readOnlyRetirement?.kind==='resolved-pre-slot-bag');status('只读预检完成。核对购买条件和条款后可一键开始；尚未提交任何购买动作'+(cart?'。旧任务结束时购物袋中有一件已核对商品，本任务不会再加入购物袋，需在购物袋页核对后结账：加入前读到与当前计划一致的唯一一件商品且无附加项时，程序自动打开购物袋页重新核对后结账，不再加入。唯一例外：加入购物袋前，程序在后台新标签页打开官网购物袋页当场读取，读完即关闭；只有官网显示“你的购物袋中没有商品。”时才只加入一件，读到任何商品或无法确认都不加入':''));}catch{prepared=null;status('预检未完成；请核实当前标签页和主机授权');}};
 $('savePrivate').onclick=async()=>{const v={};for(const k of ['firstName','lastName','phone','email','identitySuffix'])if($(k).value)v[k]=$(k).value;if(v.identitySuffix&&!/^\d{4}$/.test(v.identitySuffix)){status('证件后四位格式不正确');return;}await chrome.storage.session.set({applebuyPickupSession:v});status('自提资料已仅保留在本次 Chrome 会话，不进入购买记录或日志');};
 const actionName={configureProduct:'选择商品配置',continueProduct:'继续商品配置',addBag:'加入购物袋',viewBag:'查看购物袋',checkout:'结账',selectPickup:'选择自提',selectStore:'选择门店',selectDate:'选择日期',chooseSlot:'选择时段',fillDetails:'取货详情',selectPayment:'选择付款方式',continuePayment:'继续付款方式',submitOrder:'提交订单',openProduct:'从空购物袋打开商品页',openBag:'核对已有商品并打开购物袋'};
 // Only fixed public models and safe tab numbers are shown, never arbitrary persisted strings or private customer fields.
@@ -148,6 +151,7 @@ async function run(starting=false,{rebind=false,finalGrant=null,live=ticket()}={
       if(!live()){halted();return;}
       const p=plan(),tabId=Number($('tab').value),previous=await store.get(TASK_KEY),digest=await boundDigest(p,previous);
       if(!live()){halted();return;}
+      if(!rebind&&sourceHandedOff(previous)){prepared=null;handoffStatus();return;}
       let startGrant=null;
       if(starting&&$('finalReview').checked){if(!prepared||prepared.planDigest!==digest||prepared.tabId!==tabId){status('一键购买前需重新只读预检；当前购买条件已变化或尚未预检');return;}startGrant={...prepared,id:crypto.randomUUID(),start:true,termsAccepted:true,existingOrdersChecked:true,noExtras:true,expiry:Date.now()+1200000};}
       const useGrant=rebind?null:finalGrant??startGrant;
@@ -198,6 +202,7 @@ $('retire').onclick=async()=>{
   try{
     const ownership=await withPurchaseOwner(navigator.locks,async()=>{
       const s=await store.get(TASK_KEY);if(!live()){halted();return;}if(!s){status('没有保留的任务');return;}
+      if(sourceHandedOff(s)){handoffStatus();return;}
       if(s.reconcileOnly===true){await finishReadOnlyBag(s,live);return;}
       if(!retirable(s)){status('该任务曾写入官网购物动作或记录不可确认，不能退役；只能核对');return;}
       try{await new PurchaseJob({store,port:null}).retire();status('该任务从未写入官网购物动作，已退役并保留记录；可重新预检');}catch{status('退役未完成；记录保持不变');}
@@ -226,7 +231,7 @@ $('final').onclick=async()=>{
   const live=ticket();
   if(!$('finalReview').checked){status('需要本人核对当前官网并确认这一张订单');return;}
   let finalGrant;
-  try{const s=await store.get(TASK_KEY);if(!live()){halted();return;}if(!s||s.lastPhase!=='REVIEW'||s.finalIntent?.sent===true||s.reconcileOnly||s.state==='RETIRED'){status('当前任务不能发出新的最终订单');return;}
+  try{const s=await store.get(TASK_KEY);if(!live()){halted();return;}if(sourceHandedOff(s)){handoffStatus();return;}if(!s||s.lastPhase!=='REVIEW'||s.finalIntent?.sent===true||s.reconcileOnly||s.state==='RETIRED'){status('当前任务不能发出新的最终订单');return;}
     finalGrant={id:crypto.randomUUID(),taskId:s.taskId,planDigest:s.planDigest,documentId:s.lastDocumentId,termsUrl:$('terms').href,termsAccepted:true,existingOrdersChecked:true,noExtras:true,expiry:Date.now()+120000};}
   catch{status('最终确认未完成；未发出订单');return;}
   await run(false,{finalGrant,live});

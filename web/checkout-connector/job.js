@@ -118,6 +118,14 @@ function sentSlotBound(s,q){
 const inheritedIdentity=(P,s,o,source)=>({kind:'inherited-task-identity',step:'contact-only-details',fresh:false,source,product:{...P.product},quantity:P.quantity,stores:[...P.stores],fulfillment:P.fulfillment,basisCny:s.bagTotalCny??s.quotedCny,readSequence:o.seq});
 // Retirement is allowed only when no merchant mutation was ever written; legacy records without the fields are not provable.
 export function retirable(s){return s.resourceWritten===false&&s.bagAddStarted===false&&s.finalIntent===null&&(s.pending===null||PUBLIC.has(s.pending.action));}
+// A source handoff cannot disappear inside retirement or an older retained snapshot. Overflow is unconfirmed.
+export function hasDesktopHandoff(record){
+  const pending=[record],seen=new Set();let count=0;
+  while(pending.length){const v=pending.pop();if(!v||typeof v!=='object'||seen.has(v))continue;seen.add(v);
+    if(++count>3000||Object.hasOwn(v,'desktopHandoff'))return true;
+    if(Array.isArray(v)&&v.length>200)return true;pending.push(...Object.values(v));
+  }return false;
+}
 // C030: only this narrow cart-only history can be finished; a marker never overrides a final/slot/unknown fact.
 function resolvedReadOnlyBag(s){
   const unsafe=r=>r.pending!==null||r.finalIntent!==null||r.orderRefHash!==null||r.initialDates!==null||r.dateCursor!==0||r.refusals!==0||r.rejected.length!==0||Array.isArray(r.floors)||Object.keys(r.floors).length!==0||r.acceptedSlot!=null;
@@ -156,7 +164,7 @@ export class PurchaseJob {
   }
   // Explicit retirement of a task that never wrote a merchant mutation. The record is preserved, never removed.
   async retire(){
-    this.key=TASK_KEY;const old=await this.store.get(TASK_KEY);if(!old)return null;if(!validStored(old))throw new Error('StoredPurchaseTaskCorrupt');
+    this.key=TASK_KEY;const old=await this.store.get(TASK_KEY);if(!old)return null;if(hasDesktopHandoff(old))throw new Error('DesktopHandoffPermanentlyRevokedSource');if(!validStored(old))throw new Error('StoredPurchaseTaskCorrupt');
     if(old.state==='RETIRED')return clone(old);if(!retirable(old))throw new Error('TaskHasMerchantMutationHistory');
     const s={...old,state:'RETIRED',reason:'retired-by-user; history preserved',retiredAt:this.now()};await this.save(s);return clone(s);
   }
@@ -168,6 +176,7 @@ export class PurchaseJob {
     if(cancelled())throw new Error('ReadOnlyRetirementCancelled');
     this.key=TASK_KEY;const old=await this.store.get(TASK_KEY);
     if(cancelled())throw new Error('ReadOnlyRetirementCancelled');
+    if(hasDesktopHandoff(old))throw new Error('DesktopHandoffPermanentlyRevokedSource');
     if(!old)throw new Error('NoPreservedTaskToRetire');if(!validStored(old))throw new Error('StoredPurchaseTaskCorrupt');
     if(old.tabId!==tabId||old.planDigest!==planDigest||canonicalJson(normalizeIntent(old.plan))!==canonicalJson(normalizeIntent(plan)))throw new Error('ExistingTaskBindingDiffers');
     if(!resolvedReadOnlyBag(old))throw new Error('ReadOnlyBagTaskNotResolved');
@@ -196,6 +205,7 @@ export class PurchaseJob {
     const P=normalizeIntent(plan),validating=mode==='public-config',readOnly=mode==='reconcile';
     this.key=validating?VALIDATION_KEY:TASK_KEY;
     const old=validating?null:await this.store.get(TASK_KEY);
+    if(old&&!readOnly&&!rebind&&hasDesktopHandoff(old))throw new Error('DesktopHandoffPermanentlyRevokedSource');
     if(old&&!validStored(old))throw new Error('StoredPurchaseTaskCorrupt');
     if(readOnly&&(!old||old.state==='RETIRED'))throw new Error('NoPreservedTaskToReconcile');
     // Validation is bounded, never authorized and stored separately; it cannot use a purchase grant.

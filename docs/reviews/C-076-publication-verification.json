@@ -1,0 +1,13 @@
+{
+  "scope": "C076 pending candidate only, not bilateral acceptance or real order",
+  "sourceCommit": "0f30db9cc133af3c92dff3c4e68f492aeacce54b",
+  "candidateFiles": 222,
+  "sha256": "77dddf6f12fa37f6af81b8f04a4247e01b1ef5e7f33b02453482e54c42d93e82",
+  "allHeadBlobsMatch": true,
+  "remoteCandidateMatches": true,
+  "acceptedMainUnchanged": true,
+  "mainCommit": "bd130ee77d8e914f6373432e1061c4de820fbc66",
+  "forcePush": false,
+  "privateFilesPublished": false,
+  "verifiedAtUtc": "2026-10-05T18:41:49.708599+00:00"
+}

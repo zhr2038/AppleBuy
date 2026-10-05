@@ -1,0 +1,37 @@
+{
+  "task": "C-077-CROSS-REVIEW",
+  "status": "returned_for_review",
+  "exit_code": 0,
+  "duration_seconds": 672.58,
+  "model_verified": true,
+  "models_actual": [
+    "claude-opus-5-5"
+  ],
+  "primary_models_actual": [
+    "claude-opus-5-5"
+  ],
+  "auxiliary_models_actual": [],
+  "subtype": "success",
+  "is_error": false,
+  "timed_out": false,
+  "cleanup_confirmed": true,
+  "turn_budget": 144,
+  "wall_budget_seconds": 1800,
+  "cli_budget_usd": 15.0,
+  "actualTurns": 138,
+  "provider": "firstParty",
+  "canonicalModel": "claude-opus-5-5",
+  "actualEffort": "xhigh",
+  "permissionDenialCount": 0,
+  "sourceFiles": 222,
+  "sourceSha256": "77dddf6f12fa37f6af81b8f04a4247e01b1ef5e7f33b02453482e54c42d93e82",
+  "currentEOFComplete": 101,
+  "readOutputAuditUsesActualOldSource": true,
+  "privateReadCalls": 0,
+  "sourceEdits": 0,
+  "exactSequentialCommands": 11,
+  "verdict": "DISAGREE",
+  "blocking": "N1 source revocation bypass through retirement/successor",
+  "accepted": false,
+  "usageScope": "structured modelUsage is resumed-session aggregate; no per-round dollar/token claim"
+}
