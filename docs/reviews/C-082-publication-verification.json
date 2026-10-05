@@ -1,0 +1,12 @@
+{
+  "scope": "C082 pending native-entry candidate, no real order",
+  "sourceCommit": "600483620e52cc4d7e223a3cf01b9144f3cb0cac",
+  "sourceFiles": 231,
+  "sha256": "e4caca1982db14a76c74c3247a286dc6c8fdffd9446a3efd27339d646116203f",
+  "all231HeadBlobsMatch": true,
+  "remoteMatches": true,
+  "mainUnchanged": true,
+  "privateDataPublished": false,
+  "forcePush": false,
+  "verifiedAtUtc": "2026-10-05T19:52:15.228571+00:00"
+}
