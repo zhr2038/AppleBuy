@@ -1,0 +1,29 @@
+{
+  "scope": "C069 candidate publication; current Pro form readiness proof and Pro-first priority; actual unpaid order pending",
+  "verifiedAtUtc": "2026-10-05T16:52:36.984838+00:00",
+  "sourceCommit": "27238e58a1880f1ae2de3a1dc28662b3c58190e6",
+  "candidateBranch": "codex/c030-quota-checkpoint-20261004",
+  "remoteSourceCommit": "27238e58a1880f1ae2de3a1dc28662b3c58190e6",
+  "candidateFiles": 209,
+  "candidateSha256": "7163af94fd18b315e0991fce79b421c4e666998f9905dd0995541ee53f105765",
+  "allWorkingAndHeadSourceBlobsMatch": true,
+  "acceptedMain": "bd130ee77d8e914f6373432e1061c4de820fbc66",
+  "mainChanged": false,
+  "forcePush": false,
+  "privateDataOrRealWebsiteScreenshotPublished": false,
+  "authorChecks": "1378 full Node/7 new native/4 related native with owned cleanup",
+  "newReviewTask": "docs/tasks/C-070-CROSS-REVIEW.md",
+  "originalSessionSource": "latest terminal C059 private metadata; CLI resume only",
+  "reportedProviderReset": "2026-10-06T01:40:00+08:00",
+  "existingFollowupLocal": "2026-10-06 01:45 Asia/Shanghai",
+  "guardedLauncher": "prepared privately and syntax checked; not executed, not a review",
+  "reviewProfile": "112turns/1800seconds/USD12; exact claude-opus-5-5/xhigh,10commands+last map",
+  "realProgrammeUnpaidOrderVerified": false,
+  "currentBlockers": [
+    "old Add unknown/error and prior current empty bag, no resubmission",
+    "desktop buyer/legacy handoff not yet implemented",
+    "actual original-Claude combined review pending"
+  ],
+  "priority": "Pro actual unpaid programme order first, Duo migration deferred",
+  "receiptScope": "source publication above; later receipt-only commit excluded from sourceCommit"
+}
