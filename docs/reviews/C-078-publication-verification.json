@@ -1,0 +1,11 @@
+{
+  "scope": "C078 exact230 pending candidate only",
+  "sourceCommit": "9f7b80ae23fd8c7713cd4d8f3e2168ab72f96ec7",
+  "sourceSha256": "a74b1b48e83f4a231f3854e4ac866378808e2a1cd381fa723d839b89d51b9192",
+  "all230HeadBlobsMatch": true,
+  "remoteCandidateMatches": true,
+  "acceptedMainUnchanged": true,
+  "forcePush": false,
+  "privateFilesPublished": false,
+  "verifiedAtUtc": "2026-10-05T19:23:50.811420+00:00"
+}

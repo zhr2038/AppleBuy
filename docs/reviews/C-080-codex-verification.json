@@ -1,0 +1,49 @@
+{
+  "sourceFiles": 231,
+  "sha256": "8a96cb4ed4da1d463f265b3a26e433c0706eec4bf18efe3a8ca937f6656a27da",
+  "previous230": "a74b1b48e83f4a231f3854e4ac866378808e2a1cd381fa723d839b89d51b9192",
+  "changedPaths": [
+    "src/desktop/app.py",
+    "src/desktop/browser-session.mjs",
+    "src/desktop/checkout-runtime.mjs",
+    "src/desktop/purchase-worker.mjs"
+  ],
+  "newPath": "test/desktop-c080-reconcile.test.ts",
+  "implementationOwner": "Codex, under direct current goal, no quota prerequisite",
+  "newReadonlyCases": 4,
+  "savedConfirmationReproBeforeFix": {
+    "pass": 3,
+    "fail": 1
+  },
+  "newReadonlyCasesAfterFix": 4,
+  "fullNodePass": 1415,
+  "pythonPass": 9,
+  "olderC078NativePass": {
+    "C060": 2,
+    "C040": 8,
+    "coreAndNativeScriptsUnchanged": true
+  },
+  "allNewAPIMerchantEvidenceFake": true,
+  "sourceSnapshotUnknownsPreserved": true,
+  "readonlyCannotGrantPurchase": true,
+  "readonlySavedConfirmationIsNotFreshRealOrder": true,
+  "actualGUI": {
+    "newCandidateWindowOpened": true,
+    "oldPreviewClosedVerified": true,
+    "physicalStartClickVerified": false,
+    "captureFailure": "IGraphicsCaptureItemInterop.CreateForMonitor failed 0x80070057",
+    "retryCount": 1,
+    "coordinateInputsStopped": true
+  },
+  "currentGUIWasLoadedFromEarlierC078Source": true,
+  "liveProgrammeUnpaidVerified": false,
+  "accepted": false,
+  "humanOneTimeExportStillPending": true,
+  "newClaudeAgreement": false,
+  "C079ActualProviderQuota": true,
+  "resetAsiaShanghai": "2026-10-06T06:40:00+08:00",
+  "restoreTask": "C-081-CROSS-REVIEW",
+  "resumeSource": "latest terminal C079 private metadata; CLI argument only",
+  "shutdown": false,
+  "verifiedAtUtc": "2026-10-05T19:37:10.849209+00:00"
+}

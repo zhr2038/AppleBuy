@@ -13,7 +13,7 @@ const runtime=new DesktopCheckoutRuntime({store,onState:s=>emit({type:'progress'
  return {api:new DesktopBrowserApi(context,{publicOnly:false}),close:async()=>{try{await context?.close();}finally{await browser?.close();}}};
 }});
 try{
- await runtime.open();emit({type:'ready',message:'程序已读取保留记录并打开官网窗口；旧未知动作保持，不自动重复。'});
+ const initial=await runtime.open();emit({type:'ready',readOnly:initial.legacyReadOnly===true,message:'程序已读取保留记录并打开官网窗口；旧未知动作保持，不自动重复。'});
  const input=createInterface({input:process.stdin});let active=false;
  const watch=new AuthContinuation({observe:()=>runtime.observe(),isBusy:()=>closing||active,onStopped:why=>emit({type:'blocked',message:why==='expired'?'登录等待已暂停；完成官网验证后可继续原任务，不重复结账。':'登录后的页面未确认，已停止自动推进；旧结账记录保持。'})});
  async function advance(c){
@@ -28,11 +28,11 @@ try{
   if(line.length>12000||closing)return;let c;try{c=JSON.parse(line);}catch{return;}
   if(c?.action==='stop'){closing=true;watch.stop();input.close();try{await runtime.close();}finally{emit({type:'closed',cleanupConfirmed:runtime.cleanupConfirmed});process.stdin.destroy();}return;}
   if(active||watch.reading){emit({type:'blocked',message:'当前执行尚未结束，未再次发动作。'});return;}
-  if(!['observe','advance','submit'].includes(c?.action))return;
+  if(!['observe','reconcile','advance','submit'].includes(c?.action))return;
   watch.stop();active=true;
   try{
    if(c.action==='advance')await advance(c);
-   else{const result=c.action==='observe'?await runtime.observe():await runtime.submit({termsAccepted:c.termsAccepted===true,existingOrdersChecked:c.existingOrdersChecked===true,noExtras:c.noExtras===true});emit({type:'result',state:result.state,phase:result.phase,realOrderVerified:result.realOrderVerified===true,reviewReady:!!runtime.finalDescriptor});}
+   else{const result=c.action==='observe'?await runtime.observe():c.action==='reconcile'?await runtime.reconcile():await runtime.submit({termsAccepted:c.termsAccepted===true,existingOrdersChecked:c.existingOrdersChecked===true,noExtras:c.noExtras===true});emit({type:'result',state:result.state,phase:result.phase,readOnly:c.action==='reconcile',realOrderVerified:result.realOrderVerified===true,reviewReady:!!runtime.finalDescriptor});}
   }catch(error){emit({type:'blocked',message:errors[error?.message]??'本次推进未确认；旧记录保持，未自动重试。'});}finally{active=false;}
  });
  await new Promise(resolve=>input.once('close',resolve));watch.stop();

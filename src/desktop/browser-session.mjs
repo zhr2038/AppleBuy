@@ -15,13 +15,17 @@ function legacyFinalProofClear(record){
 }
 export async function runDesktopSession(options){
  const {store,mode='public-config'}=options;if(activeStores.has(store))throw Error('DesktopSessionAlreadyRunning');activeStores.add(store);let lease;
- try{if(mode==='purchase'){if(typeof store.acquireOwner!=='function')throw Error('DesktopOwnerLeaseRequired');lease=await store.acquireOwner();if(lease?.owned!==true)throw Error('DesktopOwnerLeaseUnconfirmed');}return await executeSession(options);}
+ try{if(mode==='purchase'||mode==='reconcile'){if(typeof store.acquireOwner!=='function')throw Error('DesktopOwnerLeaseRequired');lease=await store.acquireOwner();if(lease?.owned!==true)throw Error('DesktopOwnerLeaseUnconfirmed');}return await executeSession(options);}
  finally{try{await lease?.release();}finally{activeStores.delete(store);}}
 }
 async function executeSession({api,tabId,store,mode='public-config',authority=null,onState=()=>{},privatePickupData={},signal=null}){
   if(signal?.aborted)throw Error('DesktopSessionCancelled');
-  if(!['public-config','purchase'].includes(mode))throw Error('DesktopModeNotAuthorized');
+  if(!['public-config','purchase','reconcile'].includes(mode))throw Error('DesktopModeNotAuthorized');
   let old=null,grant=null;
+  if(mode==='reconcile'){
+    old=await store.get(TASK_KEY);
+    if(!old||!validStored(old)||old.state==='RETIRED'||old.reconcileOnly!==true||canonicalJson(normalizeIntent(old.plan))!==canonicalJson(PRO_PLAN))throw Error('DesktopReadonlyHandoffRequired');
+  }
   if(mode==='purchase'){
     old=await store.get(TASK_KEY);
     if(!old||!validStored(old))throw Error('DesktopLegacyHandoffRequired');
@@ -37,12 +41,12 @@ async function executeSession({api,tabId,store,mode='public-config',authority=nu
       grant={id:randomUUID(),taskId:old.taskId,planDigest:proDigest,start:false,documentId:old.lastDocumentId,expiry:Math.min(old.expiresAt,Date.now()+60000),existingOrdersChecked:true,noExtras:true,termsAccepted:true,termsUrl:c.termsUrl};
     }
   }
-  const port=new ChromePort(api,tabId,{authorized:true,mode:mode==='public-config'?'public-config':'purchase',orderSummary:mode==='purchase',privatePickupData,pending:old?.pending,acceptedSlot:old?.acceptedSlot,initialSequence:old?.lastRead??0,reviewGrant:grant});
+  const port=new ChromePort(api,tabId,{authorized:mode!=='reconcile',mode:mode==='public-config'?'public-config':mode==='reconcile'?'observe':'purchase',orderSummary:mode==='purchase',privatePickupData:mode==='reconcile'?{}:privatePickupData,pending:old?.pending,acceptedSlot:old?.acceptedSlot,initialSequence:old?.lastRead??0,reviewGrant:grant});
   const boundStore={get:k=>store.get(k),put:(k,v)=>store.put(k,k===TASK_KEY?{...v,desktopContext:api.sessionId}:v)};
   const job=new PurchaseJob({store:boundStore,port,maxSteps:100,maxWaitMs:15000});job.onState=s=>onState({state:s.state,phase:s.phase,reason:s.reason,pendingAction:s.pendingAction});
   const cancel=()=>job.pause();signal?.addEventListener('abort',cancel,{once:true});if(signal?.aborted)cancel();
   try{
-    const result=await job.run(PRO_PLAN,{tabId,planDigest:proDigest,taskId:old?.state==='RETIRED'?randomUUID():old?.taskId??randomUUID(),mode,grant});
-    return {state:result.state,phase:result.lastPhase,reason:result.reason,realOrderVerified:result.state==='CONFIRMED_UNPAID',quoteCny:port.last?.raw.quotedCny??null,skuPath:port.last?.raw.productForm?.ready===true?port.last.raw.path:null};
+    const result=await job.run(PRO_PLAN,{tabId,planDigest:mode==='reconcile'?old.planDigest:proDigest,taskId:old?.state==='RETIRED'?randomUUID():old?.taskId??randomUUID(),mode:mode==='reconcile'?'purchase':mode,rebind:mode==='reconcile',grant});
+    return {state:result.state,phase:result.lastPhase,reason:result.reason,realOrderVerified:mode==='purchase'&&result.state==='CONFIRMED_UNPAID',quoteCny:port.last?.raw.quotedCny??null,skuPath:port.last?.raw.productForm?.ready===true?port.last.raw.path:null};
   }finally{signal?.removeEventListener('abort',cancel);}
 }

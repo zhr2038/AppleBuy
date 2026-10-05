@@ -29,8 +29,8 @@ export class DesktopCheckoutRuntime {
   this.busy=true;this.finalDescriptor=null;this.abort=new AbortController();
   const leased={get:k=>this.store.get(k),put:(k,v)=>this.store.put(k,v),acquireOwner:async()=>({owned:this.lease?.owned===true,release:async()=>{}})};
   try{
-   this.active=runDesktopSession({api:this.api,tabId:this.tabId,store:leased,mode:'purchase',signal:this.abort.signal,onState:s=>this.onState(safeState(s)),...options});
-   const result=await this.active;if(result.phase==='REVIEW'&&!this.closing)await this.prepareReview();this.onState(safeState(result));return result;
+   this.active=runDesktopSession({api:this.api,tabId:this.tabId,store:leased,mode:'purchase',signal:this.abort.signal,onState:s=>this.onState({...safeState(s),readOnly:options.mode==='reconcile'}),...options});
+   const result=await this.active;if(options.mode!=='reconcile'&&result.phase==='REVIEW'&&!this.closing)await this.prepareReview();this.onState(safeState(result));return result;
   }finally{this.active=null;this.busy=false;}
  }
  async advance({checkoutApproved=false,newContextConfirmed=false,privatePickupData={}}={}){
@@ -39,6 +39,7 @@ export class DesktopCheckoutRuntime {
   const authority={checkoutApproved,newContextConfirmed,legacyOwnershipRevoked:old?.state==='RETIRED'||old?.desktopContext===this.api?.sessionId,planDigest:proDigest};
   this.authority=authority;return this.execute({authority,privatePickupData});
  }
+ async reconcile(){return this.execute({mode:'reconcile',authority:null,privatePickupData:{}});}
  async prepareReview(){
   const old=await this.store.get(TASK_KEY),port=new ChromePort(this.api,this.tabId,{mode:'observe'}),o=await port.observe(PRO_PLAN);
   if(old?.desktopContext!==this.api.sessionId||old.lastPhase!=='REVIEW'||old.pending||old.finalIntent||old.reconcileOnly===true||o.phase!=='REVIEW'||o.documentId!==old.lastDocumentId||!o.termsLinks?.includes(TERMS))throw Error('DesktopFinalConsentNotCurrent');

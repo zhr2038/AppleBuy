@@ -148,6 +148,7 @@ class App:
         checkout_controls=ttk.Frame(pane);checkout_controls.pack(anchor="w",pady=(12,4))
         self.checkout_button=ttk.Button(checkout_controls,text="开始 Pro 程序购买",command=self.open_checkout);self.checkout_button.pack(side="left")
         self.advance_button=ttk.Button(checkout_controls,text="继续本次 Pro 购买",command=self.advance_checkout,state="disabled");self.advance_button.pack(side="left",padx=6)
+        self.reconcile_button=ttk.Button(checkout_controls,text="核对导入的旧任务",command=self.reconcile_checkout,state="disabled");self.reconcile_button.pack(side="left",padx=6)
         self.checkout_stop_button=ttk.Button(checkout_controls,text="暂停程序结账",command=self.stop_checkout,state="disabled");self.checkout_stop_button.pack(side="left",padx=6)
         private_fields=ttk.Frame(pane);private_fields.pack(anchor="w",pady=(8,0));self.pickup_values={}
         for key,label in [('lastName','姓'),('firstName','名'),('phone','手机号'),('email','邮箱'),('identitySuffix','证件后四位')]:
@@ -220,6 +221,12 @@ class App:
             self.checkout.send({'action':'advance','checkoutApproved':True,'newContextConfirmed':True,'privatePickupData':data})
         except Exception:self.status.set('推进未确认；保留原动作，不自动重复。')
 
+    def reconcile_checkout(self):
+        try:
+            self.submit_button.config(state='disabled');self.final_confirm.set(False)
+            self.checkout.send({'action':'reconcile'})
+        except Exception:self.status.set('旧任务核对未确认；没有发出官网购买动作。')
+
     def submit_checkout(self):
         if not self.final_confirm.get():self.status.set('需要核对当前订单并接受本次条款；未提交。');return
         self.submit_button.config(state='disabled');self.final_confirm.set(False)
@@ -229,7 +236,7 @@ class App:
     def stop_checkout(self):
         try:self.checkout.stop()
         except Exception:self.status.set('结账进程清理未确认，不能再次启动；旧动作保持。');return
-        self.advance_button.config(state='disabled');self.submit_button.config(state='disabled');self.checkout_stop_button.config(state='disabled')
+        self.advance_button.config(state='disabled');self.reconcile_button.config(state='disabled');self.submit_button.config(state='disabled');self.checkout_stop_button.config(state='disabled')
         self.checkout_button.config(state='normal');self.start_button.config(state='normal');self.probe_button.config(state='normal')
         self.status.set('本次程序结账已停止；已发送动作可能仍完成，未知记录保持。')
 
@@ -255,16 +262,20 @@ class App:
                 if kind=='worker-ended':
                     if self.checkout.terminal():
                         self.checkout_button.config(state='normal');self.start_button.config(state='normal');self.probe_button.config(state='normal')
-                        self.advance_button.config(state='disabled');self.submit_button.config(state='disabled');self.checkout_stop_button.config(state='disabled')
+                        self.advance_button.config(state='disabled');self.reconcile_button.config(state='disabled');self.submit_button.config(state='disabled');self.checkout_stop_button.config(state='disabled')
                     else:self.status.set('结账清理未确认，禁止再次启动。')
                 elif kind=='ready':
-                    self.status.set(v['message']);self.advance_button.config(state='normal')
+                    self.status.set(v['message']);self.advance_button.config(state='normal');self.reconcile_button.config(state='normal' if v.get('readOnly') is True else 'disabled')
                     if getattr(self,'checkout_begin_pending',False):
-                        self.checkout_begin_pending=False;self.advance_checkout()
+                        self.checkout_begin_pending=False
+                        if v.get('readOnly') is True:self.reconcile_checkout()
+                        else:self.advance_checkout()
                 elif kind=='blocked':self.status.set(v['message']);self.advance_button.config(state='normal' if self.checkout.busy else 'disabled');self.submit_button.config(state='disabled')
                 elif kind in ('progress','result'):
                     phase=v.get('phase','UNKNOWN');name={'AUTH':'等待本人登录/验证','SLOTS':'选择末档','DETAILS':'取货资料','PAYMENT':'付款方式','REVIEW':'核对订单','ORDER_DETAIL':'核对未付款订单'}.get(phase,phase)
                     self.status.set('程序结账：'+name+'；'+v.get('state','NEEDS_VERIFICATION'))
+                    if v.get('readOnly') is True:
+                        self.result.set('当前只核对保留任务；旧确认不代表本次订单结果，未发出新的官网购买动作。')
                     if kind=='result':
                         self.advance_button.config(state='normal' if v.get('realOrderVerified') is not True else 'disabled')
                         self.submit_button.config(state='normal' if v.get('reviewReady') is True and v.get('realOrderVerified') is not True else 'disabled')

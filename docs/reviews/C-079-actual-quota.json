@@ -1,0 +1,40 @@
+{
+  "task": "C-079-CROSS-REVIEW",
+  "status": "failed",
+  "exit_code": 1,
+  "duration_seconds": 242.24,
+  "models_actual": [
+    "claude-opus-5-5"
+  ],
+  "primary_models_actual": [
+    "<synthetic>",
+    "claude-opus-5-5"
+  ],
+  "model_verified": false,
+  "is_error": true,
+  "subtype": "success",
+  "timed_out": false,
+  "cleanup_confirmed": true,
+  "turn_budget": 72,
+  "wall_budget_seconds": 1200,
+  "cli_budget_usd": 10.0,
+  "actualTurns": 48,
+  "provider": "firstParty",
+  "canonicalModel": "claude-opus-5-5",
+  "requestedEffort": "xhigh",
+  "actualProviderSessionQuota": true,
+  "providerMessage": "You've hit your session limit \u00b7 resets 6:40am (Asia/Shanghai)",
+  "resetAsiaShanghai": "2026-10-06T06:40:00+08:00",
+  "permissionDenialCount": 0,
+  "toolCounts": {
+    "Read": 44,
+    "Bash": 1,
+    "Grep": 1
+  },
+  "sourceFiles": 230,
+  "sourceSha256": "a74b1b48e83f4a231f3854e4ac866378808e2a1cd381fa723d839b89d51b9192",
+  "completeVerdict": false,
+  "accepted": false,
+  "usageScope": "resumed-history aggregate, not round cost",
+  "shutdown": false
+}
