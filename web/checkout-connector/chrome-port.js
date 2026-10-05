@@ -112,6 +112,9 @@ export class ChromePort {
     return result;
   }
   async lookupOrder(plan,expectedRef){
+    // An explicit observe port may follow an already-bound reference as a read-only lookup (C023 contract).
+    // An unauthorized purchase port cannot acquire navigation authority from a replacement receipt.
+    if(!expectedRef||!['purchase','observe'].includes(this.mode)||!this.authorized&&this.mode!=='observe')return {state:'unknown',independent:false};
     // C043 (Claude): every read here is a full observe (current address, host permission, one recognized frame result). Only a rejected
     // injection (scriptTransport, e.g. the frame replaced while the followed detail document loads) is read again, read-only and never
     // by navigating again, within this lookup's one existing bound of 40 waits of 50 ms. Any other failure, or a rejection at the

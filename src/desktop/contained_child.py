@@ -8,19 +8,22 @@ import uuid
 import subprocess
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "tools/delegation"))
-from process_tree import OwnedProcess
+from process_tree import OwnedProcess, ProcessTreeUnresolved
 
 class ContainedChild:
     def __init__(self, args, cwd, **_):
         self.cancel = threading.Event()
         self.done = threading.Event()
         self.returncode = None
+        self.cleanup_confirmed = False
         self.receipt = ROOT / ".local" / ("desktop-child-" + uuid.uuid4().hex + ".json")
         def started(pid):
             self.receipt.write_text(json.dumps({"scope": "owned desktop public probe", "pid": pid, "terminal": False}), encoding="utf-8")
         self.owned = OwnedProcess(args, Path(cwd), started)
 
     def communicate(self, timeout=45):
+        if self.done.is_set() and not self.cleanup_confirmed:
+            raise ProcessTreeUnresolved("Owned desktop tree cleanup remains unconfirmed")
         end = time.monotonic() + timeout
         first = True
         try:
@@ -36,15 +39,26 @@ class ContainedChild:
             self.returncode = self.owned.process.returncode
             return out, err
         finally:
-            self.owned.terminate_tree()
-            self.owned.close()
-            self.receipt.write_text(json.dumps({"scope": "owned desktop public probe", "terminal": True, "cleanupConfirmed": True}), encoding="utf-8")
-            self.done.set()
+            try:
+                self.owned.terminate_tree()
+                self.owned.close()
+                self.cleanup_confirmed = True
+                self.receipt.write_text(json.dumps({"scope": "owned desktop public probe", "terminal": True, "cleanupConfirmed": True}), encoding="utf-8")
+            except Exception as error:
+                try:
+                    self.owned.close()
+                finally:
+                    self.receipt.write_text(json.dumps({"scope": "owned desktop public probe", "terminal": False, "cleanupConfirmed": False}), encoding="utf-8")
+                raise ProcessTreeUnresolved("Owned desktop tree cleanup unconfirmed") from error
+            finally:
+                self.done.set()  # cleanup attempt finished, not proof of child termination
 
     def terminate(self): self.cancel.set()
     def kill(self): self.cancel.set()
-    def poll(self): return self.returncode if self.done.is_set() else None
+    def poll(self): return self.returncode if self.done.is_set() and self.cleanup_confirmed else None
     def wait(self, timeout=None):
         if not self.done.wait(timeout):
             raise subprocess.TimeoutExpired("owned desktop child", timeout)
+        if not self.cleanup_confirmed:
+            raise ProcessTreeUnresolved("Owned desktop tree cleanup unconfirmed")
         return self.returncode

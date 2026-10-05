@@ -94,6 +94,9 @@ class Runner:
         except Exception:
             self.events.put((generation, "error", {"message": "官网预检未确认完成；未新增购买请求，旧未知任务保持。" if mode == "public-probe" else "演练未确认完成；没有访问官网或创建真实订单。"}))
         finally:
+            if isinstance(process, ContainedChild) and process.done.is_set() and not process.cleanup_confirmed:
+                self.events.put((generation, "unresolved", {"message": "执行进程清理尚未确认，已阻止再次启动；旧购买记录保持。"}))
+                return
             if process is not None and process.poll() is None:
                 process.kill()
                 process.communicate()
@@ -106,7 +109,6 @@ class Runner:
         with self.lock:
             self.generation += 1
             process = self.process
-            self.process = None
             # Busy stays set until the owned process is confirmed terminal below.
         if process is not None and process.poll() is None:
             process.terminate()
@@ -114,8 +116,9 @@ class Runner:
                 process.wait(timeout=3)
             except subprocess.TimeoutExpired:
                 process.kill()
-                process.wait()
+                process.wait(timeout=5)
         with self.lock:
+            self.process = None
             self.busy = False
 
 class App:
@@ -182,7 +185,13 @@ class App:
             self.status.set("原任务导入未确认，旧记录保持；未开始新的购买。")
 
     def stop(self):
-        self.runner.stop()
+        try:
+            self.runner.stop()
+        except Exception:
+            self.status.set("执行进程清理尚未确认，不能再次启动；旧记录保持。")
+            self.start_button.config(state="disabled")
+            self.probe_button.config(state="disabled")
+            return
         self.start_button.config(state="normal")
         self.probe_button.config(state="normal")
         self.stop_button.config(state="disabled")
@@ -195,6 +204,10 @@ class App:
                 if generation != self.runner.generation:
                     continue
                 self.status.set(value["message"])
+                if kind == "unresolved":
+                    self.start_button.config(state="disabled")
+                    self.probe_button.config(state="disabled")
+                    continue
                 if kind == "done" and not value.get("publicProbe"):
                     self.result.set(f"自动选择 {value['choices']} 次；明确拒绝 {value['refusals']} 次；模拟付款前终点；真实订单 0。")
                 self.start_button.config(state="normal")
@@ -205,8 +218,14 @@ class App:
         self.timer = self.root.after(100, self.poll)
 
     def close(self):
+        try:
+            self.runner.stop()
+        except Exception:
+            self.status.set("执行进程清理尚未确认；窗口保持，不能再次启动。")
+            self.start_button.config(state="disabled")
+            self.probe_button.config(state="disabled")
+            return
         self.root.after_cancel(self.timer)
-        self.runner.stop()
         self.root.destroy()
 
 if __name__ == "__main__":

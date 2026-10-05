@@ -19,6 +19,7 @@ export async function restartExpiredPreFinal({store,api,port,plan,planDigest,tab
   const p=normalizeIntent(plan);
   if(p.product.model!=='iPhone 18 Pro'||p.product.capacity!=='256GB'||p.product.color!=='黑色'||p.maxTotalCny!==9999||p.stores.length!==1||p.stores[0]!=='Apple 大连恒隆广场')return stop('restart-only-this-one-authorized-pro');
   const old=await store.get(TASK_KEY);if(!live())return stop('restart-paused');let valid=false;try{valid=validStored(old)===true;}catch{}
+  if(old&&Object.hasOwn(old,'desktopHandoff'))return stop('desktop-handoff-permanently-revoked-source');
   // C062: the production record omits acceptedSlot until verified acceptance. Only null/absence is compatible; any other value blocks.
   if(!valid||old.state==='RETIRED'||old.state==='CONFIRMED_UNPAID'||old.planDigest!==planDigest||canonicalJson(normalizeIntent(old.plan))!==canonicalJson(p)||old.finalIntent!==null||old.orderRefHash!=null||old.orderDetailLink!=null||old.acceptedSlot!=null||old.pending?.action!=='chooseSlot'||old.pending.beforePhase!=='SLOTS'||old.pending.dispatched===false||old.expiresAt>now()||old.pending.deadline>now())return stop('old-expired-prefinal-unknown-slot-not-proved');
   if(!cleanHistory(old))return stop('history-has-prior-final-slot-or-unproved-content');

@@ -1,0 +1,26 @@
+{
+  "actualTask": "C-075-CROSS-REVIEW",
+  "verdict": "DISAGREE",
+  "sourceFiles": 221,
+  "sourceSha256": "6daa25920b71acaa586a70d69559e10e6c001f182e0b36bd6d00d2a79da4a011",
+  "durationSeconds": 605.09,
+  "turns": 115,
+  "modelRequested": "claude-opus-5-5",
+  "primaryActual": [
+    "claude-opus-5-5"
+  ],
+  "canonicalActual": "claude-opus-5-5",
+  "provider": "firstParty",
+  "structuredModelVerified": true,
+  "effortCli": "xhigh",
+  "isError": false,
+  "timedOut": false,
+  "exitCode": 0,
+  "cleanupConfirmed": true,
+  "permissionDenialCount": 1,
+  "denialSummary": "reviewer final manifest repeat denied in dontAsk mode; payload not read or reused, no alternate-tool retry",
+  "reviewerReadGapsDisclosed": true,
+  "finalReviewerIntegrityRepeatDone": false,
+  "accepted": false,
+  "reviewerCostClaim": "4.85 of15 is unverified; structured usage/cost can aggregate session history and is not asserted as current spend"
+}

@@ -294,7 +294,7 @@ export class PurchaseJob {
         // Positively known not dispatched (pause/stop after the write-ahead, before act): recover truthfully.
         if(pending.dispatched===false){s.pending=null;if(pending.action==='addBag')s.bagAddStarted=false;if(pending.action==='submitOrder'&&s.finalIntent)s.finalIntent.sent=false;await this.save(s);continue;}
         if(pending.action==='submitOrder'){
-          if(readOnly)return this.gate(s,'final-result-unconfirmed; no resubmission','NEEDS_VERIFICATION');
+          if(readOnly||s.reconcileOnly===true)return this.gate(s,'final-result-unconfirmed; no resubmission','NEEDS_VERIFICATION');
           // C040-R1 (Claude): while merchant processing, or the final click's own unchanged review document, is still shown, wait read-only
           // within the ORIGINAL pending deadline and existing bounds. Never resubmit or extend authority; an expired one goes to lookup.
           if((o.phase==='PROCESSING'||o.phase===pending.beforePhase&&o.documentId===pending.documentId&&o.verifiedStep===true&&purchaseMatches(P,o.purchase))&&this.now()<pending.deadline&&await poll(this.maxWaitMs))continue;

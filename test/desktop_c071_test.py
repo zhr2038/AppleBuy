@@ -4,6 +4,7 @@ from pathlib import Path
 import sys
 import threading
 import unittest
+import uuid
 sys.dont_write_bytecode = True
 ROOT = Path(__file__).resolve().parents[1]
 spec = importlib.util.spec_from_file_location("desktop_app71", ROOT / "src/desktop/app.py")
@@ -24,5 +25,22 @@ class DesktopProbeTests(unittest.TestCase):
         t=threading.Thread(target=lambda:result.append(child.communicate(timeout=10)))
         t.start();child.terminate();child.wait(timeout=5);t.join(5)
         self.assertFalse(t.is_alive());self.assertIsNotNone(child.poll());self.assertTrue(child.done.is_set());self.assertTrue(json.loads(child.receipt.read_text())["cleanupConfirmed"])
+
+    def test_cleanup_failure_signals_attempt_finished_without_claiming_terminal(self):
+        child=app.ContainedChild.__new__(app.ContainedChild)
+        child.cancel=threading.Event();child.done=threading.Event();child.returncode=None;child.cleanup_confirmed=False
+        child.receipt=ROOT/".local"/("desktop-fault-"+uuid.uuid4().hex+".json")
+        class FailedOwned:
+            class Process:
+                returncode=0
+                def communicate(self,**kwargs):return "{}",""
+            process=Process()
+            def terminate_tree(self):raise RuntimeError("FAKE cleanup failure")
+            def close(self):pass
+        child.owned=FailedOwned()
+        with self.assertRaises(Exception):child.communicate(timeout=1)
+        self.assertTrue(child.done.is_set());self.assertFalse(child.cleanup_confirmed);self.assertIsNone(child.poll())
+        with self.assertRaises(Exception):child.wait(timeout=.1)
+        self.assertFalse(json.loads(child.receipt.read_text())["terminal"])
 
 if __name__ == "__main__": unittest.main()

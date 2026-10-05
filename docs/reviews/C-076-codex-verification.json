@@ -1,0 +1,45 @@
+{
+  "candidateFiles": 222,
+  "sha256": "77dddf6f12fa37f6af81b8f04a4247e01b1ef5e7f33b02453482e54c42d93e82",
+  "baseRejected221": "6daa25920b71acaa586a70d69559e10e6c001f182e0b36bd6d00d2a79da4a011",
+  "changedBasePaths": [
+    "src/desktop/app.py",
+    "src/desktop/browser-session.mjs",
+    "src/desktop/contained_child.py",
+    "test/desktop_c071_test.py",
+    "web/checkout-connector/chrome-port.js",
+    "web/checkout-connector/job.js",
+    "web/checkout-connector/pre-final-restart.js"
+  ],
+  "newSourcePaths": [
+    "test/desktop-c076-review-repro.test.ts"
+  ],
+  "implementationOwner": "Codex per direct current goal, Claude review only",
+  "fourIndependentReprosBeforeFix": {
+    "passed": 0,
+    "failed": 4,
+    "allApiAndOrdersFake": true
+  },
+  "fixes": {
+    "F1": "rebound/reconcileOnly final never adopts receipt or navigates; unauthorized purchase-mode lookup no navigation",
+    "F1ProtectedContract": "explicit observe-only port may navigate already-bound reference as read-only C023 lookup; all5 C023 assertions preserved; reviewer blanket no-read navigation proposal narrowed transparently",
+    "F2": "any desktopHandoff member prevents source restart before merchant reads/writes",
+    "F3": "desktop final consent now non-start grant with reviewed documentId; replacement document sends zero final",
+    "F4": "new-context non-retired record blocked even if numeric tab IDs match",
+    "F6": "cleanup attempt always signals done, failed cleanup not terminal, waits bounded, old process/busy held, no reenable/new start after unknown cleanup"
+  },
+  "finalAuthorChecks": {
+    "newFourReprosPassed": 4,
+    "fullNodePassed": 1395,
+    "pythonPassed": 7,
+    "nativeOrderPriorPass": 8,
+    "nativeRestartPriorPass": 2
+  },
+  "initialRegression": "overbroad unauthorized lookup stopped4 protected C023 read-only known-reference cases; refined mode-specific gate, did not modify old assertions",
+  "oldAssertionsWeakened": false,
+  "actualProgrammeUnpaidOrderVerified": false,
+  "newReviewerAgreement": false,
+  "accepted": false,
+  "humanLegacyExportStillPending": true,
+  "verifiedAtUtc": "2026-10-05T18:23:20.267075+00:00"
+}

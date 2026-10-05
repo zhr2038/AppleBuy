@@ -27,12 +27,13 @@ async function executeSession({api,tabId,store,mode='public-config',authority=nu
     const own=typeof api.sessionId==='string'&&old.desktopContext===api.sessionId;
     if(!own&&!legacyFinalProofClear(old))throw Error('DesktopLegacyFinalHistoryUnconfirmed');
     if(!own&&(old.pending||old.finalIntent||old.acceptedSlot||old.reconcileOnly===true))throw Error('DesktopLegacyResultStillUnconfirmed');
+    if(!own&&old.state!=='RETIRED')throw Error('DesktopContextIdentityUnconfirmed');
     if(authority?.checkoutApproved!==true||authority?.legacyOwnershipRevoked!==true||authority?.newContextConfirmed!==true||authority?.planDigest!==proDigest||canonicalJson(normalizeIntent(old.plan))!==canonicalJson(PRO_PLAN))throw Error('DesktopPurchaseAuthorityMissing');
     if(old.state!=='RETIRED'&&old.tabId!==tabId)throw Error('DesktopLegacyTabBindingUnconfirmed');
     if(authority.finalConsent){
       const c=authority.finalConsent;
       if(!own||old.lastPhase!=='REVIEW'||old.pending||old.finalIntent||c.termsAccepted!==true||c.existingOrdersChecked!==true||c.noExtras!==true||c.taskId!==old.taskId||c.documentId!==old.lastDocumentId||!Number.isFinite(c.acceptedAt)||Date.now()-c.acceptedAt<0||Date.now()-c.acceptedAt>60000||typeof c.termsUrl!=='string')throw Error('DesktopFinalConsentNotCurrent');
-      grant={id:randomUUID(),taskId:old.taskId,planDigest:proDigest,start:true,entryDocumentId:old.entryDocumentId,expiry:Math.min(old.expiresAt,Date.now()+60000),existingOrdersChecked:true,noExtras:true,termsAccepted:true,termsUrl:c.termsUrl};
+      grant={id:randomUUID(),taskId:old.taskId,planDigest:proDigest,start:false,documentId:old.lastDocumentId,expiry:Math.min(old.expiresAt,Date.now()+60000),existingOrdersChecked:true,noExtras:true,termsAccepted:true,termsUrl:c.termsUrl};
     }
   }
   const port=new ChromePort(api,tabId,{authorized:true,mode:mode==='public-config'?'public-config':'purchase',orderSummary:mode==='purchase',privatePickupData,pending:old?.pending,acceptedSlot:old?.acceptedSlot,initialSequence:old?.lastRead??0,reviewGrant:grant});
