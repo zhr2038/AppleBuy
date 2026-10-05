@@ -1,0 +1,23 @@
+# C057 main-chain recovery after authentication context loss
+
+Prepared requirement; NOT dispatched or implemented. Claude Code owns the technical design. Use the original recorded session, same E:\Apple Store, English, exact first-party claude-opus-5-5/xhigh. No concurrent caller, no early quota probe, no private source/model input. Start only after the current exact C056 review is completed and any findings resolved; a bounded C056 agreement does not complete this task or the full purchasing goal.
+
+## Concrete problem and current evidence
+
+The user requires the existing programme to complete one Pro rehearsal on the real official mainland pickup flow, ending in one unpaid order. C046 previously sent one ChooseSlot and reached the contact page; the stored result remains unknown and the original merchant/local session expired. C056 subsequently sent a single Checkout-only recovery probe, and the human reported actual AUTH recognition. Normal Codex login attempts produced no verified success. The supported browser now cannot find that probe target; its fresh official-tab inventory was empty. A newly opened normal read-only public bag currently shows the same Pro256GB black, quantity1, total9999. No new Checkout/slot/final/payment occurred from that page. See C-056-current-recovery-evidence.json. Historical contacts, authority, dates, slot outcome and an absent order are not current merchant facts.
+
+The temporary probe preserves safety but cannot bind its existing observation to a replacement page. This is a main-chain recovery gap, not permission to reset the record, replay an unknown ChooseSlot/final, create another buyer, or call the whole goal complete.
+
+## Required outcome
+
+Propose and validate a concrete route back into the programme's main chain under the exact same fixed purchase conditions: one Pro256GB black, maximum9999, only Apple Dalian Olympia66/R609 mainland pickup, initial actual at-most-three offered dates in their original order and each terminal slot, Alipay, no trade-in/AppleCare/accessories/instalment/payment. The programme, rather than Codex manual merchant Checkout/slot/order clicks, must perform authorised business actions. Eventual real success requires a separately checked matching unpaid order; mock success or an authentication page is insufficient.
+
+Determine which current merchant evidence resolves an old uncertain resource action, which normal navigation may safely recover context, and where explicit human authentication/terms/new host permission is required. Do not infer no order/no hold from the bag, missing tabs, elapsed local time, old price, absent text or a failed query. Do not invent endpoints, timeouts, release dates or cancellation contracts. Preserve all previous pending/final/history/expiry/date/floor/condition facts; authorise no new purchase merely by opening a page or granting access. Missing current contracts are named blockers, not fabricated negative results.
+
+Produce a workable design with reproducible offline cases for closed original/probe targets, unchanged one-item bag, login expiry and completion, a replacement current page, unknown or delayed old slot/final, duplicate events/restart/multiple control pages, wrong product/count/price/store, and positively observed next-step evidence. Existing safety assertions remain. Explain how the live programme will progress past recovery into contacts/payment/review/order verification without permanent manual cart preparation or repeated UI start requests. Claude chooses implementation details; Codex evaluates the design and independently verifies implementation before acceptance.
+
+## Boundaries
+
+Initial task is design and bounded offline unknown-item validation. No personal Chrome, network to Apple, authenticated requests, profile/cookies/storage, real screenshots or customer values; no new extensions/access permissions, agents or publication. No alternate browser surface, SDK/CDP/native/HTTP bridge or indirect execution to bypass the browser policy's rejected extension-page access. Current secure11 approval was specific read-only reconciliation. Broader real actions, authentication challenges, merchant terms or new security-sensitive access follow the actual action-time rules and the existing one-unit authority; this task does not grant them. Codex will provide deidentified normal merchant observations where allowed. Any permission denial must be preserved and not retried through a different tool/path.
+
+Return a concrete design, evidence limits, dependencies and exact next executable validation. Then await Codex's scope approval for implementation; do not call an unexecuted design an implemented order chain.

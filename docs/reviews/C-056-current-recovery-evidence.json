@@ -43,6 +43,19 @@
     "rootSelectedSlotOrOrdered": false
   },
   "fullInstalledByteIdentityVerified": false,
+  "latestReadOnlyRecoveryCheck": {
+    "dateLocal": "2026-10-05",
+    "originalProbeTargetPresent": false,
+    "supportedChromeInventoryOfficialPagesBeforeNewBag": 0,
+    "newPage": "normal https://www.apple.com.cn/shop/bag, read-only",
+    "product": "iPhone 18 Pro 256GB 黑色",
+    "selectedQuantity": 1,
+    "totalCny": 9999,
+    "rootSentCheckoutSlotOrderOrPayment": false,
+    "replacementProbeBindingVerified": false,
+    "oldUnknownSlotResolved": false,
+    "nextRequirement": "actual main-chain session/tab recovery; not a new buyer or erased old result"
+  },
   "extensionPageAccess": "actual browser protocol security rejection; only http/https; no alternate surface/SDK/CDP/workaround",
   "rootWebsitePurchaseMutation": false,
   "realNewUnpaidOrderVerified": false,
