@@ -205,7 +205,9 @@ export class PurchaseJob {
     const P=normalizeIntent(plan),validating=mode==='public-config',readOnly=mode==='reconcile';
     this.key=validating?VALIDATION_KEY:TASK_KEY;
     const old=validating?null:await this.store.get(TASK_KEY);
-    if(old&&!readOnly&&!rebind&&hasDesktopHandoff(old))throw new Error('DesktopHandoffPermanentlyRevokedSource');
+    const transfer=this.port?.desktopTransferProof,t=old?.desktopTransfer;
+    const desktopCartOwner=transfer?.schema==='applebuy-desktop-cart-transfer/v1'&&transfer.existingCartOnly===true&&t?.existingCartOnly===true&&transfer.taskId===old?.taskId&&transfer.contextId===old?.desktopContext&&transfer.contextId===this.port?.api?.sessionId&&transfer.sourceFingerprint===t?.sourceFingerprint;
+    if(old&&!readOnly&&!rebind&&hasDesktopHandoff(old)&&!desktopCartOwner)throw new Error('DesktopHandoffPermanentlyRevokedSource');
     if(old&&!validStored(old))throw new Error('StoredPurchaseTaskCorrupt');
     if(readOnly&&(!old||old.state==='RETIRED'))throw new Error('NoPreservedTaskToReconcile');
     // Validation is bounded, never authorized and stored separately; it cannot use a purchase grant.
@@ -458,6 +460,7 @@ export class PurchaseJob {
         if(s.finalIntent)s.history=[...(s.history??[]),{event:'final-not-dispatched',intentId:s.finalIntent.id,grantId:s.finalIntent.grantId}];
         s.finalIntent={id:this.id(),grantId:grant.id,sent:false};await this.save(s);command={action:'submitOrder',intentId:s.finalIntent.id,finalGrant:{...clone(grant),documentId:o.documentId}};
       }else return this.gate(s,'unsupported-merchant-stage','NEEDS_VERIFICATION');
+      if(s.desktopTransfer?.existingCartOnly===true&&['configureProduct','continueProduct','addBag','openProduct','viewBag'].includes(command.action))return this.gate(s,'desktop-transferred-cart-missing; no new addition or configuration','NEEDS_VERIFICATION');
       if(validating&&!PUBLIC.has(command.action))return this.gate(s,'validation-mode-cannot-mutate-merchant-resources','VALIDATION_STOPPED');
       if(s.expiresAt<=this.now())return this.gate(s,'task-window-expired; existing intent preserved','EXPIRED');
       if(this.paused||this.stopped)return this.gate(s,'control-changed-before-send',this.stopped?'STOPPED':'PAUSED');

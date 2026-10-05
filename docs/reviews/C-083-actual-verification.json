@@ -1,0 +1,33 @@
+{
+  "task": "C-083-CROSS-REVIEW",
+  "status": "returned_for_review",
+  "exit_code": 0,
+  "duration_seconds": 511.61,
+  "model_verified": true,
+  "models_actual": [
+    "claude-opus-5-5"
+  ],
+  "primary_models_actual": [
+    "claude-opus-5-5"
+  ],
+  "is_error": false,
+  "subtype": "success",
+  "timed_out": false,
+  "cleanup_confirmed": true,
+  "turn_budget": 72,
+  "wall_budget_seconds": 1200,
+  "cli_budget_usd": 10.0,
+  "actualTurns": 35,
+  "provider": "firstParty",
+  "canonicalModel": "claude-opus-5-5",
+  "actualEffort": "xhigh",
+  "permissionDenialCount": 0,
+  "verdict": "AGREE for limited safety properties, fresh EOF gaps remain",
+  "completeRequiredEOF": false,
+  "accepted": false,
+  "sourceFiles": 231,
+  "sha256": "e4caca1982db14a76c74c3247a286dc6c8fdffd9446a3efd27339d646116203f",
+  "wholeGoalContradictedBy": "B1 no legitimate production buying entry from imported readonly ledger",
+  "realUnpaidVerified": false,
+  "usageScope": "structured modelUsage resumed-history aggregate, not round cost"
+}

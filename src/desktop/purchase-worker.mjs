@@ -28,10 +28,11 @@ try{
   if(line.length>12000||closing)return;let c;try{c=JSON.parse(line);}catch{return;}
   if(c?.action==='stop'){closing=true;watch.stop();input.close();try{await runtime.close();}finally{emit({type:'closed',cleanupConfirmed:runtime.cleanupConfirmed});process.stdin.destroy();}return;}
   if(active||watch.reading){emit({type:'blocked',message:'当前执行尚未结束，未再次发动作。'});return;}
-  if(!['observe','reconcile','advance','submit'].includes(c?.action))return;
+  if(!['observe','reconcile','transfer','advance','submit'].includes(c?.action))return;
   watch.stop();active=true;
   try{
    if(c.action==='advance')await advance(c);
+   else if(c.action==='transfer'){const result=await runtime.transfer({approved:c.approved===true,newContextConfirmed:c.newContextConfirmed===true,privatePickupData:c.privatePickupData??{}});emit({type:'result',state:result.state,phase:result.phase,realOrderVerified:result.realOrderVerified===true,reviewReady:!!runtime.finalDescriptor});if(result.phase==='AUTH'&&result.state==='NEEDS_USER')watch.start(async()=>{active=true;try{await advance({checkoutApproved:true,newContextConfirmed:true,privatePickupData:c.privatePickupData??{}});}catch{emit({type:'blocked',message:'接替后的登录衔接未确认，旧动作保留，不重复结账。'});}finally{active=false;}});}
    else{const result=c.action==='observe'?await runtime.observe():c.action==='reconcile'?await runtime.reconcile():await runtime.submit({termsAccepted:c.termsAccepted===true,existingOrdersChecked:c.existingOrdersChecked===true,noExtras:c.noExtras===true});emit({type:'result',state:result.state,phase:result.phase,readOnly:c.action==='reconcile',realOrderVerified:result.realOrderVerified===true,reviewReady:!!runtime.finalDescriptor});}
   }catch(error){emit({type:'blocked',message:errors[error?.message]??'本次推进未确认；旧记录保持，未自动重试。'});}finally{active=false;}
  });

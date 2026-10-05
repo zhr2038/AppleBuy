@@ -1,0 +1,37 @@
+{
+  "files": 233,
+  "sha256": "f1115167c2c58c37e3c46840e15b0d42a65b900ec43f4fc389a8ce6a96fe80a1",
+  "previous231": "e4caca1982db14a76c74c3247a286dc6c8fdffd9446a3efd27339d646116203f",
+  "changedPaths": [
+    "src/desktop/app.py",
+    "src/desktop/browser-session.mjs",
+    "src/desktop/checkout-runtime.mjs",
+    "src/desktop/purchase-worker.mjs",
+    "web/checkout-connector/job.js"
+  ],
+  "newPaths": [
+    "src/desktop/cart-transfer.mjs",
+    "test/desktop-c084-cart-transfer.test.ts"
+  ],
+  "implementationOwner": "Codex, new direct goal",
+  "C083ActualRecovery": true,
+  "C083ReportVerdict": "limited AGREE with mandatory fresh EOF gaps, not accepted",
+  "B1Change": "actual imported-handoff-shaped record plus explicit renewed Pro/current-account approval and two current matching singleton bag reads can become a new desktop cart-only buyer; complete full original records/unknowns retained; no repeated Add",
+  "productionEmptyOrUnknownStillBlocked": true,
+  "newTransferTestsPass": 9,
+  "fullNodePass": 1424,
+  "pythonPass": 9,
+  "allNewMerchantAPIAndApprovalsFake": true,
+  "oldAssertionsChanged": false,
+  "extensionSourceCannotUseDesktopProof": true,
+  "readonlyRejectedBeforePurchaseJob": true,
+  "readonlyDoesNotStampNewBuyingContext": true,
+  "finalCheckboxDisabledUntilReadyAndClearedOnResults": true,
+  "realProgrammeUnpaidVerified": false,
+  "newReviewAccepted": false,
+  "handoffFileMissing": true,
+  "goalStatusRemainsBlocked": true,
+  "restoreTask": "C085-CROSS-REVIEW",
+  "verifiedAtUtc": "2026-10-05T23:06:58.926592+00:00",
+  "fullNodePassPreviousBeforeLastFixture": 1423
+}

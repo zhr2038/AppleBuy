@@ -127,7 +127,7 @@ class App:
         self.root, self.runner = root, Runner()
         self.checkout=CheckoutRunner()
         root.title(TITLE)
-        root.geometry("980x570")
+        root.geometry("980x670")
         root.minsize(620, 330)
         pane = ttk.Frame(root, padding=20)
         pane.pack(fill="both", expand=True)
@@ -149,14 +149,17 @@ class App:
         self.checkout_button=ttk.Button(checkout_controls,text="开始 Pro 程序购买",command=self.open_checkout);self.checkout_button.pack(side="left")
         self.advance_button=ttk.Button(checkout_controls,text="继续本次 Pro 购买",command=self.advance_checkout,state="disabled");self.advance_button.pack(side="left",padx=6)
         self.reconcile_button=ttk.Button(checkout_controls,text="核对导入的旧任务",command=self.reconcile_checkout,state="disabled");self.reconcile_button.pack(side="left",padx=6)
+        self.transfer_button=ttk.Button(checkout_controls,text="接替当前购物袋这一台",command=self.transfer_checkout,state="disabled");self.transfer_button.pack(side="left",padx=6)
         self.checkout_stop_button=ttk.Button(checkout_controls,text="暂停程序结账",command=self.stop_checkout,state="disabled");self.checkout_stop_button.pack(side="left",padx=6)
         private_fields=ttk.Frame(pane);private_fields.pack(anchor="w",pady=(8,0));self.pickup_values={}
         for key,label in [('lastName','姓'),('firstName','名'),('phone','手机号'),('email','邮箱'),('identitySuffix','证件后四位')]:
             ttk.Label(private_fields,text=label).pack(side="left");v=tk.StringVar();self.pickup_values[key]=v
             ttk.Entry(private_fields,textvariable=v,width=10 if key in ('firstName','lastName','identitySuffix') else 18,show='*' if key=='identitySuffix' else '').pack(side="left",padx=(2,6))
         ttk.Label(pane,text="取货资料仅用于本次程序会话。官网登录或验证请在程序打开的 Chrome 中完成。",wraplength=850).pack(anchor="w",pady=(5,0))
+        self.transfer_confirm=tk.BooleanVar(value=False)
+        self.transfer_checkbox=ttk.Checkbutton(pane,text="本人确认当前同一账户购物袋为这一台 Pro，允许桌面接替；旧未知记录保留，不再加购",variable=self.transfer_confirm,state='disabled');self.transfer_checkbox.pack(anchor='w',pady=(6,0))
         self.final_confirm=tk.BooleanVar(value=False)
-        ttk.Checkbutton(pane,text="本人核对当前唯一一台、无附加项及无重复订单，接受本次官网条款；只创建未付款订单",variable=self.final_confirm).pack(anchor="w",pady=(8,0))
+        self.final_checkbox=ttk.Checkbutton(pane,text="本人核对当前唯一一台、无附加项及无重复订单，接受本次官网条款；只创建未付款订单",variable=self.final_confirm,state='disabled');self.final_checkbox.pack(anchor="w",pady=(8,0))
         self.submit_button=ttk.Button(pane,text="按当前条款创建这一张未付款订单",command=self.submit_checkout,state="disabled");self.submit_button.pack(anchor="w",pady=(4,0))
         self.status = tk.StringVar(value="等待演练。官网那次加购仍未确认，旧任务记录保持。")
         ttk.Label(pane, textvariable=self.status, wraplength=620).pack(anchor="w", pady=(20, 8))
@@ -250,6 +253,12 @@ class App:
             self.checkout.send({'action':'reconcile'})
         except Exception:self.status.set('旧任务核对未确认；没有发出官网购买动作。')
 
+    def transfer_checkout(self):
+        if not self.transfer_confirm.get():self.status.set('需确认接替当前同一账户购物袋这一台；未发购买动作。');return
+        self.transfer_confirm.set(False);self.transfer_button.config(state='disabled');self.final_confirm.set(False);self.final_checkbox.config(state='disabled')
+        try:self.checkout.send({'action':'transfer','approved':True,'newContextConfirmed':True,'privatePickupData':{k:v.get() for k,v in self.pickup_values.items() if v.get()}})
+        except Exception:self.status.set('接替未确认，旧未知记录保持，不重复加购或下单。')
+
     def submit_checkout(self):
         if not self.final_confirm.get():self.status.set('需要核对当前订单并接受本次条款；未提交。');return
         self.submit_button.config(state='disabled');self.final_confirm.set(False)
@@ -282,6 +291,8 @@ class App:
                 v=self.checkout.events.get_nowait()
                 if v.get('generation')!=self.checkout.generation:continue
                 kind=v.get('type')
+                if kind in ('ready','blocked','result','worker-ended'):
+                    self.final_confirm.set(False);self.final_checkbox.config(state='disabled')
                 if kind=='worker-ended':
                     if self.checkout.terminal():
                         self.checkout_button.config(state='normal');self.start_button.config(state='normal');self.probe_button.config(state='normal')
@@ -289,6 +300,7 @@ class App:
                     else:self.status.set('结账清理未确认，禁止再次启动。')
                 elif kind=='ready':
                     self.status.set(v['message']);self.advance_button.config(state='normal');self.reconcile_button.config(state='normal' if v.get('readOnly') is True else 'disabled')
+                    self.transfer_button.config(state='normal' if v.get('readOnly') is True else 'disabled');self.transfer_checkbox.config(state='normal' if v.get('readOnly') is True else 'disabled')
                     if getattr(self,'checkout_begin_pending',False):
                         self.checkout_begin_pending=False
                         if v.get('readOnly') is True:self.reconcile_checkout()
@@ -302,6 +314,7 @@ class App:
                     if kind=='result':
                         self.advance_button.config(state='normal' if v.get('realOrderVerified') is not True else 'disabled')
                         self.submit_button.config(state='normal' if v.get('reviewReady') is True and v.get('realOrderVerified') is not True else 'disabled')
+                        self.final_checkbox.config(state='normal' if v.get('reviewReady') is True and v.get('realOrderVerified') is not True else 'disabled')
                         if v.get('realOrderVerified') is True:self.result.set('已由程序另行核对同一张未付款订单；未支付，不再下单。')
         except queue.Empty:pass
         try:
