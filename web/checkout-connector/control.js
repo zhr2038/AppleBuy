@@ -1,6 +1,8 @@
 import {PurchaseJob,TASK_KEY,VALIDATION_KEY,NO_EXTRAS,retirable} from './job.js';
 import {ChromePort,allowedMerchantUrl} from './chrome-port.js';
 import {withPurchaseOwner} from './owner.js';
+import {taskDiagnostic} from './task-diagnostic.js';
+import {probeClosedCheckout} from './closed-checkout-probe.js';
 const $=id=>document.getElementById(id);let job=null;
 const store={async get(k){return (await chrome.storage.local.get(k))[k]??null;},async put(k,v){await chrome.storage.local.set({[k]:v});}};
 const status=s=>{$('state').textContent=s;};
@@ -65,9 +67,37 @@ const onState=s=>{const pending=actionName[s.pendingAction];const host=exactHost
 // C-013-R2: Pause/Stop advance a cancellation epoch. Each handler captures the epoch synchronously at its click and
 // re-checks it after its awaits; an older handler then creates no job, uses no grant and sends nothing. A running job
 // is paused/stopped by the job itself. Durable records are untouched; a later fresh explicit click captures a new epoch.
-let epoch=0,cancelKind='pause';
+let epoch=0,cancelKind='pause',probeActive=false;
 const ticket=()=>{const t=epoch;return ()=>t===epoch;};
 const halted=()=>status(`已${cancelKind==='stop'?'停止':'暂停'}：本控制页进行中的准备已取消，未创建执行，未发出新动作；如需继续请重新明确操作`);
+// C055 quota takeover: no website, private-session read, job creation or record/grant mutation.
+if($('inspectTask'))$('inspectTask').onclick=async()=>{
+  const live=ticket();
+  if(!navigator.locks){status('只读诊断未执行：缺少执行互斥能力；记录保持不变');return;}
+  try{
+    const ownership=await withPurchaseOwner(navigator.locks,async()=>{
+      const s=await store.get(TASK_KEY);if(!live()){halted();return;}
+      status('程序诊断 C055；仅为保留记录，不是当前官网结果；未查询官网、未执行购买动作。\n'+JSON.stringify(taskDiagnostic(s,Date.now()),null,2));
+    });
+    if(!ownership.owned)status('另一控制页正在执行；本页未读取记录或发出动作');
+  }catch{status('只读诊断未完成；记录保持不变，未发出购买动作');}
+};
+// C056 quota takeover: temporary one-checkout recovery probe, not purchase authority or a slot replay.
+if($('probeClosed'))$('probeClosed').onclick=async()=>{
+  const live=ticket();if(!$('approve').checked){status('重新核对结账需本次结账推进已勾选；不会选择时段或下单');return;}
+  if(!navigator.locks){status('重新核对结账未执行：缺少执行互斥能力');return;}
+  try{
+    const ownership=await withPurchaseOwner(navigator.locks,async()=>{
+      const p=plan(),tabId=Number($('tab').value),s=await store.get(TASK_KEY),digest=await boundDigest(p,s);if(!live()){halted();return;}
+      probeActive=true;
+      const port=new ChromePort(chrome,tabId,{authorized:true});
+      const r=await probeClosedCheckout({store,api:chrome,port,plan:p,tabId,planDigest:digest,enabled:true,live});
+      if(!live()){status('恢复探查已暂停；如已发送结账可能仍完成，原记录保留，不重复执行');return;}
+      status(`程序恢复探查 C056；状态：${r.state}；页面：${r.phase??'未核实'}；${r.reason}；旧时段结果仍未知，未重选、未下单`+(r.permissionOrigin?`；当前需本人允许官网主机 ${r.permissionOrigin}`:''));
+    });
+    if(!ownership.owned)status('另一控制页正在执行；本页未读取或执行恢复探查');
+  }catch{status('恢复探查未完成；原记录保留；如已发出结账，不自动重复');}finally{probeActive=false;}
+};
 // C-013-R1: grants are local to one run. A final grant exists only as the argument of the run started by its explicit
 // click, an advance grant only inside an owned start. A denial, gate or exception leaves nothing for a later Resume;
 // durable sent/unknown truth stays in the job record.
@@ -152,7 +182,7 @@ async function finishReadOnlyBag(previous,live){
 }
 $('start').onclick=()=>run(true);$('resume').onclick=()=>run(false);
 // Cancellation reaches both a running job and every older handler still awaiting preparation.
-const cancel=kind=>{epoch++;cancelKind=kind;if(job){if(kind==='stop')job.stop();else job.pause();}else halted();};
+const cancel=kind=>{epoch++;cancelKind=kind;if(job){if(kind==='stop')job.stop();else job.pause();}else if(probeActive)status('已暂停或停止恢复探查；如已发送结账可能仍完成，原记录保留，不重复执行');else halted();};
 $('pause').onclick=()=>cancel('pause');$('stop').onclick=()=>cancel('stop');
 // The final grant is built per explicit click and handed only to that run; a rejected or cancelled attempt retains nothing.
 $('final').onclick=async()=>{

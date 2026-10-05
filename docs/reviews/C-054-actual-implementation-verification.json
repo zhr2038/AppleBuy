@@ -1,0 +1,56 @@
+{
+  "status": "returned but rejected by Root independent tests; NOT accepted/main",
+  "canonicalModels": [
+    "claude-opus-5-5"
+  ],
+  "providers": {
+    "claude-opus-5-5": "firstParty"
+  },
+  "xhigh": true,
+  "structuredNumTurns": 38,
+  "configuredCliTurns": 36,
+  "durationSeconds": 678.56,
+  "isError": false,
+  "subtype": "success",
+  "timedOut": false,
+  "cleanupConfirmed": true,
+  "permissionDenialCount": 0,
+  "toolErrorCount": 1,
+  "privateReadAttempts": 0,
+  "toolCounts": {
+    "Read": 18,
+    "Bash": 8,
+    "Grep": 4,
+    "Edit": 5,
+    "Write": 1
+  },
+  "writePaths": [
+    "web/checkout-connector/job.js",
+    "web/checkout-connector/job.js",
+    "web/checkout-connector/job.js",
+    "web/checkout-connector/job.js",
+    "test/checkout-c054-calendar.test.ts",
+    "test/checkout-c054-calendar.test.ts"
+  ],
+  "commands": [
+    "python tools/delegation/verify_candidate_manifest.py docs/reviews/C-054-input-candidate-manifest.json",
+    "node --test test/checkout-c054-date-repro.test.ts",
+    "node --test test/checkout-c054-calendar.test.ts",
+    "node --test test/checkout-c054-calendar.test.ts",
+    "node --test --test-reporter=dot \"test/*.test.ts\" \"review/*.test.ts\"",
+    "node test/c051-native-contact-repro.mjs",
+    "node test/c050-native-dates.mjs",
+    "node test/c040-native-order.mjs"
+  ],
+  "changedInputPaths": [
+    "web/checkout-connector/job.js"
+  ],
+  "unchangedInputFiles": 189,
+  "returnedHistoricalSourceFiles": 191,
+  "returnedHistoricalSourceSha256": "69f13503013f7a20f2fcf424271acfc3e4a48c04c7f1aa179f9be44f6f9c13fa",
+  "RootIndependentCurrentCases": 17,
+  "RootPassed": 12,
+  "RootFailed": 5,
+  "allRealOutcomesStillUnverified": true,
+  "timestampUtc": "2026-10-05T02:21:55.348069+00:00"
+}

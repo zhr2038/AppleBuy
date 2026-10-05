@@ -1,0 +1,27 @@
+{
+  "scope": "normal supported Chrome read-only plus deidentified human diagnostic; not no-order/no-hold certificate",
+  "originalBrowserTargetClosed": true,
+  "knownVisibleOfficialCheckoutPages": 0,
+  "freshBag": {
+    "purchasedLists": 1,
+    "purchasedLines": 1,
+    "model": "iPhone 18 Pro 256GB 黑色",
+    "quantities": [
+      "1",
+      "1"
+    ],
+    "amounts": [
+      "RMB 9,999",
+      "RMB 9,999"
+    ],
+    "readyState": "complete"
+  },
+  "storedTask": "expired pre-final task; one sent-or-unknown chooseSlot; no recorded final intent; history contains no recorded prior final or slot",
+  "oldSlotOutcomeStillUnknown": true,
+  "actualC055HumanMarkerVerified": true,
+  "fullInstalledByteIdentityVerified": false,
+  "extensionPageAccess": "actual browser protocol security rejection; only http/https; no alternate surface/SDK/CDP/workaround",
+  "rootWebsitePurchaseMutation": false,
+  "realNewUnpaidOrderVerified": false,
+  "timestampUtc": "2026-10-05T03:27:48.476260+00:00"
+}

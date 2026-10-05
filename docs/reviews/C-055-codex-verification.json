@@ -1,0 +1,25 @@
+{
+  "scope": "Root author self-verification only; real Opus cross-author agreement pending",
+  "sourceFiles": 194,
+  "sourceSha256": "23f5d8374ebbb09ba7fab82c7bb5a6db6358ed1b692062db3aac9f1165ba21a4",
+  "RootProductionChanges": [
+    "web/checkout-connector/control.js",
+    "web/checkout-connector/control.html",
+    "web/checkout-connector/task-diagnostic.js"
+  ],
+  "legacyListException": "add only inspectTask required id to exact DOM integration list, all earlier requirements unchanged",
+  "newSelfTests": 8,
+  "targetedPassed": 17,
+  "fullPassed": 1290,
+  "firstFullFailure": "new control absent in existing required identity list; expectation extended under explicit scope exception, no weakened safety assertion",
+  "C054independentBeforeRootDelta": {
+    "targeted157": true,
+    "full1282": true,
+    "native20": true
+  },
+  "other189ExistingSourceFilesUnchanged": true,
+  "pendingFinalReadOnlyAgreementWasQuotaFailure": true,
+  "mainLastAccepted": "C053189/bd130ee77d8e914f6373432e1061c4de820fbc66",
+  "realUnpaidOrInstalledProof": false,
+  "timestampUtc": "2026-10-05T03:03:08.636479+00:00"
+}

@@ -1,0 +1,28 @@
+{
+  "sourceFiles": 196,
+  "sourceSha256": "6f8daaff73e1f7f26bb0e7eed626804e1d23430c5be5a52fcf588f16dc76573d",
+  "status": "Root author self-verification only; no actual cross-author agreement",
+  "RootProductionChangesFromC055": [
+    "web/checkout-connector/control.js",
+    "web/checkout-connector/control.html",
+    "web/checkout-connector/closed-checkout-probe.js"
+  ],
+  "RootSourceNoSlotOrFinalActions": true,
+  "originalPendingFinalBindingPlanDatesFloorHistoryExpiryUnchanged": true,
+  "newProbeWriteAheadCheckoutAtMostOnce": true,
+  "oldIdIntegrationException": "add required probeClosed id; retain all earlier identity equality/disabled-final/permission assertions",
+  "initialNewTestResult": {
+    "tests": 17,
+    "passed": 12,
+    "failed": 5,
+    "reason": "new FAKE retired-history fixtures lacked required schema/state; fixed fixture only, assertions unchanged"
+  },
+  "finalProbePassed": 17,
+  "fullSuitePassed": 1307,
+  "currentRealFacts": "old task target closed, no visible checkout contexts; matching singleton current bag9999; stored expired pre-final unknown slot remains",
+  "actualNewCheckoutFromProbeVerified": false,
+  "actualNewUnpaidOrderVerified": false,
+  "actualClaudeReviewPerformed": false,
+  "mainLastAccepted": "C053189/bd130ee77d8e914f6373432e1061c4de820fbc66",
+  "timestampUtc": "2026-10-05T03:37:27.405485+00:00"
+}

@@ -1,0 +1,23 @@
+{
+  "task": "C054 final consistency",
+  "status": "actual provider session quota; review NOT performed",
+  "durationSeconds": 3.12,
+  "isError": true,
+  "subtype": "success",
+  "primaryModelVerified": false,
+  "structuredModels": [
+    "claude-opus-5-5"
+  ],
+  "structuredProviders": {
+    "claude-opus-5-5": null
+  },
+  "origin": "same authenticated first-party CLI/original session as completed C054 and C054-R1; no fresh successful model use on this failed call",
+  "quotaMessage": "You have hit your session limit; resets2:50pm Asia/Shanghai",
+  "resetLocal": "2026-10-05T14:50:00+08:00",
+  "permissionDenials": 0,
+  "cleanupConfirmed": true,
+  "fiveHourQuotaNotDollarWallTurnCap": true,
+  "RootTakeoverAuthorizedByPriorDirectUserInstruction": true,
+  "actualAgreementObtained": false,
+  "timestampUtc": "2026-10-05T02:50:53.179059+00:00"
+}

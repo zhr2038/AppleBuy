@@ -1,0 +1,56 @@
+{
+  "canonicalModels": [
+    "claude-opus-5-5"
+  ],
+  "providers": {
+    "claude-opus-5-5": "firstParty"
+  },
+  "actualXhigh": true,
+  "structuredNumTurns": 26,
+  "configuredCliTurns": 24,
+  "durationSeconds": 277.5,
+  "isError": false,
+  "subtype": "success",
+  "cleanupConfirmed": true,
+  "permissionDenialCount": 0,
+  "privateReadAttempts": 0,
+  "toolErrorCount": 0,
+  "toolCounts": {
+    "Read": 10,
+    "Bash": 7,
+    "Edit": 6,
+    "Grep": 2
+  },
+  "commands": [
+    "python tools/delegation/verify_candidate_manifest.py docs/reviews/C-054-R1-input-candidate-manifest.json",
+    "node --test test/checkout-c054-date-repro.test.ts test/checkout-c054-r1-repro.test.ts",
+    "node --test test/checkout-c054-calendar.test.ts",
+    "node --test --test-reporter=dot \"test/*.test.ts\" \"review/*.test.ts\"",
+    "node test/c051-native-contact-repro.mjs",
+    "node test/c050-native-dates.mjs",
+    "node test/c040-native-order.mjs"
+  ],
+  "writes": [
+    "web/checkout-connector/job.js",
+    "web/checkout-connector/job.js",
+    "web/checkout-connector/job.js",
+    "web/checkout-connector/job.js",
+    "web/checkout-connector/job.js",
+    "test/checkout-c054-calendar.test.ts"
+  ],
+  "changedInputFiles": [
+    "web/checkout-connector/job.js",
+    "test/checkout-c054-calendar.test.ts"
+  ],
+  "other190InputFilesUnchanged": true,
+  "scopeException": "Only four contrary exact-cohort expectations were strengthened; new67 cases appended. Root reproductions unchanged.",
+  "sourceFiles": 192,
+  "sourceSha256": "fcc66910970a3c402574110ba4e39ab47cfa815a03a499a838d5a2347d5f89fe",
+  "RootTargetedPassed": 157,
+  "RootFullSuitePassed": 1282,
+  "RootNativePassed": 20,
+  "rootFirstFullSuite": "one loopback fetch failure at test/dom-bridge.test.ts63; isolated10/10 then same-byte full1282 passed; no test/source edit; transient cause not proven",
+  "sameAuthorConsistencyOnly": true,
+  "noRealGoalComplete": true,
+  "timestampUtc": "2026-10-05T02:45:49.038534+00:00"
+}

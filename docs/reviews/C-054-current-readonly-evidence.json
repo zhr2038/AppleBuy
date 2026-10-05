@@ -1,0 +1,24 @@
+{
+  "scope": "Root normal supported Chrome read-only existing Pro order inspection; values/refs/contact data not exported",
+  "currentOrderListHost": "secure11.www.apple.com.cn",
+  "normalExistingCredentialLoginOnce": true,
+  "newPersistentProjectHostGrant": false,
+  "sameModelVisibleRows": 4,
+  "sameModelStatusLabels": [
+    "已取消",
+    "已取消",
+    "已取货",
+    "已取消"
+  ],
+  "listCompletenessProved": false,
+  "historicalSamePlanProductHeaderCount": 1,
+  "itemContainer": "LI.rs-od-itemdetail data-autom order-item-0",
+  "explicitVisibleQuantityTextCount": 0,
+  "quantityNamedNodes": 0,
+  "smallNumericLeaves": 0,
+  "quantityCannotBeInferredFromMoney": true,
+  "realNewUnpaidOrderVerified": false,
+  "websitePurchaseMutation": false,
+  "researchTabsClosed": true,
+  "screenshot": "private-only capture; exact safe-content check failed, not model-reviewed or published"
+}

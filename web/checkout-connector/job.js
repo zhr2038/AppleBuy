@@ -6,6 +6,9 @@
 // bound; an already selected exact allowed pickup store waits within a bound instead of being clicked again.
 // C-018 (Claude): a persisted plan is compared independent of object-member order only.
 // C051 (Claude): a sent slot continues through the observed contact-only details step only with this task's own bound facts.
+// C054 (Claude): REVIEW and the independent final lookup compare the pickup day by calendar identity within the reader's own grammar.
+// C054-R1 (Claude): calendar-shaped labels need validity even when identical, an ambiguous frozen cohort blocks every representation,
+// and missing selected/observed slot facts never compare equal.
 export const TASK_KEY='applebuy-single-personal-purchase/v1';
 // Public-configuration validation never uses the purchase task key, so it cannot consume a purchase task.
 export const VALIDATION_KEY='applebuy-public-configuration-validation/v1';
@@ -53,6 +56,44 @@ export function purchaseMatches(p,c){
     c.quantity===1&&c.fulfillment==='pickup'&&p.stores.includes(c.store)&&Number.isFinite(c.totalCny)&&c.totalCny>0&&c.totalCny<=p.maxTotalCny;
 }
 export function itemMatches(p,c){return !!c&&c.itemVerified===true&&c.model===p.product.model&&c.capacity===p.product.capacity&&c.color===p.product.color&&c.quantity===1&&Number.isFinite(c.totalCny)&&c.totalCny>0&&c.totalCny<=p.maxTotalCny;}
+// C054 (Claude): only the reader's supported date grammar parses (page-program.js): an English month name and day (case and spacing free,
+// as native `october5` or summary `October 5`) or [YYYY年]M月D日 with an optional 周X/星期X weekday. It must be a real calendar day (Feb 29
+// needs no year or a leap year; a weekday beside a year must be that day's). Pure: no clock, launch date, relative word or adjacency.
+const MONTH_NAMES=['january','february','march','april','may','june','july','august','september','october','november','december'];
+export function calendarDay(x){
+  if(typeof x!=='string')return null;
+  let r,year=null,month,day,weekday=null;
+  if((r=/^(?:(\d{4})年)?(\d{1,2})月(\d{1,2})日(?:\s*(?:周|星期)([一二三四五六日天]))?$/.exec(x))){year=r[1]===undefined?null:+r[1];month=+r[2];day=+r[3];weekday=r[4]===undefined?null:'日一二三四五六天'.indexOf(r[4])%7;}
+  else if((r=/^(january|february|march|april|may|june|july|august|september|october|november|december)\s*(\d{1,2})$/i.exec(x))){month=MONTH_NAMES.indexOf(r[1].toLowerCase())+1;day=+r[2];}
+  else return null;
+  const leap=year===null||year%4===0&&(year%100!==0||year%400===0);
+  if(month<1||month>12||day<1||day>[31,leap?29:28,31,30,31,30,31,31,30,31,30,31][month-1])return null;
+  if(year!==null&&weekday!==null){const t=new Date(0);t.setUTCFullYear(year,month-1,day);if(t.getUTCDay()!==weekday)return null;}
+  return {year,month,day,weekday};
+}
+// Explicit years must agree; a year on one side only stays unknown (no date-context contract). Weekdays may be absent on either side.
+export function sameCalendarDay(a,b){
+  const x=calendarDay(a),y=calendarDay(b);
+  return !!x&&!!y&&x.year===y.year&&x.month===y.month&&x.day===y.day&&(x.weekday===null||y.weekday===null||x.weekday===y.weekday);
+}
+// C054-R1: calendar-shaped text (an English month word or abbreviation with a number, N月N日, a numeric N-N or N/N date, or a relative day
+// word, even outside the supported grammar) has only calendar meaning, so it must parse as a real day even when both raw strings are
+// identical; unsupported forms therefore never match. Only this classification widens: it can block, never add a match. Other (opaque
+// FAKE/legacy) labels keep exact equality.
+const CALENDAR_SHAPED=/^\s*(?:(?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\.?\s*[0-9０-９]|(?:[0-9０-９]+\s*年\s*)?[0-9０-９]+\s*月\s*[0-9０-９]+\s*日|[0-9０-９]+\s*[-/.／]\s*[0-9０-９]+|今天|明天|后天|today|tomorrow)/i;
+// Two frozen initial labels that could be one calendar day make the cohort itself ambiguous: no representation of any member matches.
+function cohortAmbiguous(dates){
+  const days=(dates??[]).map(calendarDay).filter(Boolean);
+  return days.some((x,i)=>days.some((y,j)=>j>i&&x.month===y.month&&x.day===y.day&&(x.year===null||y.year===null||x.year===y.year)));
+}
+// The accepted slot and an observed slot name the same pickup only when both carry a date and valid times (missing facts never compare
+// equal), the frozen cohort is unambiguous, and the dates are the same real calendar day or, for opaque labels, the identical raw string.
+// Nothing is rewritten, merged, dropped or rebound.
+function sameAcceptedSlot(s,o){
+  const a=s.acceptedSlot,facts=x=>!!x&&typeof x.date==='string'&&x.date!==''&&SLOT.test(x.start)&&SLOT.test(x.end);
+  if(!facts(a)||!facts(o)||o.start!==a.start||o.end!==a.end||cohortAmbiguous(s.initialDates))return false;
+  return CALENDAR_SHAPED.test(a.date)||CALENDAR_SHAPED.test(o.date)?sameCalendarDay(a.date,o.date):o.date===a.date;
+}
 // C051 (Claude): the current normal contact-only details step (C-051 evidence) shows no product, store, quantity or slot. It may carry
 // THIS task's earlier verified identity only to continue this task: the page's own recognized step, no current identity/quantity/store/
 // slot/order fact at all (pickup prose only), and its current total equal to the task's explicit one-unit money basis (bag total at
@@ -241,7 +282,7 @@ export class PurchaseJob {
           // records, so from here the last validated read is named only as the last read page, never the current one.
           s.observationCurrent=false;
           let order;try{order=await this.port.lookupOrder(P,s.orderRefHash);}catch{}
-          if(order?.independent===true&&order.state==='unpaid'&&s.orderRefHash&&order.orderRefHash===s.orderRefHash&&purchaseMatches(P,order.purchase)&&order.acceptedSlot?.date===s.acceptedSlot?.date&&order.acceptedSlot?.start===s.acceptedSlot?.start&&order.acceptedSlot?.end===s.acceptedSlot?.end){s.pending=null;s.state='CONFIRMED_UNPAID';s.reason=null;await this.save(s);return clone(s);}
+          if(order?.independent===true&&order.state==='unpaid'&&s.orderRefHash&&order.orderRefHash===s.orderRefHash&&purchaseMatches(P,order.purchase)&&sameAcceptedSlot(s,order.acceptedSlot)){s.pending=null;s.state='CONFIRMED_UNPAID';s.reason=null;await this.save(s);return clone(s);}
           return this.gate(s,'final-result-unconfirmed; no resubmission','NEEDS_VERIFICATION');
         }
         // C035 (Claude): navigation only. Arrival on this plan's product page clears it; while the empty bag or processing is still
@@ -373,7 +414,7 @@ export class PurchaseJob {
         if(!s.acceptedSlot||!purchaseMatches(P,o.purchase))return this.gate(s,'payment-conditions-not-verified','BLOCKED');command={action:o.paymentMethod===P.paymentMethod?'continuePayment':'selectPayment'};
       }else if(o.phase==='REVIEW'){
         // Merchant no-extras evidence only (never the human grant); the total must equal the quote recorded at Add to Bag.
-        if(!s.acceptedSlot||!purchaseMatches(P,o.purchase)||o.paymentMethod!==P.paymentMethod||o.extras!==false||(s.quotedCny!==null&&o.purchase.totalCny!==s.quotedCny)||o.existingOrdersChecked!==true||o.slotSummary?.date!==s.acceptedSlot.date||o.slotSummary?.start!==s.acceptedSlot.start||o.slotSummary?.end!==s.acceptedSlot.end)return this.gate(s,'final-review-or-existing-order-check-missing','BLOCKED');
+        if(!s.acceptedSlot||!purchaseMatches(P,o.purchase)||o.paymentMethod!==P.paymentMethod||o.extras!==false||(s.quotedCny!==null&&o.purchase.totalCny!==s.quotedCny)||o.existingOrdersChecked!==true||!sameAcceptedSlot(s,o.slotSummary))return this.gate(s,'final-review-or-existing-order-check-missing','BLOCKED');
         // A positively not-dispatched final may be prepared again only under a different, current human grant.
         if(s.finalIntent&&(s.finalIntent.sent!==false||!grant||grant.id===s.finalIntent.grantId))return this.gate(s,'final-intent-already-recorded','NEEDS_VERIFICATION');
         if(!grant||typeof grant.id!=='string'||grant.taskId!==s.taskId||grant.planDigest!==s.planDigest||(grant.start!==true&&grant.documentId!==o.documentId)||grant.termsAccepted!==true||!o.termsLinks?.includes(grant.termsUrl)||!Number.isFinite(grant.expiry)||grant.expiry<=this.now()||grant.expiry>this.now()+(grant.start===true?1800000:180000))return this.gate(s,'confirm-current-terms-and-this-one-order');

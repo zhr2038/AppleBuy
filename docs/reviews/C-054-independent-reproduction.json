@@ -1,0 +1,24 @@
+{
+  "scope": "actual PurchaseJob only; all clock/store/observations/grants/merchant effects/reference/lookup are FAKE, no browser/network/account/private input",
+  "command": "node --test test/checkout-c054-date-repro.test.ts",
+  "sourceInputFiles": 190,
+  "sourceInputSha256": "0a72cca58c9926be0a393663978950bd53e757c9f6f99965ab84851978a80170",
+  "tests": 12,
+  "passed": 10,
+  "failed": 2,
+  "failures": [
+    {
+      "condition": "accepted raw october5, current complete FAKE REVIEW slot summary10月5日, current FAKE terms/grant and all other exact purchase facts",
+      "actual": "BLOCKED before FAKE submit",
+      "expected": "one FAKE submit and independent matching unpaid confirmation, raw history unchanged"
+    },
+    {
+      "condition": "unknown sent final has accepted raw october5, independent same-reference complete FAKE unpaid detail10月5日",
+      "actual": "NEEDS_VERIFICATION",
+      "expected": "confirm same FAKE order once without any submit/retry"
+    }
+  ],
+  "controls": "exact-date review and lookup pass; different date, one-sided unproved year, mismatched explicit years and missing summary block; pending/final/expiry/dates/floors/history are preserved",
+  "realAcceptanceOrHoldVerified": false,
+  "timestampUtc": "2026-10-05T01:58:57.830698+00:00"
+}
