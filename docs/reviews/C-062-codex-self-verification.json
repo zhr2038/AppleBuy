@@ -1,0 +1,52 @@
+{
+  "candidateFiles": 203,
+  "sha256": "60851e442354a3ff6c81d9a28c73ab6cb1edd742cf42d7b1b1eb9743082b7b20",
+  "baseC060": "01c7b9fcd00445b6164db56d36d3dac08c46ad69f3cef3008ffd67704cc9f455",
+  "quotaBasis": "C059 actual firstParty provider session quota, resets2026-10-06 01:40 Asia/Shanghai",
+  "humanStartResult": "old-expired-prefinal-unknown-slot-not-proved; no merchant action reported",
+  "privateRuntimeMemberAbsenceDirectlyVerified": false,
+  "independentConcreteReproduction": "valid production createPurchaseRecord and actual PurchaseJob unknown choice omit acceptedSlot; C055 renders null; exact pre-fix blocker reproduced",
+  "preFixInput203Sha256": "8f7f45d8937da34a8b5f99123ab76ae8580159a352d12bed4135f43f42b9039c",
+  "preFixTests": {
+    "tests": 10,
+    "passed": 6,
+    "failed": 4
+  },
+  "postFixAuthorChecks": {
+    "targetedTests": 32,
+    "passed": 32,
+    "fullNodeTests": 1365,
+    "fullNodePassed": 1365,
+    "nativeRestartScenarios": 2,
+    "nativeContextsClosed": 2,
+    "nativeBrowserClosed": true,
+    "nativeServerClosed": true,
+    "nativeCleanupErrors": []
+  },
+  "rootChangedBasePaths": [
+    "web/checkout-connector/pre-final-restart.js"
+  ],
+  "rootNewSourcePaths": [
+    "test/checkout-c062-optional-slot-recovery.test.ts"
+  ],
+  "allOther202BasePathsUnchanged": true,
+  "change": "accept only null/undefined optional acceptedSlot in current record and retired history; any non-null value continues to block; original member absence stays in immutable snapshot",
+  "unchangedBarriers": [
+    "required final and pending fields",
+    "final intent and order references",
+    "valid exact plan/digest",
+    "expired sent unknown choice",
+    "complete bounded history",
+    "old/probe targets closed",
+    "no competing disclosed checkout/auth",
+    "fresh positive empty bag",
+    "operator new-date confirmation",
+    "owner and pause guards"
+  ],
+  "oldTestsChanged": false,
+  "currentOriginalClaudeReviewPerformed": false,
+  "accepted": false,
+  "realProgrammeUnpaidOrderVerified": false,
+  "rootNewMerchantMutations": false,
+  "verifiedAtUtc": "2026-10-05T15:06:15.788451+00:00"
+}

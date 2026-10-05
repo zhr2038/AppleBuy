@@ -9,7 +9,7 @@ function cleanHistory(s){
   const stack=[...(s.retiredHistory??[])],seen=new Set();let count=0;
   if(stack.length>=50)return false;
   while(stack.length){const r=stack.pop();if(!r||typeof r!=='object'||Array.isArray(r)||seen.has(r)||++count>200)return false;seen.add(r);
-    if(r.schema!=='applebuy-purchase-job/v1'||r.state!=='RETIRED'||r.finalIntent!==null||r.orderRefHash!=null||r.orderDetailLink!=null||r.acceptedSlot!==null||r.pending!==null||!Array.isArray(r.history??[])||(r.history??[]).some(e=>e?.action==='submitOrder'||typeof e?.event==='string'&&/final/.test(e.event)))return false;
+    if(r.schema!=='applebuy-purchase-job/v1'||r.state!=='RETIRED'||r.finalIntent!==null||r.orderRefHash!=null||r.orderDetailLink!=null||r.acceptedSlot!=null||r.pending!==null||!Array.isArray(r.history??[])||(r.history??[]).some(e=>e?.action==='submitOrder'||typeof e?.event==='string'&&/final/.test(e.event)))return false;
     if(r.retiredHistory!==undefined){if(!Array.isArray(r.retiredHistory)||r.retiredHistory.length>50)return false;stack.push(...r.retiredHistory);}
   }return true;
 }
@@ -19,7 +19,8 @@ export async function restartExpiredPreFinal({store,api,port,plan,planDigest,tab
   const p=normalizeIntent(plan);
   if(p.product.model!=='iPhone 18 Pro'||p.product.capacity!=='256GB'||p.product.color!=='黑色'||p.maxTotalCny!==9999||p.stores.length!==1||p.stores[0]!=='Apple 大连恒隆广场')return stop('restart-only-this-one-authorized-pro');
   const old=await store.get(TASK_KEY);if(!live())return stop('restart-paused');let valid=false;try{valid=validStored(old)===true;}catch{}
-  if(!valid||old.state==='RETIRED'||old.state==='CONFIRMED_UNPAID'||old.planDigest!==planDigest||canonicalJson(normalizeIntent(old.plan))!==canonicalJson(p)||old.finalIntent!==null||old.orderRefHash!=null||old.orderDetailLink!=null||old.acceptedSlot!==null||old.pending?.action!=='chooseSlot'||old.pending.beforePhase!=='SLOTS'||old.pending.dispatched===false||old.expiresAt>now()||old.pending.deadline>now())return stop('old-expired-prefinal-unknown-slot-not-proved');
+  // C062: the production record omits acceptedSlot until verified acceptance. Only null/absence is compatible; any other value blocks.
+  if(!valid||old.state==='RETIRED'||old.state==='CONFIRMED_UNPAID'||old.planDigest!==planDigest||canonicalJson(normalizeIntent(old.plan))!==canonicalJson(p)||old.finalIntent!==null||old.orderRefHash!=null||old.orderDetailLink!=null||old.acceptedSlot!=null||old.pending?.action!=='chooseSlot'||old.pending.beforePhase!=='SLOTS'||old.pending.dispatched===false||old.expiresAt>now()||old.pending.deadline>now())return stop('old-expired-prefinal-unknown-slot-not-proved');
   if(!cleanHistory(old))return stop('history-has-prior-final-slot-or-unproved-content');
   const probe=old.closedCheckoutProbe;
   if(probe!==undefined&&(!probe||typeof probe!=='object'||probe.schema!=='applebuy-checkout-probe/v1'||probe.planDigest!==old.planDigest||probe.pending!==null&&probe.pending?.action!=='checkout'))return stop('old-probe-record-unconfirmed');
