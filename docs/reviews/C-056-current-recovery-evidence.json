@@ -43,6 +43,27 @@
     "rootSelectedSlotOrOrdered": false
   },
   "fullInstalledByteIdentityVerified": false,
+  "directHumanNetworkFailurePoint": {
+    "dateLocal": "2026-10-05",
+    "source": "direct human Network screenshots and supplied accessibility table; only deidentified status/path metadata retained",
+    "manualLoginAndChromeRestart": "human reports the spinner remains",
+    "identityHost": "idmsa.apple.com.cn",
+    "identityRequestStatuses": {"federate": 200, "signin/init": 200, "signin/complete": 200},
+    "merchantHost": "secure11.www.apple.com.cn",
+    "merchantPathWithoutQuery": "/shop/signIn/idms/authx",
+    "merchantStatus": 541,
+    "successfulMerchantLoginVerified": false,
+    "statusStandard": "541 is unassigned in the IANA HTTP registry; vendor semantics not established",
+    "standardReference": "https://www.iana.org/assignments/http-status-codes",
+    "otherObservedErrors": ["font resource CORS error", "extension-internal invalid resource ERR_FAILED"],
+    "otherErrorsProvenCausal": false,
+    "responseBodyReadOrCopied": false,
+    "genericResponseHeadingFromHuman": "The page you're looking for can't be found.",
+    "causeAfterHeading": "merchant handoff returned an error page; expired/missing context versus merchant service/routing issue remains unverified; no access-denial/lock/rate-limit diagnosis from this generic title",
+    "rawAuthUrlQueryHeadersBodyOrScreenshotPublished": false,
+    "nextEvidence": "legitimate session recovery design and normal vendor guidance; no repeat of this signed authentication URL/request or payload replay",
+    "noInference": "HTTP200 does not prove account or merchant-session success; HTTP541 does not identify password error, account lock, vendor access restriction, no hold, no order or slot rejection"
+  },
   "latestAuthSpinnerObservation": {
     "dateLocal": "2026-10-05",
     "pageOrigin": "https://secure11.www.apple.com.cn",
