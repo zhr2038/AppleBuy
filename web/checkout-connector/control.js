@@ -4,6 +4,7 @@ import {withPurchaseOwner} from './owner.js';
 import {taskDiagnostic} from './task-diagnostic.js';
 import {probeClosedCheckout} from './closed-checkout-probe.js';
 import {restartExpiredPreFinal} from './pre-final-restart.js';
+import {exportDesktopHandoff} from './desktop-handoff.js';
 const $=id=>document.getElementById(id);let job=null;
 const store={async get(k){return (await chrome.storage.local.get(k))[k]??null;},async put(k,v){await chrome.storage.local.set({[k]:v});}};
 const status=s=>{$('state').textContent=s;};
@@ -70,6 +71,18 @@ const onState=s=>{const pending=actionName[s.pendingAction];const host=exactHost
 // is paused/stopped by the job itself. Durable records are untouched; a later fresh explicit click captures a new epoch.
 let epoch=0,cancelKind='pause',probeActive=false,restartActive=false;
 const ticket=()=>{const t=epoch;return ()=>t===epoch;};
+if($('exportDesktop'))$('exportDesktop').onclick=async()=>{
+  const live=ticket();if(!$('handoffConfirm').checked){status('需先确认停止原插件购买权限并保留记录；未导出或操作官网');return;}
+  try{
+    const result=await withPurchaseOwner(navigator.locks,async()=>{
+      const envelope=await exportDesktopHandoff({store,confirmed:true,live});
+      if(!live()){status('原记录已保留并限制为只读；导出被暂停，未操作官网');return;}
+      const blob=new Blob([JSON.stringify(envelope,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');
+      a.href=url;a.download='applebuy-desktop-handoff.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),10000);
+      status('已本地导出完整任务；原插件购买权限已永久停止，未知动作和历史均保留。此文件含私人任务标识，仅交给本机桌面程序，勿发聊天或上传。未点击官网。');
+    });if(!result.owned)status('另一控制页正在执行；未停用、导出或点击');
+  }catch{status('桌面衔接未确认；原记录保留，不重发购买动作');}
+};
 const halted=()=>status(`已${cancelKind==='stop'?'停止':'暂停'}：本控制页进行中的准备已取消，未创建执行，未发出新动作；如需继续请重新明确操作`);
 // C055 quota takeover: no website, private-session read, job creation or record/grant mutation.
 if($('inspectTask'))$('inspectTask').onclick=async()=>{

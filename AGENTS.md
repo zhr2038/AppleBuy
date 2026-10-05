@@ -2,13 +2,13 @@
 
 Workspace: `E:\Apple Store`. Preserve this directory for both Codex and Claude Code.
 
-Codex owns requirements, priorities, task dispatch, independent review, and final acceptance. Claude Code owns architecture and implementation. All communication with Claude, task sheets, and review exchanges must be in English. Product UI and end-user instructions must be concise Chinese.
+Codex owns requirements, priorities, implementation, testing, task dispatch and final acceptance under the latest October6 direct goal. Claude Code is now the cross-author reviewer when available; do not wait for quota to implement. All communication with Claude, task sheets, and review exchanges must be in English. Product UI and end-user instructions must be concise Chinese.
 
 Use Anthropic Claude Opus 5.5 (`claude-opus-5-5`) at extra-high effort (`xhigh`, the CLI spelling of the requested extra level). Verify the actual model from structured `modelUsage`; do not silently substitute models.
 
 Read `docs/requirements.md` and the assigned task before working. Claude may propose technical choices; Codex must not dictate language, framework, storage, or undocumented Apple interfaces in advance. Claude cannot approve its own work or weaken acceptance criteria.
 
-The user subsequently authorized Codex to implement if Claude's quota is exhausted. Record the quota evidence and every Codex implementation change. When Claude is available again, Claude must review those changes and both reviewers must agree before final acceptance. Never imply review happened when it did not.
+Earlier Codex takeover required quota exhaustion. The latest October6 direct goal authorizes Codex implementation and testing irrespective of quota; Claude recovery is used for review only. Record every Codex change. When Claude is available, obtain actual cross-author review and resolve findings before final acceptance. Never imply review happened when it did not.
 
 Default to offline rehearsal. This project-start request is not authorization to purchase, pay, create a real order, or reserve a real pickup slot. Real-site development observation is read-only and stops before resource mutations. Human-only authentication remains human-only. Do not bypass validation, rate limits, queues, security settings, or purchase limits.
 

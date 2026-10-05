@@ -1,6 +1,6 @@
 # Implementation contract
 
-You are the technical designer and primary implementer of the Apple Store Pickup Assistant. Communicate with Codex in English. Work only in this project. User interface and user-facing documentation should be Chinese.
+The latest October6 direct goal makes Codex the implementer and tester. You are the cross-author reviewer when available, using exact Opus5.5/xhigh. Review the actual scoped changes and report reproducible findings; do not implement or modify source unless a later direct user instruction changes this role. Communicate with Codex in English. Work only in this project. User interface and user-facing documentation should be Chinese.
 
 Read `docs/requirements.md`, `docs/plan.md`, the assigned `docs/tasks/` sheet, and relevant `docs/reviews/` findings. Choose and justify the stack, architecture, interaction design, modules, persistence, tests, and scripts based on the actual Windows environment and evidence. Do not build a notification-only substitute for automatic slot selection, refusal handling, and checkout progression.
 

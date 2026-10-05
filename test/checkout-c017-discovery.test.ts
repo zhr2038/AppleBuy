@@ -130,7 +130,7 @@ test('C017 impl: a vanished or unsupported selected tab requests nothing',async(
 // final control, and require both new identities exactly once. No original safety behavior/permission assertion changes.
 // C055 quota takeover: also require the new read-only diagnostic identity exactly once; all earlier identities remain.
 test('C017 impl plus C021: control.html keeps every original and new handoff control id exactly once',()=>{
-  const ids=['product','find','tab','permission','prepare','firstName','lastName','phone','email','identitySuffix','savePrivate','approve','terms','finalReview','start','pause','resume','stop','final','observe','validate','retire','rebindConfirm','rebind','state','hostOrigin','reconcile','inspectTask','probeClosed','restartConfirm','restartPreFinal'];
+  const ids=['product','find','tab','permission','prepare','firstName','lastName','phone','email','identitySuffix','savePrivate','approve','terms','finalReview','start','pause','resume','stop','final','observe','validate','retire','rebindConfirm','rebind','state','hostOrigin','reconcile','inspectTask','probeClosed','restartConfirm','restartPreFinal','handoffConfirm','exportDesktop'];
   const found=[...html.matchAll(/\bid="([^"]+)"/g)].map(m=>m[1]);
   assert.deepEqual([...found].sort(),[...ids].sort());assert.match(html,/<button id="final" disabled>/);
 });

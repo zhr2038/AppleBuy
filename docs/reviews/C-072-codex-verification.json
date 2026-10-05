@@ -1,0 +1,56 @@
+{
+  "candidateFiles": 220,
+  "sha256": "72e09555d3eb67c3e1a11dfa92ec93b94f9565931d18dcd6cb0d468b092212c2",
+  "base209": "7163af94fd18b315e0991fce79b421c4e666998f9905dd0995541ee53f105765",
+  "rootChangedBasePaths": [
+    "src/desktop/app.py",
+    "test/checkout-c017-discovery.test.ts",
+    "web/checkout-connector/control.html",
+    "web/checkout-connector/control.js"
+  ],
+  "rootNewSourcePaths": [
+    "src/desktop/browser-api.mjs",
+    "src/desktop/browser-session.mjs",
+    "src/desktop/contained_child.py",
+    "src/desktop/public-probe.mjs",
+    "src/desktop/task-store.mjs",
+    "src/desktop/import-handoff.mjs",
+    "web/checkout-connector/desktop-handoff.js",
+    "test/desktop-c071-runtime.test.ts",
+    "test/desktop-c072-handoff.test.ts",
+    "test/desktop-c072-store.test.ts",
+    "test/desktop_c071_test.py"
+  ],
+  "implementationAuthority": "latest direct goal: Codex writes/tests regardless of quota, original Claude reviews only",
+  "scope": "production desktop browser API+PurchaseJob/ChromePort and current real public probe; no personal profile access or indirect rejected-extension control",
+  "authorChecks": {
+    "fullNodePassed": 1386,
+    "pythonPassed": 6,
+    "transportFakePurchase": "VARIANT->one Add->checkout->pickup->terminal slot->details->Alipay->REVIEW->fresh explicit fake terms->one submit->matching independent FAKE unpaid; duplicate resume no second Add/submit",
+    "ownedChildTreeStop": "actual owned Node child and descendant cleanup test passed",
+    "handoff": "exact old unknown Add/history/originalSnapshot retained, old source permanently readonly, private file local only, import cannot authorize purchase"
+  },
+  "realProgrammePublicProbe": {
+    "state": "VALIDATED",
+    "phase": "VARIANT",
+    "quoteCny": 9999,
+    "skuPath": "/shop/buy-iphone/iphone-18-pro/mjt74ch/a",
+    "addSent": false,
+    "personalProfileUsed": false,
+    "browserClosed": true,
+    "ownedTreeTerminal": true
+  },
+  "initialRealProbeFailures": [
+    "synthetic JS radio clicks changed fields but not current canonical UI",
+    "SPA address update wrongly treated as new document, fixed DOMContentLoaded identity",
+    "hidden radio/associated label pointer receiver mismatch; ordinary label/radio click selected from actual hit test; no force"
+  ],
+  "nativeGuiReload": "old window closed after text-only titlebar click lacked geometry; temporary two preview windows reduced to one. New window screenshot then failed twice with monitor capture error; no more native input. Programme probe ran directly through its contained runtime, not a claimed GUI click",
+  "oldTestScopeException": "C017 required-ID list adds two handoff identities; older safety/assertions retained",
+  "realProgrammeUnpaidOrderVerified": false,
+  "oldLegacyUnknownResolved": false,
+  "handoffExportHumanPending": true,
+  "originalClaudeCombinedReviewPerformed": false,
+  "accepted": false,
+  "verifiedAtUtc": "2026-10-05T17:35:46.373230+00:00"
+}
