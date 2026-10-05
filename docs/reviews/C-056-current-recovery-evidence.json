@@ -19,6 +19,27 @@
   "storedTask": "expired pre-final task; one sent-or-unknown chooseSlot; no recorded final intent; history contains no recorded prior final or slot",
   "oldSlotOutcomeStillUnknown": true,
   "actualC055HumanMarkerVerified": true,
+  "actualC056HumanResult": {
+    "state": "NEEDS_VERIFICATION",
+    "phase": "UNKNOWN",
+    "reason": "probe-result-unconfirmed; observe-only; no automatic repeat",
+    "oldSlotStillUnresolved": true,
+    "newOrderVerified": false
+  },
+  "actualC056IndependentObservation": {
+    "observedDateLocal": "2026-10-05",
+    "origin": "https://secure11.www.apple.com.cn",
+    "path": "/shop/signIn",
+    "title": "登录 — 安全结账 - Apple (中国大陆)",
+    "checkoutArrivalObserved": true,
+    "loginSubmittedBy": "Codex normal browser interaction using prior direct account authorization; not program evidence",
+    "loginCompletionVerified": false,
+    "persistentProjectHostPermission": "direct human secure11 read-only approval received; actual Chrome grant and programme read pending",
+    "normalLoginPageRefresh": "once after the submitted login remained unconfirmed; no repeated Checkout",
+    "programReadAfterNavigation": "not yet confirmed; initial UNKNOWN is not checkout rejection",
+    "rootRepeatedCheckout": false,
+    "rootSelectedSlotOrOrdered": false
+  },
   "fullInstalledByteIdentityVerified": false,
   "extensionPageAccess": "actual browser protocol security rejection; only http/https; no alternate surface/SDK/CDP/workaround",
   "rootWebsitePurchaseMutation": false,
