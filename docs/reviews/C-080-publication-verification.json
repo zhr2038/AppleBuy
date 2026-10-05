@@ -1,0 +1,13 @@
+{
+  "scope": "C080 pending candidate, not agreement/live order",
+  "sourceCommit": "da87c00765069622fc57ddd8621812314fbb2d90",
+  "files": 231,
+  "sha256": "8a96cb4ed4da1d463f265b3a26e433c0706eec4bf18efe3a8ca937f6656a27da",
+  "all231HeadBlobsMatch": true,
+  "remoteCandidateMatches": true,
+  "mainUnchanged": true,
+  "mainCommit": "bd130ee77d8e914f6373432e1061c4de820fbc66",
+  "forcePush": false,
+  "privateFilesPublished": false,
+  "verifiedAtUtc": "2026-10-05T19:38:58.453101+00:00"
+}
