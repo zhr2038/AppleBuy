@@ -1,0 +1,48 @@
+{
+  "candidateFiles": 221,
+  "sha256": "6daa25920b71acaa586a70d69559e10e6c001f182e0b36bd6d00d2a79da4a011",
+  "base220": "72e09555d3eb67c3e1a11dfa92ec93b94f9565931d18dcd6cb0d468b092212c2",
+  "rootChangedBasePaths": [
+    "src/desktop/browser-session.mjs"
+  ],
+  "newSourcePaths": [
+    "test/desktop-c074-history.test.ts"
+  ],
+  "allOther219BasePathsUnchanged": true,
+  "actualPreFixReproduction": {
+    "nestedUnknownFinalHistory": true,
+    "newTaskCreated": true,
+    "browserReadsAdmitted": 1,
+    "recordWrites": 2,
+    "allTransportFake": true
+  },
+  "fix": "new-context migration recursively blocks any retained final intent/submit/order reference/final event or cyclic/overflow history; current same-context legitimate final reconciliation remains supported",
+  "authorChecks": {
+    "newNegativeCasesPassed": 5,
+    "relatedTransportAndHandoffPassed": 8,
+    "fullNodePassed": 1391,
+    "pythonPriorCodeUnchangedAnd6Pass": true
+  },
+  "interruptedActualC073": {
+    "durationSeconds": 302.56,
+    "terminalStatus": "failed",
+    "exitCode": 4294967295,
+    "cleanupConfirmed": true,
+    "timedOut": false,
+    "notQuotaOrBudgetExhaustion": true,
+    "primaryAssistantModel": "claude-opus-5-5",
+    "fullStructuredModelUsageAvailable": false,
+    "completeVerdictAvailable": false,
+    "toolCounts": {
+      "Read": 23,
+      "Bash": 2,
+      "Glob": 1
+    },
+    "privateReadRequestCount": 0,
+    "stopCommandCorrection": "initial Process.Stop() method did not exist and did not terminate; corrected Stop-Process on verified owned Claude PID then dispatcher terminal/tree cleanup confirmed"
+  },
+  "realProgrammeUnpaidOrderVerified": false,
+  "legacyFileHumanPending": true,
+  "accepted": false,
+  "verifiedAtUtc": "2026-10-05T17:49:43.415691+00:00"
+}

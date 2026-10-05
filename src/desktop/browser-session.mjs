@@ -5,6 +5,14 @@ import {createHash,randomUUID} from 'node:crypto';
 export const PRO_PLAN={schema:'applebuy-intent/v1',product:{model:'iPhone 18 Pro',capacity:'256GB',color:'黑色'},quantity:1,maxTotalCny:9999,city:'大连',fulfillment:'pickup',stores:['Apple 大连恒隆广场'],dateRule:'initial-first-three-terminal',paymentMethod:'支付宝',extras:{...NO_EXTRAS}};
 export const proDigest=createHash('sha256').update(JSON.stringify(PRO_PLAN)).digest('hex');
 const activeStores=new WeakSet();
+// New-context migration cannot hide a final in an older retained snapshot/history. No missing/cyclic history is absence proof.
+function legacyFinalProofClear(record){
+ const stack=[record],seen=new Set();let count=0;
+ while(stack.length){const value=stack.pop();if(value===null||typeof value!=='object')continue;if(seen.has(value)||++count>3000)return false;seen.add(value);
+  if(value.finalIntent!=null||value.orderRefHash!=null||value.orderDetailLink!=null||value.action==='submitOrder'||typeof value.event==='string'&&/final/.test(value.event))return false;
+  if(Array.isArray(value)){if(value.length>200)return false;stack.push(...value);}else stack.push(...Object.values(value));
+ }return true;
+}
 export async function runDesktopSession(options){
  const {store,mode='public-config'}=options;if(activeStores.has(store))throw Error('DesktopSessionAlreadyRunning');activeStores.add(store);let lease;
  try{if(mode==='purchase'){if(typeof store.acquireOwner!=='function')throw Error('DesktopOwnerLeaseRequired');lease=await store.acquireOwner();if(lease?.owned!==true)throw Error('DesktopOwnerLeaseUnconfirmed');}return await executeSession(options);}
@@ -17,6 +25,7 @@ async function executeSession({api,tabId,store,mode='public-config',authority=nu
     old=await store.get(TASK_KEY);
     if(!old||!validStored(old))throw Error('DesktopLegacyHandoffRequired');
     const own=typeof api.sessionId==='string'&&old.desktopContext===api.sessionId;
+    if(!own&&!legacyFinalProofClear(old))throw Error('DesktopLegacyFinalHistoryUnconfirmed');
     if(!own&&(old.pending||old.finalIntent||old.acceptedSlot||old.reconcileOnly===true))throw Error('DesktopLegacyResultStillUnconfirmed');
     if(authority?.checkoutApproved!==true||authority?.legacyOwnershipRevoked!==true||authority?.newContextConfirmed!==true||authority?.planDigest!==proDigest||canonicalJson(normalizeIntent(old.plan))!==canonicalJson(PRO_PLAN))throw Error('DesktopPurchaseAuthorityMissing');
     if(old.state!=='RETIRED'&&old.tabId!==tabId)throw Error('DesktopLegacyTabBindingUnconfirmed');
