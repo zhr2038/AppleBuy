@@ -1,0 +1,48 @@
+{
+  "candidateFiles": 209,
+  "sha256": "7163af94fd18b315e0991fce79b421c4e666998f9905dd0995541ee53f105765",
+  "base208": "dfef9e668dccab35ffab8eab12043b2bc9779601f9fb1c7d4dbb906ac0cc58e6",
+  "owner": "Codex actual C059 provider-quota takeover",
+  "changedSourcePaths": [
+    "web/checkout-connector/job.js",
+    "web/checkout-connector/page-program.js"
+  ],
+  "newSourcePaths": [
+    "test/c069-native-form-readiness.mjs"
+  ],
+  "allOther206SourcePathsUnchanged": true,
+  "oldTestsChanged": false,
+  "initialNative": {
+    "checks": 6,
+    "passed": 1,
+    "failed": 5,
+    "contextsClosed": 6,
+    "browserClosed": true
+  },
+  "finalAuthorSelfVerification": {
+    "fullNodePassed": 1378,
+    "newNativePassed": 7,
+    "newContextsClosed": 7,
+    "relatedAddRecoveryNativePassed": 4,
+    "relatedContextsClosed": 4,
+    "allOwnedBrowsersClosed": true,
+    "cleanupErrors": []
+  },
+  "newCases": [
+    "base waits for SKU",
+    "canonical ready",
+    "wrong form target blocks",
+    "foreign target blocks",
+    "target changes before click blocks",
+    "button-associated foreign form blocks",
+    "job waits before one fake Add"
+  ],
+  "scopeLimitation": "observed native Pro submit forms only; earlier synthetic no-form contracts unchanged; not historical error diagnosis or whole live readiness",
+  "actualProgrammeUnpaidOrderVerified": false,
+  "oldUnknownAddOrSlotResolved": false,
+  "desktopRealBuyerImplemented": false,
+  "originalClaudeCombinedReviewPerformed": false,
+  "accepted": false,
+  "priority": "Pro actual unpaid programme order first; no new Duo implementation before it",
+  "verifiedAtUtc": "2026-10-05T16:47:28.924476+00:00"
+}

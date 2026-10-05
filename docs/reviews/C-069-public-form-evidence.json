@@ -1,0 +1,38 @@
+{
+  "scope": "supported normal Chrome public choices/DOM metadata only; before Add, not checkout/order/stock evidence",
+  "observedDateLocal": "2026-10-06",
+  "product": {
+    "model": "iPhone 18 Pro",
+    "capacity": "256GB",
+    "color": "黑色",
+    "quoteCny": 9999
+  },
+  "normalSelections": [
+    "model",
+    "black",
+    "256GB",
+    "no trade-in",
+    "no AppleCare"
+  ],
+  "officialPath": "/shop/buy-iphone/iphone-18-pro/mjt74ch/a",
+  "mainElement": "DIV role=main",
+  "addElement": {
+    "tag": "BUTTON",
+    "type": "submit",
+    "value": "add-to-cart",
+    "disabled": false,
+    "parent": "SPAN add-to-cart",
+    "associatedAncestorFormPresent": true,
+    "declaredFormMethod": "get",
+    "declaredFormTargetOrigin": "https://www.apple.com.cn",
+    "declaredFormTargetPath": "/shop/buy-iphone/iphone-18-pro/mjt74ch/a"
+  },
+  "actualHttpMethodOrPayloadObserved": false,
+  "hiddenFieldCookieAuthValueRead": false,
+  "rootAddCheckoutSlotOrderOrPayment": false,
+  "historicalErrorCauseConfirmed": false,
+  "diagnosticCorrection": "initial query used MAIN only, missed DIV role=main; do not infer missing form. getAttributeNames was unsupported and discarded",
+  "readinessGap": "former reader treated selected radios/quote as sufficient even when a native form target was base, wrong or foreign; reproduced on new owned fixtures, not observed before the historical real Add",
+  "websiteScreenshotRetainedLocallyOnly": true,
+  "websiteScreenshotPublishedOrSuppliedToClaude": false
+}

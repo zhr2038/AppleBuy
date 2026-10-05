@@ -344,6 +344,18 @@ export async function merchantDocument(plan,command=null,internal=null){
   const quoteRadio=findRadio(plan.product.capacity).filter(checked);
   const quote=quoteRadio.length===1?/\bRMB\s*([\d,]+(?:\.\d{2})?)/.exec(name(quoteRadio[0])):null;
   if(configured&&quote){out.variantVerified=true;out.quotedCny=Number(quote[1].replaceAll(',',''));}
+  // C069: current Pro native Add is a GET submit form on the observed canonical black/256GB SKU path.
+  // Radio/price readiness alone can precede the canonical address/form update. No hidden input or request value is read.
+  const proForm=plan.product.model==='iPhone 18 Pro'&&bagButtons.length===1&&bagButtons[0].getAttribute('type')==='submit'?(bagButtons[0].form??bagButtons[0].closest('form')):null;
+  if(configured&&quote&&proForm){
+    const button=bagButtons[0],method=norm(button.getAttribute('formmethod')||proForm.getAttribute('method')||'get').toLowerCase();
+    let target=null;try{target=new URL(button.getAttribute('formaction')||proForm.getAttribute('action')||u.href,u.href);}catch{}
+    const path=u.pathname.replace(/\/$/,''),targetPath=target?.pathname.replace(/\/$/,''),base='/shop/buy-iphone/iphone-18-pro',sku=base+'/mjt74ch/a';
+    const ready=method==='get'&&target?.origin===u.origin&&path===sku&&targetPath===sku;
+    out.productForm={method,sourcePath:path,targetOrigin:target?.origin??null,targetPath:targetPath??null,ready};
+    out.productFormLoading=!ready&&method==='get'&&target?.origin===u.origin&&[base,sku].includes(path)&&[base,sku].includes(targetPath)&&!(path===sku&&targetPath===sku);
+    if(!ready)out.variantVerified=false;
+  }
   if(texts.some(t=>t.includes('暂未发售')||t.includes('机型将在获得批准后发售'))&&buttons.some(b=>name(b)==='继续'&&disabled(b))&&!buttons.some(b=>name(b)==='继续'&&!disabled(b))){
     // C031 Codex quota takeover: the normally observed Duo page permits public spec choices before release.
     // Only this public product scope may configure; the release gate never permits Continue/Add or checkout actions.

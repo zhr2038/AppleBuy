@@ -366,6 +366,9 @@ export class PurchaseJob {
           command={action:'configureProduct',choice:next.choice};
         }else if(o.phase==='ENTRY'){if(o.continueAvailable!==true)return this.gate(s,'official-continue-disabled; availability not established','NOT_READY');command={action:'continueProduct'};}
         else{
+          // C069: public selections may be complete before the native Pro form reaches its current canonical SKU.
+          // Wait only by re-reading before any Add; this never repeats an already-started addition.
+          if(o.productFormLoading===true){if(await poll(this.hydrationMs))continue;return this.gate(s,'product-form-not-ready; no Add sent, availability not established','NOT_READY');}
           if(!o.variantVerified||o.quotedCny>P.maxTotalCny||!Number.isFinite(o.quotedCny)||o.quotedCny<=0)return this.gate(s,'variant-or-price-not-verified','BLOCKED');
           if(validating)return this.gate(s,'public-configuration-validated; stopped before Add to Bag','VALIDATED');
           // C034 (Claude): the cart still holds the earlier task's item, so public choices above remain but Add to Bag does not.
