@@ -35,7 +35,7 @@
     "retryCount": 1,
     "coordinateInputsStopped": true
   },
-  "currentGUIWasLoadedFromEarlierC078Source": true,
+  "currentGUIWasLoadedFromEarlierC078Source": false,
   "liveProgrammeUnpaidVerified": false,
   "accepted": false,
   "humanOneTimeExportStillPending": true,
@@ -45,5 +45,6 @@
   "restoreTask": "C-081-CROSS-REVIEW",
   "resumeSource": "latest terminal C079 private metadata; CLI argument only",
   "shutdown": false,
-  "verifiedAtUtc": "2026-10-05T19:37:10.849209+00:00"
+  "verifiedAtUtc": "2026-10-05T19:37:10.849209+00:00",
+  "latestPreviewLoadedSource": "C080 exact231 after normal own-window restart; no physical Start click verified"
 }
