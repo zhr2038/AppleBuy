@@ -1,0 +1,39 @@
+{
+  "files": 231,
+  "sha256": "e4caca1982db14a76c74c3247a286dc6c8fdffd9446a3efd27339d646116203f",
+  "previousC080Sha": "8a96cb4ed4da1d463f265b3a26e433c0706eec4bf18efe3a8ca937f6656a27da",
+  "changedPaths": [
+    "src/desktop/app.py"
+  ],
+  "keyboardBegin": "Ctrl+Alt+P",
+  "keyboardPause": "Ctrl+Alt+S",
+  "titleOutput": "fixed public labels only; no private/user record text",
+  "implementationOwner": "Codex per latest direct goal",
+  "pythonPass": 9,
+  "priorC080NodePass": 1415,
+  "nodeSourceAndOldTestsUnchanged": true,
+  "actualNativeUI": {
+    "provider": "official @oai/sky via node_repl",
+    "observedShortcutHintInFreshTitle": true,
+    "physicallyInvokedBegin": true,
+    "observedExecutingTitlebar": true,
+    "finalTitle": "缺少旧任务，未发购买动作",
+    "physicallyInvokedPause": true,
+    "pauseFinalTitle": "已停止，旧记录保留",
+    "ownedWorkerTerminal": true,
+    "ownedWorkerCleanupConfirmed": true,
+    "handoffFilePresent": false,
+    "resourceMutations": 0,
+    "realOrderVerified": false,
+    "authOrExtensionNativeInteraction": false,
+    "screenshotCaptureStillUnverified": true,
+    "coordinatesOrIndicesAfterCaptureFailure": false
+  },
+  "newClaudeAgreement": false,
+  "accepted": false,
+  "actualProUnpaidOrderVerified": false,
+  "restoreTask": "C-083-CROSS-REVIEW",
+  "providerResetAsiaShanghai": "2026-10-06T06:40:00+08:00",
+  "handoffHumanActionStillPending": true,
+  "verifiedAtUtc": "2026-10-05T19:51:37.881543+00:00"
+}

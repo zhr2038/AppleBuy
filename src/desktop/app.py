@@ -162,8 +162,31 @@ class App:
         ttk.Label(pane, textvariable=self.status, wraplength=620).pack(anchor="w", pady=(20, 8))
         self.result = tk.StringVar(value="尚未核实新的未付款订单；原插件记录只能通过本人导出交接，不会直接读取 Chrome 存储。")
         ttk.Label(pane, textvariable=self.result, wraplength=620).pack(anchor="w")
+        ttk.Label(pane,text="快捷键：Ctrl+Alt+P 开始 Pro；Ctrl+Alt+S 暂停。最终下单仍需本次条款确认。",wraplength=850).pack(anchor="w",pady=(6,0))
+        root.bind('<Control-Alt-p>',lambda event:self.checkout_shortcut())
+        root.bind('<Control-Alt-s>',lambda event:self.pause_shortcut())
+        self.status.trace_add('write',self.update_window_title)
+        self.update_window_title()
         root.protocol("WM_DELETE_WINDOW", self.close)
         self.timer = root.after(100, self.poll)
+
+    def update_window_title(self,*_):
+        # Fixed public status labels only; contact/identity values and arbitrary record text never enter the title.
+        message=self.status.get();label='等待操作'
+        if '需要导入原任务' in message:label='缺少旧任务，未发购买动作'
+        elif '清理' in message and '未确认' in message:label='清理未确认，禁止再次启动'
+        elif '已停止' in message:label='已停止，旧记录保留'
+        elif '原任务仍有未知' in message:label='旧动作未知，仅可核对'
+        elif self.checkout.busy:label='程序执行中'
+        self.root.title(TITLE+' · '+label+' [Ctrl+Alt+P 开始；Ctrl+Alt+S 暂停]')
+
+    def checkout_shortcut(self):
+        self.open_checkout();return 'break'
+
+    def pause_shortcut(self):
+        if self.checkout.busy:self.stop_checkout()
+        else:self.stop()
+        return 'break'
 
     def start(self):
         if self.checkout.busy:return
