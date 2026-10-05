@@ -1,0 +1,41 @@
+{
+  "candidateFiles": 208,
+  "sha256": "dfef9e668dccab35ffab8eab12043b2bc9779601f9fb1c7d4dbb906ac0cc58e6",
+  "base205": "1f147d99c88d11abc5bada2f20486ac9b4dbd4ffb6e3cc0b103c24b25d559078",
+  "all205PreviousSourceUnchanged": true,
+  "newSourcePaths": [
+    "src/desktop/app.py",
+    "src/desktop/start.pyw",
+    "test/desktop_c066_test.py"
+  ],
+  "owner": "Codex genuine C059 quota takeover; original-Claude cross-author review pending",
+  "currentUserSteering": "native Python application and autonomous Computer Use testing requested; no mandatory extension controls in the eventual desktop design",
+  "environment": {
+    "python": "3.11.9",
+    "tk": "8.6",
+    "tcl": "8.6.12",
+    "pythonwAvailable": true,
+    "independentWindowsComputerUsePackage": "@oai/sky via documented node_repl skill"
+  },
+  "nativeCapabilityCorrection": "cua browser surface disables native input; separate Windows plugin actually initialized/listed apps and clicked the owned desktop application successfully",
+  "authorChecks": {
+    "pythonTestsPassed": 4,
+    "actualWindowsDesktopWindowCreated": true,
+    "returnedUniqueWindowSelected": true,
+    "initialMinimizedWindowRecoveredByDocumentedActivation": true,
+    "actualNativeDemoButtonClicks": 1,
+    "actualStatusObserved": "3 automatic selections,2 explicit refusals,new lists,REHEARSAL_ENDPOINT,real order0",
+    "backendProcessTerminal": true,
+    "guiStillOpenIntentionallyForUserReview": true
+  },
+  "screenshot": "docs/reviews/C-066-desktop-native-result.jpg",
+  "engine": "existing fixed network-guarded src/cli.ts last-slot-three-dates; no new buying engine/driver",
+  "realDesktopBrowserAdapterImplemented": false,
+  "personalChromeProfileCookieStorageExtensionOrAuthAccess": false,
+  "oldUnknownAddOrSlotRecordModified": false,
+  "officialPurchaseFromDesktop": false,
+  "realNewProgrammeUnpaidOrderVerified": false,
+  "accepted": false,
+  "next": "actual original-session exact208 C067 cross-author review; then Claude technical design for independent desktop buyer and safe old-ledger handoff",
+  "screenshotFormatCorrection": "first save expected PNG and stopped before writing; actual helper returned JPEG; original JPEG saved without image modification"
+}
