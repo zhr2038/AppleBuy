@@ -1,0 +1,64 @@
+{
+  "candidateFiles": 205,
+  "sha256": "1f147d99c88d11abc5bada2f20486ac9b4dbd4ffb6e3cc0b103c24b25d559078",
+  "baseC062": "60851e442354a3ff6c81d9a28c73ab6cb1edd742cf42d7b1b1eb9743082b7b20",
+  "rootChangedBasePaths": [
+    "web/checkout-connector/chrome-port.js",
+    "web/checkout-connector/job.js",
+    "web/checkout-connector/page-program.js"
+  ],
+  "rootNewSourcePaths": [
+    "test/checkout-c064-add-error.test.ts",
+    "test/c064-native-add-recovery.mjs"
+  ],
+  "allOther200BasePathsUnchanged": true,
+  "oldTestsChanged": false,
+  "implementationBasis": "C059 genuine firstParty provider session quota; reset2026-10-06 01:40 Asia/Shanghai",
+  "actualOperatorStart": "C062 successor reached pending Add, original page error and independent fully loaded empty bag; Add outcome remains unknown",
+  "initialNewNodeChecks": {
+    "tests": 11,
+    "passed": 1,
+    "failed": 10
+  },
+  "initialNewNativeChecks": {
+    "checks": 4,
+    "passed": 0,
+    "failed": 4,
+    "contextsClosed": 4,
+    "browserClosed": true,
+    "serverClosed": true
+  },
+  "initialFixtureConstructionError": "new scaffold extraction used an incorrect indentation match; corrected in the new file only before native execution; no old test or production changed for this fixture error",
+  "finalAuthorSelfVerification": {
+    "newNodeTests": 13,
+    "fullNodePassed": 1378,
+    "fullNodeFailed": 0,
+    "nativeScenariosPassed": 4,
+    "nativeContextsClosed": 4,
+    "nativeBrowserClosed": true,
+    "nativeServerClosed": true,
+    "nativeCleanupErrors": []
+  },
+  "positiveNativeEndpoint": "error after one FAKE Add; fresh proved bag contains one matching item; ordinary bag navigation; fresh Checkout/pickup/store/terminal-slot prefix ends truthfully at unknown slot; not unpaid order",
+  "negativeNativeCases": [
+    "empty bag keeps original unknown Add across resume",
+    "two items no checkout/no Add repeat",
+    "side read fails boundedly/no repeat"
+  ],
+  "additionalGuards": [
+    "non-null final/accepted slot/order markers cannot enter recovery",
+    "readonly/public-config/rebound cannot continue buying",
+    "naked navigation flag cannot forge port proof",
+    "proof cannot transfer to another plan/document/read sequence",
+    "late changed observed document cannot acquire proof",
+    "pause after side read sends no navigation"
+  ],
+  "originalAddHistoryPreserved": true,
+  "emptyOrFailedBagNeverMeansAddRejected": true,
+  "currentHttpStatusUnknown": true,
+  "rootRealMerchantMutations": false,
+  "realNewProgrammeUnpaidOrderVerified": false,
+  "originalClaudeFinalReviewPerformed": false,
+  "accepted": false,
+  "verifiedAtUtc": "2026-10-05T15:23:11.136015+00:00"
+}

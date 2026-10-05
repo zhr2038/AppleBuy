@@ -286,10 +286,13 @@ export async function merchantDocument(plan,command=null,internal=null){
   // pending word, or any cancelled marker, means no unpaid order is shown, whatever pending or help text is beside it.
   const PENDING=['待付款','等待付款','请完成付款'];
   const nativeNotUnpaid=()=>[...main.querySelectorAll('.rs-od-itemstatus')].some(e=>!PENDING.includes(norm(e.textContent)))||!!main.querySelector('.rs-od-itemsummary-canceled');
+  // C064: actual post-Add error document. Both observed title and visible main heading are required; no HTTP/rejection inference.
+  const notFound=norm(document.title)==='Page Not Found - Apple'&&[...main.querySelectorAll('h1.section-headline')].some(e=>visible(e)&&norm(e.textContent)==='The page you’re looking for can’t be found.');
   let phase='UNKNOWN';
   if(main.querySelector('input[type="password"],input[autocomplete="one-time-code"]')||texts.includes('以游客身份继续'))phase='AUTH';
   else if(texts.some(t=>t==='Apple 和你的数据隐私'))phase='CONSENT';
   else if(main.querySelector('[aria-busy="true"]'))phase='PROCESSING';
+  else if(notFound)phase='UNKNOWN';
   else if(texts.some(t=>PENDING.includes(t))){const route=orderDetailPath.test(u.pathname)?'ORDER_DETAIL':u.pathname==='/shop/checkout'?'ORDER_RECEIPT':'UNKNOWN';phase=route!=='UNKNOWN'&&nativeNotUnpaid()?'UNKNOWN':route;}
   // C-020 (Claude): on /shop/bag a purchased-list anchor makes the cart itself the only stage evidence. Only the recognized bag
   // with its proved checkout is BAG; any other anchored cart is UNKNOWN. Review/details/slots/payment/fulfillment or navigation
@@ -307,6 +310,7 @@ export async function merchantDocument(plan,command=null,internal=null){
   else if(!bagScoped&&exact('添加到购物袋').length===1)phase='VARIANT';
   else if(u.pathname.startsWith('/shop/buy-iphone/'))phase='ENTRY';
   const out={schema:'applebuy-merchant-read/v1',phase,purchase,verifiedStep:!['UNKNOWN','AUTH','CONSENT','PROCESSING'].includes(phase),path:u.pathname,feedback:null,acceptedSlot:null,slotSummary:null,continueAvailable:exact('继续').length===1,variantVerified:false,quotedCny:null,listComplete:false,dates:[],times:[],selectedDate:null,paymentMethod:findRadio('支付宝').some(checked)?'支付宝':null,extras:null,existingOrdersChecked:false,orderRefHash:null,orderDetailLink:null};
+  if(notFound&&phase==='UNKNOWN')out.merchantError='page-not-found';
   out.fulfillmentChoice=fulfillmentChoice;
   // C029: sanitized summary facts only (a count, money and the reading port's random key); never page text, IDs or URLs.
   out.quantitySource=quantitySource;
@@ -589,6 +593,8 @@ export async function merchantDocument(plan,command=null,internal=null){
     // C035-R1 Codex quota completion: ordinary navigation back to the bag after a current side read found one matching item. It
     // does not Add or Checkout here; the configured original document must still be unchanged and a fresh BAG check follows.
     else if(command.action==='openBag'&&phase==='VARIANT'&&out.variantVerified===true&&Number.isFinite(out.quotedCny)&&out.quotedCny>0&&out.quotedCny<=plan.maxTotalCny&&!out.extrasConflict){}
+    // C064: write-free current error-document revalidation. ChromePort also requires its own fresh matching bag proof before navigation.
+    else if(command.action==='openBag'&&command.afterAddReconciliation===true&&phase==='UNKNOWN'&&out.merchantError==='page-not-found'){}
     else if(command.action==='readOrderSummary'&&out.summaryReadable===true&&typeof command.summaryKey==='string'&&command.summaryKey.length>0)return await readSummary();
     else throw new Error('ActionNotRecognizedForCurrentStage');
   }catch(e){

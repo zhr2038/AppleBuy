@@ -1,0 +1,14 @@
+{
+  "scope": "actual operator programme status plus independent supported normal Chrome readonly observations",
+  "dateLocal": "2026-10-05",
+  "operatorResult": {"state": "NEEDS_VERIFICATION", "phase": "ENTRY", "pendingAction": "addBag", "reason": "mutation-result-unconfirmed; no automatic repeat"},
+  "originalTarget": {"origin": "https://www.apple.com.cn", "path": "/shop/buy-iphone/iphone-18-pro", "title": "Page Not Found - Apple", "readyState": "complete", "visibleMainHeading": "The page you’re looking for can’t be found.", "headingTag": "H1", "headingClass": "section-headline", "mainCount": 1},
+  "independentBag": {"origin": "https://www.apple.com.cn", "path": "/shop/bag", "readyState": "complete", "explicitEmptyHeadingVisible": true, "continueShoppingVisible": true},
+  "capturedHttpStatuses": [],
+  "capturedNetCodes": [],
+  "requestHeadersBodiesQueriesOrCustomerValuesReadIntoEvidence": false,
+  "rootRepeatedAddCheckoutSlotOrderPayment": false,
+  "currentAddResult": "unconfirmed; an error document and current empty bag do not prove rejection or no late effect",
+  "currentUnpaidProgrammeOrderVerified": false,
+  "nextRequirement": "recognize the error and reconcile only from current positive matching bag proof; never repeat Add after empty or unknown"
+}

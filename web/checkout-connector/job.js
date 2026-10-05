@@ -276,6 +276,18 @@ export class PurchaseJob {
       // A summary-sourced one unit also needs this order's money to equal the one-unit money this task recorded from explicit
       // quantity (bag total at checkout, else the Add to Bag quote). This detects a changed order; it is never a quantity source.
       if(o.quantitySource==='order-summary'&&o.purchase?.itemVerified===true&&!finalLookup){const basis=s.bagTotalCny??s.quotedCny??null;if(basis===null||o.purchase.totalCny!==basis)return this.gate(s,'order-summary-money-differs-from-explicit-one-unit-basis','BLOCKED');}
+      // C064: only this own pending Add on the observed error document may use a positive current settled bag read.
+      // Empty/failed/changed cart remains unknown. Matching one item permits normal bag navigation and a fresh checkout read, never Add.
+      let afterAddCommand=null;
+      if(s.pending?.action==='addBag'&&s.pending.dispatched!==false&&s.bagAddStarted===true&&s.resourceWritten===true&&s.finalIntent===null&&s.acceptedSlot==null&&s.orderRefHash==null&&s.orderDetailLink==null&&o.phase==='UNKNOWN'&&o.merchantError==='page-not-found'&&!readOnly&&!validating&&s.reconcileOnly!==true){
+        let b=null;try{if(typeof this.port.readBagAfterAdd==='function')b=await this.port.readBagAfterAdd(P);}catch{}
+        if(this.paused||this.stopped)return this.gate(s,'control-changed-during-add-reconciliation; sent Add preserved',this.stopped?'STOPPED':'PAUSED');
+        const matching=b?.schema==='applebuy-merchant-read/v1'&&b.phase==='BAG'&&b.verifiedStep===true&&/^\/shop\/bag\/?$/.test(b.path??'')&&
+          Number.isSafeInteger(b.seq)&&b.seq>s.lastRead&&typeof b.documentId==='string'&&!!b.documentId&&b.documentId!==o.documentId&&itemMatches(P,b.purchase)&&b.extras===false;
+        if(!matching)return this.gate(s,'merchant-page-not-found; add-result-unconfirmed; no automatic repeat','NEEDS_VERIFICATION');
+        s.history=[...(s.history??[]),{event:'add-reconciled-from-current-bag',originalPending:clone(s.pending),readSequence:b.seq}].slice(-50);
+        s.lastRead=b.seq;s.pending=null;afterAddCommand={action:'openBag',afterAddReconciliation:true,bagReadSeq:b.seq};await this.save(s);
+      }
       // Reconcile a previously delivered command, including a crash/restart. Never send it again.
       if(s.pending){
         const pending=s.pending;
@@ -334,14 +346,15 @@ export class PurchaseJob {
         return this.gate(s,'mutation-result-unconfirmed; no automatic repeat','NEEDS_VERIFICATION');
       }
       if(s.reconcileOnly)return this.gate(s,'read-only-reconciliation-complete; a rebound tab cannot add purchase authority','NEEDS_USER');
-      if(STOP.has(o.phase))return this.gate(s,o.phase.toLowerCase());
+      if(STOP.has(o.phase)&&!afterAddCommand)return this.gate(s,o.phase.toLowerCase());
       if(readOnly)return this.gate(s,'same-tab-read-only-reconciliation-complete; no new purchase action','NEEDS_USER');
       if(o.phase==='PROCESSING'){if(await poll(this.maxWaitMs))continue;return this.gate(s,'merchant-processing-time-bound-reached','NEEDS_VERIFICATION');}
       const preparePrelaunch=o.phase==='PRELAUNCH'&&o.prelaunchConfigurable===true&&o.nextChoice!=null;
       if(o.phase==='PRELAUNCH'&&!preparePrelaunch)return this.gate(s,'official-entry-not-released','NOT_RELEASED');
       if(validating&&!['ENTRY','VARIANT'].includes(o.phase)&&!preparePrelaunch)return this.gate(s,'validation-endpoint-is-public-configuration; no checkout action','VALIDATION_STOPPED');
-      let command;
-      if(o.phase==='ENTRY'||o.phase==='VARIANT'||preparePrelaunch){
+      let command=afterAddCommand;
+      if(command){} // Already selected write-free bag navigation after current positive evidence; common write-ahead/pause guards still apply.
+      else if(o.phase==='ENTRY'||o.phase==='VARIANT'||preparePrelaunch){
         // A started bag addition is durable: any return to product configuration cannot add again.
         if(s.bagAddStarted)return this.gate(s,'bag-addition-already-started; no second addition','NEEDS_VERIFICATION');
         if(o.extrasConflict===true)return this.gate(s,'trade-in-or-applecare-selected-on-page; not changed automatically','BLOCKED');

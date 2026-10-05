@@ -1,5 +1,5 @@
 import {merchantDocument} from './page-program.js';
-import {canonicalJson} from './job.js';
+import {canonicalJson,itemMatches} from './job.js';
 export function allowedMerchantUrl(raw){try{const u=new URL(raw);return u.protocol==='https:'&&(u.hostname==='www.apple.com.cn'||/^secure(?:\d+)?\.www\.apple\.com\.cn$/.test(u.hostname))&&/^\/shop\/(?:buy-iphone\/(?:iphone-18-pro|iphone-duo)(?:\/[^/]+\/a)?|bag|checkout|order(?:\/[^?#]*)?|signIn(?:\/orders)?)(?:\/)?$/.test(u.pathname);}catch{return false;}}
 // C035 (Claude): the observed public purchase entries (C-031 Duo evidence, October 1 Pro probe). Configuration then uses normal controls.
 const PRODUCT_ENTRY={'iPhone Duo':'https://www.apple.com.cn/shop/buy-iphone/iphone-duo','iPhone 18 Pro':'https://www.apple.com.cn/shop/buy-iphone/iphone-18-pro'};
@@ -17,6 +17,7 @@ export class ChromePort {
   detachStoredChoice(){this.lastChoice=null;this.acceptedSlot=null;}
   async permission(){this.currentOrigin=null;const t=await this.api.tabs.get(this.tabId);if(!allowedMerchantUrl(t.url))throw new Error('UnsupportedMerchantPage');const u=new URL(t.url);this.currentOrigin=u.origin;return await this.api.permissions.contains({origins:[u.origin+'/*']});}
   async observe(plan){
+    this.addBagProof=null;
     if(!await this.permission())throw Object.assign(new Error('CurrentHostPermissionMissing'),{origin:this.currentOrigin});
     // C040-R1 (Claude): a rejected injection (e.g. its frame was replaced by a document change) is script transport, distinct from a
     // returned result that is missing, failed or unrecognized below. Only the job decides whether a bounded read-only re-read is allowed.
@@ -42,13 +43,17 @@ export class ChromePort {
     if(command.action==='openProduct'&&(this.mode!=='purchase'||this.last.raw.phase!=='EMPTY_BAG'||this.last.raw.verifiedStep!==true||!allowedMerchantUrl(entry)))throw new Error('CurrentOperationNotAuthorized');
     // C035-R1 Codex quota completion: readBag found this plan's existing one item. Open only the known ordinary bag; the original
     // configured product document is re-verified below, and a fresh bag read must still precede Checkout.
-    if(command.action==='openBag'&&(this.mode!=='purchase'||this.last.raw.phase!=='VARIANT'||this.last.raw.variantVerified!==true||this.last.raw.quotedCny>command.plan?.maxTotalCny||!allowedMerchantUrl(entry)))throw new Error('CurrentOperationNotAuthorized');
+    const afterAdd=command.afterAddReconciliation===true,proof=this.addBagProof;
+    if(command.action==='openBag'&&(this.mode!=='purchase'||!allowedMerchantUrl(entry)||(afterAdd?
+      !proof||proof.documentId!==this.last.documentId||proof.seq!==command.bagReadSeq||proof.plan!==canonicalJson(command.plan)||this.last.raw.phase!=='UNKNOWN'||this.last.raw.merchantError!=='page-not-found':
+      this.last.raw.phase!=='VARIANT'||this.last.raw.variantVerified!==true||this.last.raw.quotedCny>command.plan?.maxTotalCny)))throw new Error('CurrentOperationNotAuthorized');
     const previousChoice=this.lastChoice;if(command.action==='chooseSlot')this.lastChoice={date:command.date,start:command.start,end:command.end};
     const r=await this.api.scripting.executeScript({target:{tabId:this.tabId,documentIds:[command.documentId]},world:'ISOLATED',func:merchantDocument,args:[command.plan,{...command,privatePickupData:command.action==='fillDetails'?this.privatePickupData:undefined,authorized:true,structured:true,expected:JSON.stringify(this.last.raw)}]});
     // Only a structured page report made before the first DOM write is positively untouched; everything else is unknown.
     if(r.length===1&&r[0].documentId===command.documentId&&!r[0].error&&r[0].result?.delivered===false&&r[0].result.touched===false){this.lastChoice=previousChoice;return {delivered:false,touched:false,reason:String(r[0].result.reason??'').slice(0,60)};}
     if(r.length!==1||r[0].documentId!==command.documentId||r[0].error||r[0].result?.delivered!==true)throw new Error('MutationResultUnknown');
     if(!['openProduct','openBag'].includes(command.action))return r[0].result;
+    this.addBagProof=null;
     // C035 (Claude): the page program only re-verified, in this exact document, the unchanged empty bag (it writes nothing). The
     // tab is then navigated in the ordinary way to the fixed public entry; the job reconciles arrival from fresh reads.
     if(!await this.api.permissions.contains({origins:[new URL(entry).origin+'/*']}))return {delivered:false,touched:false,reason:'ProductEntryPermissionMissing'};
@@ -94,6 +99,17 @@ export class ChromePort {
     if(!closed)return unknown('BagTabCloseFailed');
     if(!read)return unknown('BagNotVerified');
     return {schema:'applebuy-merchant-read/v1',phase:read.phase,verifiedStep:true,path:'/shop/bag',purchase:read.purchase,extras:read.extras,documentId:read.documentId,seq:++this.seq};
+  }
+  // C064: one current settled readonly bag check after this port sees the recognized Add error. Never restores an Add or final grant.
+  async readBagAfterAdd(plan){
+    this.addBagProof=null;
+    if(!this.authorized||this.mode!=='purchase')throw new Error('BagReadNotAuthorized');
+    const before=this.last;if(before?.raw.phase!=='UNKNOWN'||before.raw.merchantError!=='page-not-found')throw new Error('AddErrorDocumentNotVerified');
+    const result=await this.readBag(plan);
+    if(this.last===before&&result.phase==='BAG'&&result.verifiedStep===true&&itemMatches(plan,result.purchase)&&result.extras===false){
+      this.addBagProof={documentId:before.documentId,seq:result.seq,plan:canonicalJson(plan)};
+    }
+    return result;
   }
   async lookupOrder(plan,expectedRef){
     // C043 (Claude): every read here is a full observe (current address, host permission, one recognized frame result). Only a rejected
