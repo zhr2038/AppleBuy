@@ -1,0 +1,50 @@
+[
+  {
+    "command": "node test/c060-native-restart.mjs",
+    "exitCode": 0,
+    "checks": 2,
+    "allPassed": true,
+    "cleanup": {
+      "contextsClosed": 2,
+      "browserClosed": true,
+      "serverClosed": true,
+      "errors": []
+    }
+  },
+  {
+    "command": "node test/c051-native-contact-repro.mjs",
+    "exitCode": 0,
+    "checks": 3,
+    "allPassed": true,
+    "cleanup": {
+      "contextsClosed": 3,
+      "browserClosed": true,
+      "serverClosed": true,
+      "errors": []
+    }
+  },
+  {
+    "command": "node test/c050-native-dates.mjs",
+    "exitCode": 0,
+    "checks": 9,
+    "allPassed": true,
+    "cleanup": {
+      "contextsClosed": 9,
+      "browserClosed": true,
+      "serverClosed": true,
+      "errors": []
+    }
+  },
+  {
+    "command": "node test/c040-native-order.mjs",
+    "exitCode": 0,
+    "checks": 8,
+    "allPassed": true,
+    "cleanup": {
+      "contextsClosed": 8,
+      "browserClosed": true,
+      "serverClosed": true,
+      "errors": []
+    }
+  }
+]

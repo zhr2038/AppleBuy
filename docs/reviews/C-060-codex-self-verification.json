@@ -1,0 +1,32 @@
+{
+  "candidateFiles": 202,
+  "sha256": "01c7b9fcd00445b6164db56d36d3dac08c46ad69f3cef3008ffd67704cc9f455",
+  "base198": "a82438e5e1448c5779a446c4aca8e0dd1d4ef5bbea56296891adf37a4a836133",
+  "rootChangedBasePaths": [
+    "test/checkout-c017-discovery.test.ts",
+    "web/checkout-connector/control.html",
+    "web/checkout-connector/control.js",
+    "web/checkout-connector/job.js"
+  ],
+  "rootNewPaths": [
+    "web/checkout-connector/pre-final-restart.js",
+    "test/checkout-c060-prefinal-restart.test.ts",
+    "test/checkout-c060-control.test.ts",
+    "test/c060-native-restart.mjs"
+  ],
+  "productionOwner": "Codex actual C059 provider-quota takeover",
+  "authorSelfVerification": {
+    "newNodeChecks": 22,
+    "fullNodePassed": 1355,
+    "nativePassed": 22,
+    "nativeCleanupConfirmed": true
+  },
+  "oldTestScopeException": "C017 HTML required-ID list adds restartConfirm/restartPreFinal; all older identities/equality/disabled-final/permission assertions preserved",
+  "initialFailurePreserved": "new controller pause fixture waited before async digest reached the mock read; added entered-read signal only, no production change",
+  "freshRuntimeHumanFacts": "logged order-list view, explicit EMPTY_BAG, human manual removal; stored expired unknown chooseSlot, no final marker",
+  "historyOutcome": "old entire originalSnapshot preserved, pending slot remains unknown in retained retired record, no claimed remote hold/order absence",
+  "newDateWindow": "requires explicit current operator confirmation; archived original dates/floors unchanged",
+  "acceptance": "pending actual original-Claude exact full review; no bilateral agreement",
+  "liveNewAddSlotOrderPayment": false,
+  "realNewUnpaidOrderVerified": false
+}

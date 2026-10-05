@@ -1,0 +1,329 @@
+{
+  "scope": "actual C056 readonly review, not accepted after independent C058 findings",
+  "sourceFiles": 196,
+  "sourceSha256": "6f8daaff73e1f7f26bb0e7eed626804e1d23430c5be5a52fcf588f16dc76573d",
+  "durationSeconds": 426.2,
+  "structuredTurns": 42,
+  "modelsActual": [
+    "claude-opus-5-5"
+  ],
+  "canonicalModel": "claude-opus-5-5",
+  "provider": "firstParty",
+  "CLIeffort": "xhigh",
+  "isError": false,
+  "permissionDenials": 0,
+  "toolErrors": 0,
+  "ownedCleanupConfirmed": true,
+  "actualVerdict": "AGREE with observations",
+  "rootDisposition": "REJECTED: four independent failures and required EOF coverage gap",
+  "requiredEOFReads": [
+    {
+      "path": "docs/tasks/C-056-CROSS-REVIEW.md",
+      "lines": 52,
+      "delivered": 53,
+      "complete": true
+    },
+    {
+      "path": "docs/requirements.md",
+      "lines": 96,
+      "delivered": 97,
+      "complete": true
+    },
+    {
+      "path": "docs/reviews/C-053-bounded-agreement.md",
+      "lines": 15,
+      "delivered": 16,
+      "complete": true
+    },
+    {
+      "path": "docs/reviews/C-054-independent-findings.md",
+      "lines": 9,
+      "delivered": 10,
+      "complete": true
+    },
+    {
+      "path": "docs/reviews/C-054-R1-actual-verification.json",
+      "lines": 56,
+      "delivered": 57,
+      "complete": true
+    },
+    {
+      "path": "docs/reviews/C-054-final-actual-quota.json",
+      "lines": 23,
+      "delivered": 24,
+      "complete": true
+    },
+    {
+      "path": "docs/tasks/C-056-CLOSED-CHECKOUT-PROBE.md",
+      "lines": 9,
+      "delivered": 10,
+      "complete": true
+    },
+    {
+      "path": "docs/reviews/C-055-codex-quota-takeover.md",
+      "lines": 9,
+      "delivered": 10,
+      "complete": true
+    },
+    {
+      "path": "docs/reviews/C-055-codex-verification.json",
+      "lines": 25,
+      "delivered": 26,
+      "complete": true
+    },
+    {
+      "path": "docs/reviews/C-056-current-recovery-evidence.json",
+      "lines": 119,
+      "delivered": 120,
+      "complete": true
+    },
+    {
+      "path": "docs/reviews/C-056-codex-verification.json",
+      "lines": 28,
+      "delivered": 29,
+      "complete": true
+    },
+    {
+      "path": "docs/reviews/C-056-candidate-manifest.json",
+      "lines": 203,
+      "delivered": 204,
+      "complete": true
+    },
+    {
+      "path": "web/checkout-connector/control.js",
+      "lines": 201,
+      "delivered": 202,
+      "complete": true
+    },
+    {
+      "path": "web/checkout-connector/control.html",
+      "lines": 19,
+      "delivered": 20,
+      "complete": true
+    },
+    {
+      "path": "web/checkout-connector/task-diagnostic.js",
+      "lines": 40,
+      "delivered": 41,
+      "complete": true
+    },
+    {
+      "path": "web/checkout-connector/closed-checkout-probe.js",
+      "lines": 57,
+      "delivered": 58,
+      "complete": true
+    },
+    {
+      "path": "web/checkout-connector/job.js",
+      "lines": 458,
+      "delivered": 459,
+      "complete": true
+    },
+    {
+      "path": "web/checkout-connector/chrome-port.js",
+      "lines": 112,
+      "delivered": 113,
+      "complete": true
+    },
+    {
+      "path": "web/checkout-connector/owner.js",
+      "lines": 5,
+      "delivered": 6,
+      "complete": true
+    },
+    {
+      "path": "test/checkout-c055-task-diagnostic.test.ts",
+      "lines": 60,
+      "delivered": 61,
+      "complete": true
+    },
+    {
+      "path": "test/checkout-c056-closed-probe.test.ts",
+      "lines": 41,
+      "delivered": 42,
+      "complete": true
+    },
+    {
+      "path": "test/checkout-c017-discovery.test.ts",
+      "lines": 136,
+      "delivered": 137,
+      "complete": true
+    },
+    {
+      "path": "test/checkout-c054-date-repro.test.ts",
+      "lines": 45,
+      "delivered": 0,
+      "complete": false
+    },
+    {
+      "path": "test/checkout-c054-r1-repro.test.ts",
+      "lines": 32,
+      "delivered": 33,
+      "complete": true
+    },
+    {
+      "path": "test/checkout-c054-calendar.test.ts",
+      "lines": 236,
+      "delivered": 237,
+      "complete": true
+    },
+    {
+      "path": "test/checkout-c023-final-lookup.test.ts",
+      "lines": 88,
+      "delivered": 89,
+      "complete": true
+    }
+  ],
+  "actualBashCommands": [
+    "python tools/delegation/verify_candidate_manifest.py docs/reviews/C-056-candidate-manifest.json",
+    "node --test test/checkout-c056-closed-probe.test.ts test/checkout-c055-task-diagnostic.test.ts test/checkout-c017-discovery.test.ts test/checkout-c054-date-repro.test.ts test/checkout-c054-r1-repro.test.ts test/checkout-c054-calendar.test.ts",
+    "node --test --test-reporter=dot \"test/*.test.ts\" \"review/*.test.ts\"",
+    "node test/c051-native-contact-repro.mjs",
+    "node test/c050-native-dates.mjs",
+    "node test/c040-native-order.mjs",
+    "python tools/delegation/verify_candidate_manifest.py docs/reviews/C-056-candidate-manifest.json"
+  ],
+  "fullDotCount": 1307,
+  "nativeOutputs": [
+    {
+      "command": "node test/c051-native-contact-repro.mjs",
+      "result": {
+        "scope": "FAKE independent pre-fix contact-only reproduction; private write stubbed untouched",
+        "results": [
+          {
+            "name": "legacy-full-purchase-contact-baseline",
+            "pass": true,
+            "phase": "DETAILS",
+            "currentPurchaseVerified": true,
+            "summaryReadable": false,
+            "pending": null,
+            "actions": [
+              "fillDetails"
+            ]
+          },
+          {
+            "name": "current-contact-only-cannot-continue",
+            "pass": true,
+            "phase": "DETAILS",
+            "currentPurchaseVerified": false,
+            "summaryReadable": false,
+            "pending": null,
+            "actions": [
+              "fillDetails"
+            ]
+          },
+          {
+            "name": "current-contact-only-permanent-readonly-preserves-sent-slot",
+            "pass": true,
+            "phase": "DETAILS",
+            "currentPurchaseVerified": false,
+            "summaryReadable": false,
+            "pending": "chooseSlot",
+            "actions": []
+          }
+        ],
+        "cleanup": {
+          "contextsClosed": 3,
+          "browserClosed": true,
+          "serverClosed": true,
+          "errors": []
+        }
+      }
+    },
+    {
+      "command": "node test/c050-native-dates.mjs",
+      "result": {
+        "scope": "FAKE native date/controller author self-check; no real slot/order",
+        "results": [
+          {
+            "name": "legacy-spaced-month",
+            "pass": true,
+            "complete": true,
+            "dates": [
+              "October 5",
+              "October 6"
+            ],
+            "actions": []
+          },
+          {
+            "name": "actual-compact-lowercase-group",
+            "pass": true,
+            "complete": true,
+            "dates": [
+              "october5",
+              "october6"
+            ],
+            "actions": []
+          },
+          {
+            "name": "native-two-date-terminal-job-no-repeat",
+            "pass": true,
+            "complete": true,
+            "dates": [
+              "october5",
+              "october6"
+            ],
+            "actions": [
+              "chooseSlot"
+            ]
+          },
+          {
+            "name": "wrong-day-value",
+            "pass": true,
+            "complete": false,
+            "dates": [],
+            "actions": []
+          },
+          {
+            "name": "unknown-month-member",
+            "pass": true,
+            "complete": false,
+            "dates": [],
+            "actions": []
+          },
+          {
+            "name": "hidden-label-member",
+            "pass": true,
+            "complete": false,
+            "dates": [],
+            "actions": []
+          },
+          {
+            "name": "duplicate-associated-label",
+            "pass": true,
+            "complete": false,
+            "dates": [],
+            "actions": []
+          },
+          {
+            "name": "hidden-date-control",
+            "pass": true,
+            "complete": false,
+            "dates": [],
+            "actions": []
+          },
+          {
+            "name": "duplicate-native-value",
+            "pass": true,
+            "complete": false,
+            "dates": [],
+            "actions": []
+          }
+        ],
+        "cleanup": {
+          "contextsClosed": 9,
+          "browserClosed": true,
+          "serverClosed": true,
+          "errors": []
+        }
+      }
+    },
+    {
+      "command": "node test/c040-native-order.mjs",
+      "outputSha256": "214553bb91b2f3f471fba6f5db3632e0ae16a19c3b60611a0453bca4650878c3",
+      "parseNote": "not standalone JSON; individual output review required"
+    }
+  ],
+  "usageAccounting": "structured token/cost fields are history aggregate; no per-round token/USD claim",
+  "realNewUnpaidOrderVerified": false
+}

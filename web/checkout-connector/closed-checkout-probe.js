@@ -25,7 +25,9 @@ export async function probeClosedCheckout({store,api,port,plan,tabId,planDigest,
   let tabs;try{tabs=await api.tabs.query({});}catch{return stop('tab-inventory-unconfirmed');}
   if(!live())return stop('probe-paused');
   if(!Array.isArray(tabs)||tabs.some(t=>!Number.isSafeInteger(t.id)||t.id<=0)||!tabs.some(t=>t.id===tabId)||tabs.some(t=>t.id===s.tabId))return stop('original-target-not-proven-closed-or-new-target-missing');
-  if(tabs.some(t=>{try{const u=new URL(t.url);return t.id!==tabId&&origin(u.origin)&&u.pathname==='/shop/checkout';}catch{return false;}}))return stop('another-disclosed-checkout-context');
+  // C058 (Claude): every disclosed official checkout address form (with or without a trailing slash, or deeper) blocks. A tab whose
+  // address Chrome does not disclose stays unknown; this check never proves that no other checkout exists.
+  if(tabs.some(t=>{try{const u=new URL(t.url);return t.id!==tabId&&origin(u.origin)&&/^\/shop\/checkout(?:\/|$)/i.test(u.pathname);}catch{return false;}}))return stop('another-disclosed-checkout-context');
   const expected=canonicalJson(core(s));let q=s.closedCheckoutProbe?clone(s.closedCheckoutProbe):null;
   if(q&&(q.schema!=='applebuy-checkout-probe/v1'||q.tabId!==tabId||q.planDigest!==planDigest||q.pending&&q.pending.action!=='checkout'))return stop('existing-probe-binding-differs');
   const save=async()=>{const current=await store.get(TASK_KEY);if(canonicalJson(core(current))!==expected)throw Error('OriginalChanged');await store.put(TASK_KEY,{...current,closedCheckoutProbe:clone(q)});};

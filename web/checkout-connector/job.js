@@ -9,6 +9,7 @@
 // C054 (Claude): REVIEW and the independent final lookup compare the pickup day by calendar identity within the reader's own grammar.
 // C054-R1 (Claude): calendar-shaped labels need validity even when identical, an ambiguous frozen cohort blocks every representation,
 // and missing selected/observed slot facts never compare equal.
+// C058 (Claude): read-only and human-rebound runs detach the port's stored slot choice and never record a refusal for it.
 export const TASK_KEY='applebuy-single-personal-purchase/v1';
 // Public-configuration validation never uses the purchase task key, so it cannot consume a purchase task.
 export const VALIDATION_KEY='applebuy-public-configuration-validation/v1';
@@ -138,6 +139,11 @@ function terminal(times){
   const keys=times.map(t=>t.start+'-'+t.end);if(new Set(keys).size!==keys.length)return null;
   return [...times].sort((a,b)=>a.start.localeCompare(b.start)||a.end.localeCompare(b.end)).at(-1);
 }
+// C060 Codex genuine-quota takeover: one shared factory for ordinary starts and an explicitly confirmed successor.
+// This allocates local state only; it grants no final authority and sends no merchant action.
+export function createPurchaseRecord(P,{taskId,planDigest,tabId,mode='purchase',validating=false,now,id}){
+  return {schema:'applebuy-purchase-job/v1',taskId:(validating?null:taskId)??id(),plan:clone(P),planDigest,tabId,state:'RUNNING',lastPhase:null,lastDocumentId:null,entryDocumentId:null,reason:null,pending:null,finalIntent:null,orderRefHash:null,initialDates:null,dateCursor:0,floors:{},rejected:[],refusals:0,lastRead:0,expiresAt:now+(validating?300000:1800000),bagAddStarted:false,resourceWritten:false,untouchedFailures:0,untouchedStreak:0,quotedCny:null,mode};
+}
 export class PurchaseJob {
   constructor({store,port,now=()=>Date.now(),id=()=>crypto.randomUUID(),maxSteps=100,maxWaitMs=30000,hydrationMs=3000,maxPolls=2000,maxUntouched=3,maxUntouchedPerRun=12,maxSummaryReads=30,onState=()=>{}}){Object.assign(this,{store,port,now,id,maxSteps,maxWaitMs,hydrationMs,maxPolls,maxUntouched,maxUntouchedPerRun,maxSummaryReads,onState});this.paused=false;this.stopped=false;this.key=TASK_KEY;this.runGrant=null;}
   pause(){this.paused=true;} resume(){this.paused=false;} stop(){this.stopped=true;}
@@ -195,7 +201,7 @@ export class PurchaseJob {
     // Validation is bounded, never authorized and stored separately; it cannot use a purchase grant.
     if(validating||rebind||readOnly)grant=null;
     this.runGrant=grant;
-    const fresh=()=>({schema:'applebuy-purchase-job/v1',taskId:(validating?null:taskId)??this.id(),plan:clone(P),planDigest,tabId,state:'RUNNING',lastPhase:null,lastDocumentId:null,entryDocumentId:null,reason:null,pending:null,finalIntent:null,orderRefHash:null,initialDates:null,dateCursor:0,floors:{},rejected:[],refusals:0,lastRead:0,expiresAt:this.now()+(validating?300000:1800000),bagAddStarted:false,resourceWritten:false,untouchedFailures:0,untouchedStreak:0,quotedCny:null,mode});
+    const fresh=()=>createPurchaseRecord(P,{taskId,planDigest,tabId,mode,validating,now:this.now(),id:this.id});
     let s;
     if(old?.state==='RETIRED'){if(rebind)throw new Error('NoPreservedTaskToRebind');const {retiredHistory=[],...prev}=old;s={...fresh(),retiredHistory:[...retiredHistory,prev]};
       // A resolved read-only task cannot become a fresh task with its former identity or revoked authority.
@@ -222,6 +228,9 @@ export class PurchaseJob {
     if(rebind&&s.tabId!==tabId){s.history=[...(s.history??[]),{event:'human-tab-rebind',fromTabId:s.tabId,toTabId:tabId,at:this.now()}];s.tabId=tabId;}
     // A human rebind permanently limits this task to read-only reconciliation; it never adds purchase authority.
     if(rebind)s.reconcileOnly=true;
+    // C058 (Claude): a read-only or rebound run is not the originating purchase context. Its port then reports no stored choice or stored
+    // acceptance as current evidence, so a replacement document cannot acknowledge the old sent slot. Nothing is sent or authorized.
+    if((readOnly||s.reconcileOnly===true)&&typeof this.port.detachStoredChoice==='function')this.port.detachStoredChoice();
     if(s.state==='CONFIRMED_UNPAID')return clone(s);
     if(s.finalIntent&&s.finalIntent.sent&&s.pending?.action!=='submitOrder')return this.gate(s,'final-intent-already-consumed','NEEDS_VERIFICATION');
     if(grant&&s.revokedGrantIds?.includes(grant.id))return this.gate(s,'advance-authorization-cleared-by-human-intervention','BLOCKED');
@@ -302,7 +311,9 @@ export class PurchaseJob {
           return this.gate(s,'bag-page-not-reached; navigation only, nothing added','NEEDS_VERIFICATION');
         }
         if(pending.action==='chooseSlot'){
-          if(o.feedback?.kind==='slot-refused'&&o.feedback.verified===true&&o.feedback.ref===pending.ref&&o.feedback.generation>pending.generation){
+          // C058 (Claude): a read-only or human-rebound run may be reading another checkout session, so a refusal shown there is not this
+          // choice's refusal; only the originating purchase run records one. The choice otherwise stays pending/unknown.
+          if(!readOnly&&s.reconcileOnly!==true&&o.feedback?.kind==='slot-refused'&&o.feedback.verified===true&&o.feedback.ref===pending.ref&&o.feedback.generation>pending.generation){
             s.rejected.push({date:pending.date,start:pending.start,end:pending.end,generation:pending.generation});s.refusals++;s.pending=null;s.dateCursor++;await this.save(s);
             if(s.refusals>5)return this.gate(s,'refusal-bound-reached','EXHAUSTED');continue;
           }

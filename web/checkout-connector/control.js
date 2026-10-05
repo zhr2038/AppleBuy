@@ -3,6 +3,7 @@ import {ChromePort,allowedMerchantUrl} from './chrome-port.js';
 import {withPurchaseOwner} from './owner.js';
 import {taskDiagnostic} from './task-diagnostic.js';
 import {probeClosedCheckout} from './closed-checkout-probe.js';
+import {restartExpiredPreFinal} from './pre-final-restart.js';
 const $=id=>document.getElementById(id);let job=null;
 const store={async get(k){return (await chrome.storage.local.get(k))[k]??null;},async put(k,v){await chrome.storage.local.set({[k]:v});}};
 const status=s=>{$('state').textContent=s;};
@@ -67,7 +68,7 @@ const onState=s=>{const pending=actionName[s.pendingAction];const host=exactHost
 // C-013-R2: Pause/Stop advance a cancellation epoch. Each handler captures the epoch synchronously at its click and
 // re-checks it after its awaits; an older handler then creates no job, uses no grant and sends nothing. A running job
 // is paused/stopped by the job itself. Durable records are untouched; a later fresh explicit click captures a new epoch.
-let epoch=0,cancelKind='pause',probeActive=false;
+let epoch=0,cancelKind='pause',probeActive=false,restartActive=false;
 const ticket=()=>{const t=epoch;return ()=>t===epoch;};
 const halted=()=>status(`已${cancelKind==='stop'?'停止':'暂停'}：本控制页进行中的准备已取消，未创建执行，未发出新动作；如需继续请重新明确操作`);
 // C055 quota takeover: no website, private-session read, job creation or record/grant mutation.
@@ -97,6 +98,29 @@ if($('probeClosed'))$('probeClosed').onclick=async()=>{
     });
     if(!ownership.owned)status('另一控制页正在执行；本页未读取或执行恢复探查');
   }catch{status('恢复探查未完成；原记录保留；如已发出结账，不自动重复');}finally{probeActive=false;}
+};
+// C060 quota takeover: a current explicit Pro restart creates one successor, retaining the entire abandoned old attempt.
+if($('restartPreFinal'))$('restartPreFinal').onclick=async()=>{
+  const epochLive=ticket();if(!$('approve').checked||!$('restartConfirm').checked){status('需勾选本次结账推进及重新开始确认；未改变任务或点击官网');return;}
+  if(!navigator.locks){status('缺少执行互斥能力；不能重新开始');return;}
+  const p=plan(),tabId=Number($('tab').value);
+  const live=()=>epochLive()&&$('approve').checked&&$('restartConfirm').checked&&Number($('tab').value)===tabId&&diagnosticJson(plan())===diagnosticJson(p);
+  try{
+    const ownership=await withPurchaseOwner(navigator.locks,async()=>{
+      restartActive=true;const previous=await store.get(TASK_KEY),digest=await boundDigest(p,previous);if(!live()){status('恢复准备已暂停；未发官网动作');return;}
+      const r=await restartExpiredPreFinal({store,api:chrome,port:new ChromePort(chrome,tabId,{mode:'observe'}),plan:p,planDigest:digest,tabId,enabled:true,dateWindowConfirmed:true,live});
+      if(!r.created){status(`未重新开始：${r.reason}；旧记录保持，未发官网动作`);return;}
+      prepared=null;$('finalReview').checked=false;$('final').disabled=true;
+      if(!live()){status('新任务已保留但已暂停；旧时段仍未知，未发官网动作');return;}
+      const privatePickupData=(await chrome.storage.session.get('applebuyPickupSession')).applebuyPickupSession??{};
+      if(!live()){status('新任务已保留但已暂停；旧时段仍未知，未发官网动作');return;}
+      job=new PurchaseJob({store,port:new ChromePort(chrome,tabId,{authorized:true,privatePickupData,orderSummary:true}),maxSteps:300,onState});
+      const result=await job.run(p,{tabId,planDigest:digest,taskId:r.taskId});
+      $('final').disabled=result.lastPhase!=='REVIEW'||result.finalIntent?.sent===true||!!result.reconcileOnly;
+      if(result.lastPhase==='REVIEW'&&job.port.last?.raw.termsLinks?.length)$('terms').href=job.port.last.raw.termsLinks[0];
+    });if(!ownership.owned)status('另一控制页正在执行；本页未重新开始');
+  }catch{status('恢复准备或执行结果未确认；保留全部记录，已发送动作不自动重试，请只读核对当前任务');}
+  finally{restartActive=false;job=null;}
 };
 // C-013-R1: grants are local to one run. A final grant exists only as the argument of the run started by its explicit
 // click, an advance grant only inside an owned start. A denial, gate or exception leaves nothing for a later Resume;
@@ -182,7 +206,7 @@ async function finishReadOnlyBag(previous,live){
 }
 $('start').onclick=()=>run(true);$('resume').onclick=()=>run(false);
 // Cancellation reaches both a running job and every older handler still awaiting preparation.
-const cancel=kind=>{epoch++;cancelKind=kind;if(job){if(kind==='stop')job.stop();else job.pause();}else if(probeActive)status('已暂停或停止恢复探查；如已发送结账可能仍完成，原记录保留，不重复执行');else halted();};
+const cancel=kind=>{epoch++;cancelKind=kind;if(job){if(kind==='stop')job.stop();else job.pause();}else if(probeActive)status('已暂停或停止恢复探查；如已发送结账可能仍完成，原记录保留，不重复执行');else if(restartActive)status('恢复准备已暂停；如已写入新任务会保留，未发官网动作');else halted();};
 $('pause').onclick=()=>cancel('pause');$('stop').onclick=()=>cancel('stop');
 // The final grant is built per explicit click and handed only to that run; a rejected or cancelled attempt retains nothing.
 $('final').onclick=async()=>{

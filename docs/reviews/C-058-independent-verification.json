@@ -1,0 +1,27 @@
+{
+  "sourceFiles": 198,
+  "sha256": "a82438e5e1448c5779a446c4aca8e0dd1d4ef5bbea56296891adf37a4a836133",
+  "actualImplementation": {
+    "model": "claude-opus-5-5",
+    "provider": "firstParty",
+    "CLIeffort": "xhigh",
+    "durationSeconds": 908.81,
+    "numTurns": 63,
+    "CLImaxTurns": 48,
+    "turnCounterDiscrepancy": true,
+    "isError": false,
+    "permissionDenials": 0,
+    "cleanupConfirmed": true
+  },
+  "rootTargetedPassed": 26,
+  "rootFullPassed": 1333,
+  "rootNativePassed": 20,
+  "nativeContextsClosed": 20,
+  "nativeBrowsersAndServersClosed": true,
+  "rootProductionDelta": false,
+  "rootTestOnlyDelta": "added sixth exact-control-port case after author delivery; no old assertion weakened",
+  "finalAgreementObtained": false,
+  "realNewUnpaidOrderVerified": false,
+  "rootProductionReview": "C-058-independent-review.md",
+  "usageAccounting": "history aggregate; per-round token/USD unknown"
+}

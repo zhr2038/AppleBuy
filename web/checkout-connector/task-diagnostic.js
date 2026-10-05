@@ -10,6 +10,27 @@ const date=x=>typeof x==='string'&&x.length<=50&&calendarDay(x)?x:null;
 const time=x=>typeof x==='string'&&TIME.test(x)?x:null;
 const expired=(x,now)=>Number.isFinite(x)&&Number.isFinite(now)?x<=now:null;
 const slot=x=>x&&typeof x==='object'?{date:date(x.date),start:time(x.start),end:time(x.end),verified:bool(x.verified)}:null;
+// C058 (Claude): the whole retired chain, nested retirements included, within fixed bounds (50 per list, 200 records). Any slot/final
+// fact is true. Only a fully read, finite chain of well-formed clean RETIRED records is false; a malformed, repeated (cyclic) or
+// over-bound chain is null (unknown), never a positive absence. Only the boolean or null leaves this function.
+function priorSlotOrFinal(chain){
+  if(chain===undefined)return false;
+  const lists=[chain],seen=new Set();let unknown=false,records=0;
+  while(lists.length){
+    const list=lists.pop();
+    if(!Array.isArray(list)||seen.has(list)){unknown=true;continue;}
+    seen.add(list);if(list.length>50)unknown=true;
+    for(const r of list.slice(0,50)){
+      if(++records>200)return null;
+      if(!r||typeof r!=='object'||Array.isArray(r)||seen.has(r)){unknown=true;continue;}
+      seen.add(r);
+      if(r.acceptedSlot!==null&&r.acceptedSlot!==undefined||r.finalIntent!==null&&r.finalIntent!==undefined||['chooseSlot','submitOrder'].includes(r.pending?.action)||Array.isArray(r.history)&&r.history.some(e=>e?.event==='final-not-dispatched'))return true;
+      if(r.schema!=='applebuy-purchase-job/v1'||r.state!=='RETIRED'||r.finalIntent!==null||r.pending===undefined||r.pending!==null&&typeof r.pending!=='object'||r.history!==undefined&&!Array.isArray(r.history))unknown=true;
+      if(r.retiredHistory!==undefined)lists.push(r.retiredHistory);
+    }
+  }
+  return unknown?null:false;
+}
 export function taskDiagnostic(s,now){
   if(!s)return {record:'NONE',scope:'persisted-task-only',merchantQueried:false,purchaseAction:false};
   if(typeof s!=='object'||s.schema!=='applebuy-purchase-job/v1')return {record:'UNRECOGNIZED',scope:'persisted-task-only',merchantQueried:false,purchaseAction:false};
@@ -35,6 +56,6 @@ export function taskDiagnostic(s,now){
     moneyBasisPresent:Number.isFinite(basis)&&basis>0,moneyBasisMatchesFixedProduct:max!==null&&basis===max,
     refusals:Number.isSafeInteger(s.refusals)&&s.refusals>=0&&s.refusals<=5?s.refusals:null,
     retiredHistoryCount:history.length,retiredHistoryOverflow:history.length>50,
-    priorSlotOrFinalPresent:history.slice(0,50).some(r=>!!r&&(r.acceptedSlot!==null&&r.acceptedSlot!==undefined||r.finalIntent!==null&&r.finalIntent!==undefined||['chooseSlot','submitOrder'].includes(r.pending?.action))),
+    priorSlotOrFinalPresent:priorSlotOrFinal(s.retiredHistory),
     retainedCartPresent:s.retiredCart!==null&&s.retiredCart!==undefined};
 }

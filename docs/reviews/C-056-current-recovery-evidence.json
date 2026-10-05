@@ -43,6 +43,26 @@
     "rootSelectedSlotOrOrdered": false
   },
   "fullInstalledByteIdentityVerified": false,
+  "latestBagAfterAuthenticationRecovery": {
+    "dateLocal": "2026-10-05",
+    "normalRead": "official public bag heading explicitly says empty",
+    "directHumanCause": "human manually removed the previous Pro",
+    "programmeAddedAnotherItem": false,
+    "noOrderOrNoHoldCertificate": false,
+    "oldSlotResolved": false
+  },
+  "latestAuthenticationRecovery": {
+    "dateLocal": "2026-10-05",
+    "directHumanReport": "Apple login is now working",
+    "independentNormalChromeRead": "current secure8 /shop/order/list renders visible cancelled-order rows; no login heading",
+    "visibleExactCancelledStatuses": 2,
+    "customerOrderReferencesOrValuesReadIntoEvidence": false,
+    "checkoutAuthenticationOrPurchaseResumptionVerified": false,
+    "completeNoOrderOrNoHoldCertificate": false,
+    "historical541CauseResolved": false,
+    "oldSlotOutcomeResolved": false,
+    "newUnpaidOrderVerified": false
+  },
   "directHumanNetworkFailurePoint": {
     "dateLocal": "2026-10-05",
     "source": "direct human Network screenshots and supplied accessibility table; only deidentified status/path metadata retained",

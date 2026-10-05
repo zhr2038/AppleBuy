@@ -8,8 +8,13 @@ const BAG_ENTRY='https://www.apple.com.cn/shop/bag';
 export class ChromePort {
   // mode 'observe': act can never run. mode 'public-config': only public product choices, never Add to Bag or later.
   // C029 (Claude): orderSummary enables the ordinary order-summary disclosure read, only for an authorized purchase port.
-  constructor(api,tabId,{authorized=false,mode='purchase',privatePickupData={},initialSequence=0,acceptedSlot=null,pending=null,reviewGrant=null,orderSummary=false}={}){this.api=api;this.tabId=tabId;this.mode=mode;this.authorized=authorized&&mode!=='observe';this.seq=initialSequence;this.generation=pending?.generation??0;this.last=null;this.privatePickupData=privatePickupData;this.acceptedSlot=acceptedSlot;this.reviewGrant=reviewGrant;this.lastChoice=pending?.action==='chooseSlot'?{date:pending.date,start:pending.start,end:pending.end}:null;
+  // C058 (Claude): only a purchase port carries a stored slot choice. An observe-only port never turns a later document into that old
+  // choice's acceptance; the job further limits resolution to the originating purchase run.
+  constructor(api,tabId,{authorized=false,mode='purchase',privatePickupData={},initialSequence=0,acceptedSlot=null,pending=null,reviewGrant=null,orderSummary=false}={}){this.api=api;this.tabId=tabId;this.mode=mode;this.authorized=authorized&&mode!=='observe';this.seq=initialSequence;this.generation=pending?.generation??0;this.last=null;this.privatePickupData=privatePickupData;this.acceptedSlot=acceptedSlot;this.reviewGrant=reviewGrant;this.lastChoice=mode==='purchase'&&pending?.action==='chooseSlot'?{date:pending.date,start:pending.start,end:pending.end}:null;
     this.orderSummary=orderSummary===true&&this.authorized&&mode==='purchase';this.summaryKey=this.orderSummary?crypto.randomUUID():null;this.summaryDocumentId=null;}
+  // C058 (Claude): called by the job when its run is not the originating purchase context (read-only reconciliation, a human rebind or
+  // any later run of a rebound task). The stored choice and stored acceptance carried into this port are no longer reported as evidence.
+  detachStoredChoice(){this.lastChoice=null;this.acceptedSlot=null;}
   async permission(){this.currentOrigin=null;const t=await this.api.tabs.get(this.tabId);if(!allowedMerchantUrl(t.url))throw new Error('UnsupportedMerchantPage');const u=new URL(t.url);this.currentOrigin=u.origin;return await this.api.permissions.contains({origins:[u.origin+'/*']});}
   async observe(plan){
     if(!await this.permission())throw Object.assign(new Error('CurrentHostPermissionMissing'),{origin:this.currentOrigin});
