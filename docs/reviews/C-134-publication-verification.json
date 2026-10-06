@@ -1,0 +1,14 @@
+{
+  "task": "C-134-ACTIVATE-PRO-REVIEW",
+  "sourceCommit": "9ea64f3debe480e22ec3241f534420ad25795323",
+  "candidateRemote": "9ea64f3debe480e22ec3241f534420ad25795323",
+  "mainUnchanged": "bd130ee77d8e914f6373432e1061c4de820fbc66",
+  "files": 285,
+  "sha256": "614c3191acccfae77df5f36791a65298772c5c30a79a848addac53bcc7f89285",
+  "allHeadAndRemoteBlobsMatch": true,
+  "privacyScanPassed": true,
+  "actualBoundedReview": "C132 plus C133 corrected read gap",
+  "separateCheckoutHostInstalled": true,
+  "realOrderVerified": false,
+  "verifiedAtUtc": "2026-10-06T17:00:41.542038+00:00"
+}
