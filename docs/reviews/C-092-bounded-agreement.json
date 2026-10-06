@@ -1,0 +1,49 @@
+{
+  "sourceCommit": "fbe288e02034033c1063d230344fe0b69c4952a7",
+  "files": 233,
+  "sha256": "307a6ec85eb391c8851898c12e89aa044eb9ed642ca2298c2f4cce60165dd308",
+  "boundedRepairAccepted": true,
+  "scope": [
+    "N7 same-context buyer cannot be permanently downgraded by reconcile",
+    "N9 readonly blocked GUI controls remain disabled",
+    "N10 explicit nonreadonly progress permits safe continuation after blocked",
+    "N8/D1/F8 truthful Chinese disclosures, not actual functional crash/live fixes"
+  ],
+  "actualCrossAuthorEvidence": [
+    "C089 limited AGREE for four-file C088 repair",
+    "C091 limited AGREE for two-file C090 repair",
+    "C092 exact command replay on unchanged C090 bytes"
+  ],
+  "rootIndependentEvidence": {
+    "N7BeforeFix": {
+      "red": 1
+    },
+    "N10BeforeFix": {
+      "pass": 15,
+      "red": 1
+    },
+    "currentPythonPass": 16,
+    "unchangedNodeHistoricalPass": 1436
+  },
+  "declaredResiduals": [
+    "N10a failure before first state can leave advance disabled, fails closed; accepted only as a disclosed offline limitation before live use",
+    "F8 stale physical owner after forced death still needs manual handling",
+    "Transferred task restart becomes permanently readonly and cannot resume buying",
+    "No functional final-order lookup from restarted BAG; human official order check needed",
+    "Worker transfer IPC and installed live GUI/main chain/speed unverified"
+  ],
+  "notAccepted": [
+    "Whole aggregate233/repository",
+    "Current user installed runtime",
+    "Real programme unpaid Pro order",
+    "Complete goal",
+    "Duo readiness"
+  ],
+  "mainMustStayUnchanged": "bd130ee77d8e914f6373432e1061c4de820fbc66",
+  "goalStatus": "blocked",
+  "noLiveMerchantActions": true,
+  "handoffMissing": true,
+  "productionLedgerMissing": true,
+  "restoreSessionSource": "latest terminal C092 owned metadata; private CLI resume only",
+  "verifiedAtUtc": "2026-10-06T00:48:25.199092+00:00"
+}

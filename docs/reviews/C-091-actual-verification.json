@@ -1,0 +1,42 @@
+{
+  "task": "C-091-CROSS-REVIEW",
+  "sourceFiles": 233,
+  "status": "returned_for_review",
+  "durationSeconds": 194.86,
+  "turns": 17,
+  "models": [
+    "claude-opus-5-5"
+  ],
+  "primaryModels": [
+    "claude-opus-5-5"
+  ],
+  "provider": "firstParty",
+  "canonicalModel": "claude-opus-5-5",
+  "effort": "xhigh",
+  "modelVerified": true,
+  "resultError": false,
+  "subtype": "success",
+  "permissionDenialCount": 0,
+  "timedOut": false,
+  "cleanupConfirmed": true,
+  "toolCounts": {
+    "Read": 12,
+    "Bash": 3
+  },
+  "sourceEditCalls": 0,
+  "privateReadCalls": 0,
+  "unexpectedCommands": 3,
+  "commandOrderMatched": false,
+  "requiredEOFCount": 11,
+  "requiredEOFComplete": 11,
+  "EOFgaps": [],
+  "toolResultErrors": [],
+  "usageScope": "resumed history aggregate, not this round cost",
+  "accepted": false,
+  "realOrderVerified": false,
+  "verdict": "AGREE limited C090 two-file N10 repair",
+  "sha256": "307a6ec85eb391c8851898c12e89aa044eb9ed642ca2298c2f4cce60165dd308",
+  "sourceCommit": "fbe288e02034033c1063d230344fe0b69c4952a7",
+  "immutableDuringReview": true,
+  "commandDeviation": "All 3 actual Bash calls used safe cd E:/Apple Store && prefix; strict command gate false, corrected by actual C092 replay on same bytes"
+}

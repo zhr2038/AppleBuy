@@ -1,0 +1,41 @@
+{
+  "task": "C-092-VERIFY-COMMANDS",
+  "sourceFiles": 233,
+  "status": "returned_for_review",
+  "durationSeconds": 30.03,
+  "turns": 6,
+  "models": [
+    "claude-opus-5-5"
+  ],
+  "primaryModels": [
+    "claude-opus-5-5"
+  ],
+  "provider": "firstParty",
+  "canonicalModel": "claude-opus-5-5",
+  "effort": "xhigh",
+  "modelVerified": true,
+  "resultError": false,
+  "subtype": "success",
+  "permissionDenialCount": 0,
+  "timedOut": false,
+  "cleanupConfirmed": true,
+  "toolCounts": {
+    "Read": 2,
+    "Bash": 3
+  },
+  "sourceEditCalls": 0,
+  "privateReadCalls": 0,
+  "unexpectedCommands": 0,
+  "commandOrderMatched": true,
+  "requiredEOFCount": 2,
+  "requiredEOFComplete": 2,
+  "EOFgaps": [],
+  "toolResultErrors": [],
+  "usageScope": "resumed history aggregate, not this round cost",
+  "accepted": false,
+  "realOrderVerified": false,
+  "verdict": "COMPLIANT exact replay only",
+  "sha256": "307a6ec85eb391c8851898c12e89aa044eb9ed642ca2298c2f4cce60165dd308",
+  "sourceCommit": "fbe288e02034033c1063d230344fe0b69c4952a7",
+  "immutableDuringReview": true
+}
