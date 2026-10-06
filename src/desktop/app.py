@@ -182,7 +182,7 @@ class App:
         self.transfer_confirm=tk.BooleanVar(value=False)
         self.transfer_checkbox=ttk.Checkbutton(pane,text="本人确认旧结账已停止、旧时段窗口已到期，当前同一账户购物袋为这一台 Pro；不再加购。暂停保留当前窗口；关闭或重启后只能只读核对",variable=self.transfer_confirm,state='disabled');self.transfer_checkbox.pack(anchor='w',pady=(6,0))
         self.empty_restart_confirm=tk.BooleanVar(value=False)
-        self.empty_restart_checkbox=ttk.Checkbutton(pane,text='本人已确认正常 Chrome 为同一 Apple 账户、旧官网结账已停止且没有待付款同款订单；允许从当前空购物袋另行测试一台 Pro，旧未知历史保持。程序不把此勾选当作账户认证证据',variable=self.empty_restart_confirm,state='disabled');self.empty_restart_checkbox.pack(anchor='w',pady=(6,0))
+        self.empty_restart_checkbox=ttk.Checkbutton(pane,text='本人刚在苹果官网订单列表确认同一 Apple 账户、旧官网结账已停止且没有待付款同款订单；允许从当前空购物袋另行测试一台 Pro，旧未知历史保持。未登录时空袋不能证明账户购物袋；此勾选不是程序认证证据',variable=self.empty_restart_confirm,state='disabled');self.empty_restart_checkbox.pack(anchor='w',pady=(6,0))
         self.empty_restart_button=ttk.Button(pane,text='保留旧记录，从已核对空购物袋新开始 Pro',command=self.restart_empty_checkout,state='disabled');self.empty_restart_button.pack(anchor='w',pady=(3,0))
         self.final_confirm=tk.BooleanVar(value=False)
         self.final_checkbox=ttk.Checkbutton(pane,text="本人核对当前唯一一台、无附加项及无重复订单，接受本次官网条款；只创建未付款订单",variable=self.final_confirm,state='disabled');self.final_checkbox.pack(anchor="w",pady=(8,0))

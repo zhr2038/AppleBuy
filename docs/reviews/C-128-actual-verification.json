@@ -1,0 +1,140 @@
+{
+  "task": "C-128-COMBINED-REVIEW",
+  "sourceFiles": 282,
+  "status": "returned_for_review",
+  "durationSeconds": 427.8,
+  "turns": 61,
+  "models": [
+    "claude-opus-5-5"
+  ],
+  "primaryModels": [
+    "claude-opus-5-5"
+  ],
+  "provider": "firstParty",
+  "canonicalModel": "claude-opus-5-5",
+  "effort": "xhigh",
+  "modelVerified": true,
+  "resultError": false,
+  "subtype": "success",
+  "permissionDenialCount": 0,
+  "timedOut": false,
+  "cleanupConfirmed": true,
+  "toolCounts": {
+    "Read": 56,
+    "Grep": 2,
+    "Bash": 1
+  },
+  "sourceEditCalls": 0,
+  "privateReadCalls": 0,
+  "unexpectedCommands": 0,
+  "commandOrderMatched": true,
+  "requiredEOFCount": 51,
+  "requiredEOFComplete": 51,
+  "EOFgaps": [],
+  "toolResultErrors": [
+    {
+      "tool": "Bash",
+      "kind": "tool-result-error"
+    }
+  ],
+  "commandResults": [
+    {
+      "index": 1,
+      "error": true,
+      "tail": "n  duration_ms: 173.6564\\n  type: 'test'\\n  ...\\n# Subtest: R1 F2: exact product, one selected planned store and one labelled tax-inclusive total; anything else stops\\nok 325 - R1 F2: exac\"}\r\n{\"scope\": \"bounded-review-checks\", \"order\": 5, \"exitCode\": 0, \"timedOut\": false, \"ownedTreeCleanupConfirmed\": true, \"manifest\": {\"ok\": true, \"files\": 282, \"sha256\": \"dfb937ca7aa301d3b8837c84bc70380584ea70accaf25ec0f67b2e4f2d69bb64\", \"mismatches\": []}, \"passed\": true}\r\n{\"scope\": \"bounded-review-checks\", \"complete\": true, \"orderedChecks\": 5, \"passed\": false}"
+    }
+  ],
+  "usageScope": "resumed history aggregate, not this round cost",
+  "accepted": false,
+  "realOrderVerified": false,
+  "orderedChecks": [
+    {
+      "scope": "bounded-review-checks",
+      "order": 1,
+      "exitCode": 0,
+      "timedOut": false,
+      "ownedTreeCleanupConfirmed": true,
+      "manifest": {
+        "ok": true,
+        "files": 282,
+        "sha256": "dfb937ca7aa301d3b8837c84bc70380584ea70accaf25ec0f67b2e4f2d69bb64",
+        "mismatches": []
+      },
+      "passed": true
+    },
+    {
+      "scope": "bounded-review-checks",
+      "order": 2,
+      "exitCode": 0,
+      "timedOut": false,
+      "ownedTreeCleanupConfirmed": true,
+      "counts": {
+        "tests": 101,
+        "pass": 101,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0
+      },
+      "passed": true
+    },
+    {
+      "scope": "bounded-review-checks",
+      "order": 3,
+      "exitCode": 0,
+      "timedOut": false,
+      "ownedTreeCleanupConfirmed": true,
+      "tests": 54,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "passed": true
+    },
+    {
+      "scope": "bounded-review-checks",
+      "order": 4,
+      "exitCode": 1,
+      "timedOut": false,
+      "ownedTreeCleanupConfirmed": true,
+      "counts": {
+        "tests": 1507,
+        "pass": 1506,
+        "fail": 1,
+        "cancelled": 0,
+        "skipped": 0
+      },
+      "passed": false,
+      "failureTail": "not ok 318 - A09/A07: a pause in force before a process crash is still in force after recovery; nothing new is sent\n  ---\n  duration_ms: 359.6969\n  type: 'test'\n  location: 'E:\\\\Apple Store\\\\test\\\\app-process.test.ts:104:1'\n  failureType: 'testCodeFailure'\n  error: 'fetch failed'\n  code: 'ERR_TEST_FAILURE'\n  name: 'TypeError'\n  ...\n# Subtest: A07/A12: unknown mock final submit + process crash \u2192 fresh start, new client and plan edit stay read-only; recovery only looks up; one submit total\nok 319 - A07/A12: unknown mock final submit + process crash \u2192 fresh start, new client and plan edit stay read-only; recovery only looks up; one submit total\n  ---\n  duration_ms: 626.8515\n  type: 'test'\n  ...\n# Subtest: A14: nearest-rank distribution\nok 320 - A14: nearest-rank distribution\n  ---\n  duration_ms: 1.2429\n  type: 'test'\n  ...\n# Subtest: A14: same seed gives identical decision outcomes; warm-up is not counted\nok 321 - A14: same seed gives identical decision outcomes; warm-up is not counted\n  ---\n  duration_ms: 120.9203\n  type: 'test'\n  ...\n# Subtest: R1 F1: rejected inputs name their reason, write nothing and never block a later valid observation\nok 322 - R1 F1: rejected inputs name their reason, write nothing and never block a later valid observation\n  ---\n  duration_ms: 257.1956\n  type: 'test'\n  ...\n# Subtest: R1 F1: a transient task-file read failure is shown without sticking, writing or suggesting\nok 323 - R1 F1: a transient task-file read failure is shown without sticking, writing or suggesting\n  ---\n  duration_ms: 142.5638\n  type: 'test'\n  ...\n# Subtest: R1 F1: a plan change is a named plan mismatch with the saved version, never a rebind; the saved plan continues\nok 324 - R1 F1: a plan change is a named plan mismatch with the saved version, never a rebind; the saved plan continues\n  ---\n  duration_ms: 173.6564\n  type: 'test'\n  ...\n# Subtest: R1 F2: exact product, one selected planned store and one labelled tax-inclusive total; anything else stops\nok 325 - R1 F2: exac"
+    },
+    {
+      "scope": "bounded-review-checks",
+      "order": 5,
+      "exitCode": 0,
+      "timedOut": false,
+      "ownedTreeCleanupConfirmed": true,
+      "manifest": {
+        "ok": true,
+        "files": 282,
+        "sha256": "dfb937ca7aa301d3b8837c84bc70380584ea70accaf25ec0f67b2e4f2d69bb64",
+        "mismatches": []
+      },
+      "passed": true
+    },
+    {
+      "scope": "bounded-review-checks",
+      "complete": true,
+      "orderedChecks": 5,
+      "passed": false
+    }
+  ],
+  "orderedChecksVerified": false,
+  "BashInvocationGroupSizes": [
+    1
+  ],
+  "BashCallsOverlapped": false,
+  "separateSequentialBashCallsVerified": true,
+  "verdict": "DISAGREE",
+  "sourceSha256": "dfb937ca7aa301d3b8837c84bc70380584ea70accaf25ec0f67b2e4f2d69bb64",
+  "sourceImmutableVerifiedAtReturn": true,
+  "scope": "unaccepted prepared purchase chain",
+  "noQuotaError": true
+}

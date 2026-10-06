@@ -32,7 +32,7 @@ class C123PreparedStreamTests(unittest.TestCase):
                     request={'schema':'applebuy-native-checkout/v1','kind':'request','contextId':'FAKE-C123-native-context','id':'FAKE-frame-'+str(index),'operation':operation,'payload':{}}
                     broker.stdin.write((json.dumps(request)+'\n').encode());broker.stdin.flush();incoming=queue.Queue();threading.Thread(target=lambda:incoming.put(read_frame(host.stdout)),daemon=True).start();self.assertEqual(incoming.get(timeout=5),request)
                     reply={**{k:v for k,v in request.items() if k not in ('operation','payload')},'kind':'reply','ok':True,'result':{'closed':operation=='closeSession'}};write_frame(host.stdin,reply)
-                    lines=queue.Queue();threading.Thread(target=lambda:lines.put(broker.stdout.readline()),daemon=True).start();self.assertEqual(json.loads(lines.get(timeout=5)),reply)
+                    lines=queue.Queue();threading.Thread(target=lambda:lines.put(broker.stdout.readline()),daemon=True).start();self.assertEqual(json.loads(lines.get(timeout=5)),reply);self.assertFalse(ticket.exists(),'key ticket removed while stream is still active')
                 broker.wait(timeout=5);self.assertEqual(broker.returncode,0);self.assertFalse(ticket.exists());host.stdin.close();host.wait(timeout=5);self.assertEqual(host.returncode,0)
             finally:
                 for child in children:

@@ -1,8 +1,11 @@
 import test from 'node:test';import assert from 'node:assert/strict';
-import {validCheckoutRegistration} from '../src/desktop/native-checkout-channel.mjs';
+import {validCheckoutRegistration,createRegisteredNativeLaunch} from '../src/desktop/native-checkout-channel.mjs';
 import {DesktopCheckoutRuntime} from '../src/desktop/checkout-runtime.mjs';import {createPurchaseRecord} from '../web/checkout-connector/job.js';import {PRO_PLAN,proDigest} from '../src/desktop/browser-session.mjs';
 test('C127 only distinct checkout registration passes, never old readonly scope or wildcard origin',()=>{
  assert.equal(validCheckoutRegistration({hostName:'com.applebuy.checkout',extensionId:'a'.repeat(32)}),true);for(const value of [null,{}, {hostName:'com.applebuy.readonly',extensionId:'a'.repeat(32)},{hostName:'com.applebuy.checkout',extensionId:'*'}])assert.equal(validCheckoutRegistration(value),false);
+});
+test('C127 production registration preflight seam refuses missing/invalid data before any process spawn',async()=>{
+ let spawns=0;const options={spawnProcess:()=>{spawns++;throw Error('Must not spawn');}};for(const readRegistration of [async()=>{throw Error('FAKE missing');},async()=>({}),async()=>({hostName:'com.applebuy.readonly',extensionId:'a'.repeat(32)})])await assert.rejects(createRegisteredNativeLaunch({readRegistration,options}),/RegistrationRequired/);assert.equal(spawns,0);
 });
 test('C127 launch preflight failure releases the held owner and preserves the entire unknown source without a browser',async()=>{
  const row={...createPurchaseRecord(PRO_PLAN,{taskId:'FAKE-source',planDigest:proDigest,tabId:99,now:0,id:()=> 'FAKE'}),reconcileOnly:true,pending:{action:'addBag',id:'FAKE-unknown',documentId:'FAKE-old',deadline:0}};let releases=0,writes=0;

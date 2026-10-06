@@ -3,9 +3,10 @@ import test from 'node:test';import assert from 'node:assert/strict';
 import {spawn} from 'node:child_process';import {mkdir,writeFile,readFile,access} from 'node:fs/promises';import {resolve,join} from 'node:path';
 import {DesktopTaskStore} from '../src/desktop/task-store.mjs';import {createNativeCheckoutChannel} from '../src/desktop/native-checkout-channel.mjs';
 import {world} from './fixtures/c121-native-world.mjs';import {TASK_KEY} from '../web/checkout-connector/job.js';
-for(const fromReadonlyEmpty of [false,true])test('C125 composed Windows native stream reaches one FAKE unpaid detail after refusal with real owner; empty successor='+fromReadonlyEmpty, {skip:process.platform!=='win32'}, async()=>{
+for(const scenario of [{empty:false},{empty:true},{empty:true,merged:'quantity'},{empty:true,merged:'lines'}])test('C125 composed Windows native stream verifies success or blocks post-login merge; '+JSON.stringify(scenario), {skip:process.platform!=='win32'}, async()=>{
+ const fromReadonlyEmpty=scenario.empty;
  const folder=resolve('.local/test-runs/c125-stream-'+crypto.randomUUID()),contextId='FAKE-C123-native-context';await mkdir(join(folder,'.local/desktop'),{recursive:true});await writeFile(join(folder,'.local/desktop/checkout-native-config.json'),JSON.stringify({extensionId:'a'.repeat(32),hostName:'com.applebuy.checkout'}));
- const f=world({refuse:true,contextId}),file=join(folder,'task.json');let original;
+ const f=world({refuse:true,requireAuth:!!scenario.merged,contextId}),file=join(folder,'task.json');let original;
  if(fromReadonlyEmpty){original={...structuredClone(f.w.row),state:'NEEDS_VERIFICATION',pending:{action:'addBag',id:'FAKE-old-unknown',documentId:'FAKE-old',deadline:0},bagAddStarted:true,resourceWritten:true};f.w.row={...structuredClone(original),reconcileOnly:true,desktopHandoff:{schema:'applebuy-desktop-handoff/v1',id:'FAKE-handoff',originalSnapshot:structuredClone(original)}};original=structuredClone(f.w.row);}
  await writeFile(file,JSON.stringify({[TASK_KEY]:f.w.row}));const actual=new DesktopTaskStore(file);
  f.runtime.store={get:key=>actual.get(key),put:async(key,row)=>{await actual.put(key,row);f.w.row=structuredClone(row);},acquireOwner:()=>actual.acquireOwner()};
@@ -20,7 +21,14 @@ for(const fromReadonlyEmpty of [false,true])test('C125 composed Windows native s
     f.peer.receive(request).then(reply=>{const body=Buffer.from(JSON.stringify(reply)),header=Buffer.alloc(4);header.writeUInt32LE(body.length);host.stdin.write(Buffer.concat([header,body]));}).catch(error=>fault=error);
    }
   });
-  f.runtime.launch=async()=>channel;await f.runtime.open();const ready=fromReadonlyEmpty?await f.runtime.restartEmpty({approved:true,accountConfirmedByUser:true,oldCheckoutStoppedByUser:true,existingOrdersCheckedByUser:true}):await f.runtime.advance({checkoutApproved:true,newContextConfirmed:true});assert.equal(ready.phase,'REVIEW');assert.equal(f.w.row.refusals,1);
+  f.runtime.launch=async()=>channel;await f.runtime.open();const ready=fromReadonlyEmpty?await f.runtime.restartEmpty({approved:true,accountConfirmedByUser:true,oldCheckoutStoppedByUser:true,existingOrdersCheckedByUser:true}):await f.runtime.advance({checkoutApproved:true,newContextConfirmed:true});
+  if(scenario.merged){
+   assert.equal(ready.phase,'AUTH');assert.equal(f.w.commands.filter(a=>a==='checkout').length,1);f.w.phase='FULFILLMENT';if(scenario.merged==='quantity')f.w.mergedQuantity=2;else f.w.mergedLines=2;
+   const main=f.w.tabs.get(f.w.mainId);main.url='https://secure8.www.apple.com.cn/shop/checkout';main.version++;
+   const blocked=await f.runtime.advance({checkoutApproved:true,newContextConfirmed:true});assert.equal(blocked.state,'NEEDS_VERIFICATION');assert.match(blocked.reason,/mutation-result-unconfirmed/);assert.equal(f.w.row.pending.action,'checkout');for(const action of ['selectPickup','selectStore','selectDate','chooseSlot','submitOrder'])assert.equal(f.w.commands.includes(action),false,action);
+   assert.deepEqual(f.w.row.desktopEmptyRestart.originalTask,original);await f.runtime.close();assert.equal(f.w.tabs.size,0);return;
+  }
+  assert.equal(ready.phase,'REVIEW');assert.equal(f.w.row.refusals,1);
   const unpaid=await f.runtime.submit({termsAccepted:true,existingOrdersChecked:true,noExtras:true});assert.equal(unpaid.state,'CONFIRMED_UNPAID');assert.equal(f.w.commands.filter(a=>a==='addBag').length,1);assert.equal(f.w.commands.filter(a=>a==='checkout').length,1);assert.equal(f.w.commands.filter(a=>a==='chooseSlot').length,2);assert.equal(f.w.commands.filter(a=>a==='submitOrder').length,1);assert.equal(f.w.slot.date,'2099年1月2日');assert.ok(frames>30);assert.equal(fault,null);await f.runtime.close();assert.equal(f.w.tabs.size,0);
   const stored=JSON.parse(await readFile(file,'utf8'))[TASK_KEY];assert.equal(stored.state,'CONFIRMED_UNPAID');assert.equal(stored.finalIntent.sent,true);
   if(fromReadonlyEmpty){assert.deepEqual(stored.desktopEmptyRestart.originalTask,original);assert.deepEqual(stored.retiredHistory[0].desktopEmptyArchive.originalSnapshot,original);assert.equal(stored.desktopEmptyRestart.originalTask.pending.action,'addBag');}

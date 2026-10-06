@@ -21,7 +21,8 @@ export function world({purchaseAllowed=true,refuse=false,requireAuth=false,conte
    return [{frameId:0,documentId:doc,result:{delivered:true}}];
   }
   const side=t.id!==w.mainId,detail=t.url.includes('/order/detail/'),phase=side?(w.count?'BAG':'EMPTY_BAG'):detail?'ORDER_DETAIL':w.phase;
-  const p={...PRO_PLAN.product,quantity:1,totalCny:9999,verified:true,itemVerified:true,fulfillment:'pickup',store:PRO_PLAN.stores[0],storeVerified:true};
+ const quantity=w.mergedQuantity??1,oneLine=(w.mergedLines??1)===1;
+ const p={...PRO_PLAN.product,quantity,totalCny:9999*quantity,verified:oneLine,itemVerified:oneLine,fulfillment:'pickup',store:PRO_PLAN.stores[0],storeVerified:true};
   const raw={schema:'applebuy-merchant-read/v1',phase,path:new URL(t.url).pathname,verifiedStep:phase!=='AUTH',purchase:p,extras:false,variantVerified:true,quotedCny:9999,nextChoice:null,feedback:w.feedback,acceptedSlot:w.slot,slotSummary:w.slot,paymentMethod:w.payment,termsLinks:[TERMS],receiptVerified:!!w.ref,orderRefHash:w.ref,orderDetailLink:w.ref?'https://secure8.www.apple.com.cn/shop/order/detail/FAKE/FAKE':null};
   if(phase==='FULFILLMENT'){p.fulfillment=null;raw.fulfillmentChoice='unselected';}
   if(phase==='SLOTS'){raw.listComplete=true;raw.selectedDate=w.date;raw.dates=['2099年1月1日','2099年1月2日','2099年1月3日'].map((label,index)=>({label,ref:'date:'+index,enabled:index!==0||!w.firstRefused,selected:label===w.date}));raw.times=[{start:'09:00',end:'09:15',ref:'time:1',enabled:true},{start:w.last,end:w.last==='21:15'?'21:30':'21:45',ref:w.last==='21:15'?'time:46':'time:47',enabled:true}];}

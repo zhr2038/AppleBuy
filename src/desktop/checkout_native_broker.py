@@ -22,7 +22,7 @@ def main():
         ticket={'schema':'applebuy-checkout-ticket/v1','extensionId':config['extensionId'],'contextId':context,'pipe':pipe,'key':base64.b64encode(key).decode('ascii'),'expiresAt':time.time()+110}
         TICKET.parent.mkdir(parents=True,exist_ok=True);temp=TICKET.with_suffix('.'+secrets.token_hex(8)+'.tmp');temp.write_bytes(json.dumps(ticket).encode('utf8'));os.replace(temp,TICKET)
         def expire():cleanup(context);os._exit(2)
-        timer=threading.Timer(START_DEADLINE,expire);timer.daemon=True;timer.start();conn=listener.accept();timer.cancel();timer=None
+        timer=threading.Timer(START_DEADLINE,expire);timer.daemon=True;timer.start();conn=listener.accept();timer.cancel();timer=None;cleanup(context)
         while True:
             line=sys.stdin.buffer.readline(64002)
             if not line:break

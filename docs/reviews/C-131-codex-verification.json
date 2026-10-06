@@ -1,0 +1,136 @@
+{
+  "task": "C131",
+  "author": "Codex",
+  "sourceFiles": 285,
+  "sha256": "614c3191acccfae77df5f36791a65298772c5c30a79a848addac53bcc7f89285",
+  "checks": {
+    "exitCode": 0,
+    "timeout": false,
+    "ownedCleanupConfirmed": true,
+    "rows": [
+      {
+        "scope": "bounded-review-checks",
+        "order": 1,
+        "exitCode": 0,
+        "timedOut": false,
+        "ownedTreeCleanupConfirmed": true,
+        "manifest": {
+          "ok": true,
+          "files": 285,
+          "sha256": "614c3191acccfae77df5f36791a65298772c5c30a79a848addac53bcc7f89285",
+          "mismatches": []
+        },
+        "passed": true
+      },
+      {
+        "scope": "bounded-review-checks",
+        "order": 2,
+        "exitCode": 0,
+        "timedOut": false,
+        "ownedTreeCleanupConfirmed": true,
+        "counts": {
+          "tests": 108,
+          "pass": 108,
+          "fail": 0,
+          "cancelled": 0,
+          "skipped": 0
+        },
+        "passed": true
+      },
+      {
+        "scope": "bounded-review-checks",
+        "order": 3,
+        "exitCode": 0,
+        "timedOut": false,
+        "ownedTreeCleanupConfirmed": true,
+        "tests": 54,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "passed": true
+      },
+      {
+        "scope": "bounded-review-checks",
+        "order": 4,
+        "exitCode": 0,
+        "timedOut": false,
+        "ownedTreeCleanupConfirmed": true,
+        "counts": {
+          "tests": 1514,
+          "pass": 1514,
+          "fail": 0,
+          "cancelled": 0,
+          "skipped": 0
+        },
+        "passed": true
+      },
+      {
+        "scope": "bounded-review-checks",
+        "order": 5,
+        "exitCode": 0,
+        "timedOut": false,
+        "ownedTreeCleanupConfirmed": true,
+        "manifest": {
+          "ok": true,
+          "files": 285,
+          "sha256": "614c3191acccfae77df5f36791a65298772c5c30a79a848addac53bcc7f89285",
+          "mismatches": []
+        },
+        "passed": true
+      },
+      {
+        "scope": "bounded-review-checks",
+        "complete": true,
+        "orderedChecks": 5,
+        "passed": true
+      }
+    ]
+  },
+  "protectedProcessRepetitions": [
+    {
+      "iteration": 1,
+      "exitCode": 0,
+      "tests": 7,
+      "pass": 7,
+      "fail": 0,
+      "cancelled": 0,
+      "skipped": 0
+    },
+    {
+      "iteration": 2,
+      "exitCode": 0,
+      "tests": 7,
+      "pass": 7,
+      "fail": 0,
+      "cancelled": 0,
+      "skipped": 0
+    },
+    {
+      "iteration": 3,
+      "exitCode": 0,
+      "tests": 7,
+      "pass": 7,
+      "fail": 0,
+      "cancelled": 0,
+      "skipped": 0
+    }
+  ],
+  "forcedBadPortObserved": {
+    "port": 6000,
+    "error": "fetch failed",
+    "cause": "bad port",
+    "historicalC128CauseNotCaptured": true
+  },
+  "independentSuccessorReprosRedThenGreen": 2,
+  "maxSuccessorGenerations": 3,
+  "composedLoginMergeNegatives": 2,
+  "zeroPickupSlotFinalOnMerge": true,
+  "liveTicketKeyRemovedAfterAccept": true,
+  "pythonPathLimitationTracked": true,
+  "newPreflightSeamNoSpawn": true,
+  "actualPurchaseHostInstalled": false,
+  "accountIdentityVerifiedByProgramme": false,
+  "realOrderVerified": false,
+  "accepted": false,
+  "newRejectedStaticPlacementFailures": "1513/1514 A11, old assertion unchanged; pure predicate and fixed server listener restored"
+}

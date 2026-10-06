@@ -14,6 +14,7 @@ import type { SiteScenario } from "../mock/live-site.ts";
 import type { TaskApp, Result } from "./task-app.ts";
 import { errorCode } from "../journal.ts";
 import { LaunchSession } from './launch-session.ts';
+import {browserPortAllowed} from './browser-port.ts';
 
 /** Bounded Chinese text for an unexpected failure: a short code only, never raw exception text or private paths. */
 export function unexpectedZh(e: unknown, what: string): string {
@@ -183,12 +184,18 @@ export async function startServer(app: TaskApp, o: { port?: number } = {}): Prom
       if (!res.headersSent) send(res, 500, { ok: false, code: "internal", message: unexpectedZh(e, "本机服务处理请求时出错，该操作可能未执行") });
     });
   });
-  await new Promise<void>((ok, fail) => {
-    server.once("error", fail);
-    server.listen({ host: BIND_HOST, port: o.port ?? 0 }, () => ok());
-  });
-  const addr = server.address();
-  port = typeof addr === "object" && addr ? addr.port : 0;
+  try{
+    const requested=o.port??0;
+    if(!Number.isInteger(requested)||requested<0||requested>65535)throw Error('BrowserPortInvalid');
+    if(requested!==0&&!browserPortAllowed(requested))throw Error('BrowserPortBlocked');
+    for(let n=0;n<8;n++){
+      await new Promise<void>((ok,fail)=>{const onError=(error:Error)=>fail(error);server.once('error',onError);server.listen({ host: BIND_HOST, port: requested },()=>{server.off('error',onError);ok();});});
+      const address=server.address();port=typeof address==='object'&&address?address.port:0;
+      if(browserPortAllowed(port))break;
+      await new Promise<void>(yes=>server.close(()=>yes()));
+    }
+    if(!server.listening)throw Error('BrowserPortUnavailable');
+  }catch(error){unsubscribe();if(server.listening)await new Promise<void>(yes=>server.close(()=>yes()));throw error;}
   return {
     port,
     url: `http://127.0.0.1:${port}/`,
