@@ -15,8 +15,8 @@ def main():
         raise SystemExit('Out-of-scope manifest')
     check=[sys.executable,'-B',str(ROOT/'tools/delegation/verify_candidate_manifest.py'),relative]
     commands=[check,
-      ['node','--test','--test-reporter=tap','test/desktop-c093-owner-recovery.test.ts','test/desktop-c072-store.test.ts','test/desktop-c078-runtime.test.ts','test/desktop-c084-cart-transfer.test.ts','test/desktop-c080-reconcile.test.ts'],
-      [sys.executable,'-B','-X','utf8','-m','unittest','discover','-s','test','-p','desktop_c0*_test.py'],
+      ['node','--test','--test-reporter=tap','test/desktop-c093-owner-recovery.test.ts','test/desktop-c072-store.test.ts','test/desktop-c078-runtime.test.ts','test/desktop-c084-cart-transfer.test.ts','test/desktop-c080-reconcile.test.ts','test/desktop-c107-browser.test.ts'],
+      [sys.executable,'-B','-X','utf8','-m','unittest','discover','-s','test','-p','desktop_c*_test.py'],
       ['node','--test','--test-reporter=tap','test/*.test.ts','review/*.test.ts'],check]
     failed=False
     for order,argv in enumerate(commands,1):
@@ -35,7 +35,9 @@ def main():
             if count:row['tests']=int(count[1])
             else:passed=False
         row['passed']=passed
-        if not passed:row['failureTail']=(stdout+stderr)[-1800:]
+        if not passed:
+            failed_test=re.search(r'^not ok .+$',stdout,re.M)
+            row['failureTail']=stdout[failed_test.start():failed_test.start()+2000] if failed_test else (stdout+stderr)[-1800:]
         failed=failed or not passed
         print(json.dumps(row,ensure_ascii=True),flush=True)
     print(json.dumps({'scope':'bounded-review-checks','complete':True,'orderedChecks':5,'passed':not failed}),flush=True)

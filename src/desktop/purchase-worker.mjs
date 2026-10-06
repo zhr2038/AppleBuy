@@ -3,6 +3,8 @@ import {createInterface} from 'node:readline';import {createRequire} from 'node:
 import {join} from 'node:path';import {homedir} from 'node:os';
 import {DesktopBrowserApi} from './browser-api.mjs';import {DesktopCheckoutRuntime} from './checkout-runtime.mjs';import {DesktopTaskStore} from './task-store.mjs';
 import {AuthContinuation} from './auth-continuation.mjs';
+import {browserConfig,createOwnedBrowser} from './browser-choice.mjs';
+const selectedConfig=browserConfig(process.argv.slice(2)),selectedBrowser=selectedConfig.channel;
 const emit=v=>process.stdout.write(JSON.stringify({scope:'desktop-pro-checkout',...v})+'\n');
 const errors={DesktopLegacyHandoffRequired:'需要导入原任务；未打开购买浏览器。',DesktopLegacyResultStillUnconfirmed:'原任务仍有未知动作，只能核对，未开始新购买。',DesktopHandoffPermanentlyRevokedSource:'已交接记录不能恢复原购买权限，未发购买动作。',DesktopLegacyFinalHistoryUnconfirmed:'原记录含最终订单事实，需要核对；未开始新购买。',DesktopOwnerHeldOrUnconfirmed:'另一执行器或未确认的记录正在持有任务。',DesktopSessionAlreadyRunning:'当前执行尚未结束，未再次开始。',DesktopFinalConsentNotCurrent:'当前订单复核或条款确认已失效，未重复提交。',DesktopContextIdentityUnconfirmed:'浏览器与旧任务不同，未恢复旧购买权限。'};
 Object.assign(errors,{
@@ -19,18 +21,17 @@ Object.assign(errors,{
  DesktopTransferRecordChanged:'旧任务记录发生变化；没有接替或购买。',
  DesktopTransferCancelled:'接替已暂停，旧记录保持，未继续结账。'
 });
-let browser,context,input,watch,closing=false;const store=new DesktopTaskStore(join(process.cwd(),'.local/desktop/task.json'));
+let input,watch,closing=false;const store=new DesktopTaskStore(join(process.cwd(),'.local/desktop/task.json'));
 const runtime=new DesktopCheckoutRuntime({store,onState:s=>{
  if(s.ownerLost===true){closing=true;watch?.stop();emit({type:'owner-lost',message:'执行权已丢失，停止自动动作；旧未知记录保留，当前执行器正在退出。'});input?.close();process.stdin.destroy();return;}
  emit({type:'progress',...s});
 },launch:async()=>{
  const {chromium}=createRequire(import.meta.url)(join(homedir(),'.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright'));
- try{browser=await chromium.launch({channel:'chrome',headless:false});context=await browser.newContext({serviceWorkers:'block'});}
- catch(error){try{await context?.close();}finally{await browser?.close();}throw error;}
- return {api:new DesktopBrowserApi(context,{publicOnly:false}),close:async()=>{try{await context?.close();}finally{await browser?.close();}}};
+ const owned=await createOwnedBrowser(chromium,selectedConfig,v=>{if(!closing)emit({type:'network-status',browser:selectedBrowser,...v});});
+ return {api:new DesktopBrowserApi(owned.context,{publicOnly:false}),close:owned.close};
 }});
 try{
- const initial=await runtime.open();if(closing)throw Error('DesktopOwnerLeaseLost');emit({type:'ready',readOnly:initial.legacyReadOnly===true,message:'程序已读取保留记录并打开官网窗口；旧未知动作保持，不自动重复。'});
+ const initial=await runtime.open();if(closing)throw Error('DesktopOwnerLeaseLost');emit({type:'ready',browser:selectedBrowser,readOnly:initial.legacyReadOnly===true,message:'程序已读取保留记录并打开 '+(selectedBrowser==='msedge'?'Edge':'Chrome')+' 官网窗口；旧未知动作保持，不自动重复。'});
  input=createInterface({input:process.stdin});let active=false,pausing=false;
  watch=new AuthContinuation({observe:()=>runtime.observe(),isBusy:()=>closing||active||pausing||runtime.paused,onStopped:why=>emit({type:'blocked',paused:runtime.paused,message:why==='expired'?'登录等待已暂停；完成官网验证后可继续原任务，不重复结账。':'登录后的页面未确认，已停止自动推进；旧结账记录保持。'})});
  async function advance(c){

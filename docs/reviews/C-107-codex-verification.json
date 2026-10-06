@@ -1,0 +1,138 @@
+{
+  "scope": "C107 alternate installed-browser and session launch diagnostic; not a purchase or login acceptance",
+  "userRequestedAlternateBrowser": true,
+  "ChromeInstalledVersion": "154.0.8037.98",
+  "EdgeInstalledVersion": "154.0.4258.53",
+  "oldOwnProgrammeWindowInitiallyAbsent": true,
+  "lastOwnWorkerInitiallyTerminalAndCleanupConfirmed": true,
+  "nativeProgrammeBrowserChoiceEdgeObserved": true,
+  "nativeBeginActuallySent": true,
+  "actualOwnedEdgeProcessObserved": true,
+  "actualOfficialSignInWindowObserved": true,
+  "currentProgrammeFailure": {
+    "browser": "msedge",
+    "host": "secure8.www.apple.com.cn",
+    "status": 541,
+    "evidence": "own GUI diagnostic observed after human attempted login"
+  },
+  "ordinaryUserChromeProof": {
+    "browserToolReadOnly": true,
+    "path": "/shop/order/list",
+    "visibleHeading": "\u4f60\u5df2\u8ba2\u8d2d\u7684\u4ea7\u54c1\u3002",
+    "accountOrOrderValuesRead": false
+  },
+  "diagnosis": "Browser name alone did not fix the issue. Programme used a new temporary context with serviceWorkers blocked; ordinary Chrome has a usable authenticated order-list state. Differences verified, exact cause of541 unproven.",
+  "rawAuthRequestsCookieBodiesHeadersOrPersonalProfileRead": false,
+  "nativeAuthenticationAutomated": false,
+  "personalChromeAttachedBySDKOrCopied": false,
+  "oldTaskPendingFinalityHistoryPlanAndHandoffPreserved": true,
+  "oldSourceStillReadonly": true,
+  "newRetainedSessionPermission": "PENDING, default off, neither own retained profile directory exists; not launched",
+  "currentlyLoadedNativeVersion": "Initial C107 temporary Edge with serviceWorkers blocked, not the latest source restoring defaults/retention option",
+  "newAppleAddCheckoutSlotOrderOrPayment": false,
+  "currentLoginOrUnpaidOrderVerified": false,
+  "sourceFiles": 242,
+  "sourceSha256": "54a5676c4fecb6ceedfa3e93cc3c3fbda594e6e4d95fe24a85e4483ec5935168",
+  "changedPaths": [
+    "src/desktop/app.py",
+    "src/desktop/interactive_child.py",
+    "src/desktop/purchase-worker.mjs",
+    "src/desktop/start.pyw",
+    "test/desktop_c078_test.py",
+    "tools/delegation/run_review_checks.py",
+    "src/desktop/browser-choice.mjs",
+    "test/desktop-c107-browser.test.ts",
+    "test/desktop_c107_test.py"
+  ],
+  "rootAuthorChecks": {
+    "exitCode": 0,
+    "rows": [
+      {
+        "scope": "bounded-review-checks",
+        "order": 1,
+        "exitCode": 0,
+        "timedOut": false,
+        "ownedTreeCleanupConfirmed": true,
+        "manifest": {
+          "ok": true,
+          "files": 242,
+          "sha256": "54a5676c4fecb6ceedfa3e93cc3c3fbda594e6e4d95fe24a85e4483ec5935168",
+          "mismatches": []
+        },
+        "passed": true
+      },
+      {
+        "scope": "bounded-review-checks",
+        "order": 2,
+        "exitCode": 0,
+        "timedOut": false,
+        "ownedTreeCleanupConfirmed": true,
+        "counts": {
+          "tests": 58,
+          "pass": 58,
+          "fail": 0,
+          "cancelled": 0,
+          "skipped": 0
+        },
+        "passed": true
+      },
+      {
+        "scope": "bounded-review-checks",
+        "order": 3,
+        "exitCode": 0,
+        "timedOut": false,
+        "ownedTreeCleanupConfirmed": true,
+        "tests": 29,
+        "passed": true
+      },
+      {
+        "scope": "bounded-review-checks",
+        "order": 4,
+        "exitCode": 0,
+        "timedOut": false,
+        "ownedTreeCleanupConfirmed": true,
+        "counts": {
+          "tests": 1461,
+          "pass": 1461,
+          "fail": 0,
+          "cancelled": 0,
+          "skipped": 0
+        },
+        "passed": true
+      },
+      {
+        "scope": "bounded-review-checks",
+        "order": 5,
+        "exitCode": 0,
+        "timedOut": false,
+        "ownedTreeCleanupConfirmed": true,
+        "manifest": {
+          "ok": true,
+          "files": 242,
+          "sha256": "54a5676c4fecb6ceedfa3e93cc3c3fbda594e6e4d95fe24a85e4483ec5935168",
+          "mismatches": []
+        },
+        "passed": true
+      },
+      {
+        "scope": "bounded-review-checks",
+        "complete": true,
+        "orderedChecks": 5,
+        "passed": true
+      }
+    ]
+  },
+  "historicalFailedFullCheck": {
+    "tests": 1461,
+    "pass": 1460,
+    "fail": 1,
+    "exactFailureIdentityNotCaptured": true,
+    "failureTailOnlyContainedTotals": true,
+    "causeNotClaimed": "not automatically relabelled the prior bad-port issue"
+  },
+  "rerunFullPass": 1461,
+  "protectedOriginalAssertionsChanged": false,
+  "oldFakeGuiHarnessOnlyChange": "new controls browser_picker, browser_diagnostic, keep_session_checkbox added; old test bodies/assertions untouched",
+  "actualReviewPending": "C-108-CROSS-REVIEW",
+  "verifiedAtUtc": "2026-10-06T11:09:13.558064+00:00"
+}

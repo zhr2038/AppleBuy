@@ -84,13 +84,17 @@ class CheckoutRunner:
     def __init__(self):self.events=queue.Queue();self.child=None;self.generation=0
     @property
     def busy(self):return self.child is not None
-    def open(self):
+    def open(self,browser_channel='chrome',keep_session=False):
+        if browser_channel not in ('chrome','msedge'):raise ValueError('Browser choice is not enabled')
+        if type(keep_session) is not bool:raise ValueError('Session choice is not enabled')
         if self.child is not None:return False
         from shutil import which
         node=which('node')
         if not node:raise RuntimeError('Node unavailable')
         self.generation+=1
-        self.child=InteractiveChild([node,str(ROOT/'src/desktop/purchase-worker.mjs')],ROOT,self.events,self.generation)
+        args=[node,str(ROOT/'src/desktop/purchase-worker.mjs'),'--browser='+browser_channel]
+        if keep_session:args.append('--keep-session')
+        self.child=InteractiveChild(args,ROOT,self.events,self.generation)
         return True
     def send(self,value):
         if self.child is None:raise RuntimeError('No checkout session')

@@ -4,6 +4,7 @@ import json
 import os
 from pathlib import Path
 import queue
+import re
 import shutil
 import subprocess
 import threading
@@ -123,7 +124,8 @@ class Runner:
             self.busy = False
 
 class App:
-    def __init__(self, root: tk.Tk):
+    def __init__(self, root: tk.Tk, browser_channel='chrome'):
+        if browser_channel not in ('chrome','msedge'):raise ValueError('Browser choice is not enabled')
         self.root, self.runner = root, Runner()
         self.checkout=CheckoutRunner()
         root.title(TITLE)
@@ -132,7 +134,7 @@ class App:
         pane = ttk.Frame(root, padding=20)
         pane.pack(fill="both", expand=True)
         ttk.Label(pane, text="AppleBuy 桌面助手", font=("Microsoft YaHei UI", 17)).pack(anchor="w")
-        ttk.Label(pane, text="先跑通一台 Pro 到未付款订单。旧未知动作保留；程序结账入口需先导入原任务。", wraplength=700).pack(anchor="w", pady=(12, 5))
+        ttk.Label(pane, text="先跑通一台 Pro 到未付款订单。程序读取保留的原任务；旧未知动作不会自动重试。", wraplength=700).pack(anchor="w", pady=(12, 5))
         ttk.Label(pane, text="实际购买目标：Pro 256GB 黑色 · 1台 · 大连恒隆 · 上限 ¥9,999 · 支付宝", wraplength=620).pack(anchor="w")
         ttk.Label(pane, text="离线按钮使用虚构数据；公开预检止于加购前；程序结账按上方真实条件推进。", wraplength=620).pack(anchor="w", pady=(8, 12))
         controls = ttk.Frame(pane)
@@ -145,6 +147,14 @@ class App:
         self.import_button.pack(side="left",padx=6)
         self.stop_button = ttk.Button(controls, text="停止演练", command=self.stop, state="disabled")
         self.stop_button.pack(side="left", padx=10)
+        browser_controls=ttk.Frame(pane);browser_controls.pack(anchor='w',pady=(7,0))
+        ttk.Label(browser_controls,text='程序浏览器：').pack(side='left')
+        self.browser_choice=tk.StringVar(value='Edge' if browser_channel=='msedge' else 'Chrome')
+        self.browser_picker=ttk.Combobox(browser_controls,textvariable=self.browser_choice,values=('Chrome','Edge'),state='readonly',width=10);self.browser_picker.pack(side='left')
+        self.keep_session=tk.BooleanVar(value=False)
+        self.keep_session_checkbox=ttk.Checkbutton(browser_controls,text='本人同意在本程序独立目录保留登录会话（本机）',variable=self.keep_session);self.keep_session_checkbox.pack(side='left',padx=12)
+        self.browser_diagnostic=tk.StringVar(value='尚未记录失败响应；只显示域名和状态码，不读取请求内容。')
+        ttk.Label(pane,textvariable=self.browser_diagnostic,wraplength=850).pack(anchor='w',pady=(3,0))
         checkout_controls=ttk.Frame(pane);checkout_controls.pack(anchor="w",pady=(12,4))
         self.checkout_button=ttk.Button(checkout_controls,text="开始 Pro 程序购买",command=self.open_checkout);self.checkout_button.pack(side="left")
         self.advance_button=ttk.Button(checkout_controls,text="继续本次 Pro 购买",command=self.advance_checkout,state="disabled");self.advance_button.pack(side="left",padx=6)
@@ -155,7 +165,7 @@ class App:
         for key,label in [('lastName','姓'),('firstName','名'),('phone','手机号'),('email','邮箱'),('identitySuffix','证件后四位')]:
             ttk.Label(private_fields,text=label).pack(side="left");v=tk.StringVar();self.pickup_values[key]=v
             ttk.Entry(private_fields,textvariable=v,width=10 if key in ('firstName','lastName','identitySuffix') else 18,show='*' if key=='identitySuffix' else '').pack(side="left",padx=(2,6))
-        ttk.Label(pane,text="取货资料仅用于本次程序会话。官网登录或验证请在程序打开的 Chrome 中完成。",wraplength=850).pack(anchor="w",pady=(5,0))
+        ttk.Label(pane,text="取货资料仅用于本次程序会话。官网登录或验证请在程序打开的浏览器中完成。",wraplength=850).pack(anchor="w",pady=(5,0))
         self.transfer_confirm=tk.BooleanVar(value=False)
         self.transfer_checkbox=ttk.Checkbutton(pane,text="本人确认旧结账已停止、旧时段窗口已到期，当前同一账户购物袋为这一台 Pro；不再加购。暂停保留当前窗口；关闭或重启后只能只读核对",variable=self.transfer_confirm,state='disabled');self.transfer_checkbox.pack(anchor='w',pady=(6,0))
         self.final_confirm=tk.BooleanVar(value=False)
@@ -163,7 +173,7 @@ class App:
         self.submit_button=ttk.Button(pane,text="按当前条款创建这一张未付款订单",command=self.submit_checkout,state="disabled");self.submit_button.pack(anchor="w",pady=(4,0))
         self.status = tk.StringVar(value="等待演练。官网那次加购仍未确认，旧任务记录保持。")
         ttk.Label(pane, textvariable=self.status, wraplength=620).pack(anchor="w", pady=(20, 8))
-        self.result = tk.StringVar(value="尚未核实新的未付款订单；原插件记录只能通过本人导出交接，不会直接读取 Chrome 存储。")
+        self.result = tk.StringVar(value="尚未核实新的未付款订单；只读取本机已交接的任务记录，不读取个人浏览器存储。")
         ttk.Label(pane, textvariable=self.result, wraplength=620).pack(anchor="w")
         ttk.Label(pane,text="快捷键：Ctrl+Alt+P 开始 Pro；Ctrl+Alt+S 暂停。最终下单仍需本次条款确认。",wraplength=850).pack(anchor="w",pady=(6,0))
         root.bind('<Control-Alt-p>',lambda event:self.checkout_shortcut())
@@ -233,7 +243,11 @@ class App:
         self.checkout_owner_lost=False
         self.checkout_pause_ack=None
         try:
-            if self.checkout.open():
+            choice=self.browser_choice.get()
+            if choice not in ('Chrome','Edge'):raise ValueError('Browser choice is not enabled')
+            if self.checkout.open(browser_channel='msedge' if choice=='Edge' else 'chrome',keep_session=self.keep_session.get()):
+                self.browser_picker.config(state='disabled')
+                self.keep_session_checkbox.config(state='disabled')
                 self.checkout_begin_pending=True
                 self.checkout_button.config(state='disabled');self.checkout_stop_button.config(state='normal')
                 self.start_button.config(state='disabled');self.probe_button.config(state='disabled')
@@ -301,6 +315,11 @@ class App:
                 v=self.checkout.events.get_nowait()
                 if v.get('generation')!=self.checkout.generation:continue
                 kind=v.get('type')
+                if kind=='network-status':
+                    host=v.get('host');code=v.get('status');brand=v.get('browser')
+                    if isinstance(host,str) and (host in ('www.apple.com.cn','idmsa.apple.com.cn','appleid.cdn-apple.com') or re.fullmatch(r'secure[0-9]+\.www\.apple\.com\.cn',host)) and type(code) is int and 400<=code<=599 and brand in ('chrome','msedge'):
+                        self.browser_diagnostic.set(('Edge' if brand=='msedge' else 'Chrome')+' 官网失败响应：HTTP '+str(code)+' · '+host+'；具体原因仍待核对。')
+                    continue
                 if kind=='owner-lost':
                     self.checkout_owner_lost=True;self.checkout_pause_ack=None;self.final_confirm.set(False);self.transfer_confirm.set(False)
                     for control in (self.advance_button,self.reconcile_button,self.transfer_button,self.transfer_checkbox,self.submit_button,self.final_checkbox,self.checkout_stop_button):control.config(state='disabled')
@@ -331,6 +350,8 @@ class App:
                     if kind!='worker-ended':continue
                 if kind=='worker-ended':
                     if self.checkout.terminal():
+                        self.browser_picker.config(state='readonly')
+                        self.keep_session_checkbox.config(state='normal')
                         self.transfer_button.config(state='disabled');self.transfer_checkbox.config(state='disabled');self.transfer_confirm.set(False)
                         self.checkout_button.config(state='normal');self.start_button.config(state='normal');self.probe_button.config(state='normal')
                         self.advance_button.config(state='disabled');self.reconcile_button.config(state='disabled');self.submit_button.config(state='disabled');self.checkout_stop_button.config(state='disabled')
