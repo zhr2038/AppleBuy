@@ -1,7 +1,7 @@
 // Real Windows broker/host stdio and pipe + production Runtime/Job/Port/Peer, FAKE Chrome/merchant/authority only.
 import test from 'node:test';import assert from 'node:assert/strict';
 import {spawn} from 'node:child_process';import {mkdir,writeFile,readFile,access} from 'node:fs/promises';import {resolve,join} from 'node:path';
-import {DesktopTaskStore} from '../src/desktop/task-store.mjs';import {launchNativeCheckout} from '../src/desktop/native-checkout-channel.mjs';
+import {DesktopTaskStore} from '../src/desktop/task-store.mjs';import {createNativeCheckoutChannel} from '../src/desktop/native-checkout-channel.mjs';
 import {world} from './fixtures/c121-native-world.mjs';import {TASK_KEY} from '../web/checkout-connector/job.js';
 for(const fromReadonlyEmpty of [false,true])test('C125 composed Windows native stream reaches one FAKE unpaid detail after refusal with real owner; empty successor='+fromReadonlyEmpty, {skip:process.platform!=='win32'}, async()=>{
  const folder=resolve('.local/test-runs/c125-stream-'+crypto.randomUUID()),contextId='FAKE-C123-native-context';await mkdir(join(folder,'.local/desktop'),{recursive:true});await writeFile(join(folder,'.local/desktop/checkout-native-config.json'),JSON.stringify({extensionId:'a'.repeat(32),hostName:'com.applebuy.checkout'}));
@@ -11,7 +11,7 @@ for(const fromReadonlyEmpty of [false,true])test('C125 composed Windows native s
  f.runtime.store={get:key=>actual.get(key),put:async(key,row)=>{await actual.put(key,row);f.w.row=structuredClone(row);},acquireOwner:()=>actual.acquireOwner()};
  let host,channel,frames=0,buffer=Buffer.alloc(0),fault=null;
  try{
-  channel=launchNativeCheckout({contextId,spawnProcess:()=>spawn('python',['-B','test/desktop-c123-stream-fixture.py','broker',folder],{cwd:resolve('.'),windowsHide:true,stdio:['pipe','pipe','pipe']})});
+  channel=createNativeCheckoutChannel({contextId,spawnProcess:()=>spawn('python',['-B','test/desktop-c123-stream-fixture.py','broker',folder],{cwd:resolve('.'),windowsHide:true,stdio:['pipe','pipe','pipe']})});
   const ticket=join(folder,'.local/desktop/checkout-native-ticket.json');for(let n=0;n<100;n++){try{await access(ticket);break;}catch{await new Promise(r=>setTimeout(r,20));}}
   host=spawn('python',['-B','test/desktop-c123-stream-fixture.py','host',folder],{cwd:resolve('.'),windowsHide:true,stdio:['pipe','pipe','pipe']});host.stderr.resume();
   host.stdout.on('data',chunk=>{

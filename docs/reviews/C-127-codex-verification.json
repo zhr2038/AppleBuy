@@ -1,0 +1,115 @@
+{
+  "task": "C127",
+  "author": "Codex",
+  "sourceFiles": 282,
+  "sha256": "dfb937ca7aa301d3b8837c84bc70380584ea70accaf25ec0f67b2e4f2d69bb64",
+  "checks": {
+    "exitCode": 0,
+    "timeout": false,
+    "ownedCleanupConfirmed": true,
+    "rows": [
+      {
+        "scope": "bounded-review-checks",
+        "order": 1,
+        "exitCode": 0,
+        "timedOut": false,
+        "ownedTreeCleanupConfirmed": true,
+        "manifest": {
+          "ok": true,
+          "files": 282,
+          "sha256": "dfb937ca7aa301d3b8837c84bc70380584ea70accaf25ec0f67b2e4f2d69bb64",
+          "mismatches": []
+        },
+        "passed": true
+      },
+      {
+        "scope": "bounded-review-checks",
+        "order": 2,
+        "exitCode": 0,
+        "timedOut": false,
+        "ownedTreeCleanupConfirmed": true,
+        "counts": {
+          "tests": 101,
+          "pass": 101,
+          "fail": 0,
+          "cancelled": 0,
+          "skipped": 0
+        },
+        "passed": true
+      },
+      {
+        "scope": "bounded-review-checks",
+        "order": 3,
+        "exitCode": 0,
+        "timedOut": false,
+        "ownedTreeCleanupConfirmed": true,
+        "tests": 54,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "passed": true
+      },
+      {
+        "scope": "bounded-review-checks",
+        "order": 4,
+        "exitCode": 0,
+        "timedOut": false,
+        "ownedTreeCleanupConfirmed": true,
+        "counts": {
+          "tests": 1507,
+          "pass": 1507,
+          "fail": 0,
+          "cancelled": 0,
+          "skipped": 0
+        },
+        "passed": true
+      },
+      {
+        "scope": "bounded-review-checks",
+        "order": 5,
+        "exitCode": 0,
+        "timedOut": false,
+        "ownedTreeCleanupConfirmed": true,
+        "manifest": {
+          "ok": true,
+          "files": 282,
+          "sha256": "dfb937ca7aa301d3b8837c84bc70380584ea70accaf25ec0f67b2e4f2d69bb64",
+          "mismatches": []
+        },
+        "passed": true
+      },
+      {
+        "scope": "bounded-review-checks",
+        "complete": true,
+        "orderedChecks": 5,
+        "passed": true
+      }
+    ]
+  },
+  "actualWorkerBeforeFix": {
+    "scope": "actual prepared worker missing-registration with isolated FAKE ledger",
+    "exitCode": 1,
+    "timeout": true,
+    "ownedCleanupConfirmed": true,
+    "fakeLedgerUnchanged": true,
+    "outputTypes": [
+      "blocked",
+      "blocked"
+    ],
+    "noRealBrowser": true
+  },
+  "actualWorkerAfterFix": {
+    "scope": "actual prepared worker missing-registration fixed with isolated FAKE ledger",
+    "exitCode": 1,
+    "timeout": false,
+    "ownedCleanupConfirmed": true,
+    "fakeLedgerUnchanged": true,
+    "outputTypes": [
+      "blocked"
+    ],
+    "noRealBrowser": true
+  },
+  "purchaseHostInstalled": false,
+  "noPersonalBrowserOrLedger": true,
+  "accepted": false
+}
