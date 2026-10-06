@@ -1,0 +1,13 @@
+{
+  "sourceCommit": "7da473229b57330377f3e7c349620d9ff263e20e",
+  "candidateRemote": "7da473229b57330377f3e7c349620d9ff263e20e",
+  "mainUnchanged": "bd130ee77d8e914f6373432e1061c4de820fbc66",
+  "files": 281,
+  "sha256": "c8d5f2b592c02cec46f385ebace41eacb90f2f8de1fcabc7bf8fb28a41b2e34c",
+  "allHeadAndRemoteBlobsMatch": true,
+  "privacyScanPassed": true,
+  "candidateOnlyPendingCombinedOpusReview": true,
+  "purchaseHostInstalled": false,
+  "realOrderVerified": false,
+  "verifiedAtUtc": "2026-10-06T15:43:51.499897+00:00"
+}
