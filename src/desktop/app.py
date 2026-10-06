@@ -157,7 +157,7 @@ class App:
             ttk.Entry(private_fields,textvariable=v,width=10 if key in ('firstName','lastName','identitySuffix') else 18,show='*' if key=='identitySuffix' else '').pack(side="left",padx=(2,6))
         ttk.Label(pane,text="取货资料仅用于本次程序会话。官网登录或验证请在程序打开的 Chrome 中完成。",wraplength=850).pack(anchor="w",pady=(5,0))
         self.transfer_confirm=tk.BooleanVar(value=False)
-        self.transfer_checkbox=ttk.Checkbutton(pane,text="本人确认旧结账已停止、旧时段窗口已到期，当前同一账户购物袋为这一台 Pro；不再加购。暂停或重启后只能只读核对，不能继续购买",variable=self.transfer_confirm,state='disabled');self.transfer_checkbox.pack(anchor='w',pady=(6,0))
+        self.transfer_checkbox=ttk.Checkbutton(pane,text="本人确认旧结账已停止、旧时段窗口已到期，当前同一账户购物袋为这一台 Pro；不再加购。暂停保留当前窗口；关闭或重启后只能只读核对",variable=self.transfer_confirm,state='disabled');self.transfer_checkbox.pack(anchor='w',pady=(6,0))
         self.final_confirm=tk.BooleanVar(value=False)
         self.final_checkbox=ttk.Checkbutton(pane,text="本人核对当前唯一一台、无附加项及无重复订单，接受本次官网条款；只创建未付款订单",variable=self.final_confirm,state='disabled');self.final_checkbox.pack(anchor="w",pady=(8,0))
         self.submit_button=ttk.Button(pane,text="按当前条款创建这一张未付款订单",command=self.submit_checkout,state="disabled");self.submit_button.pack(anchor="w",pady=(4,0))
@@ -229,6 +229,7 @@ class App:
     def open_checkout(self):
         if self.runner.busy or self.checkout.busy:return
         self.final_confirm.set(False)
+        self.checkout_paused=False
         try:
             if self.checkout.open():
                 self.checkout_begin_pending=True
@@ -244,12 +245,15 @@ class App:
             if data.get('identitySuffix') and (len(data['identitySuffix'])!=4 or not data['identitySuffix'].isdigit()):
                 self.status.set('证件后四位格式不正确；未发动作。');return
             self.advance_button.config(state='disabled');self.submit_button.config(state='disabled');self.final_confirm.set(False)
-            self.checkout.send({'action':'advance','checkoutApproved':True,'newContextConfirmed':True,'privatePickupData':data})
+            action='resume' if getattr(self,'checkout_paused',False) else 'advance'
+            self.checkout_paused=False
+            self.checkout.send({'action':action,'checkoutApproved':True,'newContextConfirmed':True,'privatePickupData':data})
         except Exception:self.status.set('推进未确认；保留原动作，不自动重复。')
 
     def reconcile_checkout(self):
         try:
             self.submit_button.config(state='disabled');self.final_confirm.set(False)
+            self.checkout_paused=False
             self.checkout.send({'action':'reconcile'})
         except Exception:self.status.set('旧任务核对未确认；没有发出官网购买动作。')
 
@@ -269,12 +273,12 @@ class App:
         except Exception:self.status.set('最终动作未确认，保留记录，不重复提交。')
 
     def stop_checkout(self):
-        try:self.checkout.stop()
-        except Exception:self.status.set('结账进程清理未确认，不能再次启动；旧动作保持。');return
+        try:self.checkout.pause()
+        except Exception:self.status.set('暂停指令未确认；不重新启动，旧动作保持。');return
+        self.checkout_paused=True;self.final_confirm.set(False);self.final_checkbox.config(state='disabled')
         self.advance_button.config(state='disabled');self.reconcile_button.config(state='disabled');self.submit_button.config(state='disabled');self.checkout_stop_button.config(state='disabled')
         self.transfer_button.config(state='disabled');self.transfer_checkbox.config(state='disabled');self.transfer_confirm.set(False)
-        self.checkout_button.config(state='normal');self.start_button.config(state='normal');self.probe_button.config(state='normal')
-        self.status.set('本次程序进程已停止；已发送动作可能仍完成，未知记录保持。接替任务重启后只能只读核对；旧版或损坏的锁记录需人工处理。')
+        self.status.set('正在暂停当前任务并核对执行结束；保留官网窗口，已发送动作仍可能完成。')
 
     def stop(self):
         try:
@@ -297,6 +301,14 @@ class App:
                 kind=v.get('type')
                 if kind in ('ready','blocked','result','worker-ended'):
                     self.final_confirm.set(False);self.final_checkbox.config(state='disabled')
+                if kind=='paused':
+                    self.checkout_paused=True;self.checkout_readonly=v.get('readOnly') is True
+                    self.advance_button.config(state='normal' if v.get('canContinue') is True else 'disabled')
+                    self.reconcile_button.config(state='normal' if self.checkout_readonly else 'disabled')
+                    self.status.set('已暂停并保留当前任务与官网窗口。点“继续本次 Pro 购买”先核对原结果，不重复已发送动作。')
+                    continue
+                if v.get('paused') is True or getattr(self,'checkout_paused',False):
+                    if kind!='worker-ended':continue
                 if kind=='worker-ended':
                     if self.checkout.terminal():
                         self.transfer_button.config(state='disabled');self.transfer_checkbox.config(state='disabled');self.transfer_confirm.set(False)

@@ -95,6 +95,8 @@ class CheckoutRunner:
     def send(self,value):
         if self.child is None:raise RuntimeError('No checkout session')
         self.child.send(value)
+    def pause(self):
+        self.send({'action':'pause'})
     def terminal(self):
         if self.child and self.child.done.is_set() and self.child.cleanup_confirmed:self.child=None;return True
         return False

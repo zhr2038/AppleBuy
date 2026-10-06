@@ -8,7 +8,7 @@ const BAG='https://www.apple.com.cn/shop/bag',TERMS='https://www.apple.com.cn/sh
 const PHASES=new Set(['ENTRY','VARIANT','EMPTY_BAG','BAG','AUTH','FULFILLMENT','SLOTS','DETAILS','PAYMENT','REVIEW','ORDER_RECEIPT','ORDER_DETAIL','PROCESSING','UNKNOWN']);
 const safeState=s=>({state:typeof s.state==='string'?s.state:'NEEDS_VERIFICATION',phase:PHASES.has(s.phase)?s.phase:'UNKNOWN',pendingAction:['addBag','checkout','chooseSlot','submitOrder'].includes(s.pendingAction)?s.pendingAction:null});
 export class DesktopCheckoutRuntime {
- constructor({store,launch,onState=()=>{}}){this.store=store;this.launch=launch;this.onState=onState;this.opened=false;this.busy=false;this.closing=false;this.closed=false;this.cleanupConfirmed=false;this.finalDescriptor=null;this.active=null;}
+ constructor({store,launch,onState=()=>{}}){this.store=store;this.launch=launch;this.onState=onState;this.opened=false;this.busy=false;this.closing=false;this.closed=false;this.paused=false;this.cleanupConfirmed=false;this.finalDescriptor=null;this.active=null;}
  async open(){
   if(this.opened||this.busy||this.closing)throw Error('DesktopSessionAlreadyRunning');this.busy=true;
   try{
@@ -26,18 +26,20 @@ export class DesktopCheckoutRuntime {
   const port=new ChromePort(this.api,this.tabId,{mode:'observe'}),o=await port.observe(PRO_PLAN),old=await this.store.get(TASK_KEY);
   const recover=old?.desktopContext!==this.api.sessionId&&old?.desktopContext&&validateDesktopCartTransfer(old,{sessionId:old.desktopContext});
   const result={state:'OBSERVED',phase:o.phase,pendingAction:old?.pending?.action??null,legacyReadOnly:old?.reconcileOnly===true||!!recover,realOrderVerified:false};
-  this.onState(safeState(result));return result;
+  if(!this.paused)this.onState(safeState(result));return result;
  }
  async execute(options){
   if(!this.opened||this.closed||this.closing)throw Error('DesktopSessionNotOpen');if(this.busy)throw Error('DesktopSessionAlreadyRunning');
+  if(this.paused)throw Error('DesktopSessionPaused');
   this.busy=true;this.finalDescriptor=null;this.abort=new AbortController();
   const leased={get:k=>this.store.get(k),put:(k,v)=>this.store.put(k,v),acquireOwner:async()=>({get owned(){return runtime.lease?.owned===true;},release:async()=>{}})},runtime=this;
   try{
-   this.active=runDesktopSession({api:this.api,tabId:this.tabId,store:leased,mode:'purchase',signal:this.abort.signal,onState:s=>this.onState({...safeState(s),readOnly:options.mode==='reconcile'}),...options});
-   const result=await this.active;if(options.mode!=='reconcile'&&result.phase==='REVIEW'&&!this.closing)await this.prepareReview();this.onState(safeState(result));return result;
+   this.active=runDesktopSession({api:this.api,tabId:this.tabId,store:leased,mode:'purchase',signal:this.abort.signal,onState:s=>this.onState({...safeState(s),readOnly:options.mode==='reconcile',paused:this.paused}),...options});
+   const result=await this.active;if(options.mode!=='reconcile'&&result.phase==='REVIEW'&&!this.closing&&!this.paused)await this.prepareReview();this.onState({...safeState(result),paused:this.paused});return result;
   }finally{this.active=null;this.busy=false;}
  }
  async advance({checkoutApproved=false,newContextConfirmed=false,privatePickupData={}}={}){
+  if(this.paused)throw Error('DesktopSessionPaused');
   if(this.busy||this.closing||this.closed)throw Error('DesktopSessionAlreadyRunning');
   const old=await this.store.get(TASK_KEY);
   const authority={checkoutApproved,newContextConfirmed,legacyOwnershipRevoked:old?.state==='RETIRED'||old?.desktopContext===this.api?.sessionId,planDigest:proDigest};
@@ -45,23 +47,36 @@ export class DesktopCheckoutRuntime {
  }
  async reconcile(){return this.execute({mode:'reconcile',authority:null,privatePickupData:{}});}
  async transfer({approved=false,newContextConfirmed=false,privatePickupData={}}={}){
+  if(this.paused)throw Error('DesktopSessionPaused');
   if(!this.opened||this.busy||this.closing||this.closed||this.lease?.owned!==true)throw Error('DesktopSessionAlreadyRunning');
   this.busy=true;let created;
-  try{this.active=transferExistingCart({store:this.store,api:this.api,tabId:this.tabId,approved,newContextConfirmed,live:()=>!this.closing});created=await this.active;}finally{this.active=null;this.busy=false;}
-  if(created?.created===true&&!this.closing&&this.lease?.owned===true)this.onState({state:'NEEDS_USER',phase:'BAG',pendingAction:null,readOnly:false});
+  try{this.active=transferExistingCart({store:this.store,api:this.api,tabId:this.tabId,approved,newContextConfirmed,live:()=>!this.closing&&!this.paused});created=await this.active;}finally{this.active=null;this.busy=false;}
+  if(created?.created===true&&!this.closing&&!this.paused&&this.lease?.owned===true)this.onState({state:'NEEDS_USER',phase:'BAG',pendingAction:null,readOnly:false});
   return this.advance({checkoutApproved:true,newContextConfirmed:true,privatePickupData});
  }
  async prepareReview(){
   const old=await this.store.get(TASK_KEY),port=new ChromePort(this.api,this.tabId,{mode:'observe'}),o=await port.observe(PRO_PLAN);
-  if(old?.desktopContext!==this.api.sessionId||old.lastPhase!=='REVIEW'||old.pending||old.finalIntent||old.reconcileOnly===true||o.phase!=='REVIEW'||o.documentId!==old.lastDocumentId||!o.termsLinks?.includes(TERMS))throw Error('DesktopFinalConsentNotCurrent');
+  if(this.paused||this.closing||old?.desktopContext!==this.api.sessionId||old.lastPhase!=='REVIEW'||old.pending||old.finalIntent||old.reconcileOnly===true||o.phase!=='REVIEW'||o.documentId!==old.lastDocumentId||!o.termsLinks?.includes(TERMS))throw Error('DesktopFinalConsentNotCurrent');
   this.finalDescriptor={taskId:old.taskId,documentId:old.lastDocumentId,termsUrl:TERMS};
   return {phase:'REVIEW',termsUrl:TERMS,product:PRO_PLAN.product,totalCapCny:9999,quantity:1,store:PRO_PLAN.stores[0],paymentMethod:'支付宝'};
  }
  async submit({termsAccepted=false,existingOrdersChecked=false,noExtras=false}={}){
+  if(this.paused)throw Error('DesktopSessionPaused');
   if(this.busy||this.closing||this.closed)throw Error('DesktopSessionAlreadyRunning');
   if(!this.finalDescriptor||termsAccepted!==true||existingOrdersChecked!==true||noExtras!==true)throw Error('DesktopFinalConsentNotCurrent');
   const finalConsent={...this.finalDescriptor,termsAccepted,existingOrdersChecked,noExtras,acceptedAt:Date.now()};
   return this.execute({authority:{...this.authority,finalConsent}});
+ }
+ async pause(){
+  if(!this.opened||this.closed||this.closing)throw Error('DesktopSessionNotOpen');
+  this.paused=true;this.finalDescriptor=null;this.abort?.abort();
+  if(this.active){try{await this.active;}catch{}}
+  const old=await this.store.get(TASK_KEY);
+  return {...safeState({state:'PAUSED',phase:old?.lastPhase,pendingAction:old?.pending?.action}),paused:true,readOnly:old?.reconcileOnly===true,canContinue:old?.desktopContext===this.api.sessionId&&old?.reconcileOnly!==true&&old?.state!=='CONFIRMED_UNPAID'};
+ }
+ async resume({mode='purchase',...options}={}){
+  if(!this.paused||this.busy||this.closing||this.closed||this.lease?.owned!==true)throw Error('DesktopSessionAlreadyRunning');
+  this.paused=false;return mode==='reconcile'?this.reconcile():this.advance(options);
  }
  async close(){
   if(this.closePromise)return this.closePromise;this.closePromise=this.closeOnce();return this.closePromise;

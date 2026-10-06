@@ -8,6 +8,7 @@ const errors={DesktopLegacyHandoffRequired:'需要导入原任务；未打开购
 Object.assign(errors,{
  DesktopOwnerLeaseLost:'执行权已丢失，停止自动动作；未知记录保留，请先核对当前状态。',
  DesktopOwnerCleanupUnconfirmed:'执行权清理未确认，保留任务，不得再次启动。',
+ DesktopSessionPaused:'本任务已暂停；只可明确继续同一任务，已发送动作不重复。',
  DesktopReadonlyHandoffRequired:'没有可核对的只读交接记录；原任务保持，未发购买动作。',
  'DesktopLegacyResultStillUnconfirmed; DesktopHandoffPermanentlyRevokedSource':'原任务仍有未知动作且原购买权限已停用；只能核对，不能直接继续购买。',
  DesktopTransferNeedsExplicitCurrentApproval:'需确认接替当前同一账户的一台商品；没有接替或购买。',
@@ -27,27 +28,29 @@ const runtime=new DesktopCheckoutRuntime({store,onState:s=>emit({type:'progress'
 }});
 try{
  const initial=await runtime.open();emit({type:'ready',readOnly:initial.legacyReadOnly===true,message:'程序已读取保留记录并打开官网窗口；旧未知动作保持，不自动重复。'});
- const input=createInterface({input:process.stdin});let active=false;
- const watch=new AuthContinuation({observe:()=>runtime.observe(),isBusy:()=>closing||active,onStopped:why=>emit({type:'blocked',message:why==='expired'?'登录等待已暂停；完成官网验证后可继续原任务，不重复结账。':'登录后的页面未确认，已停止自动推进；旧结账记录保持。'})});
+ const input=createInterface({input:process.stdin});let active=false,pausing=false;
+ const watch=new AuthContinuation({observe:()=>runtime.observe(),isBusy:()=>closing||active||pausing||runtime.paused,onStopped:why=>emit({type:'blocked',paused:runtime.paused,message:why==='expired'?'登录等待已暂停；完成官网验证后可继续原任务，不重复结账。':'登录后的页面未确认，已停止自动推进；旧结账记录保持。'})});
  async function advance(c){
-  const result=await runtime.advance({checkoutApproved:c.checkoutApproved===true,newContextConfirmed:c.newContextConfirmed===true,privatePickupData:c.privatePickupData??{}});
-  emit({type:'result',state:result.state,phase:result.phase,realOrderVerified:result.realOrderVerified===true,reviewReady:!!runtime.finalDescriptor});
-  if(result.phase==='AUTH'&&result.state==='NEEDS_USER'){
-   watch.start(async()=>{active=true;try{await advance(c);}catch(error){emit({type:'blocked',message:errors[error?.message]??'登录后的推进未确认，旧动作保留，不自动重试。'});}finally{active=false;}});
+  const options={checkoutApproved:c.checkoutApproved===true,newContextConfirmed:c.newContextConfirmed===true,privatePickupData:c.privatePickupData??{}};
+  const result=c.action==='resume'?await runtime.resume(options):await runtime.advance(options);
+  emit({type:'result',state:result.state,phase:result.phase,paused:runtime.paused,realOrderVerified:result.realOrderVerified===true,reviewReady:!!runtime.finalDescriptor});
+  if(!runtime.paused&&result.phase==='AUTH'&&result.state==='NEEDS_USER'){
+   watch.start(async()=>{active=true;try{await advance({...c,action:'advance'});}catch(error){emit({type:'blocked',paused:runtime.paused,message:errors[error?.message]??'登录后的推进未确认，旧动作保留，不自动重试。'});}finally{active=false;}});
   }
   return result;
  }
  input.on('line',async line=>{
   if(line.length>12000||closing)return;let c;try{c=JSON.parse(line);}catch{return;}
   if(c?.action==='stop'){closing=true;watch.stop();input.close();try{await runtime.close();}catch{process.exitCode=2;emit({type:'blocked',message:'浏览器清理未确认，保留任务锁，不得再启动。'});}finally{emit({type:'closed',cleanupConfirmed:runtime.cleanupConfirmed});process.stdin.destroy();}return;}
-  if(active||watch.reading){emit({type:'blocked',message:'当前执行尚未结束，未再次发动作。'});return;}
-  if(!['observe','reconcile','transfer','advance','submit'].includes(c?.action))return;
+  if(c?.action==='pause'){watch.stop();if(pausing)return;pausing=true;try{emit({type:'paused',...await runtime.pause()});}catch{emit({type:'blocked',paused:runtime.paused,message:'暂停结果未确认；不发新动作，旧记录保持。'});}finally{pausing=false;}return;}
+  if(active||watch.reading||pausing){emit({type:'blocked',paused:runtime.paused,message:'当前执行尚未结束，未再次发动作。'});return;}
+  if(!['observe','reconcile','transfer','advance','resume','submit'].includes(c?.action))return;
   watch.stop();active=true;
   try{
-   if(c.action==='advance')await advance(c);
-   else if(c.action==='transfer'){const result=await runtime.transfer({approved:c.approved===true,newContextConfirmed:c.newContextConfirmed===true,privatePickupData:c.privatePickupData??{}});emit({type:'result',state:result.state,phase:result.phase,realOrderVerified:result.realOrderVerified===true,reviewReady:!!runtime.finalDescriptor});if(result.phase==='AUTH'&&result.state==='NEEDS_USER')watch.start(async()=>{active=true;try{await advance({checkoutApproved:true,newContextConfirmed:true,privatePickupData:c.privatePickupData??{}});}catch{emit({type:'blocked',message:'接替后的登录衔接未确认，旧动作保留，不重复结账。'});}finally{active=false;}});}
-   else{const result=c.action==='observe'?await runtime.observe():c.action==='reconcile'?await runtime.reconcile():await runtime.submit({termsAccepted:c.termsAccepted===true,existingOrdersChecked:c.existingOrdersChecked===true,noExtras:c.noExtras===true});emit({type:'result',state:result.state,phase:result.phase,readOnly:c.action==='reconcile',realOrderVerified:result.realOrderVerified===true,reviewReady:!!runtime.finalDescriptor});}
-  }catch(error){emit({type:'blocked',message:errors[error?.message]??'本次推进未确认；旧记录保持，未自动重试。'});}finally{active=false;}
+   if(c.action==='advance'||c.action==='resume')await advance(c);
+   else if(c.action==='transfer'){const result=await runtime.transfer({approved:c.approved===true,newContextConfirmed:c.newContextConfirmed===true,privatePickupData:c.privatePickupData??{}});emit({type:'result',state:result.state,phase:result.phase,paused:runtime.paused,realOrderVerified:result.realOrderVerified===true,reviewReady:!!runtime.finalDescriptor});if(!runtime.paused&&result.phase==='AUTH'&&result.state==='NEEDS_USER')watch.start(async()=>{active=true;try{await advance({checkoutApproved:true,newContextConfirmed:true,privatePickupData:c.privatePickupData??{}});}catch{emit({type:'blocked',paused:runtime.paused,message:'接替后的登录衔接未确认，旧动作保留，不重复结账。'});}finally{active=false;}});}
+   else{const result=c.action==='observe'?await runtime.observe():c.action==='reconcile'?runtime.paused?await runtime.resume({mode:'reconcile'}):await runtime.reconcile():await runtime.submit({termsAccepted:c.termsAccepted===true,existingOrdersChecked:c.existingOrdersChecked===true,noExtras:c.noExtras===true});emit({type:'result',state:result.state,phase:result.phase,paused:runtime.paused,readOnly:c.action==='reconcile',realOrderVerified:result.realOrderVerified===true,reviewReady:!!runtime.finalDescriptor});}
+  }catch(error){emit({type:'blocked',paused:runtime.paused,message:errors[error?.message]??'本次推进未确认；旧记录保持，未自动重试。'});}finally{active=false;}
  });
  await new Promise(resolve=>input.once('close',resolve));watch.stop();
 }catch(error){emit({type:'blocked',message:errors[error?.message]??'结账入口未确认，旧任务保持；未重新开始购买。'});process.exitCode=1;}

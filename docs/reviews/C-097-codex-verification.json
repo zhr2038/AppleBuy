@@ -1,0 +1,55 @@
+{
+  "files": 237,
+  "sha256": "8320ff837aa48bef426f79aa319184f4516d7b5d4777931614d769edc2acd9c8",
+  "deltaFromC096": [
+    "src/desktop/app.py",
+    "src/desktop/checkout-runtime.mjs",
+    "src/desktop/interactive_child.py",
+    "src/desktop/purchase-worker.mjs",
+    "test/desktop-c078-runtime.test.ts",
+    "test/desktop_c078_test.py"
+  ],
+  "c093c096StillUnreviewed": true,
+  "redReproductions": {
+    "missingPauseRuntimeAPI": 2
+  },
+  "checks": {
+    "NodeFullPass": 1445,
+    "PythonPass": 19,
+    "newPauseRuntimeTests": 2,
+    "newPauseGuiTests": 3
+  },
+  "behaviour": [
+    "Pause retains original API context/browser/kernel owner; aborts and drains job, clears final descriptor",
+    "Explicit resume reuses same task, does not extend expiry or repeat Add/checkout",
+    "Private IPC separates pause/resume from stop/full teardown; auth watch stops on pause",
+    "Readonly source remains readonly, actual new context still uses prior reconciliation guard"
+  ],
+  "nativeActualEvidence": {
+    "sourceHandoffImportedLocally": true,
+    "originalSecretsNotPublished": true,
+    "ownOldStoppedPreviewClosedNormally": true,
+    "currentGuiOpened": true,
+    "beginShortcutPhysicallyInvoked": true,
+    "initialMode": "read-only reconciliation",
+    "pauseShortcutPhysicallyInvoked": true,
+    "pauseAcknowledgedInVisibleGui": true,
+    "sameOwnedWorkerStillLiveAfterPause": true,
+    "actualCustomerLoginPending": true,
+    "noCoordinatorWebBusinessClick": true,
+    "noAuthenticationNativeInput": true,
+    "noOrderSlotPayment": true,
+    "screenshots": "own GUI display only, no image files/website or user data published"
+  },
+  "limits": [
+    "One actual readonly session does not verify live buying pause/final order",
+    "Original unknown outcomes preserved, imported source cannot acquire buying from pause",
+    "Restart/close changes context and remains readonly",
+    "Complete pending-source review interrupted by C094 provider quota; original-session C098 review at/after03:40UTC"
+  ],
+  "accepted": false,
+  "actualProgrammeUnpaidOrderVerified": false,
+  "goalStatus": "active; this turn real import/native session plus aligned code progress",
+  "restoreTask": "C-098-COMBINED-REVIEW",
+  "verifiedAtUtc": "2026-10-06T02:04:24.878926+00:00"
+}

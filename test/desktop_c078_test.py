@@ -84,5 +84,16 @@ class DesktopWorkerTests(unittest.TestCase):
         app.transfer_confirm.set(True);app.transfer_checkout()
         app.checkout.events.put({'generation':1,'type':'blocked','message':'FAKE empty bag'});app.poll()
         self.assertEqual(app.advance_button.state,'disabled')
+    def test_pause_requests_in_session_pause_and_waits_before_enabling_resume(self):
+        app=fake_app();calls=[];app.checkout.pause=lambda:calls.append('pause')
+        app.stop_checkout();self.assertEqual(calls,['pause']);self.assertTrue(app.checkout_paused);self.assertEqual(app.advance_button.state,'disabled')
+        app.checkout.events.put({'generation':1,'type':'paused','readOnly':False,'canContinue':True});app.poll();self.assertEqual(app.advance_button.state,'normal');self.assertTrue(app.checkout_paused)
+    def test_explicit_continue_sends_resume_not_new_start(self):
+        app=fake_app();app.checkout_paused=True;app.pickup_values={};calls=[];app.checkout.send=calls.append
+        app.advance_checkout();self.assertEqual(calls[0]['action'],'resume');self.assertFalse(app.checkout_paused);self.assertFalse(app.final_confirm.get())
+    def test_paused_ui_does_not_consume_late_result_as_new_consent(self):
+        app=fake_app();app.checkout_paused=True;app.advance_button.state='disabled';app.final_confirm.set(False)
+        app.checkout.events.put({'generation':1,'type':'result','phase':'REVIEW','reviewReady':True,'paused':True});app.poll()
+        self.assertEqual(app.advance_button.state,'disabled');self.assertEqual(app.final_checkbox.state,'disabled')
 
 if __name__=='__main__':unittest.main()

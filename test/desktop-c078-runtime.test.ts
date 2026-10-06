@@ -59,3 +59,13 @@ test('C093 actual lease holder loss pauses a sent FAKE checkout and prevents any
  const running=runtime.advance({checkoutApproved:true,newContextConfirmed:true});await reached;const lost=new Promise(resolve=>runtime.lease.onLost(resolve));assert.equal(holder.kill(),true);await lost;release();
  const result=await running;await runtime.close();assert.equal(result.state,'PAUSED');assert.equal(w.row.pending.action,'checkout');assert.equal(w.commands.filter(x=>x==='checkout').length,1);assert.equal(w.commands.includes('selectPickup'),false);assert.equal(w.closes,1);assert.equal(runtime.cleanupConfirmed,true);
 });
+test('C097 pause retains context and ownership; REVIEW resumes with fresh consent and no second Add',async()=>{
+ const {w,runtime}=world();await runtime.open();await runtime.advance({checkoutApproved:true,newContextConfirmed:true});const context=runtime.api.sessionId;
+ await runtime.pause();assert.equal(runtime.api.sessionId,context);assert.equal(w.closes,0);assert.equal(w.releases,0);assert.equal(runtime.finalDescriptor,null);await assert.rejects(runtime.submit({termsAccepted:true,existingOrdersChecked:true,noExtras:true}),/Paused/);
+ const ready=await runtime.resume({checkoutApproved:true,newContextConfirmed:true});assert.equal(ready.phase,'REVIEW');assert.equal(w.commands.filter(x=>x==='checkout').length,1);assert.equal(w.commands.filter(x=>x==='addBag').length,1);assert.equal(w.commands.includes('submitOrder'),false);await runtime.close();assert.equal(w.closes,1);assert.equal(w.releases,1);
+});
+test('C097 pause drains one sent checkout then explicit resume reconciles it without repeating checkout',async()=>{
+ const {w,runtime}=world();await runtime.open();let release,entered;w.blocked=new Promise(r=>release=r);const reached=new Promise(r=>entered=r);w.entered=entered;w.blockAction='checkout';
+ const running=runtime.advance({checkoutApproved:true,newContextConfirmed:true});await reached;const pausing=runtime.pause();release();const stopped=await running;await pausing;assert.equal(stopped.state,'PAUSED');assert.equal(w.row.pending.action,'checkout');assert.equal(w.commands.includes('selectPickup'),false);assert.equal(w.closes,0);
+ await assert.rejects(runtime.advance({checkoutApproved:true,newContextConfirmed:true}),/Paused/);w.blockAction=null;const ready=await runtime.resume({checkoutApproved:true,newContextConfirmed:true});assert.equal(ready.phase,'REVIEW');assert.equal(w.commands.filter(x=>x==='checkout').length,1);await runtime.close();
+});
