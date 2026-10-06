@@ -1,0 +1,21 @@
+{
+  "task": "C-144-AUTHENTICATION-BLOCKED-AUDIT",
+  "goalStatus": "blocked",
+  "consecutiveSameBlockerGoalTurns": 3,
+  "sourceFiles": 288,
+  "sha256": "ad1c45e19f3246d27ccc713646b62cfedf0c247ea3b122361391052e205ad431",
+  "actualAcceptedScope": "C141 explicit Runtime cleanup; full Pro unpaid goal not complete",
+  "ownedPurchaseOrReviewCallsLive": false,
+  "officialCheckoutOrSignInTabsObserved": 0,
+  "newHumanLoginResultReceived": false,
+  "storedPendingAction": "checkout",
+  "finalIntentPresent": false,
+  "oldBuyerContextTerminalAndExpired": true,
+  "sourceArchivePreserved": true,
+  "lastCartEvidence": "C-140-actual-normal-cart-read.json: qty1/9999/fixedPro/noextras; account identity unproved",
+  "requiredExternalChange": "human Apple authentication before actual pickup/review progression; question already pending",
+  "newPurchaseAction": false,
+  "realOrderVerified": false,
+  "noShutdown": true,
+  "checkedAtUtc": "2026-10-06T18:37:46.368243+00:00"
+}
