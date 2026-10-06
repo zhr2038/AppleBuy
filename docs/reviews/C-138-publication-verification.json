@@ -1,0 +1,17 @@
+{
+  "sourceCommit": "863feae73a32fc28147626301d9416e8e0968f67",
+  "candidateRemote": "863feae73a32fc28147626301d9416e8e0968f67",
+  "mainUnchanged": "bd130ee77d8e914f6373432e1061c4de820fbc66",
+  "files": 287,
+  "sha256": "fe999e77a319dce64fb1b18e8784fb3efd28f4b817b09cffdb3f01aa2b1eed8e",
+  "allHeadAndRemoteBlobsMatch": true,
+  "privacyScanPassed": true,
+  "actualBoundedAgreements": [
+    "C136 initial read",
+    "C138 late Add hydration"
+  ],
+  "liveSourceFiles": 286,
+  "currentProgrammeStage": "paused for human AUTH after bag and checkout",
+  "realOrderVerified": false,
+  "verifiedAtUtc": "2026-10-06T17:59:55.751121+00:00"
+}

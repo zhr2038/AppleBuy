@@ -1,0 +1,14 @@
+{
+  "scope": "C139-normal-cart-readonly",
+  "purchaseActions": 0,
+  "finalSent": false,
+  "phase": "BAG",
+  "newContextReadonly": true,
+  "quantity": 1,
+  "totalCny": 9999,
+  "itemMatchesFixedPro": true,
+  "extrasClear": true,
+  "accountIdentityProved": false,
+  "cleanupConfirmed": true,
+  "originalLedgerUnchanged": true
+}
