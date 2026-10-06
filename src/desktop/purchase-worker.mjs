@@ -6,6 +6,8 @@ import {AuthContinuation} from './auth-continuation.mjs';
 const emit=v=>process.stdout.write(JSON.stringify({scope:'desktop-pro-checkout',...v})+'\n');
 const errors={DesktopLegacyHandoffRequired:'需要导入原任务；未打开购买浏览器。',DesktopLegacyResultStillUnconfirmed:'原任务仍有未知动作，只能核对，未开始新购买。',DesktopHandoffPermanentlyRevokedSource:'已交接记录不能恢复原购买权限，未发购买动作。',DesktopLegacyFinalHistoryUnconfirmed:'原记录含最终订单事实，需要核对；未开始新购买。',DesktopOwnerHeldOrUnconfirmed:'另一执行器或未确认的记录正在持有任务。',DesktopSessionAlreadyRunning:'当前执行尚未结束，未再次开始。',DesktopFinalConsentNotCurrent:'当前订单复核或条款确认已失效，未重复提交。',DesktopContextIdentityUnconfirmed:'浏览器与旧任务不同，未恢复旧购买权限。'};
 Object.assign(errors,{
+ DesktopOwnerLeaseLost:'执行权已丢失，停止自动动作；未知记录保留，请先核对当前状态。',
+ DesktopOwnerCleanupUnconfirmed:'执行权清理未确认，保留任务，不得再次启动。',
  DesktopReadonlyHandoffRequired:'没有可核对的只读交接记录；原任务保持，未发购买动作。',
  'DesktopLegacyResultStillUnconfirmed; DesktopHandoffPermanentlyRevokedSource':'原任务仍有未知动作且原购买权限已停用；只能核对，不能直接继续购买。',
  DesktopTransferNeedsExplicitCurrentApproval:'需确认接替当前同一账户的一台商品；没有接替或购买。',

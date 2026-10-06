@@ -3,6 +3,7 @@ import {runDesktopSession,PRO_PLAN,proDigest} from './browser-session.mjs';
 import {TASK_KEY,validStored} from '../../web/checkout-connector/job.js';
 import {ChromePort} from '../../web/checkout-connector/chrome-port.js';
 import {transferExistingCart,validateDesktopCartTransfer} from './cart-transfer.mjs';
+import {guardOwnedApi} from './owner-lease.mjs';
 const BAG='https://www.apple.com.cn/shop/bag',TERMS='https://www.apple.com.cn/shop/open/salespolicies';
 const PHASES=new Set(['ENTRY','VARIANT','EMPTY_BAG','BAG','AUTH','FULFILLMENT','SLOTS','DETAILS','PAYMENT','REVIEW','ORDER_RECEIPT','ORDER_DETAIL','PROCESSING','UNKNOWN']);
 const safeState=s=>({state:typeof s.state==='string'?s.state:'NEEDS_VERIFICATION',phase:PHASES.has(s.phase)?s.phase:'UNKNOWN',pendingAction:['addBag','checkout','chooseSlot','submitOrder'].includes(s.pendingAction)?s.pendingAction:null});
@@ -13,7 +14,8 @@ export class DesktopCheckoutRuntime {
   try{
    const old=await this.store.get(TASK_KEY);if(!old||!validStored(old))throw Error('DesktopLegacyHandoffRequired');
    this.lease=await this.store.acquireOwner();if(this.lease?.owned!==true)throw Error('DesktopOwnerLeaseUnconfirmed');
-   const owned=await this.launch();this.api=owned.api;this.closeBrowser=owned.close;
+   const owned=await this.launch();this.api=guardOwnedApi(owned.api,this.lease);this.closeBrowser=owned.close;
+   this.unwatchLease=this.lease.onLost?.(()=>{this.abort?.abort();this.close().catch(()=>{this.cleanupConfirmed=false;});});
    const tab=await this.api.create(BAG);this.tabId=tab.id;this.opened=true;
    return await this.observe();
   }catch(error){this.busy=false;await this.close();throw error;}finally{this.busy=false;}
@@ -29,7 +31,7 @@ export class DesktopCheckoutRuntime {
  async execute(options){
   if(!this.opened||this.closed||this.closing)throw Error('DesktopSessionNotOpen');if(this.busy)throw Error('DesktopSessionAlreadyRunning');
   this.busy=true;this.finalDescriptor=null;this.abort=new AbortController();
-  const leased={get:k=>this.store.get(k),put:(k,v)=>this.store.put(k,v),acquireOwner:async()=>({owned:this.lease?.owned===true,release:async()=>{}})};
+  const leased={get:k=>this.store.get(k),put:(k,v)=>this.store.put(k,v),acquireOwner:async()=>({get owned(){return runtime.lease?.owned===true;},release:async()=>{}})},runtime=this;
   try{
    this.active=runDesktopSession({api:this.api,tabId:this.tabId,store:leased,mode:'purchase',signal:this.abort.signal,onState:s=>this.onState({...safeState(s),readOnly:options.mode==='reconcile'}),...options});
    const result=await this.active;if(options.mode!=='reconcile'&&result.phase==='REVIEW'&&!this.closing)await this.prepareReview();this.onState(safeState(result));return result;
@@ -66,7 +68,7 @@ export class DesktopCheckoutRuntime {
  async closeOnce(){
   if(this.closed)return;this.closing=true;this.finalDescriptor=null;this.abort?.abort();
   if(this.active){try{await this.active;}catch{} }
-  try{if(this.closeBrowser)await this.closeBrowser();this.cleanupConfirmed=true;await this.lease?.release();this.closed=true;}
+  try{if(this.closeBrowser)await this.closeBrowser();await this.lease?.release();this.unwatchLease?.();this.cleanupConfirmed=true;this.closed=true;}
   catch{this.cleanupConfirmed=false;throw Error('DesktopBrowserCleanupUnconfirmed');}
  }
 }

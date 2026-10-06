@@ -1,3 +1,9 @@
+# C093 owned-process recovery candidate; actual unpaid Pro still unverified
+
+Goal continuation resumed active; prior goalturn was actual progress. Current237 SHA 31554630c265b8a5fc6a81798419cc0c5148a7564ea9895bf0181b697bfc21d3. Root physically reproduced owner death leaving unrecoverable marker, then added kernel-lock holder/private UTF8 atomic writer and dynamic transport/close guards.6new/full1442Node/16Python pass, current Windows kernel processes real but merchant/API/authority fixtures FAKE. Old assertions unchanged, no live order/slot/pay or production ledger. Unknown/legacy/corrupt/empty markers still failclosed; early-header crash and POSIX not claimed recovered. C094 true original-session Opus review prepared, not yet invoked; new bytes not approved by C092.
+
+Human one-time source export still missing; actual installed GUI/main chain/real speed, readonly-after-restart buying resume and manual final-order lookup remain unverified. No fabricated source or cleared unknown state. Candidate only, mainC053 unchanged; no shutdown. Recover via C093 exact map/C094 task and latest terminal C092 owned metadata privately.
+
 # C092 bounded repair agreement reached; real Pro unpaid order still blocked
 
 C091 actual194.86s17turn firstPartyOpus5.5/xhigh, complete11freshEOF, bounded AGREE for C090 two-file N10 repair. Its 3commands used a safe cd prefix and failed strict string compliance; actual C09230.03s6turn replay used exactly map/Python16/map,2freshEOF, no deviations/errors/denials/edits/private reads and owned cleanup. C089 four-file limited AGREE and C091 two-file agreement plus corrected command evidence support Root's bounded N7/N9/N10 repair acceptance ONLY. Current233 SHA307a6ec85eb391c8851898c12e89aa044eb9ed642ca2298c2f4cce60165dd308/source fbe288e02034033c1063d230344fe0b69c4952a7. Whole aggregate233/live/goal remains unaccepted; mainC053 unchanged, candidate only.

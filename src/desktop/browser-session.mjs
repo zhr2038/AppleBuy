@@ -3,6 +3,7 @@ import {PurchaseJob,TASK_KEY,validStored,canonicalJson,normalizeIntent,NO_EXTRAS
 import {ChromePort} from '../../web/checkout-connector/chrome-port.js';
 import {createHash,randomUUID} from 'node:crypto';
 import {validateDesktopCartTransfer} from './cart-transfer.mjs';
+import {guardOwnedApi} from './owner-lease.mjs';
 export const PRO_PLAN={schema:'applebuy-intent/v1',product:{model:'iPhone 18 Pro',capacity:'256GB',color:'黑色'},quantity:1,maxTotalCny:9999,city:'大连',fulfillment:'pickup',stores:['Apple 大连恒隆广场'],dateRule:'initial-first-three-terminal',paymentMethod:'支付宝',extras:{...NO_EXTRAS}};
 export const proDigest=createHash('sha256').update(JSON.stringify(PRO_PLAN)).digest('hex');
 const activeStores=new WeakSet();
@@ -16,7 +17,7 @@ export function legacyFinalProofClear(record){
 }
 export async function runDesktopSession(options){
  const {store,mode='public-config'}=options;if(activeStores.has(store))throw Error('DesktopSessionAlreadyRunning');activeStores.add(store);let lease;
- try{if(mode==='purchase'||mode==='reconcile'){if(typeof store.acquireOwner!=='function')throw Error('DesktopOwnerLeaseRequired');lease=await store.acquireOwner();if(lease?.owned!==true)throw Error('DesktopOwnerLeaseUnconfirmed');}return await executeSession(options);}
+ try{if(mode==='purchase'||mode==='reconcile'){if(typeof store.acquireOwner!=='function')throw Error('DesktopOwnerLeaseRequired');lease=await store.acquireOwner();if(lease?.owned!==true)throw Error('DesktopOwnerLeaseUnconfirmed');}return await executeSession(lease?{...options,api:guardOwnedApi(options.api,lease)}:options);}
  finally{try{await lease?.release();}finally{activeStores.delete(store);}}
 }
 async function executeSession({api,tabId,store,mode='public-config',authority=null,onState=()=>{},privatePickupData={},signal=null}){

@@ -1,0 +1,49 @@
+{
+  "files": 237,
+  "sha256": "31554630c265b8a5fc6a81798419cc0c5148a7564ea9895bf0181b697bfc21d3",
+  "changedPaths": [
+    "src/desktop/app.py",
+    "src/desktop/browser-session.mjs",
+    "src/desktop/checkout-runtime.mjs",
+    "src/desktop/owner-lease.mjs",
+    "src/desktop/owner_lease.py",
+    "src/desktop/purchase-worker.mjs",
+    "src/desktop/task-store.mjs",
+    "test/desktop-c078-runtime.test.ts",
+    "test/desktop-c093-lease-child.mjs",
+    "test/desktop-c093-owner-recovery.test.ts"
+  ],
+  "priorSource": "990722fcc4afe40081326acf45b81e38a916caff",
+  "baselineRealProcessTests": {
+    "recoveryAfterOwnedNodeTermination": "failed before change",
+    "legacyMarkerPreserved": "passed"
+  },
+  "currentChecks": {
+    "NodeFullPass": 1442,
+    "PythonPass": 16,
+    "newKernelAndRuntimeCases": 6,
+    "focusedStoreRuntimeCartPass": 31
+  },
+  "actualOS": "Windows real child process/kernel locks and private fixture files",
+  "merchantAndAuthorityScope": "FAKE API/browser/plan/widgets only, no Apple or production ledger",
+  "integrationFault": "First private RPC writer stalled on default Windows encoding; only owned test session interrupted; explicit UTF8 and malformed receipt failclosed repair applied; no helper processes remain",
+  "design": [
+    "Stable OS byte-range lock, never unlink/reclaim by PID/age",
+    "Holder executes exact journal atomic writes while still under its own kernel lock; old Node cannot write after holder loss",
+    "Private bounded UTF8 pipe; fixed receipts; no raw stderr/customer input logging",
+    "Lost holder rejects outstanding writes, disables transport dispatch and aborts/closes runtime",
+    "Unknown legacy JSON, empty/corrupt lock and corrupt journal preserve original bytes; no final/slot state cleared"
+  ],
+  "limits": [
+    "Crash before valid lock-header initialization may leave unconfirmed marker; manual handling, no false universal recovery",
+    "POSIX flock branch unverified; Windows is actual target",
+    "OS recovery does not add buying authority or restore a retired/permanent readonly source",
+    "Graceful new context remains readonly and final lookup from restarted BAG still requires human",
+    "Legitimate source-handoff export/production ledger missing; installed/live main-chain and speed unverified"
+  ],
+  "accepted": false,
+  "actualProgrammeUnpaidOrderVerified": false,
+  "goalStatus": "active after authorized continuation, prior turn had actual progress; no completion claim",
+  "restoreTask": "C-094-PROCESS-REVIEW",
+  "verifiedAtUtc": "2026-10-06T01:30:46.254935+00:00"
+}

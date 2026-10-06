@@ -3,6 +3,8 @@ import test from 'node:test';import assert from 'node:assert/strict';
 import {DesktopCheckoutRuntime} from '../src/desktop/checkout-runtime.mjs';import {DesktopBrowserApi} from '../src/desktop/browser-api.mjs';
 import {PRO_PLAN,proDigest} from '../src/desktop/browser-session.mjs';import {TASK_KEY,createPurchaseRecord} from '../web/checkout-connector/job.js';
 import {AuthContinuation} from '../src/desktop/auth-continuation.mjs';
+import {acquireDesktopOwner} from '../src/desktop/owner-lease.mjs';
+import {spawn} from 'node:child_process';import {mkdir} from 'node:fs/promises';import {resolve,join} from 'node:path';import {randomUUID} from 'node:crypto';
 const TERM='https://www.apple.com.cn/shop/open/salespolicies';
 function world(){
  const w={phase:'EMPTY_BAG',pages:[],commands:[],ref:null,slot:null,payment:null,launches:0,closes:0,releases:0,writes:0,row:{...createPurchaseRecord(PRO_PLAN,{taskId:'FAKE-retired',planDigest:proDigest,tabId:999,now:Date.now(),id:()=> 'FAKE'}),state:'RETIRED'}};
@@ -49,4 +51,11 @@ test('C078 authentication completes then the programme resumes the same task wit
  const {w,runtime}=world();w.requireAuth=true;await runtime.open();const auth=await runtime.advance({checkoutApproved:true,newContextConfirmed:true});assert.equal(auth.phase,'AUTH');assert.equal(w.row.pending.action,'checkout');let result;
  const watch=new AuthContinuation({observe:()=>runtime.observe(),setTimer:()=>1,clearTimer:()=>{}});watch.start(async()=>{result=await runtime.advance({checkoutApproved:true,newContextConfirmed:true});});await watch.tick();assert.equal(result,undefined);
  w.phase='FULFILLMENT';await runtime.api.tabs.update(runtime.tabId,{url:'https://secure8.www.apple.com.cn/shop/checkout'});await watch.tick();assert.equal(result.phase,'REVIEW');assert.equal(w.commands.filter(x=>x==='checkout').length,1);assert.equal(w.commands.filter(x=>x==='addBag').length,1);await watch.tick();assert.equal(w.commands.includes('submitOrder'),false);await runtime.close();
+});
+test('C093 actual lease holder loss pauses a sent FAKE checkout and prevents any later pickup action',async()=>{
+ const {w,runtime}=world(),folder=resolve('.local/test-runs/c093-runtime-'+randomUUID());await mkdir(folder,{recursive:true});let holder,release,entered;
+ runtime.store.acquireOwner=()=>acquireDesktopOwner(join(folder,'task.json.owner'),{spawnProcess:(...args)=>{holder=spawn(...args);return holder;}});
+ await runtime.open();w.blocked=new Promise(r=>release=r);const reached=new Promise(r=>entered=r);w.entered=entered;w.blockAction='checkout';
+ const running=runtime.advance({checkoutApproved:true,newContextConfirmed:true});await reached;const lost=new Promise(resolve=>runtime.lease.onLost(resolve));assert.equal(holder.kill(),true);await lost;release();
+ const result=await running;await runtime.close();assert.equal(result.state,'PAUSED');assert.equal(w.row.pending.action,'checkout');assert.equal(w.commands.filter(x=>x==='checkout').length,1);assert.equal(w.commands.includes('selectPickup'),false);assert.equal(w.closes,1);assert.equal(runtime.cleanupConfirmed,true);
 });

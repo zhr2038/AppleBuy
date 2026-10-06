@@ -274,7 +274,7 @@ class App:
         self.advance_button.config(state='disabled');self.reconcile_button.config(state='disabled');self.submit_button.config(state='disabled');self.checkout_stop_button.config(state='disabled')
         self.transfer_button.config(state='disabled');self.transfer_checkbox.config(state='disabled');self.transfer_confirm.set(False)
         self.checkout_button.config(state='normal');self.start_button.config(state='normal');self.probe_button.config(state='normal')
-        self.status.set('本次程序进程已停止；已发送动作可能仍完成，未知记录保持。接替任务重启后只能只读核对；强制结束时任务锁可能仍保留，须人工处理。')
+        self.status.set('本次程序进程已停止；已发送动作可能仍完成，未知记录保持。接替任务重启后只能只读核对；旧版或损坏的锁记录需人工处理。')
 
     def stop(self):
         try:
