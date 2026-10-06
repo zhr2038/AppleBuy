@@ -1,0 +1,12 @@
+{
+  "sourceCommit": "22b0794d9bc79041d24cb10b5bc8da43b799f9b8",
+  "candidateRemote": "22b0794d9bc79041d24cb10b5bc8da43b799f9b8",
+  "mainUnchanged": "bd130ee77d8e914f6373432e1061c4de820fbc66",
+  "files": 237,
+  "sha256": "8320ff837aa48bef426f79aa319184f4516d7b5d4777931614d769edc2acd9c8",
+  "allHeadBlobsMatch": true,
+  "privacyScanPassed": true,
+  "accepted": false,
+  "actualProgrammeUnpaidOrderVerified": false,
+  "verifiedAtUtc": "2026-10-06T02:05:26.080839+00:00"
+}
