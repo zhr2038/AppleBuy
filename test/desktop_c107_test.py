@@ -10,6 +10,14 @@ from interactive_child import CheckoutRunner
 from desktop_c078_test import fake_app,FakeControl
 
 class C107BrowserTests(unittest.TestCase):
+    def test_completed_worker_does_not_carry_retention_consent_into_the_next_start(self):
+        app=fake_app();app.keep_session=FakeControl(True)
+        app.checkout.events.put({'generation':1,'type':'worker-ended'});app.poll()
+        self.assertFalse(app.keep_session.get());self.assertEqual(app.keep_session_checkbox.state,'normal')
+    def test_new_start_clears_stale_failure_and_locks_browser_and_retention_controls(self):
+        app=fake_app();app.browser_choice=FakeControl('Chrome');app.keep_session=FakeControl(True);app.checkout.busy=False;app.runner.busy=False;calls=[]
+        app.checkout.open=lambda **kw:calls.append(kw) or True;app.browser_diagnostic.set('OLD HTTP 541')
+        app.open_checkout();self.assertNotIn('541',app.browser_diagnostic.get());self.assertEqual(calls,[{'browser_channel':'chrome','keep_session':True}]);self.assertEqual(app.browser_picker.state,'disabled');self.assertEqual(app.keep_session_checkbox.state,'disabled')
     def test_edge_worker_argument_is_fixed_and_a_second_open_does_not_spawn(self):
         runner=CheckoutRunner();calls=[]
         with patch('interactive_child.InteractiveChild',side_effect=lambda *a:calls.append(a) or object()):

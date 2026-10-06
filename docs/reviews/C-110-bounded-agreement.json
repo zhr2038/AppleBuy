@@ -1,0 +1,40 @@
+{
+  "scope": "C107 browser/session/metadata plus C109 GUI fixes only; no live login or retention authority",
+  "candidateFiles": 242,
+  "candidateSha256": "c5a8f9058c3b530da440a25d22fe61f8f3c7f10643f9c826b8b1943902cdab66",
+  "actualReview": "C-110-CROSS-REVIEW",
+  "actualDurationSeconds": 221.89,
+  "actualTurns": 22,
+  "model": "claude-opus-5-5",
+  "provider": "firstParty",
+  "effort": "xhigh",
+  "freshEOF": 19,
+  "fiveActualOrderedChecksPassed": true,
+  "focusedNode": 58,
+  "Python": 31,
+  "fullNode": 1461,
+  "CodexBoundedAccepted": true,
+  "condition": "Retention checkbox may be ticked ONLY by the human with specific approval; Root including Computer Use must not tick it, and automation is not consent.",
+  "retentionPermission": "PENDING",
+  "rootRetentionTick": false,
+  "retainedProfileCreatedOrLaunched": false,
+  "liveLoginVerified": false,
+  "actualProgrammeUnpaidProOrderVerified": false,
+  "wholeRepositoryOrGoalAccepted": false,
+  "actualContrast": {
+    "ordinaryUserChrome": "Current authenticated order-list heading/title/path observed via browser tool only",
+    "programmeInitialEdge": "Current HTTP541 secure8 observed via safe own GUI metadata; exact cause unproven"
+  },
+  "latestOwnGui": "C109 process started with chrome selected/default retention off; two screen capture attempts failed0x80070057 so no new screenshot/physical checkbox or start claim. No worker/new browser started from that GUI.",
+  "oldOwnEdgeSession": "Normal GUI close, actual worker terminal/owned cleanup true; original unknown/finality/history/plan/HDF preserved readonly; normal personalChrome tab kept",
+  "explicitNonblockingItems": [
+    "Optional negative GUI tests and duplicated profile path text inspected but not expanded.",
+    "Invalid direct worker argv fails before protocol, unreachable through validated UI.",
+    "Prior runner count/cleanup reporting limitations accepted only for actual verified complete output.",
+    "Earlier unidentified single full test failure kept historical; not a deterministic-suite claim."
+  ],
+  "nextStep": "Wait for specific local authentication-retention approval. Human, not Root, selects the retention checkbox if approved, starts the programme and authenticates normally. No blind retries, personal-profile/cookie copying/SDK attach, stealth or forced validation. Latest defaults/own persistence have no live success evidence yet.",
+  "noAdditionalRebootOrShutdown": true,
+  "goalToolState": "blocked; human-resumed engineering progressed, no activation/completion fiction",
+  "verifiedAtUtc": "2026-10-06T11:28:10.487338+00:00"
+}

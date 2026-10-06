@@ -153,6 +153,7 @@ class App:
         self.browser_picker=ttk.Combobox(browser_controls,textvariable=self.browser_choice,values=('Chrome','Edge'),state='readonly',width=10);self.browser_picker.pack(side='left')
         self.keep_session=tk.BooleanVar(value=False)
         self.keep_session_checkbox=ttk.Checkbutton(browser_controls,text='本人同意在本程序独立目录保留登录会话（本机）',variable=self.keep_session);self.keep_session_checkbox.pack(side='left',padx=12)
+        ttk.Label(pane,text='会话目录：'+str(ROOT/'.local/desktop/browser-profiles')+' 下的 chrome 或 msedge。取消勾选不会删除已存会话；撤销时请本人在该浏览器退出 Apple 账户，关闭程序后删除对应独立目录。',wraplength=850).pack(anchor='w',pady=(3,0))
         self.browser_diagnostic=tk.StringVar(value='尚未记录失败响应；只显示域名和状态码，不读取请求内容。')
         ttk.Label(pane,textvariable=self.browser_diagnostic,wraplength=850).pack(anchor='w',pady=(3,0))
         checkout_controls=ttk.Frame(pane);checkout_controls.pack(anchor="w",pady=(12,4))
@@ -246,6 +247,7 @@ class App:
             choice=self.browser_choice.get()
             if choice not in ('Chrome','Edge'):raise ValueError('Browser choice is not enabled')
             if self.checkout.open(browser_channel='msedge' if choice=='Edge' else 'chrome',keep_session=self.keep_session.get()):
+                self.browser_diagnostic.set(choice+' 本次尚未记录失败响应；旧会话的错误提示已清除。')
                 self.browser_picker.config(state='disabled')
                 self.keep_session_checkbox.config(state='disabled')
                 self.checkout_begin_pending=True
@@ -350,6 +352,7 @@ class App:
                     if kind!='worker-ended':continue
                 if kind=='worker-ended':
                     if self.checkout.terminal():
+                        self.keep_session.set(False)
                         self.browser_picker.config(state='readonly')
                         self.keep_session_checkbox.config(state='normal')
                         self.transfer_button.config(state='disabled');self.transfer_checkbox.config(state='disabled');self.transfer_confirm.set(False)

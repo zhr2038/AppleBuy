@@ -1,0 +1,29 @@
+{
+  "scope": "Root C109 author repair of C108 F1-F3; not review agreement or live login",
+  "sourceFiles": 242,
+  "sourceSha256": "c5a8f9058c3b530da440a25d22fe61f8f3c7f10643f9c826b8b1943902cdab66",
+  "changedPaths": [
+    "src/desktop/app.py",
+    "test/desktop_c078_test.py",
+    "test/desktop_c107_test.py"
+  ],
+  "baselineFocusedPython": {
+    "tests": 7,
+    "pass": 5,
+    "fail": 2
+  },
+  "afterRepairFullPython": {
+    "tests": 31,
+    "pass": 31,
+    "fail": 0
+  },
+  "NodeSourcesUnchangedSinceC107Checks": true,
+  "priorNodeFullPass": 1461,
+  "priorNodeFullSHA": "54a5676c4fecb6ceedfa3e93cc3c3fbda594e6e4d95fe24a85e4483ec5935168",
+  "profileRetentionPermission": "pending",
+  "retainedProfileLaunched": false,
+  "retentionSwitchAgentTicked": false,
+  "currentNativeSession": "still initial C107 temporary Edge / blocked-SW, observed541; not this source",
+  "noCurrentProgrammeLoginOrUnpaidOrderProof": true,
+  "verifiedAtUtc": "2026-10-06T11:18:19.048083+00:00"
+}
