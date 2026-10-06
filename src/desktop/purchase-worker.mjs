@@ -19,17 +19,20 @@ Object.assign(errors,{
  DesktopTransferRecordChanged:'旧任务记录发生变化；没有接替或购买。',
  DesktopTransferCancelled:'接替已暂停，旧记录保持，未继续结账。'
 });
-let browser,context,closing=false;const store=new DesktopTaskStore(join(process.cwd(),'.local/desktop/task.json'));
-const runtime=new DesktopCheckoutRuntime({store,onState:s=>emit({type:'progress',...s}),launch:async()=>{
+let browser,context,input,watch,closing=false;const store=new DesktopTaskStore(join(process.cwd(),'.local/desktop/task.json'));
+const runtime=new DesktopCheckoutRuntime({store,onState:s=>{
+ if(s.ownerLost===true){closing=true;watch?.stop();emit({type:'owner-lost',message:'执行权已丢失，停止自动动作；旧未知记录保留，当前执行器正在退出。'});input?.close();process.stdin.destroy();return;}
+ emit({type:'progress',...s});
+},launch:async()=>{
  const {chromium}=createRequire(import.meta.url)(join(homedir(),'.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright'));
  try{browser=await chromium.launch({channel:'chrome',headless:false});context=await browser.newContext({serviceWorkers:'block'});}
  catch(error){try{await context?.close();}finally{await browser?.close();}throw error;}
  return {api:new DesktopBrowserApi(context,{publicOnly:false}),close:async()=>{try{await context?.close();}finally{await browser?.close();}}};
 }});
 try{
- const initial=await runtime.open();emit({type:'ready',readOnly:initial.legacyReadOnly===true,message:'程序已读取保留记录并打开官网窗口；旧未知动作保持，不自动重复。'});
- const input=createInterface({input:process.stdin});let active=false,pausing=false;
- const watch=new AuthContinuation({observe:()=>runtime.observe(),isBusy:()=>closing||active||pausing||runtime.paused,onStopped:why=>emit({type:'blocked',paused:runtime.paused,message:why==='expired'?'登录等待已暂停；完成官网验证后可继续原任务，不重复结账。':'登录后的页面未确认，已停止自动推进；旧结账记录保持。'})});
+ const initial=await runtime.open();if(closing)throw Error('DesktopOwnerLeaseLost');emit({type:'ready',readOnly:initial.legacyReadOnly===true,message:'程序已读取保留记录并打开官网窗口；旧未知动作保持，不自动重复。'});
+ input=createInterface({input:process.stdin});let active=false,pausing=false;
+ watch=new AuthContinuation({observe:()=>runtime.observe(),isBusy:()=>closing||active||pausing||runtime.paused,onStopped:why=>emit({type:'blocked',paused:runtime.paused,message:why==='expired'?'登录等待已暂停；完成官网验证后可继续原任务，不重复结账。':'登录后的页面未确认，已停止自动推进；旧结账记录保持。'})});
  async function advance(c){
   const options={checkoutApproved:c.checkoutApproved===true,newContextConfirmed:c.newContextConfirmed===true,privatePickupData:c.privatePickupData??{}};
   const result=c.action==='resume'?await runtime.resume(options):await runtime.advance(options);

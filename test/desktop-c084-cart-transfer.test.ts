@@ -86,3 +86,12 @@ test('C096 confirmed local transfer reports nonreadonly ownership before a first
  const {w,store,api}=world(),events=[];api.create=async()=>({id:7});const runtime=new DesktopCheckoutRuntime({store,onState:s=>events.push(s),launch:async()=>({api,close:async()=>{}})});await runtime.open();runtime.advance=async()=>{throw Error('FAKE first step failure');};
  await assert.rejects(runtime.transfer({approved:true,newContextConfirmed:true}),/first step failure/);assert.equal(w.writes,1);assert.equal(w.row.desktopContext,api.sessionId);assert.deepEqual(w.commands,[]);assert.equal(events.some(s=>s.readOnly===false),true);await runtime.close();
 });
+
+test('C103 pause drains a transfer write and explicit same-context resume sends one checkout, zero Add',async()=>{
+ const {w,store,api}=world();let release,entered;const held=new Promise(r=>release=r),writing=new Promise(r=>entered=r),put=store.put;store.put=async(k,v)=>{entered();await held;await put(k,v);};api.create=async()=>({id:7});
+ const runtime=new DesktopCheckoutRuntime({store,launch:async()=>({api,close:async()=>{}})});await runtime.open();const transferring=runtime.transfer({approved:true,newContextConfirmed:true});const stopped=assert.rejects(transferring,/Paused/);await writing;let acknowledged=false;const pausing=runtime.pause().then(v=>{acknowledged=true;return v;});
+ try{
+  await new Promise(setImmediate);assert.equal(acknowledged,false);release();await stopped;const ack=await pausing;assert.equal(ack.canContinue,true);assert.deepEqual(w.commands,[]);store.put=put;
+  const resumed=await runtime.resume({checkoutApproved:true,newContextConfirmed:true});assert.equal(resumed.phase,'REVIEW');assert.equal(w.commands.filter(x=>x==='checkout').length,1);assert.equal(w.commands.includes('addBag'),false);assert.equal(w.commands.includes('submitOrder'),false);
+ }finally{release();await Promise.allSettled([transferring,pausing]);await runtime.close();}
+});

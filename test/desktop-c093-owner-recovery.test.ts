@@ -1,7 +1,8 @@
 // Real OS processes and real private fixture files, with a FAKE task and zero merchant access.
 import test from 'node:test';import assert from 'node:assert/strict';
 import {spawn} from 'node:child_process';import {once} from 'node:events';
-import {mkdir,readFile,writeFile} from 'node:fs/promises';import {resolve,join} from 'node:path';import {randomUUID} from 'node:crypto';
+import {mkdir,readFile,writeFile,readdir} from 'node:fs/promises';import {resolve,join} from 'node:path';import {randomUUID} from 'node:crypto';
+import {createInterface} from 'node:readline';
 import {DesktopTaskStore} from '../src/desktop/task-store.mjs';
 import {acquireDesktopOwner,guardOwnedApi} from '../src/desktop/owner-lease.mjs';
 import {TASK_KEY} from '../web/checkout-connector/job.js';
@@ -33,4 +34,42 @@ test('C093 atomic private writer preserves Chinese and other keys; a lost old ho
 });
 test('C093 a corrupt journal is not overwritten by an owner write',async()=>{
  const {file,store}=await fixture();await writeFile(file,'not-json');const lease=await store.acquireOwner();try{await assert.rejects(store.put(TASK_KEY,{FAKE:true}),/WriteUnconfirmed/);assert.equal(await readFile(file,'utf8'),'not-json');}finally{await lease.release();}
+});
+
+test('C103 two first-start holders cannot both leave an empty owner marker', {skip:process.platform!=='win32'}, async()=>{
+ for(let n=0;n<8;n++){
+  const {file}=await fixture();const children=[];
+  function launch(mode){
+   const child=spawn('python',['-B','test/desktop-c103-owner-fixture.py',resolve('src/desktop/owner_lease.py'),file+'.owner',mode],{cwd:resolve('.'),windowsHide:true,stdio:['pipe','pipe','pipe']});
+   child.stderr.resume();const lines=createInterface({input:child.stdout}),queued=[],waiting=[];
+   lines.on('line',line=>{const row=JSON.parse(line);if(waiting.length)waiting.shift()(row);else queued.push(row);});
+   const ended=once(child,'close');children.push(child);return {child,ended,next:()=>queued.length?Promise.resolve(queued.shift()):new Promise(yes=>waiting.push(yes))};
+  }
+  let a,b;
+  try{
+   a=launch('first');const first=await a.next();b=launch('second');let left=first,right=await b.next();
+   if(first.fixture==='created-empty'){
+    assert.equal(right.fixture,'second-lock-held');a.child.stdin.write('continue\n');left=await a.next();b.child.stdin.write('continue\n');right=await b.next();
+   }
+   assert.equal(Number(left.owned===true)+Number(right.owned===true),1);
+  }finally{
+   for(const child of children)if(child.exitCode===null&&child.signalCode===null)child.stdin.end('release\n');
+   await Promise.all(children.map(child=>child.exitCode!==null?Promise.resolve():once(child,'close')));
+  }
+  assert.equal(await readFile(file+'.owner','utf8'),'APPLEBUY-OS-LEASE-v1\n');
+ }
+});
+
+for(const existing of [false,true])test('C103 escaped lone surrogate remains writable and no temporary file remains; existing='+existing,async()=>{
+ const {file,store}=await fixture();if(existing)await writeFile(file,JSON.stringify({FAKE:'retained',escaped:'\ud800'}));
+ const lease=await store.acquireOwner();try{
+  await store.put(TASK_KEY,{FAKE:'only fixture',value:'\ud800',chinese:'旧结果未知'});
+  const value=JSON.parse(await readFile(file,'utf8'));assert.equal(value[TASK_KEY].value,'\ud800');assert.equal(value[TASK_KEY].chinese,'旧结果未知');if(existing)assert.equal(value.escaped,'\ud800');
+  assert.equal((await readdir(resolve(file,'..'))).filter(n=>n.endsWith('.tmp')).length,0);
+ }finally{await lease.release();}
+});
+
+test('C103 replacement failure preserves the journal and cleans only its own temporary file',async()=>{
+ const {file,bytes}=await fixture();const lease=await acquireDesktopOwner(file+'.owner',{spawnProcess:(cmd,args,options)=>spawn(cmd,['-B','test/desktop-c103-owner-fixture.py',resolve('src/desktop/owner_lease.py'),file+'.owner','replace-failure'],options)});
+ try{await assert.rejects(lease.put(TASK_KEY,{FAKE:'replacement failure'}),/WriteUnconfirmed/);assert.deepEqual(await readFile(file),bytes);assert.equal((await readdir(resolve(file,'..'))).filter(n=>n.endsWith('.tmp')).length,0);}finally{await lease.release();}
 });

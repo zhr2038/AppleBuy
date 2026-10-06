@@ -20,12 +20,35 @@ def put_task(path, value):
     except FileNotFoundError:
         current = {}
     current[TASK_KEY] = value
+    data = json.dumps(current, ensure_ascii=True).encode("utf-8")
     temporary = ledger.with_name(ledger.name + "." + uuid.uuid4().hex + ".tmp")
-    with temporary.open("xb") as output:
-        output.write(json.dumps(current, ensure_ascii=False).encode("utf-8"))
-        output.flush()
-        os.fsync(output.fileno())
-    os.replace(temporary, ledger)
+    try:
+        with temporary.open("xb") as output:
+            output.write(data)
+            output.flush()
+            os.fsync(output.fileno())
+        os.replace(temporary, ledger)
+    finally:
+        temporary.unlink(missing_ok=True)
+
+def open_owner(path):
+    try:
+        return path.open("r+b")
+    except FileNotFoundError:
+        temporary = path.with_name(path.name + "." + uuid.uuid4().hex + ".init")
+        try:
+            with temporary.open("xb") as output:
+                output.write(MAGIC)
+                output.flush()
+                os.fsync(output.fileno())
+            try:
+                # A hard link publishes the complete header without replacing an existing owner.
+                os.link(temporary, path)
+            except FileExistsError:
+                pass
+        finally:
+            temporary.unlink(missing_ok=True)
+        return path.open("r+b")
 
 def main():
     sys.stdin.reconfigure(encoding="utf-8")
@@ -38,12 +61,7 @@ def main():
         path = Path(sys.argv[1])
         if not str(path).endswith(".owner"):
             return 2
-        try:
-            handle = path.open("x+b")
-            created = True
-        except FileExistsError:
-            handle = path.open("r+b")
-            created = False
+        handle = open_owner(path)
         handle.seek(0)
         if os.name == "nt":
             import msvcrt
@@ -55,13 +73,9 @@ def main():
         handle.seek(0)
         existing = handle.read(len(MAGIC) + 1)
         # A legacy JSON/unknown marker is not evidence of an exited owner. Never rewrite it.
-        if existing != MAGIC and not (created and not existing):
+        if existing != MAGIC:
             emit(False)
             return 2
-        if not existing:
-            handle.write(MAGIC)
-            handle.flush()
-            os.fsync(handle.fileno())
         emit(True)
         # This private pipe stays open for the lease lifetime. Parent death closes it;
         # a contained worker tree death also kills this holder and the OS releases the lock.

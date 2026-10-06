@@ -4,7 +4,8 @@ import {DesktopCheckoutRuntime} from '../src/desktop/checkout-runtime.mjs';impor
 import {PRO_PLAN,proDigest} from '../src/desktop/browser-session.mjs';import {TASK_KEY,createPurchaseRecord} from '../web/checkout-connector/job.js';
 import {AuthContinuation} from '../src/desktop/auth-continuation.mjs';
 import {acquireDesktopOwner} from '../src/desktop/owner-lease.mjs';
-import {spawn} from 'node:child_process';import {mkdir} from 'node:fs/promises';import {resolve,join} from 'node:path';import {randomUUID} from 'node:crypto';
+import {spawn} from 'node:child_process';import {mkdir,writeFile,readFile} from 'node:fs/promises';import {resolve,join} from 'node:path';import {randomUUID} from 'node:crypto';
+import {DesktopTaskStore} from '../src/desktop/task-store.mjs';
 const TERM='https://www.apple.com.cn/shop/open/salespolicies';
 function world(){
  const w={phase:'EMPTY_BAG',pages:[],commands:[],ref:null,slot:null,payment:null,launches:0,closes:0,releases:0,writes:0,row:{...createPurchaseRecord(PRO_PLAN,{taskId:'FAKE-retired',planDigest:proDigest,tabId:999,now:Date.now(),id:()=> 'FAKE'}),state:'RETIRED'}};
@@ -68,4 +69,31 @@ test('C097 pause drains one sent checkout then explicit resume reconciles it wit
  const {w,runtime}=world();await runtime.open();let release,entered;w.blocked=new Promise(r=>release=r);const reached=new Promise(r=>entered=r);w.entered=entered;w.blockAction='checkout';
  const running=runtime.advance({checkoutApproved:true,newContextConfirmed:true});await reached;const pausing=runtime.pause();release();const stopped=await running;await pausing;assert.equal(stopped.state,'PAUSED');assert.equal(w.row.pending.action,'checkout');assert.equal(w.commands.includes('selectPickup'),false);assert.equal(w.closes,0);
  await assert.rejects(runtime.advance({checkoutApproved:true,newContextConfirmed:true}),/Paused/);w.blockAction=null;const ready=await runtime.resume({checkoutApproved:true,newContextConfirmed:true});assert.equal(ready.phase,'REVIEW');assert.equal(w.commands.filter(x=>x==='checkout').length,1);await runtime.close();
+});
+
+test('C103 real production store retains sent checkout on holder loss, then reacquires without another mutation',async()=>{
+ const {w,runtime}=world(),folder=resolve('.local/test-runs/c103-production-'+randomUUID()),events=[];await mkdir(folder,{recursive:true});const file=join(folder,'task.json');await writeFile(file,JSON.stringify({[TASK_KEY]:w.row}));let holder,release,entered;runtime.onState=s=>events.push(s);
+ const store=new DesktopTaskStore(file);store.acquireOwner=async()=>{const lease=await acquireDesktopOwner(file+'.owner',{spawnProcess:(...args)=>{holder=spawn(...args);return holder;}});store.lease=lease;return lease;};runtime.store=store;
+ await runtime.open();w.blocked=new Promise(r=>release=r);const reached=new Promise(r=>entered=r);w.entered=entered;w.blockAction='checkout';
+ const running=runtime.advance({checkoutApproved:true,newContextConfirmed:true});const failure=assert.rejects(running,/LeaseLost/);await reached;
+ const before=JSON.parse(await readFile(file,'utf8'))[TASK_KEY];assert.equal(before.pending.action,'checkout');const lost=new Promise(yes=>runtime.lease.onLost(yes));holder.kill();await lost;release();await failure;await runtime.close();
+ assert.equal(w.commands.filter(x=>x==='checkout').length,1);assert.equal(w.commands.includes('selectPickup'),false);assert.equal(w.closes,1);assert.equal(events.some(e=>e.ownerLost===true),true);
+ const next=new DesktopTaskStore(file),lease=await next.acquireOwner();try{assert.deepEqual((await next.get(TASK_KEY)).pending,before.pending);}finally{await lease.release();}
+});
+
+test('C103 a paused holder loss reports terminal execution authority instead of a resumable kept window',async()=>{
+ const {w,runtime}=world(),folder=resolve('.local/test-runs/c103-paused-'+randomUUID()),events=[];await mkdir(folder,{recursive:true});let holder;
+ runtime.onState=s=>events.push(s);runtime.store.acquireOwner=()=>acquireDesktopOwner(join(folder,'task.json.owner'),{spawnProcess:(...args)=>{holder=spawn(...args);return holder;}});
+ await runtime.open();await runtime.advance({checkoutApproved:true,newContextConfirmed:true});await runtime.pause();const lost=new Promise(yes=>runtime.lease.onLost(yes));holder.kill();await lost;await runtime.close();
+ assert.equal(w.closes,1);assert.equal(runtime.cleanupConfirmed,true);assert.equal(events.some(e=>e.ownerLost===true),true);await assert.rejects(runtime.resume({checkoutApproved:true,newContextConfirmed:true}),/LeaseLost/);assert.equal(w.commands.includes('submitOrder'),false);
+});
+
+test('C103 pause acknowledgement drains the pending review read before allowing explicit resume',async()=>{
+ const {w,runtime}=world();await runtime.open();let release,entered;const held=new Promise(r=>release=r),reached=new Promise(r=>entered=r),prepare=runtime.prepareReview.bind(runtime);
+ runtime.prepareReview=async()=>{entered();await held;return prepare();};const running=runtime.advance({checkoutApproved:true,newContextConfirmed:true});const failure=assert.rejects(running,/FinalConsent/);await reached;let acknowledged=false;
+ const pausing=runtime.pause().then(v=>{acknowledged=true;return v;});
+ try{
+  await new Promise(setImmediate);assert.equal(acknowledged,false);release();await failure;await pausing;assert.equal(runtime.busy,false);assert.equal(runtime.finalDescriptor,null);
+  runtime.prepareReview=prepare;const resumed=await runtime.resume({checkoutApproved:true,newContextConfirmed:true});assert.equal(resumed.phase,'REVIEW');assert.equal(w.commands.filter(x=>x==='addBag').length,1);assert.equal(w.commands.filter(x=>x==='checkout').length,1);assert.equal(w.commands.includes('submitOrder'),false);
+ }finally{release();await Promise.allSettled([running,pausing]);await runtime.close();}
 });

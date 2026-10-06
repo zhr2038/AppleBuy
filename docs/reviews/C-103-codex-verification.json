@@ -1,0 +1,99 @@
+{
+  "scope": "C103 Root implementation of actual C098 findings; author verification, not review agreement or live acceptance",
+  "sourceFiles": 238,
+  "sourceSha256": "ad802939350972c131f2109abd64cf4c3e6eac5252b704c8e7494a172c81ef83",
+  "deltaFromC097": [
+    "src/desktop/app.py",
+    "src/desktop/checkout-runtime.mjs",
+    "src/desktop/owner_lease.py",
+    "src/desktop/purchase-worker.mjs",
+    "test/desktop-c078-runtime.test.ts",
+    "test/desktop-c084-cart-transfer.test.ts",
+    "test/desktop-c093-owner-recovery.test.ts",
+    "test/desktop_c078_test.py",
+    "test/desktop-c103-owner-fixture.py"
+  ],
+  "combinedChangedPathsFromC090": [
+    "src/desktop/app.py",
+    "src/desktop/browser-session.mjs",
+    "src/desktop/checkout-runtime.mjs",
+    "src/desktop/interactive_child.py",
+    "src/desktop/owner-lease.mjs",
+    "src/desktop/owner_lease.py",
+    "src/desktop/purchase-worker.mjs",
+    "src/desktop/task-store.mjs",
+    "test/desktop-c078-runtime.test.ts",
+    "test/desktop-c084-cart-transfer.test.ts",
+    "test/desktop-c093-lease-child.mjs",
+    "test/desktop-c093-owner-recovery.test.ts",
+    "test/desktop_c078_test.py",
+    "test/desktop-c103-owner-fixture.py"
+  ],
+  "baselineNode": {
+    "tests": 7,
+    "pass": 1,
+    "fail": 6,
+    "realProductionStoreLostWriteControlPassed": true
+  },
+  "baselinePython": {
+    "tests": 16,
+    "pass": 13,
+    "fail": 3,
+    "additionalResumePauseControlFixtureCorrectedBeforeFinalVerification": true
+  },
+  "initialRepairNode": {
+    "tests": 7,
+    "pass": 6,
+    "fail": 1,
+    "failure": "test read the byte-locked Windows marker while owned; observation moved after release, ownership assertion unchanged"
+  },
+  "finalFocusedNode": {
+    "tests": 50,
+    "pass": 50,
+    "fail": 0
+  },
+  "fullChecks": {
+    "results": [
+      {
+        "commandIndex": 1,
+        "exitCode": 0,
+        "timedOut": false,
+        "ownedTreeCleanupConfirmed": true,
+        "counts": {
+          "tests": 1453,
+          "pass": 1453,
+          "fail": 0,
+          "cancelled": 0,
+          "skipped": 0
+        }
+      },
+      {
+        "commandIndex": 2,
+        "exitCode": 0,
+        "timedOut": false,
+        "ownedTreeCleanupConfirmed": true,
+        "counts": {
+          "tests": 23,
+          "pass": 23,
+          "fail": 0
+        }
+      }
+    ],
+    "verifiedAtUtc": "2026-10-06T06:24:54.391781+00:00"
+  },
+  "eightRealConcurrentOwnerPairs": true,
+  "realOsLocksProcessesAndFixtureJournal": true,
+  "merchantApiPlanAndOrdersAreFake": true,
+  "oldAssertionsWeakened": false,
+  "newLivePurchaseOrPayment": false,
+  "reviewAccepted": false,
+  "actualProgrammeUnpaidProOrderVerified": false,
+  "existingNativeSession": "Previously loaded C097 remains paused/readonly; C103 is not loaded into that live session",
+  "knownLimits": [
+    "Human authentication in the programme context still required.",
+    "Unknown Add and source histories remain unchanged.",
+    "Empty-bag restart is not authorised by the cart-only transfer proof.",
+    "POSIX branch and whole live purchase remain unverified."
+  ],
+  "verifiedAtUtc": "2026-10-06T06:27:17.498396+00:00"
+}

@@ -230,6 +230,8 @@ class App:
         if self.runner.busy or self.checkout.busy:return
         self.final_confirm.set(False)
         self.checkout_paused=False
+        self.checkout_owner_lost=False
+        self.checkout_pause_ack=None
         try:
             if self.checkout.open():
                 self.checkout_begin_pending=True
@@ -275,7 +277,7 @@ class App:
     def stop_checkout(self):
         try:self.checkout.pause()
         except Exception:self.status.set('暂停指令未确认；不重新启动，旧动作保持。');return
-        self.checkout_paused=True;self.final_confirm.set(False);self.final_checkbox.config(state='disabled')
+        self.checkout_paused=True;self.checkout_pause_ack=None;self.final_confirm.set(False);self.final_checkbox.config(state='disabled')
         self.advance_button.config(state='disabled');self.reconcile_button.config(state='disabled');self.submit_button.config(state='disabled');self.checkout_stop_button.config(state='disabled')
         self.transfer_button.config(state='disabled');self.transfer_checkbox.config(state='disabled');self.transfer_confirm.set(False)
         self.status.set('正在暂停当前任务并核对执行结束；保留官网窗口，已发送动作仍可能完成。')
@@ -299,13 +301,26 @@ class App:
                 v=self.checkout.events.get_nowait()
                 if v.get('generation')!=self.checkout.generation:continue
                 kind=v.get('type')
+                if kind=='owner-lost':
+                    self.checkout_owner_lost=True;self.checkout_pause_ack=None;self.final_confirm.set(False);self.transfer_confirm.set(False)
+                    for control in (self.advance_button,self.reconcile_button,self.transfer_button,self.transfer_checkbox,self.submit_button,self.final_checkbox,self.checkout_stop_button):control.config(state='disabled')
+                    self.status.set(v['message']);continue
+                if getattr(self,'checkout_owner_lost',False) and kind!='worker-ended':continue
                 if kind in ('ready','blocked','result','worker-ended'):
                     self.final_confirm.set(False);self.final_checkbox.config(state='disabled')
                 if kind=='paused':
                     self.checkout_paused=True;self.checkout_readonly=v.get('readOnly') is True
+                    self.checkout_pause_ack={'canContinue':v.get('canContinue') is True,'readOnly':self.checkout_readonly}
                     self.advance_button.config(state='normal' if v.get('canContinue') is True else 'disabled')
                     self.reconcile_button.config(state='normal' if self.checkout_readonly else 'disabled')
+                    self.checkout_stop_button.config(state='normal' if self.checkout.busy else 'disabled')
                     self.status.set('已暂停并保留当前任务与官网窗口。点“继续本次 Pro 购买”先核对原结果，不重复已发送动作。')
+                    continue
+                if kind=='blocked' and (v.get('paused') is True or getattr(self,'checkout_paused',False)):
+                    self.checkout_paused=True;self.status.set(v['message']);ack=getattr(self,'checkout_pause_ack',None)
+                    self.advance_button.config(state='normal' if ack and ack['canContinue'] and self.checkout.busy else 'disabled')
+                    self.reconcile_button.config(state='normal' if ack and ack['readOnly'] and self.checkout.busy else 'disabled')
+                    self.checkout_stop_button.config(state='normal' if self.checkout.busy else 'disabled')
                     continue
                 if v.get('paused') is True or getattr(self,'checkout_paused',False):
                     if kind!='worker-ended':continue
@@ -325,6 +340,7 @@ class App:
                         else:self.advance_checkout()
                 elif kind=='blocked':self.status.set(v['message']);self.advance_button.config(state='normal' if self.checkout.busy and not getattr(self,'checkout_readonly',False) else 'disabled');self.submit_button.config(state='disabled')
                 elif kind in ('progress','result'):
+                    if v.get('paused') is False:self.checkout_paused=False;self.checkout_stop_button.config(state='normal' if self.checkout.busy else 'disabled')
                     if isinstance(v.get('readOnly'),bool):self.checkout_readonly=v['readOnly']
                     phase=v.get('phase','UNKNOWN');name={'AUTH':'等待本人登录/验证','SLOTS':'选择末档','DETAILS':'取货资料','PAYMENT':'付款方式','REVIEW':'核对订单','ORDER_DETAIL':'核对未付款订单'}.get(phase,phase)
                     self.status.set('程序结账：'+name+'；'+v.get('state','NEEDS_VERIFICATION'))
@@ -333,6 +349,7 @@ class App:
                     if kind=='result':
                         self.checkout_readonly=v.get('readOnly') is True
                         self.reconcile_button.config(state='normal' if self.checkout_readonly else 'disabled')
+                        self.transfer_button.config(state='normal' if self.checkout_readonly else 'disabled');self.transfer_checkbox.config(state='normal' if self.checkout_readonly else 'disabled')
                         self.advance_button.config(state='normal' if v.get('realOrderVerified') is not True and v.get('readOnly') is not True else 'disabled')
                         self.submit_button.config(state='normal' if v.get('reviewReady') is True and v.get('realOrderVerified') is not True else 'disabled')
                         self.final_checkbox.config(state='normal' if v.get('reviewReady') is True and v.get('realOrderVerified') is not True else 'disabled')

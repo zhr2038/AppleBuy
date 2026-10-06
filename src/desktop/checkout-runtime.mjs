@@ -8,14 +8,15 @@ const BAG='https://www.apple.com.cn/shop/bag',TERMS='https://www.apple.com.cn/sh
 const PHASES=new Set(['ENTRY','VARIANT','EMPTY_BAG','BAG','AUTH','FULFILLMENT','SLOTS','DETAILS','PAYMENT','REVIEW','ORDER_RECEIPT','ORDER_DETAIL','PROCESSING','UNKNOWN']);
 const safeState=s=>({state:typeof s.state==='string'?s.state:'NEEDS_VERIFICATION',phase:PHASES.has(s.phase)?s.phase:'UNKNOWN',pendingAction:['addBag','checkout','chooseSlot','submitOrder'].includes(s.pendingAction)?s.pendingAction:null});
 export class DesktopCheckoutRuntime {
- constructor({store,launch,onState=()=>{}}){this.store=store;this.launch=launch;this.onState=onState;this.opened=false;this.busy=false;this.closing=false;this.closed=false;this.paused=false;this.cleanupConfirmed=false;this.finalDescriptor=null;this.active=null;}
+ constructor({store,launch,onState=()=>{}}){this.store=store;this.launch=launch;this.onState=onState;this.opened=false;this.busy=false;this.closing=false;this.closed=false;this.paused=false;this.cleanupConfirmed=false;this.finalDescriptor=null;this.active=null;this.operations=new Set();this.ownerLost=false;}
+ track(operation){const running=Promise.resolve().then(operation);this.operations.add(running);running.then(()=>this.operations.delete(running),()=>this.operations.delete(running));return running;}
  async open(){
   if(this.opened||this.busy||this.closing)throw Error('DesktopSessionAlreadyRunning');this.busy=true;
   try{
    const old=await this.store.get(TASK_KEY);if(!old||!validStored(old))throw Error('DesktopLegacyHandoffRequired');
    this.lease=await this.store.acquireOwner();if(this.lease?.owned!==true)throw Error('DesktopOwnerLeaseUnconfirmed');
    const owned=await this.launch();this.api=guardOwnedApi(owned.api,this.lease);this.closeBrowser=owned.close;
-   this.unwatchLease=this.lease.onLost?.(()=>{this.abort?.abort();this.close().catch(()=>{this.cleanupConfirmed=false;});});
+   this.unwatchLease=this.lease.onLost?.(()=>{this.ownerLost=true;this.finalDescriptor=null;this.abort?.abort();try{this.onState({state:'NEEDS_VERIFICATION',phase:'UNKNOWN',pendingAction:null,readOnly:true,ownerLost:true});}finally{this.close().catch(()=>{this.cleanupConfirmed=false;});}});
    const tab=await this.api.create(BAG);this.tabId=tab.id;this.opened=true;
    return await this.observe();
   }catch(error){this.busy=false;await this.close();throw error;}finally{this.busy=false;}
@@ -28,7 +29,9 @@ export class DesktopCheckoutRuntime {
   const result={state:'OBSERVED',phase:o.phase,pendingAction:old?.pending?.action??null,legacyReadOnly:old?.reconcileOnly===true||!!recover,realOrderVerified:false};
   if(!this.paused)this.onState(safeState(result));return result;
  }
- async execute(options){
+ execute(options){return this.track(()=>this.executeOnce(options));}
+ async executeOnce(options){
+  if(this.ownerLost)throw Error('DesktopOwnerLeaseLost');
   if(!this.opened||this.closed||this.closing)throw Error('DesktopSessionNotOpen');if(this.busy)throw Error('DesktopSessionAlreadyRunning');
   if(this.paused)throw Error('DesktopSessionPaused');
   this.busy=true;this.finalDescriptor=null;this.abort=new AbortController();
@@ -38,7 +41,9 @@ export class DesktopCheckoutRuntime {
    const result=await this.active;if(options.mode!=='reconcile'&&result.phase==='REVIEW'&&!this.closing&&!this.paused)await this.prepareReview();this.onState({...safeState(result),paused:this.paused});return result;
   }finally{this.active=null;this.busy=false;}
  }
- async advance({checkoutApproved=false,newContextConfirmed=false,privatePickupData={}}={}){
+ advance(options={}){return this.track(()=>this.advanceOnce(options));}
+ async advanceOnce({checkoutApproved=false,newContextConfirmed=false,privatePickupData={}}={}){
+  if(this.ownerLost)throw Error('DesktopOwnerLeaseLost');
   if(this.paused)throw Error('DesktopSessionPaused');
   if(this.busy||this.closing||this.closed)throw Error('DesktopSessionAlreadyRunning');
   const old=await this.store.get(TASK_KEY);
@@ -46,7 +51,9 @@ export class DesktopCheckoutRuntime {
   this.authority=authority;return this.execute({authority,privatePickupData});
  }
  async reconcile(){return this.execute({mode:'reconcile',authority:null,privatePickupData:{}});}
- async transfer({approved=false,newContextConfirmed=false,privatePickupData={}}={}){
+ transfer(options={}){return this.track(()=>this.transferOnce(options));}
+ async transferOnce({approved=false,newContextConfirmed=false,privatePickupData={}}={}){
+  if(this.ownerLost)throw Error('DesktopOwnerLeaseLost');
   if(this.paused)throw Error('DesktopSessionPaused');
   if(!this.opened||this.busy||this.closing||this.closed||this.lease?.owned!==true)throw Error('DesktopSessionAlreadyRunning');
   this.busy=true;let created;
@@ -68,13 +75,17 @@ export class DesktopCheckoutRuntime {
   return this.execute({authority:{...this.authority,finalConsent}});
  }
  async pause(){
+  if(this.ownerLost)throw Error('DesktopOwnerLeaseLost');
   if(!this.opened||this.closed||this.closing)throw Error('DesktopSessionNotOpen');
   this.paused=true;this.finalDescriptor=null;this.abort?.abort();
-  if(this.active){try{await this.active;}catch{}}
+  await Promise.allSettled([...this.operations]);
+  if(this.ownerLost)throw Error('DesktopOwnerLeaseLost');
   const old=await this.store.get(TASK_KEY);
-  return {...safeState({state:'PAUSED',phase:old?.lastPhase,pendingAction:old?.pending?.action}),paused:true,readOnly:old?.reconcileOnly===true,canContinue:old?.desktopContext===this.api.sessionId&&old?.reconcileOnly!==true&&old?.state!=='CONFIRMED_UNPAID'};
+  const recovered=old?.desktopContext!==this.api.sessionId&&old?.desktopContext&&validateDesktopCartTransfer(old,{sessionId:old.desktopContext});
+  return {...safeState({state:'PAUSED',phase:old?.lastPhase,pendingAction:old?.pending?.action}),paused:true,readOnly:old?.reconcileOnly===true||!!recovered,canContinue:old?.desktopContext===this.api.sessionId&&old?.reconcileOnly!==true&&old?.state!=='CONFIRMED_UNPAID'};
  }
  async resume({mode='purchase',...options}={}){
+  if(this.ownerLost)throw Error('DesktopOwnerLeaseLost');
   if(!this.paused||this.busy||this.closing||this.closed||this.lease?.owned!==true)throw Error('DesktopSessionAlreadyRunning');
   this.paused=false;return mode==='reconcile'?this.reconcile():this.advance(options);
  }
@@ -83,7 +94,7 @@ export class DesktopCheckoutRuntime {
  }
  async closeOnce(){
   if(this.closed)return;this.closing=true;this.finalDescriptor=null;this.abort?.abort();
-  if(this.active){try{await this.active;}catch{} }
+  await Promise.allSettled([...this.operations]);
   try{if(this.closeBrowser)await this.closeBrowser();await this.lease?.release();this.unwatchLease?.();this.cleanupConfirmed=true;this.closed=true;}
   catch{this.cleanupConfirmed=false;throw Error('DesktopBrowserCleanupUnconfirmed');}
  }

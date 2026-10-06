@@ -1,0 +1,47 @@
+{
+  "task": "C-098-COMBINED-REVIEW",
+  "sourceFiles": 237,
+  "status": "returned_for_review",
+  "durationSeconds": 685.31,
+  "turns": 38,
+  "models": [
+    "claude-opus-5-5"
+  ],
+  "primaryModels": [
+    "claude-opus-5-5"
+  ],
+  "provider": "firstParty",
+  "canonicalModel": "claude-opus-5-5",
+  "effort": "xhigh",
+  "modelVerified": true,
+  "resultError": false,
+  "subtype": "success",
+  "permissionDenialCount": 0,
+  "timedOut": false,
+  "cleanupConfirmed": true,
+  "toolCounts": {
+    "Read": 31,
+    "Bash": 4,
+    "Grep": 1
+  },
+  "sourceEditCalls": 0,
+  "privateReadCalls": 0,
+  "unexpectedCommands": 0,
+  "commandOrderMatched": false,
+  "requiredEOFCount": 30,
+  "requiredEOFComplete": 30,
+  "EOFgaps": [],
+  "toolResultErrors": [],
+  "usageScope": "resumed history aggregate, not this round cost",
+  "accepted": false,
+  "realOrderVerified": false,
+  "executionOrder": [
+    2,
+    3,
+    4,
+    1
+  ],
+  "sourceImmutableVerifiedBeforeRootEdits": true,
+  "sourceSha256": "8320ff837aa48bef426f79aa319184f4516d7b5d4777931614d769edc2acd9c8",
+  "verdict": "AGREE with unresolved F1-F5 and command-order deviation; not accepted"
+}

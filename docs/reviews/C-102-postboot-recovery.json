@@ -1,0 +1,34 @@
+{
+  "scope": "post-boot recovery, not purchase acceptance",
+  "verifiedAtUtc": "2026-10-06T06:08:00.117867+00:00",
+  "actualOsBootChanged": true,
+  "CodexMainWindowObservedRunning": true,
+  "startupShortcutStillPresent": true,
+  "WindowsAutoLoginChanged": false,
+  "postBootHandled": true,
+  "followupRestoredToDaily1145": true,
+  "privateJournalAndHandoffBackupsMatchedBeforeRecovery": true,
+  "oldUnknownAndHistoryPreservedAfterReadonlyReconciliation": true,
+  "permanentReadonlySourcePreserved": true,
+  "nativeOwnGuiOpened": true,
+  "nativeBeginShortcutActuallySent": true,
+  "nativeReadonlyResultObserved": {
+    "phase": "UNKNOWN",
+    "state": "NEEDS_USER"
+  },
+  "nativePauseShortcutActuallySent": true,
+  "actualPauseAcknowledgementObserved": true,
+  "sameOwnedBrowserWindowRetained": true,
+  "nativeAuthenticationOrSecurityActions": false,
+  "newAddCheckoutSlotOrderOrPaymentActions": false,
+  "sourceFiles": 237,
+  "sourceSha256": "8320ff837aa48bef426f79aa319184f4516d7b5d4777931614d769edc2acd9c8",
+  "realUnpaidProOrderVerified": false,
+  "goalToolState": "blocked; actual human continuation performed, no fabricated activation",
+  "reviewTask": "C-098-COMBINED-REVIEW",
+  "limitations": [
+    "Reboot does not resolve an old merchant mutation.",
+    "The programme-owned fresh context still needs human authentication for account-specific evidence.",
+    "Current authenticated HTTP failure cause remains unconfirmed; old October5 status is historical."
+  ]
+}

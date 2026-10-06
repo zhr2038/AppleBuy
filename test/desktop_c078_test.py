@@ -96,4 +96,27 @@ class DesktopWorkerTests(unittest.TestCase):
         app.checkout.events.put({'generation':1,'type':'result','phase':'REVIEW','reviewReady':True,'paused':True});app.poll()
         self.assertEqual(app.advance_button.state,'disabled');self.assertEqual(app.final_checkbox.state,'disabled')
 
+class C103FeedbackTests(unittest.TestCase):
+    def test_pause_failure_is_visible_and_does_not_offer_unconfirmed_resume(self):
+        app=fake_app();app.checkout.pause=lambda:None;app.stop_checkout()
+        app.checkout.events.put({'generation':1,'type':'blocked','paused':False,'message':'FAKE pause result unconfirmed'})
+        app.poll();self.assertEqual(app.status.get(),'FAKE pause result unconfirmed');self.assertEqual(app.advance_button.state,'disabled');self.assertEqual(app.checkout_stop_button.state,'normal')
+    def test_resume_rejection_keeps_acknowledged_controls_and_shows_reason(self):
+        app=fake_app();app.checkout.send=lambda v:None;app.pickup_values={}
+        app.checkout.events.put({'generation':1,'type':'paused','readOnly':False,'canContinue':True});app.poll();app.advance_checkout()
+        app.checkout.events.put({'generation':1,'type':'blocked','paused':True,'message':'FAKE still draining'})
+        app.poll();self.assertEqual(app.status.get(),'FAKE still draining');self.assertTrue(app.checkout_paused);self.assertEqual(app.advance_button.state,'normal')
+    def test_successful_resume_reenables_pause_without_reenabling_final_consent(self):
+        app=fake_app();app.checkout.send=lambda v:None;app.pickup_values={}
+        app.checkout_stop_button.state='disabled'
+        app.checkout.events.put({'generation':1,'type':'paused','readOnly':False,'canContinue':True});app.poll();app.advance_checkout()
+        app.checkout.events.put({'generation':1,'type':'result','phase':'AUTH','readOnly':False,'paused':False});app.poll()
+        self.assertFalse(app.checkout_paused);self.assertEqual(app.checkout_stop_button.state,'normal');self.assertEqual(app.final_checkbox.state,'disabled')
+    def test_owner_loss_while_paused_disables_all_checkout_and_reports_loss(self):
+        app=fake_app();app.checkout_paused=True
+        app.checkout.events.put({'generation':1,'type':'owner-lost','message':'FAKE execution authority lost'})
+        app.poll();self.assertEqual(app.status.get(),'FAKE execution authority lost')
+        for name in ('advance_button','reconcile_button','transfer_button','transfer_checkbox','submit_button','final_checkbox','checkout_stop_button'):
+            self.assertEqual(getattr(app,name).state,'disabled')
+
 if __name__=='__main__':unittest.main()
