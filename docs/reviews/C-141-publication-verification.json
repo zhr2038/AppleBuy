@@ -1,0 +1,13 @@
+{
+  "sourceCommit": "59043fa6b8b545ba092af3d4618adf35aa577c93",
+  "candidateRemote": "59043fa6b8b545ba092af3d4618adf35aa577c93",
+  "mainUnchanged": "bd130ee77d8e914f6373432e1061c4de820fbc66",
+  "files": 288,
+  "sha256": "ad1c45e19f3246d27ccc713646b62cfedf0c247ea3b122361391052e205ad431",
+  "allHeadAndRemoteBlobsMatch": true,
+  "privacyScanPassed": true,
+  "acceptedScope": "C141 explicit runtime drainage only",
+  "realOrderVerified": false,
+  "humanAuthenticationPending": true,
+  "verifiedAtUtc": "2026-10-06T18:30:23.065816+00:00"
+}
