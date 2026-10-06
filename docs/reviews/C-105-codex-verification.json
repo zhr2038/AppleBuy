@@ -1,0 +1,109 @@
+{
+  "scope": "Root author implementation/evidence for C104 N1/N2 and ordered-review runner; not cross-author accepted",
+  "sourceFiles": 239,
+  "sourceSha256": "565cc5900d79207b63d036241219e21cc40d67245820f742991a561f6890300d",
+  "changedPaths": [
+    "src/desktop/app.py",
+    "test/desktop-c093-owner-recovery.test.ts",
+    "test/desktop_c078_test.py",
+    "test/desktop-c103-owner-fixture.py",
+    "tools/delegation/run_review_checks.py"
+  ],
+  "N1": "Actual stronger hooks now force both first starts to miss the marker, A publish, B lose publication and acquire byte lock before A cleanup; all eight pairs executed every gate, one owner, exact header, zero init residue.",
+  "N1ProductionBootstrapChanged": false,
+  "N2Baseline": {
+    "tests": 17,
+    "fail": 1,
+    "reason": "readonly pause pointed to disabled purchase button"
+  },
+  "N2Fixed": true,
+  "rootOrderedChecks": [
+    {
+      "scope": "bounded-review-checks",
+      "order": 1,
+      "exitCode": 0,
+      "timedOut": false,
+      "ownedTreeCleanupConfirmed": true,
+      "manifest": {
+        "ok": true,
+        "files": 239,
+        "sha256": "565cc5900d79207b63d036241219e21cc40d67245820f742991a561f6890300d",
+        "mismatches": []
+      },
+      "passed": true
+    },
+    {
+      "scope": "bounded-review-checks",
+      "order": 2,
+      "exitCode": 0,
+      "timedOut": false,
+      "ownedTreeCleanupConfirmed": true,
+      "counts": {
+        "tests": 50,
+        "pass": 50,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0
+      },
+      "passed": true
+    },
+    {
+      "scope": "bounded-review-checks",
+      "order": 3,
+      "exitCode": 0,
+      "timedOut": false,
+      "ownedTreeCleanupConfirmed": true,
+      "tests": 24,
+      "passed": true
+    },
+    {
+      "scope": "bounded-review-checks",
+      "order": 4,
+      "exitCode": 0,
+      "timedOut": false,
+      "ownedTreeCleanupConfirmed": true,
+      "counts": {
+        "tests": 1453,
+        "pass": 1453,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0
+      },
+      "passed": true
+    },
+    {
+      "scope": "bounded-review-checks",
+      "order": 5,
+      "exitCode": 0,
+      "timedOut": false,
+      "ownedTreeCleanupConfirmed": true,
+      "manifest": {
+        "ok": true,
+        "files": 239,
+        "sha256": "565cc5900d79207b63d036241219e21cc40d67245820f742991a561f6890300d",
+        "mismatches": []
+      },
+      "passed": true
+    },
+    {
+      "scope": "bounded-review-checks",
+      "complete": true,
+      "orderedChecks": 5,
+      "passed": true
+    }
+  ],
+  "oldProtectedAssertionsWeakened": false,
+  "C104FullFailureRetained": true,
+  "loopbackBadPortNegativeControl": {
+    "forcedPort": 6000,
+    "sameErrorClassReproduced": true,
+    "actualC104HistoricalEphemeralPortCaptured": false,
+    "causeInferenceOnly": true,
+    "normalProtectedDomTestsPassed": 10,
+    "productionDomBridgeUnchanged": true
+  },
+  "actualCurrentNativeProgrammeVersion": "C097 paused readonly; new C105 not loaded into it",
+  "newRealAppleMutationOrPayment": false,
+  "realUnpaidProOrderVerified": false,
+  "verifiedAtUtc": "2026-10-06T06:53:50.836552+00:00"
+}

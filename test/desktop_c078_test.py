@@ -97,6 +97,9 @@ class DesktopWorkerTests(unittest.TestCase):
         self.assertEqual(app.advance_button.state,'disabled');self.assertEqual(app.final_checkbox.state,'disabled')
 
 class C103FeedbackTests(unittest.TestCase):
+    def test_readonly_pause_points_to_enabled_reconcile_instead_of_disabled_purchase(self):
+        app=fake_app();app.checkout.events.put({'generation':1,'type':'paused','readOnly':True,'canContinue':False});app.poll()
+        self.assertEqual(app.advance_button.state,'disabled');self.assertEqual(app.reconcile_button.state,'normal');self.assertIn('核对导入的旧任务',app.status.get());self.assertNotIn('继续本次 Pro 购买',app.status.get())
     def test_pause_failure_is_visible_and_does_not_offer_unconfirmed_resume(self):
         app=fake_app();app.checkout.pause=lambda:None;app.stop_checkout()
         app.checkout.events.put({'generation':1,'type':'blocked','paused':False,'message':'FAKE pause result unconfirmed'})

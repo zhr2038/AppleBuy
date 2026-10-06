@@ -47,16 +47,16 @@ test('C103 two first-start holders cannot both leave an empty owner marker', {sk
   }
   let a,b;
   try{
-   a=launch('first');const first=await a.next();b=launch('second');let left=first,right=await b.next();
-   if(first.fixture==='created-empty'){
-    assert.equal(right.fixture,'second-lock-held');a.child.stdin.write('continue\n');left=await a.next();b.child.stdin.write('continue\n');right=await b.next();
-   }
+   a=launch('atomic-first');b=launch('atomic-second');assert.equal((await a.next()).fixture,'missing-marker');assert.equal((await b.next()).fixture,'missing-marker');
+   a.child.stdin.write('continue\n');assert.equal((await a.next()).fixture,'header-published');b.child.stdin.write('continue\n');assert.equal((await b.next()).fixture,'publication-lost');assert.equal((await b.next()).fixture,'second-lock-held');
+   a.child.stdin.write('continue\n');const left=await a.next();b.child.stdin.write('continue\n');const right=await b.next();
    assert.equal(Number(left.owned===true)+Number(right.owned===true),1);
   }finally{
    for(const child of children)if(child.exitCode===null&&child.signalCode===null)child.stdin.end('release\n');
    await Promise.all(children.map(child=>child.exitCode!==null?Promise.resolve():once(child,'close')));
   }
   assert.equal(await readFile(file+'.owner','utf8'),'APPLEBUY-OS-LEASE-v1\n');
+  assert.equal((await readdir(resolve(file,'..'))).filter(n=>n.endsWith('.init')).length,0);
  }
 });
 

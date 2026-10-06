@@ -314,7 +314,12 @@ class App:
                     self.advance_button.config(state='normal' if v.get('canContinue') is True else 'disabled')
                     self.reconcile_button.config(state='normal' if self.checkout_readonly else 'disabled')
                     self.checkout_stop_button.config(state='normal' if self.checkout.busy else 'disabled')
-                    self.status.set('已暂停并保留当前任务与官网窗口。点“继续本次 Pro 购买”先核对原结果，不重复已发送动作。')
+                    if self.checkout_readonly:
+                        self.status.set('已暂停并保留当前任务与官网窗口。请点“核对导入的旧任务”只读核对，不恢复购买。')
+                    elif v.get('canContinue') is True:
+                        self.status.set('已暂停并保留当前任务与官网窗口。点“继续本次 Pro 购买”先核对原结果，不重复已发送动作。')
+                    else:
+                        self.status.set('已暂停并保留当前任务与官网窗口；当前任务不能继续购买，旧记录保持。')
                     continue
                 if kind=='blocked' and (v.get('paused') is True or getattr(self,'checkout_paused',False)):
                     self.checkout_paused=True;self.status.set(v['message']);ack=getattr(self,'checkout_pause_ack',None)

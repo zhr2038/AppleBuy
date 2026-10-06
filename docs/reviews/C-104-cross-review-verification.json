@@ -1,0 +1,56 @@
+{
+  "task": "C-104-CROSS-REVIEW",
+  "sourceFiles": 238,
+  "status": "returned_for_review",
+  "durationSeconds": 672.64,
+  "turns": 39,
+  "models": [
+    "claude-opus-5-5"
+  ],
+  "primaryModels": [
+    "claude-opus-5-5"
+  ],
+  "provider": "firstParty",
+  "canonicalModel": "claude-opus-5-5",
+  "effort": "xhigh",
+  "modelVerified": true,
+  "resultError": false,
+  "subtype": "success",
+  "permissionDenialCount": 0,
+  "timedOut": false,
+  "cleanupConfirmed": true,
+  "toolCounts": {
+    "Read": 31,
+    "Bash": 5,
+    "Grep": 1
+  },
+  "sourceEditCalls": 0,
+  "privateReadCalls": 0,
+  "unexpectedCommands": 0,
+  "commandOrderMatched": true,
+  "requiredEOFCount": 29,
+  "requiredEOFComplete": 29,
+  "EOFgaps": [],
+  "toolResultErrors": [
+    {
+      "tool": "Bash",
+      "kind": "tool-result-error"
+    }
+  ],
+  "usageScope": "resumed history aggregate, not this round cost",
+  "accepted": false,
+  "realOrderVerified": false,
+  "BashInvocationGroupSizes": [
+    1,
+    1,
+    1,
+    1,
+    1
+  ],
+  "BashCallsOverlapped": true,
+  "separateSequentialBashCallsVerified": false,
+  "sourceSha256": "ad802939350972c131f2109abd64cf4c3e6eac5252b704c8e7494a172c81ef83",
+  "sourceImmutableVerifiedImmediatelyAfterCall": true,
+  "allChecksPassed": false,
+  "reason": "full Node failed once and Bash invocations overlapped; two new findings"
+}
