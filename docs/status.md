@@ -1,3 +1,9 @@
+# C101 human-requested normal restart and post-logon Codex recovery
+
+The human now explicitly requests Windows restart, automatic Codex start and continued full goal; this overrides previous no-shutdown wording for this one normal restart only. Current-user Startup shortcut registered AppsFolder app verified, private handoff/journal backups verified, own GUI closed normally with owned Node/browser/holder tree terminal cleanup. No Windows autologon, password persistence, force-close or new order. Source237/8320ff remains unchanged; all original unknowns and imported permanent readonly source retained.
+
+Existing thread follow-up temporarily every5minutes uses actual OS boot-change guard and restores normal11:45 schedule after its first post-boot recovery. Source review still C098/original terminal C094 privately after genuine03:40UTCreset. Reboot is not an action-failure/no-stock/no-order certificate and cannot restore old buying authority. Windows logon is required for Startup. Actual reboot completion and successful post-boot Codex reopening must be verified after reboot; setup alone is not proof. Goal tool currentlyblocked, latest direct human continuation is recorded without faking activation/completion.
+
 # C100 actual goal blocked on current authentication failure evidence
 
 After three consecutive no-progress revalidations following current DNS/TLS and rendered official-status diagnostics, update_goal actually returned blocked. No current authenticated merchant error Status/hostname has been supplied; root cause remains unknown, no login success/password-error/rate-limit diagnosis. Existing own worker remains live but paused/readonly, not a running purchase. Programme/browser/unknown task preserved. Current237 SHA8320ff837aa48bef426f79aa319184f4516d7b5d4777931614d769edc2acd9c8 unchanged; no new order or payment.
