@@ -1,0 +1,21 @@
+{
+  "task": "C120",
+  "scope": "actual production programme through human-connected Chrome native API",
+  "actualProgrammeResult": {
+    "scope": "existing-chrome-readonly",
+    "phase": "EMPTY_BAG",
+    "readOnly": true,
+    "mutationCount": 0,
+    "tabClosed": true,
+    "oldRecordUnchanged": true,
+    "confirmed": null,
+    "personalProfileCopied": false,
+    "reason": null
+  },
+  "exitCode": 0,
+  "timeout": false,
+  "ownedCleanupConfirmed": true,
+  "privateLedgerBytesUnchanged": true,
+  "noRawWebsiteOrProfileDataExported": true,
+  "realOrderVerified": false
+}
