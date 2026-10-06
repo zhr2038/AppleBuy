@@ -1,3 +1,7 @@
+# C090 N10 two-file candidate; actual C089 limited AGREE saved
+
+C089 actual229.42s25turn firstPartyOpus5.5/xhigh, complete18freshEOF/5ordered commands, no error/denial/cap/edit/private read, cleanup and source immutable; limited AGREE for C088 four-file delta, not aggregate/live acceptance. N10 Low stale readonly flag independently reproduced15/16 then one-line app repair/all16Python green; Node source/tests unchanged so prior1436 remain historical. New233 SHA 307a6ec85eb391c8851898c12e89aa044eb9ed642ca2298c2f4cce60165dd308; exact C091 pending. Actual Pro unpaid goal remains blocked, export/ledger absent, F8/restart/manual-order/worker-live gaps preserved. Candidate-only, no shutdown.
+
 # C088 current N7 repair candidate; C087 actual DISAGREE preserved
 
 C087 actual714.98s67turn, firstPartyOpus5.5/xhigh, complete47EOF/7ordered commands, no error/denial/cap or source changes, owned cleanup. N7 independently reproduced red then fixed. Only four source paths change from ac4e4099: same-context readonly downgrade rejects, GUI reconcile and readonly blocked states fixed, honest Chinese pause/restart/final-lookup disclosures.21transfer/1436Node/14Python pass, all FAKE. Current233 SHA ca2aed9804c442f9846e76e9de4ac1d5813bffe84e6e9a6c7d8ba69dc1dcac24. Exact C089 follow-up pending, original terminal C087 session privately; no acceptance yet.

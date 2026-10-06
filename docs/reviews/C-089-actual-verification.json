@@ -1,0 +1,41 @@
+{
+  "task": "C-089-CROSS-REVIEW",
+  "sourceFiles": 233,
+  "status": "returned_for_review",
+  "durationSeconds": 229.42,
+  "turns": 25,
+  "models": [
+    "claude-opus-5-5"
+  ],
+  "primaryModels": [
+    "claude-opus-5-5"
+  ],
+  "provider": "firstParty",
+  "canonicalModel": "claude-opus-5-5",
+  "effort": "xhigh",
+  "modelVerified": true,
+  "resultError": false,
+  "subtype": "success",
+  "permissionDenialCount": 0,
+  "timedOut": false,
+  "cleanupConfirmed": true,
+  "toolCounts": {
+    "Read": 19,
+    "Bash": 5
+  },
+  "sourceEditCalls": 0,
+  "privateReadCalls": 0,
+  "unexpectedCommands": 0,
+  "commandOrderMatched": true,
+  "requiredEOFCount": 18,
+  "requiredEOFComplete": 18,
+  "EOFgaps": [],
+  "toolResultErrors": [],
+  "usageScope": "resumed history aggregate, not this round cost",
+  "accepted": false,
+  "realOrderVerified": false,
+  "verdict": "AGREE limited C088 four-file delta with N10 Low",
+  "sha256": "ca2aed9804c442f9846e76e9de4ac1d5813bffe84e6e9a6c7d8ba69dc1dcac24",
+  "sourceCommit": "93da338035c879d7676fe02abed21222e90480a6",
+  "immutableDuringReview": true
+}

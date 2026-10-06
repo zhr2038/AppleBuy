@@ -71,5 +71,18 @@ class DesktopWorkerTests(unittest.TestCase):
         app.transfer_checkout();self.assertEqual(app.reconcile_button.state,'disabled');self.assertEqual(sent[0]['action'],'transfer')
         app.checkout.events.put({'generation':1,'type':'result','phase':'AUTH','readOnly':False});app.poll()
         self.assertEqual(app.reconcile_button.state,'disabled');self.assertEqual(app.advance_button.state,'normal')
+    def test_transfer_progress_nonreadonly_allows_safe_advance_after_blocked(self):
+        app=fake_app();app.checkout.send=lambda message:None;app.pickup_values={}
+        app.checkout.events.put({'generation':1,'type':'ready','readOnly':True,'message':'FAKE readonly'});app.poll()
+        app.transfer_confirm.set(True);app.transfer_checkout()
+        app.checkout.events.put({'generation':1,'type':'progress','readOnly':False,'phase':'REVIEW'});app.poll()
+        app.checkout.events.put({'generation':1,'type':'blocked','message':'FAKE review changed'});app.poll()
+        self.assertEqual(app.advance_button.state,'normal');self.assertEqual(app.reconcile_button.state,'disabled')
+    def test_transfer_failure_before_write_keeps_readonly_advance_disabled(self):
+        app=fake_app();app.checkout.send=lambda message:None;app.pickup_values={}
+        app.checkout.events.put({'generation':1,'type':'ready','readOnly':True,'message':'FAKE readonly'});app.poll()
+        app.transfer_confirm.set(True);app.transfer_checkout()
+        app.checkout.events.put({'generation':1,'type':'blocked','message':'FAKE empty bag'});app.poll()
+        self.assertEqual(app.advance_button.state,'disabled')
 
 if __name__=='__main__':unittest.main()

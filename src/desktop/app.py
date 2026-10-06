@@ -313,6 +313,7 @@ class App:
                         else:self.advance_checkout()
                 elif kind=='blocked':self.status.set(v['message']);self.advance_button.config(state='normal' if self.checkout.busy and not getattr(self,'checkout_readonly',False) else 'disabled');self.submit_button.config(state='disabled')
                 elif kind in ('progress','result'):
+                    if isinstance(v.get('readOnly'),bool):self.checkout_readonly=v['readOnly']
                     phase=v.get('phase','UNKNOWN');name={'AUTH':'等待本人登录/验证','SLOTS':'选择末档','DETAILS':'取货资料','PAYMENT':'付款方式','REVIEW':'核对订单','ORDER_DETAIL':'核对未付款订单'}.get(phase,phase)
                     self.status.set('程序结账：'+name+'；'+v.get('state','NEEDS_VERIFICATION'))
                     if v.get('readOnly') is True:

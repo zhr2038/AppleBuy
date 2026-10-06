@@ -1,0 +1,47 @@
+{
+  "files": 233,
+  "sha256": "307a6ec85eb391c8851898c12e89aa044eb9ed642ca2298c2f4cce60165dd308",
+  "changedPaths": [
+    "src/desktop/app.py",
+    "test/desktop_c078_test.py"
+  ],
+  "actualC089": {
+    "durationSeconds": 229.42,
+    "turns": 25,
+    "verdict": "AGREE limited four-file delta, N10 Low",
+    "model": "claude-opus-5-5",
+    "effort": "xhigh",
+    "provider": "firstParty",
+    "freshEOFComplete": 18,
+    "commandsMatched": true,
+    "cleanup": true,
+    "errors": false,
+    "denials": 0
+  },
+  "N10IndependentRepro": {
+    "oldProductionSource": "93da338035c879d7676fe02abed21222e90480a6",
+    "newTwoTestsBeforeFix": {
+      "total": 16,
+      "pass": 15,
+      "fail": 1
+    },
+    "afterFix": {
+      "python": 16,
+      "pass": 16,
+      "fail": 0
+    }
+  },
+  "repair": "Only explicit boolean readOnly progress updates the GUI readonly flag; a post-write nonreadonly progress allows advance after blocked, while a pre-write transfer failure stays disabled",
+  "NodeProductionAndTestsUnchanged": true,
+  "priorUnchangedNodeCheck": {
+    "tests": 1436,
+    "source": "C088",
+    "notRerunForPythonOnlyDelta": true
+  },
+  "merchantAccess": false,
+  "accepted": false,
+  "actualProgrammeUnpaidOrderVerified": false,
+  "goalStatus": "blocked",
+  "restoreTask": "C-091-CROSS-REVIEW",
+  "verifiedAtUtc": "2026-10-06T00:41:28.606315+00:00"
+}
