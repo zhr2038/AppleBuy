@@ -82,3 +82,7 @@ test('C088 same-context reconcile cannot downgrade the live transferred buyer',a
  await assert.rejects(runDesktopSession({store,api,tabId:7,mode:'reconcile'}),/ReadonlyHandoffRequired/);
  assert.deepEqual(w.row,before);assert.equal(w.writes,writes);assert.deepEqual(w.commands,[]);
 });
+test('C096 confirmed local transfer reports nonreadonly ownership before a first-step failure',async()=>{
+ const {w,store,api}=world(),events=[];api.create=async()=>({id:7});const runtime=new DesktopCheckoutRuntime({store,onState:s=>events.push(s),launch:async()=>({api,close:async()=>{}})});await runtime.open();runtime.advance=async()=>{throw Error('FAKE first step failure');};
+ await assert.rejects(runtime.transfer({approved:true,newContextConfirmed:true}),/first step failure/);assert.equal(w.writes,1);assert.equal(w.row.desktopContext,api.sessionId);assert.deepEqual(w.commands,[]);assert.equal(events.some(s=>s.readOnly===false),true);await runtime.close();
+});

@@ -1,0 +1,76 @@
+{
+  "files": 237,
+  "sha256": "45c795d53a043b791e4e5e4befa93c3ac41751abdbc8e78658c3dd0fec0b9d35",
+  "deltaFromC093": [
+    "src/desktop/checkout-runtime.mjs",
+    "test/desktop-c084-cart-transfer.test.ts"
+  ],
+  "c093ScopeStillPending": true,
+  "C094Actual": {
+    "task": "C-094-PROCESS-REVIEW",
+    "sourceFiles": 237,
+    "status": "failed",
+    "durationSeconds": 244.17,
+    "turns": 28,
+    "models": [
+      "claude-opus-5-5"
+    ],
+    "primaryModels": [
+      "<synthetic>",
+      "claude-opus-5-5"
+    ],
+    "provider": "firstParty",
+    "canonicalModel": "claude-opus-5-5",
+    "effort": "xhigh",
+    "modelVerified": false,
+    "resultError": true,
+    "subtype": "success",
+    "permissionDenialCount": 0,
+    "timedOut": false,
+    "cleanupConfirmed": true,
+    "toolCounts": {
+      "Read": 26,
+      "Bash": 1
+    },
+    "sourceEditCalls": 0,
+    "privateReadCalls": 0,
+    "unexpectedCommands": 0,
+    "commandOrderMatched": false,
+    "requiredEOFCount": 25,
+    "requiredEOFComplete": 25,
+    "EOFgaps": [],
+    "toolResultErrors": [],
+    "usageScope": "resumed history aggregate, not this round cost",
+    "accepted": false,
+    "realOrderVerified": false,
+    "actualProviderSessionQuota": true,
+    "apiErrorStatus": 429,
+    "resetReported": "11:40am Asia/Shanghai",
+    "resetAtUtc": "2026-10-06T03:40:00Z",
+    "nextScheduledCheck": "11:45 Asia/Shanghai",
+    "sha256": "31554630c265b8a5fc6a81798419cc0c5148a7564ea9895bf0181b697bfc21d3",
+    "sourceCommit": "cd26b80ecca699403dc8df74d8e18a9d83968b81",
+    "verdict": "NONE; quota before tests/final review",
+    "immutableDuringInvocation": true
+  },
+  "N10aRepro": {
+    "productionSource": "cd26b80ecca699403dc8df74d8e18a9d83968b81",
+    "assertionFailedBeforeFix": true,
+    "newFixturePass": true,
+    "merchantCommands": 0
+  },
+  "checks": {
+    "NodeFullPass": 1443,
+    "PythonPass": 16,
+    "focusedNodePass": 34,
+    "newKernelAndRuntimeCases": 6
+  },
+  "accepted": false,
+  "actualProgrammeUnpaidOrderVerified": false,
+  "goalStatus": "active, this turn actual code/test progress",
+  "handoffAndProductionLedgerMissing": true,
+  "noRealWebsiteActions": true,
+  "restoreTask": "C-095-PROCESS-CONTINUE",
+  "restoreSessionSource": "latest terminal C094 private metadata, CLI argument only",
+  "verifiedAtUtc": "2026-10-06T01:41:50.609793+00:00"
+}

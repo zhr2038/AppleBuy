@@ -46,8 +46,9 @@ export class DesktopCheckoutRuntime {
  async reconcile(){return this.execute({mode:'reconcile',authority:null,privatePickupData:{}});}
  async transfer({approved=false,newContextConfirmed=false,privatePickupData={}}={}){
   if(!this.opened||this.busy||this.closing||this.closed||this.lease?.owned!==true)throw Error('DesktopSessionAlreadyRunning');
-  this.busy=true;
-  try{this.active=transferExistingCart({store:this.store,api:this.api,tabId:this.tabId,approved,newContextConfirmed,live:()=>!this.closing});await this.active;}finally{this.active=null;this.busy=false;}
+  this.busy=true;let created;
+  try{this.active=transferExistingCart({store:this.store,api:this.api,tabId:this.tabId,approved,newContextConfirmed,live:()=>!this.closing});created=await this.active;}finally{this.active=null;this.busy=false;}
+  if(created?.created===true&&!this.closing&&this.lease?.owned===true)this.onState({state:'NEEDS_USER',phase:'BAG',pendingAction:null,readOnly:false});
   return this.advance({checkoutApproved:true,newContextConfirmed:true,privatePickupData});
  }
  async prepareReview(){
