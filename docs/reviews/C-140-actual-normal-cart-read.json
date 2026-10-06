@@ -1,0 +1,16 @@
+{
+  "scope": "C140-actual-normal-cart-readonly",
+  "purchaseActions": 0,
+  "finalSent": false,
+  "phase": "BAG",
+  "newContextReadonly": true,
+  "quantity": 1,
+  "totalCny": 9999,
+  "itemMatchesFixedPro": true,
+  "extrasClear": true,
+  "accountIdentityProved": false,
+  "cleanupConfirmed": true,
+  "originalLedgerUnchanged": true,
+  "testedSourceFiles": 288,
+  "testedSourceSha256": "ad1c45e19f3246d27ccc713646b62cfedf0c247ea3b122361391052e205ad431"
+}

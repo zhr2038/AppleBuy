@@ -13,14 +13,23 @@ export class DesktopCheckoutRuntime {
  track(operation){const running=Promise.resolve().then(operation);this.operations.add(running);running.then(()=>this.operations.delete(running),()=>this.operations.delete(running));return running;}
  async open(){
   if(this.opened||this.busy||this.closing)throw Error('DesktopSessionAlreadyRunning');this.busy=true;
-  try{
+  // The inner startup settles independently of the outer error cleanup, avoiding a close/open cycle.
+  const starting=Promise.resolve().then(()=>this.openOnce());this.starting=starting;
+  try{const result=await starting;if(this.closing||this.ownerLost)throw Error('DesktopSessionCancelled');return result;}
+  catch(error){await this.close();throw error;}
+  finally{this.busy=false;if(this.starting===starting)this.starting=null;}
+ }
+ async openOnce(){
+   if(this.closing||this.ownerLost)throw Error('DesktopSessionCancelled');
    const old=await this.store.get(TASK_KEY);if(!old||!validStored(old))throw Error('DesktopLegacyHandoffRequired');
+   if(this.closing||this.ownerLost)throw Error('DesktopSessionCancelled');
    this.lease=await this.store.acquireOwner();if(this.lease?.owned!==true)throw Error('DesktopOwnerLeaseUnconfirmed');
-   const owned=await this.launch();this.api=guardOwnedApi(owned.api,this.lease);this.closeBrowser=owned.close;
    this.unwatchLease=this.lease.onLost?.(()=>{this.ownerLost=true;this.finalDescriptor=null;this.abort?.abort();try{this.onState({state:'NEEDS_VERIFICATION',phase:'UNKNOWN',pendingAction:null,readOnly:true,ownerLost:true});}finally{this.close().catch(()=>{this.cleanupConfirmed=false;});}});
+   if(this.closing||this.ownerLost)throw Error('DesktopSessionCancelled');
+   const owned=await this.launch();this.api=guardOwnedApi(owned.api,this.lease);this.closeBrowser=owned.close;
+   if(this.closing||this.ownerLost||this.lease?.owned!==true)throw Error('DesktopSessionCancelled');
    const tab=await this.api.create(BAG);this.tabId=tab.id;this.opened=true;
    return await this.observeInitialPage();
-  }catch(error){this.busy=false;await this.close();throw error;}finally{this.busy=false;}
  }
  async observeInitialPage(){
   // Creation does not mean navigation has committed. Only bounded, same-tab reads may be retried here.
@@ -43,13 +52,14 @@ export class DesktopCheckoutRuntime {
   }
   throw Error('DesktopInitialPageUnconfirmed');
  }
- async observe(){
+ observe(){return this.track(()=>this.observeOnce());}
+ async observeOnce(){
   if(!this.opened||this.closed||this.closing)throw Error('DesktopSessionNotOpen');
   if(this.active)throw Error('DesktopSessionAlreadyRunning');
   const port=new ChromePort(this.api,this.tabId,{mode:'observe'}),o=await port.observe(PRO_PLAN),old=await this.store.get(TASK_KEY);
   const recover=old?.desktopContext!==this.api.sessionId&&old?.desktopContext&&(validateDesktopCartTransfer(old,{sessionId:old.desktopContext})||validateEmptyRestart(old,{sessionId:old.desktopContext}));
   const result={state:'OBSERVED',phase:o.phase,pendingAction:old?.pending?.action??null,legacyReadOnly:old?.reconcileOnly===true||!!recover,realOrderVerified:false};
-  if(!this.paused)this.onState(safeState(result));return result;
+  if(!this.paused&&!this.closing&&!this.ownerLost)this.onState(safeState(result));return result;
  }
  execute(options){return this.track(()=>this.executeOnce(options));}
  async executeOnce(options){
@@ -108,7 +118,7 @@ export class DesktopCheckoutRuntime {
   if(this.ownerLost)throw Error('DesktopOwnerLeaseLost');
   if(!this.opened||this.closed||this.closing)throw Error('DesktopSessionNotOpen');
   this.paused=true;this.finalDescriptor=null;this.abort?.abort();
-  await Promise.allSettled([...this.operations]);
+  await Promise.allSettled([...this.operations,...(this.starting?[this.starting]:[])]);
   if(this.ownerLost)throw Error('DesktopOwnerLeaseLost');
   const old=await this.store.get(TASK_KEY);
   const recovered=old?.desktopContext!==this.api.sessionId&&old?.desktopContext&&(validateDesktopCartTransfer(old,{sessionId:old.desktopContext})||validateEmptyRestart(old,{sessionId:old.desktopContext}));
@@ -124,7 +134,7 @@ export class DesktopCheckoutRuntime {
  }
  async closeOnce(){
   if(this.closed)return;this.closing=true;this.finalDescriptor=null;this.abort?.abort();
-  await Promise.allSettled([...this.operations]);
+  await Promise.allSettled([...this.operations,...(this.starting?[this.starting]:[])]);
   try{if(this.closeBrowser)await this.closeBrowser();await this.lease?.release();this.unwatchLease?.();this.cleanupConfirmed=true;this.closed=true;}
   catch{this.cleanupConfirmed=false;throw Error('DesktopBrowserCleanupUnconfirmed');}
  }

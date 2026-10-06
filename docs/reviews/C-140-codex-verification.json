@@ -1,0 +1,55 @@
+{
+  "task": "C-140-DRAIN-STARTUP",
+  "sourceFiles": 288,
+  "sha256": "ad1c45e19f3246d27ccc713646b62cfedf0c247ea3b122361391052e205ad431",
+  "productionDelta": [
+    "src/desktop/checkout-runtime.mjs"
+  ],
+  "newTests": [
+    "test/desktop-c140-close-drain.test.ts"
+  ],
+  "oldAssertionsChanged": false,
+  "before": {
+    "tests": 5,
+    "pass": 1,
+    "fail": 4
+  },
+  "intermediate": {
+    "tests": 15,
+    "pass": 13,
+    "fail": 2,
+    "cause": "first edit drained pause but omitted close; corrected before acceptance"
+  },
+  "after": {
+    "tests": 8,
+    "pass": 8,
+    "fail": 0,
+    "cancelled": 0,
+    "skipped": 0
+  },
+  "fullNode": {
+    "tests": 1534,
+    "pass": 1534,
+    "fail": 0,
+    "cancelled": 0,
+    "skipped": 0
+  },
+  "originalC136ReproductionNow": {
+    "cleanupConfirmed": true,
+    "ownedFixtureTabsRemaining": 0,
+    "leaseReleases": 1,
+    "purchaseCommands": 0,
+    "ledgerWrites": 0
+  },
+  "fixtures": "FAKE Chrome/merchant/owner using production Runtime/NativeApi/Peer",
+  "pythonScope": "54 prior current checks unchanged; actual reviewer ordered checker repeats",
+  "actualCurrentCart": "C139 read qty1/9999/noextras; no new real buying in this task",
+  "liveStartupCancellationVerified": false,
+  "accepted": false,
+  "realOrderVerified": false,
+  "remaining": [
+    "human authentication",
+    "real slot/rejection/hold/order/speed",
+    "forced parent death or pre-ready worker stop is outside this runtime-only fix"
+  ]
+}
