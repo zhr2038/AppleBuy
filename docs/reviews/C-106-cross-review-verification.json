@@ -1,0 +1,121 @@
+{
+  "task": "C-106-CROSS-REVIEW",
+  "sourceFiles": 239,
+  "status": "returned_for_review",
+  "durationSeconds": 412.34,
+  "turns": 29,
+  "models": [
+    "claude-opus-5-5"
+  ],
+  "primaryModels": [
+    "claude-opus-5-5"
+  ],
+  "provider": "firstParty",
+  "canonicalModel": "claude-opus-5-5",
+  "effort": "xhigh",
+  "modelVerified": true,
+  "resultError": false,
+  "subtype": "success",
+  "permissionDenialCount": 0,
+  "timedOut": false,
+  "cleanupConfirmed": true,
+  "toolCounts": {
+    "Read": 26,
+    "Bash": 1
+  },
+  "sourceEditCalls": 0,
+  "privateReadCalls": 0,
+  "unexpectedCommands": 0,
+  "commandOrderMatched": true,
+  "requiredEOFCount": 24,
+  "requiredEOFComplete": 24,
+  "EOFgaps": [],
+  "toolResultErrors": [],
+  "usageScope": "resumed history aggregate, not this round cost",
+  "accepted": true,
+  "realOrderVerified": false,
+  "orderedChecks": [
+    {
+      "scope": "bounded-review-checks",
+      "order": 1,
+      "exitCode": 0,
+      "timedOut": false,
+      "ownedTreeCleanupConfirmed": true,
+      "manifest": {
+        "ok": true,
+        "files": 239,
+        "sha256": "565cc5900d79207b63d036241219e21cc40d67245820f742991a561f6890300d",
+        "mismatches": []
+      },
+      "passed": true
+    },
+    {
+      "scope": "bounded-review-checks",
+      "order": 2,
+      "exitCode": 0,
+      "timedOut": false,
+      "ownedTreeCleanupConfirmed": true,
+      "counts": {
+        "tests": 50,
+        "pass": 50,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0
+      },
+      "passed": true
+    },
+    {
+      "scope": "bounded-review-checks",
+      "order": 3,
+      "exitCode": 0,
+      "timedOut": false,
+      "ownedTreeCleanupConfirmed": true,
+      "tests": 24,
+      "passed": true
+    },
+    {
+      "scope": "bounded-review-checks",
+      "order": 4,
+      "exitCode": 0,
+      "timedOut": false,
+      "ownedTreeCleanupConfirmed": true,
+      "counts": {
+        "tests": 1453,
+        "pass": 1453,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0
+      },
+      "passed": true
+    },
+    {
+      "scope": "bounded-review-checks",
+      "order": 5,
+      "exitCode": 0,
+      "timedOut": false,
+      "ownedTreeCleanupConfirmed": true,
+      "manifest": {
+        "ok": true,
+        "files": 239,
+        "sha256": "565cc5900d79207b63d036241219e21cc40d67245820f742991a561f6890300d",
+        "mismatches": []
+      },
+      "passed": true
+    },
+    {
+      "scope": "bounded-review-checks",
+      "complete": true,
+      "orderedChecks": 5,
+      "passed": true
+    }
+  ],
+  "orderedChecksVerified": true,
+  "BashInvocationGroupSizes": [
+    1
+  ],
+  "BashCallsOverlapped": false,
+  "separateSequentialBashCallsVerified": true,
+  "sourceSha256": "565cc5900d79207b63d036241219e21cc40d67245820f742991a561f6890300d",
+  "sourceImmutableVerified": true,
+  "acceptanceScope": "Only combined C093/C096/C097/C103/C105 owner/transfer/pause and reviewed ordered-check repairs; not aggregate whole-repo or live goal"
+}
