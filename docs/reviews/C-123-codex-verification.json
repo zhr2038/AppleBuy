@@ -1,0 +1,100 @@
+{
+  "task": "C123",
+  "author": "Codex",
+  "sourceFiles": 276,
+  "sha256": "37f7606ae741178af9e22b133178ea420de52f54426054d0efb1d173d0583cf6",
+  "checks": {
+    "exitCode": 0,
+    "timeout": false,
+    "ownedCleanupConfirmed": true,
+    "rows": [
+      {
+        "scope": "bounded-review-checks",
+        "order": 1,
+        "exitCode": 0,
+        "timedOut": false,
+        "ownedTreeCleanupConfirmed": true,
+        "manifest": {
+          "ok": true,
+          "files": 276,
+          "sha256": "37f7606ae741178af9e22b133178ea420de52f54426054d0efb1d173d0583cf6",
+          "mismatches": []
+        },
+        "passed": true
+      },
+      {
+        "scope": "bounded-review-checks",
+        "order": 2,
+        "exitCode": 0,
+        "timedOut": false,
+        "ownedTreeCleanupConfirmed": true,
+        "counts": {
+          "tests": 93,
+          "pass": 93,
+          "fail": 0,
+          "cancelled": 0,
+          "skipped": 0
+        },
+        "passed": true
+      },
+      {
+        "scope": "bounded-review-checks",
+        "order": 3,
+        "exitCode": 0,
+        "timedOut": false,
+        "ownedTreeCleanupConfirmed": true,
+        "tests": 50,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "passed": true
+      },
+      {
+        "scope": "bounded-review-checks",
+        "order": 4,
+        "exitCode": 0,
+        "timedOut": false,
+        "ownedTreeCleanupConfirmed": true,
+        "counts": {
+          "tests": 1499,
+          "pass": 1499,
+          "fail": 0,
+          "cancelled": 0,
+          "skipped": 0
+        },
+        "passed": true
+      },
+      {
+        "scope": "bounded-review-checks",
+        "order": 5,
+        "exitCode": 0,
+        "timedOut": false,
+        "ownedTreeCleanupConfirmed": true,
+        "manifest": {
+          "ok": true,
+          "files": 276,
+          "sha256": "37f7606ae741178af9e22b133178ea420de52f54426054d0efb1d173d0583cf6",
+          "mismatches": []
+        },
+        "passed": true
+      },
+      {
+        "scope": "bounded-review-checks",
+        "complete": true,
+        "orderedChecks": 5,
+        "passed": true
+      }
+    ]
+  },
+  "twoIndependentReprosRedThenGreen": true,
+  "realWindowsStreamFixture": true,
+  "newGuiAndChannelTests": "FAKE",
+  "installedReadonlyHostUnchanged": true,
+  "purchaseHostInstalled": false,
+  "guiDeployed": false,
+  "humanEscStopRespected": true,
+  "currentEmptyBagIdentityProved": false,
+  "existingCartOnlyGuardUnchanged": true,
+  "realOrderVerified": false,
+  "accepted": false
+}

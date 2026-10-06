@@ -20,7 +20,7 @@ class FakeControl:
 
 def fake_app():
     app=App.__new__(App)
-    for name in ('final_confirm','final_checkbox','advance_button','reconcile_button','submit_button','transfer_button','transfer_checkbox','transfer_confirm','checkout_button','start_button','probe_button','chrome_probe_button','checkout_stop_button','status','result','browser_picker','browser_diagnostic','keep_session_checkbox','keep_session'):
+    for name in ('final_confirm','final_checkbox','advance_button','reconcile_button','submit_button','transfer_button','transfer_checkbox','transfer_confirm','empty_restart_button','empty_restart_checkbox','empty_restart_confirm','checkout_button','start_button','probe_button','chrome_probe_button','checkout_stop_button','status','result','browser_picker','browser_diagnostic','keep_session_checkbox','keep_session'):
         setattr(app,name,FakeControl())
     app.root=type('Root',(),{'after':lambda *args:1})()
     app.runner=type('Runner',(),{'events':queue.Queue(),'generation':1})()

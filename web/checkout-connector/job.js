@@ -207,7 +207,9 @@ export class PurchaseJob {
     const old=validating?null:await this.store.get(TASK_KEY);
     const transfer=this.port?.desktopTransferProof,t=old?.desktopTransfer;
     const desktopCartOwner=transfer?.schema==='applebuy-desktop-cart-transfer/v1'&&transfer.existingCartOnly===true&&t?.existingCartOnly===true&&transfer.taskId===old?.taskId&&transfer.contextId===old?.desktopContext&&transfer.contextId===this.port?.api?.sessionId&&transfer.sourceFingerprint===t?.sourceFingerprint;
-    if(old&&!readOnly&&!rebind&&hasDesktopHandoff(old)&&!desktopCartOwner)throw new Error('DesktopHandoffPermanentlyRevokedSource');
+    const empty=this.port?.desktopEmptyRestartProof,e=old?.desktopEmptyRestart;
+    const desktopEmptyOwner=empty?.schema==='applebuy-desktop-empty-restart/v1'&&empty.newFromEmpty===true&&e?.newFromEmpty===true&&empty.accountAttested===true&&empty.oldCheckoutStoppedByUser===true&&empty.existingOrdersCheckedByUser===true&&empty.taskId===old?.taskId&&empty.contextId===old?.desktopContext&&empty.contextId===this.port?.api?.sessionId&&empty.sourceFingerprint===e?.sourceFingerprint;
+    if(old&&!readOnly&&!rebind&&hasDesktopHandoff(old)&&!desktopCartOwner&&!desktopEmptyOwner)throw new Error('DesktopHandoffPermanentlyRevokedSource');
     if(old&&!validStored(old))throw new Error('StoredPurchaseTaskCorrupt');
     if(readOnly&&(!old||old.state==='RETIRED'))throw new Error('NoPreservedTaskToReconcile');
     // Validation is bounded, never authorized and stored separately; it cannot use a purchase grant.

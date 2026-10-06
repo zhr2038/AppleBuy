@@ -162,7 +162,7 @@ class App:
         browser_controls=ttk.Frame(pane);browser_controls.pack(anchor='w',pady=(7,0))
         ttk.Label(browser_controls,text='程序浏览器：').pack(side='left')
         self.browser_choice=tk.StringVar(value='Edge' if browser_channel=='msedge' else 'Chrome')
-        self.browser_picker=ttk.Combobox(browser_controls,textvariable=self.browser_choice,values=('Chrome','Edge'),state='readonly',width=10);self.browser_picker.pack(side='left')
+        self.browser_picker=ttk.Combobox(browser_controls,textvariable=self.browser_choice,values=('Chrome','Edge','正常 Chrome 结账通道'),state='readonly',width=22);self.browser_picker.pack(side='left')
         self.keep_session=tk.BooleanVar(value=False)
         self.keep_session_checkbox=ttk.Checkbutton(browser_controls,text='本人同意在本程序独立目录保留登录会话（本机）',variable=self.keep_session);self.keep_session_checkbox.pack(side='left',padx=12)
         ttk.Label(pane,text='会话目录：'+str(ROOT/'.local/desktop/browser-profiles')+' 下的 chrome 或 msedge。取消勾选不会删除已存会话；撤销时请本人在该浏览器退出 Apple 账户，关闭程序后删除对应独立目录。',wraplength=850).pack(anchor='w',pady=(3,0))
@@ -181,6 +181,9 @@ class App:
         ttk.Label(pane,text="取货资料仅用于本次程序会话。官网登录或验证请在程序打开的浏览器中完成。",wraplength=850).pack(anchor="w",pady=(5,0))
         self.transfer_confirm=tk.BooleanVar(value=False)
         self.transfer_checkbox=ttk.Checkbutton(pane,text="本人确认旧结账已停止、旧时段窗口已到期，当前同一账户购物袋为这一台 Pro；不再加购。暂停保留当前窗口；关闭或重启后只能只读核对",variable=self.transfer_confirm,state='disabled');self.transfer_checkbox.pack(anchor='w',pady=(6,0))
+        self.empty_restart_confirm=tk.BooleanVar(value=False)
+        self.empty_restart_checkbox=ttk.Checkbutton(pane,text='本人已确认正常 Chrome 为同一 Apple 账户、旧官网结账已停止且没有待付款同款订单；允许从当前空购物袋另行测试一台 Pro，旧未知历史保持。程序不把此勾选当作账户认证证据',variable=self.empty_restart_confirm,state='disabled');self.empty_restart_checkbox.pack(anchor='w',pady=(6,0))
+        self.empty_restart_button=ttk.Button(pane,text='保留旧记录，从已核对空购物袋新开始 Pro',command=self.restart_empty_checkout,state='disabled');self.empty_restart_button.pack(anchor='w',pady=(3,0))
         self.final_confirm=tk.BooleanVar(value=False)
         self.final_checkbox=ttk.Checkbutton(pane,text="本人核对当前唯一一台、无附加项及无重复订单，接受本次官网条款；只创建未付款订单",variable=self.final_confirm,state='disabled');self.final_checkbox.pack(anchor="w",pady=(8,0))
         self.submit_button=ttk.Button(pane,text="按当前条款创建这一张未付款订单",command=self.submit_checkout,state="disabled");self.submit_button.pack(anchor="w",pady=(4,0))
@@ -267,8 +270,9 @@ class App:
         self.checkout_pause_ack=None
         try:
             choice=self.browser_choice.get()
-            if choice not in ('Chrome','Edge'):raise ValueError('Browser choice is not enabled')
-            if self.checkout.open(browser_channel='msedge' if choice=='Edge' else 'chrome',keep_session=self.keep_session.get()):
+            if choice not in ('Chrome','Edge','正常 Chrome 结账通道'):raise ValueError('Browser choice is not enabled')
+            native=choice=='正常 Chrome 结账通道'
+            if self.checkout.open(browser_channel='native-chrome' if native else 'msedge' if choice=='Edge' else 'chrome',keep_session=False if native else self.keep_session.get()):
                 self.browser_diagnostic.set(choice+' 本次尚未记录失败响应；旧会话的错误提示已清除。')
                 self.browser_picker.config(state='disabled')
                 self.keep_session_checkbox.config(state='disabled')
@@ -312,6 +316,14 @@ class App:
         try:self.checkout.send({'action':'submit','termsAccepted':True,'existingOrdersChecked':True,'noExtras':True})
         except Exception:self.status.set('最终动作未确认，保留记录，不重复提交。')
 
+    def restart_empty_checkout(self):
+        if not self.empty_restart_confirm.get() or self.browser_choice.get()!='正常 Chrome 结账通道':self.status.set('需本人确认当前账户、旧官网结账停止和无已有待付款同款订单；没有新动作。');return
+        data={k:v.get() for k,v in self.pickup_values.items() if v.get()}
+        if data.get('identitySuffix') and (len(data['identitySuffix'])!=4 or not data['identitySuffix'].isdigit()):self.status.set('证件后四位格式不正确；未发动作。');return
+        self.empty_restart_confirm.set(False);self.empty_restart_button.config(state='disabled');self.empty_restart_checkbox.config(state='disabled');self.final_confirm.set(False);self.final_checkbox.config(state='disabled');self.submit_button.config(state='disabled')
+        try:self.checkout.send({'action':'restart-empty','approved':True,'accountConfirmedByUser':True,'oldCheckoutStoppedByUser':True,'existingOrdersCheckedByUser':True,'privatePickupData':data})
+        except Exception:self.status.set('空购物袋新尝试未确认；旧记录保留，不重复加购或下单。')
+
     def stop_checkout(self):
         try:self.checkout.pause()
         except Exception:self.status.set('暂停指令未确认；不重新启动，旧动作保持。');return
@@ -348,7 +360,7 @@ class App:
                     continue
                 if kind=='owner-lost':
                     self.checkout_owner_lost=True;self.checkout_pause_ack=None;self.final_confirm.set(False);self.transfer_confirm.set(False)
-                    for control in (self.advance_button,self.reconcile_button,self.transfer_button,self.transfer_checkbox,self.submit_button,self.final_checkbox,self.checkout_stop_button,self.chrome_probe_button):control.config(state='disabled')
+                    for control in (self.advance_button,self.reconcile_button,self.transfer_button,self.transfer_checkbox,self.submit_button,self.final_checkbox,self.checkout_stop_button,self.chrome_probe_button,self.empty_restart_button,self.empty_restart_checkbox):control.config(state='disabled')
                     self.status.set(v['message']);continue
                 if getattr(self,'checkout_owner_lost',False) and kind!='worker-ended':continue
                 if kind in ('ready','blocked','result','worker-ended'):
@@ -380,6 +392,7 @@ class App:
                         self.browser_picker.config(state='readonly')
                         self.keep_session_checkbox.config(state='normal')
                         self.transfer_button.config(state='disabled');self.transfer_checkbox.config(state='disabled');self.transfer_confirm.set(False)
+                        self.empty_restart_button.config(state='disabled');self.empty_restart_checkbox.config(state='disabled');self.empty_restart_confirm.set(False)
                         self.checkout_button.config(state='normal');self.start_button.config(state='normal');self.probe_button.config(state='normal');self.chrome_probe_button.config(state='normal')
                         self.advance_button.config(state='disabled');self.reconcile_button.config(state='disabled');self.submit_button.config(state='disabled');self.checkout_stop_button.config(state='disabled')
                     else:self.chrome_probe_button.config(state='disabled');self.status.set('结账清理未确认，禁止再次启动。')
@@ -387,6 +400,8 @@ class App:
                     self.checkout_readonly=v.get('readOnly') is True
                     self.status.set(v['message']);self.advance_button.config(state='disabled' if v.get('readOnly') is True else 'normal');self.reconcile_button.config(state='normal' if v.get('readOnly') is True else 'disabled')
                     self.transfer_button.config(state='normal' if v.get('readOnly') is True else 'disabled');self.transfer_checkbox.config(state='normal' if v.get('readOnly') is True else 'disabled')
+                    native=getattr(self,'browser_choice',None);empty_ready=v.get('readOnly') is True and native and native.get()=='正常 Chrome 结账通道'
+                    self.empty_restart_button.config(state='normal' if empty_ready else 'disabled');self.empty_restart_checkbox.config(state='normal' if empty_ready else 'disabled');self.empty_restart_confirm.set(False)
                     if getattr(self,'checkout_begin_pending',False):
                         self.checkout_begin_pending=False
                         if v.get('readOnly') is True:self.reconcile_checkout()
@@ -403,6 +418,8 @@ class App:
                         self.checkout_readonly=v.get('readOnly') is True
                         self.reconcile_button.config(state='normal' if self.checkout_readonly else 'disabled')
                         self.transfer_button.config(state='normal' if self.checkout_readonly else 'disabled');self.transfer_checkbox.config(state='normal' if self.checkout_readonly else 'disabled')
+                        native=getattr(self,'browser_choice',None);empty_ready=self.checkout_readonly and native and native.get()=='正常 Chrome 结账通道'
+                        self.empty_restart_button.config(state='normal' if empty_ready else 'disabled');self.empty_restart_checkbox.config(state='normal' if empty_ready else 'disabled');self.empty_restart_confirm.set(False)
                         self.advance_button.config(state='normal' if v.get('realOrderVerified') is not True and v.get('readOnly') is not True else 'disabled')
                         self.submit_button.config(state='normal' if v.get('reviewReady') is True and v.get('realOrderVerified') is not True else 'disabled')
                         self.final_checkbox.config(state='normal' if v.get('reviewReady') is True and v.get('realOrderVerified') is not True else 'disabled')

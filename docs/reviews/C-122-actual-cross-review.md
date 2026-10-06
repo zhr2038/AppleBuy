@@ -1,0 +1,5 @@
+# Actual C122 bounded prepared-transport agreement
+
+Original-session first-party Opus5.5/xhigh312.72s35turn,22freshEOF, one exact foreground command, both263 SHA25d2fd2b010c87265da7384038093b2847082e4e1a5f2465acc9583af911dac2,88focused/47Python/1494fullNode passed. No denial/private/edit/toolerror/cap/quota; owned cleanup and source immutability verified. Bounded AGREE covered only the prepared named transport. F1 stale snapshot could authorize a second distinct action and F2 the request cap blocked cleanup had to be fixed before activation. Root later independently reproduced both red and corrected them; current C123/C125 bytes are not covered by this historic263 review.
+
+Neither actual purchase host integration/installation, GUI deployment, human account/fresh-empty successor, website purchase/refusal/hold/order nor speed/fullgoal was approved. Installed readonly scope unchanged. C124 genuine provider session quota subsequently read21/35 EOF, no command/verdict, model gate false due synthetic error, owned cleanup; its276 scope remains unreviewed and must be included in the latest full review.

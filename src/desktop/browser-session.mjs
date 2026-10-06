@@ -3,6 +3,7 @@ import {PurchaseJob,TASK_KEY,validStored,canonicalJson,normalizeIntent,NO_EXTRAS
 import {ChromePort} from '../../web/checkout-connector/chrome-port.js';
 import {createHash,randomUUID} from 'node:crypto';
 import {validateDesktopCartTransfer} from './cart-transfer.mjs';
+import {validateEmptyRestart} from './empty-restart.mjs';
 import {guardOwnedApi} from './owner-lease.mjs';
 export const PRO_PLAN={schema:'applebuy-intent/v1',product:{model:'iPhone 18 Pro',capacity:'256GB',color:'黑色'},quantity:1,maxTotalCny:9999,city:'大连',fulfillment:'pickup',stores:['Apple 大连恒隆广场'],dateRule:'initial-first-three-terminal',paymentMethod:'支付宝',extras:{...NO_EXTRAS}};
 export const proDigest=createHash('sha256').update(JSON.stringify(PRO_PLAN)).digest('hex');
@@ -26,7 +27,7 @@ async function executeSession({api,tabId,store,mode='public-config',authority=nu
   let old=null,grant=null;
   if(mode==='reconcile'){
     old=await store.get(TASK_KEY);
-    const recover=typeof api.sessionId==='string'&&old?.desktopContext!==api.sessionId&&old?.desktopContext&&validateDesktopCartTransfer(old,{sessionId:old.desktopContext});
+    const recover=typeof api.sessionId==='string'&&old?.desktopContext!==api.sessionId&&old?.desktopContext&&(validateDesktopCartTransfer(old,{sessionId:old.desktopContext})||validateEmptyRestart(old,{sessionId:old.desktopContext}));
     if(!old||!validStored(old)||old.state==='RETIRED'||old.reconcileOnly!==true&&!recover||canonicalJson(normalizeIntent(old.plan))!==canonicalJson(PRO_PLAN))throw Error('DesktopReadonlyHandoffRequired');
   }
   if(mode==='purchase'){
@@ -47,6 +48,7 @@ async function executeSession({api,tabId,store,mode='public-config',authority=nu
   }
   const port=new ChromePort(api,tabId,{authorized:mode!=='reconcile',mode:mode==='public-config'?'public-config':mode==='reconcile'?'observe':'purchase',orderSummary:mode==='purchase',privatePickupData:mode==='reconcile'?{}:privatePickupData,pending:old?.pending,acceptedSlot:old?.acceptedSlot,initialSequence:old?.lastRead??0,reviewGrant:grant});
   port.desktopTransferProof=mode==='purchase'?validateDesktopCartTransfer(old,api):null;
+  port.desktopEmptyRestartProof=mode==='purchase'?validateEmptyRestart(old,api):null;
   const boundStore={get:k=>store.get(k),put:(k,v)=>store.put(k,k===TASK_KEY&&mode!=='reconcile'?{...v,desktopContext:api.sessionId}:v)};
   const job=new PurchaseJob({store:boundStore,port,maxSteps:100,maxWaitMs:15000});job.onState=s=>onState({state:s.state,phase:s.phase,reason:s.reason,pendingAction:s.pendingAction});
   const cancel=()=>job.pause();signal?.addEventListener('abort',cancel,{once:true});if(signal?.aborted)cancel();

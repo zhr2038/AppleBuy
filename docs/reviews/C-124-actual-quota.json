@@ -1,0 +1,104 @@
+{
+  "task": "C-124-CROSS-REVIEW",
+  "sourceFiles": 276,
+  "status": "failed",
+  "durationSeconds": 52.99,
+  "turns": 22,
+  "models": [
+    "claude-opus-5-5"
+  ],
+  "primaryModels": [
+    "<synthetic>",
+    "claude-opus-5-5"
+  ],
+  "provider": "firstParty",
+  "canonicalModel": "claude-opus-5-5",
+  "effort": "xhigh",
+  "modelVerified": false,
+  "resultError": true,
+  "subtype": "success",
+  "permissionDenialCount": 0,
+  "timedOut": false,
+  "cleanupConfirmed": true,
+  "toolCounts": {
+    "Read": 21
+  },
+  "sourceEditCalls": 0,
+  "privateReadCalls": 0,
+  "unexpectedCommands": 0,
+  "commandOrderMatched": false,
+  "requiredEOFCount": 35,
+  "requiredEOFComplete": 21,
+  "EOFgaps": [
+    {
+      "path": "src/desktop/app.py",
+      "reason": "missing-or-inconsistent-total"
+    },
+    {
+      "path": "src/desktop/interactive_child.py",
+      "reason": "missing-or-inconsistent-total"
+    },
+    {
+      "path": "src/desktop/checkout-runtime.mjs",
+      "reason": "missing-or-inconsistent-total"
+    },
+    {
+      "path": "src/desktop/browser-session.mjs",
+      "reason": "missing-or-inconsistent-total"
+    },
+    {
+      "path": "src/desktop/owner-lease.mjs",
+      "reason": "missing-or-inconsistent-total"
+    },
+    {
+      "path": "src/desktop/task-store.mjs",
+      "reason": "missing-or-inconsistent-total"
+    },
+    {
+      "path": "test/desktop-c123-boundary-fixes.test.ts",
+      "reason": "missing-or-inconsistent-total"
+    },
+    {
+      "path": "test/desktop-c123-channel.test.ts",
+      "reason": "missing-or-inconsistent-total"
+    },
+    {
+      "path": "test/desktop-c123-native-link.test.ts",
+      "reason": "missing-or-inconsistent-total"
+    },
+    {
+      "path": "test/desktop_c123_test.py",
+      "reason": "missing-or-inconsistent-total"
+    },
+    {
+      "path": "test/desktop-c123-stream-fixture.py",
+      "reason": "missing-or-inconsistent-total"
+    },
+    {
+      "path": "test/desktop-c121-native-checkout.test.ts",
+      "reason": "missing-or-inconsistent-total"
+    },
+    {
+      "path": "tools/delegation/run_review_checks.py",
+      "reason": "missing-or-inconsistent-total"
+    },
+    {
+      "path": "tools/delegation/process_tree.py",
+      "reason": "missing-or-inconsistent-total"
+    }
+  ],
+  "toolResultErrors": [],
+  "commandResults": [],
+  "usageScope": "resumed history aggregate, not this round cost",
+  "accepted": false,
+  "realOrderVerified": false,
+  "orderedChecks": [],
+  "orderedChecksVerified": false,
+  "BashInvocationGroupSizes": [],
+  "BashCallsOverlapped": false,
+  "separateSequentialBashCallsVerified": true,
+  "providerFailure": "genuine session quota",
+  "reportedReset": "2026-10-07T00:00:00+08:00",
+  "sourceSha256": "37f7606ae741178af9e22b133178ea420de52f54426054d0efb1d173d0583cf6",
+  "completeReview": false
+}

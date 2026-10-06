@@ -1,0 +1,14 @@
+import test from 'node:test';import assert from 'node:assert/strict';
+import {createCheckoutNativeLink} from '../web/checkout-connector/checkout-native-link.js';import {CHECKOUT_RPC,CHECKOUT_PLAN,BAG} from '../web/checkout-connector/checkout-rpc-contract.js';
+test('C123 unlinked checkout connector defaults observe, even when a message requests purchase',async()=>{
+ let message,connects=0,commands=0;const replies=[];const page={schema:'applebuy-merchant-read/v1',phase:'BAG',verifiedStep:true,path:'/shop/bag'};
+ const api={permissions:{async contains(){return true;}},tabs:{async create(){return {id:7,status:'complete'};},async get(){return {id:7,url:BAG,status:'complete'};},async remove(){}},scripting:{async executeScript(q){if(q.args.length>1)commands++;return [{frameId:0,documentId:'FAKE-doc',result:page}];}},runtime:{connectNative(name){assert.equal(name,'com.applebuy.checkout');connects++;return {onMessage:{addListener(fn){message=fn;}},onDisconnect:{addListener(){}},postMessage(reply){replies.push(reply);}};}}};
+ const link=createCheckoutNativeLink(api);await Promise.all([link.connect(),link.connect()]);assert.equal(connects,1);const send=(id,operation,payload)=>message({schema:CHECKOUT_RPC,kind:'request',contextId:'FAKE-C123-link-context',id,operation,payload});
+ await send('FAKE-request-one','createTab',{url:BAG});await send('FAKE-request-two','merchantDocument',{tabId:7,plan:CHECKOUT_PLAN});await send('FAKE-request-three','merchantDocument',{tabId:7,documentId:'FAKE-doc',plan:CHECKOUT_PLAN,command:{action:'checkout',id:'FAKE-buy',taskId:'FAKE-task',documentId:'FAKE-doc',expected:JSON.stringify(page),authorized:true,structured:true,plan:CHECKOUT_PLAN}});assert.equal(replies.at(-1).ok,false);assert.equal(commands,0);
+});
+test('C123 completed owned close permits a fresh context, while a live peer refuses context replacement',async()=>{
+ let handler;const replies=[],removed=[];const api={permissions:{async contains(){return true;}},tabs:{async create(){return {id:7,status:'complete'};},async remove(id){removed.push(id);}},runtime:{connectNative(){return {onMessage:{addListener(fn){handler=fn;}},onDisconnect:{addListener(){}},postMessage(reply){replies.push(reply);}};}}};
+ await createCheckoutNativeLink(api).connect();const send=(ctx,id,operation,payload={})=>handler({schema:CHECKOUT_RPC,kind:'request',contextId:ctx,id,operation,payload});
+ await send('FAKE-C123-first-context','FAKE-request-1','createTab',{url:BAG});await send('FAKE-C123-other-context','FAKE-request-2','createTab',{url:BAG});assert.equal(replies.at(-1).ok,false);
+ await send('FAKE-C123-first-context','FAKE-request-3','closeSession');assert.equal(replies.at(-1).ok,true);assert.deepEqual(removed,[7]);await send('FAKE-C123-other-context','FAKE-request-4','createTab',{url:BAG});assert.equal(replies.at(-1).ok,true);
+});
