@@ -1,0 +1,5 @@
+# C118 fix the actual C117 connection concurrency finding
+
+Root reproduced three overlapping connects producing3 native ports instead of1 before the fix. One shared pending promise is now published synchronously before any API call/await. Existing live port returns immediately, no active port is replaced; reconnect is blocked while an old dispatched read drains. The bridge rejects concurrent clicks before its first await and preserves the trusted-event/exact-page check before any permission request. A failed permission request has its own fixed code.
+
+Five FAKE cases cover the concurrent link, trusted double-click, untrusted/wrong-page/failed request, stale lastError and disconnect during issued read. The last case confirms only the owned tab closes, no stale reply publishes and reconnection waits. All fixed labels preserve uncertainty about already-issued reads; no raw native error values appear. No broader Chrome/host permissions, origin changes, private ledger writes, purchases, credential/profile access or prohibited UI control. The accepted C114 map and rejected C117 map remain historical, not approvals for the new259 bytes.

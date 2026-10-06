@@ -1,0 +1,20 @@
+{
+  "task": "C115",
+  "scope": "authorized current-user pinned native registration and GUI recovery",
+  "nativeHostRegistered": true,
+  "registeredViewsVerified": 2,
+  "pinnedOriginVerified": true,
+  "asciiLauncherVerified": true,
+  "humanRegistrationConsentReceived": true,
+  "optionalChromePermission": "awaiting human action",
+  "nativeConnectionRuntimeVerified": false,
+  "sourceFiles": 257,
+  "sourceSha256": "b991da31387a20a6596d8a33d4dc8cd66e477905413e1233e9e5c7ad863187d6",
+  "computerControlResumedByHuman": true,
+  "oldGuiClosedNormally": true,
+  "currentGuiObserved": true,
+  "ownGuiWindowCount": 1,
+  "purchaseActions": 0,
+  "noProfilesOrCookiesRead": true,
+  "realOrderVerified": false
+}

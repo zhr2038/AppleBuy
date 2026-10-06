@@ -1,0 +1,20 @@
+{
+  "task": "C115",
+  "actualProgrammeResult": {
+    "scope": "existing-chrome-readonly",
+    "phase": "UNKNOWN",
+    "readOnly": true,
+    "mutationCount": 0,
+    "tabClosed": null,
+    "oldRecordUnchanged": null,
+    "confirmed": false,
+    "personalProfileCopied": null,
+    "reason": "normal-chrome-connection-unconfirmed; old record preserved"
+  },
+  "exitCode": 1,
+  "timeout": false,
+  "ownedCleanupConfirmed": true,
+  "privateLedgerBytesUnchanged": true,
+  "normalChromeConnectionAttempted": true,
+  "realOrderVerified": false
+}

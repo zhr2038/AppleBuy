@@ -1,6 +1,18 @@
-import {createReadonlyConnection} from './desktop-link.js';
-const status=document.getElementById('status');const link=createReadonlyConnection(chrome,text=>{status.textContent=text;});
-document.getElementById('connect').addEventListener('click',async event=>{
- if(!event.isTrusted||location.href!==chrome.runtime.getURL('desktop-bridge.html'))return;
- try{const allowed=await chrome.permissions.request({permissions:['nativeMessaging']});if(!allowed){status.textContent='本机连接权限未允许；没有读取官网。';return;}const result=await link.connect();if(!result.connected)status.textContent='本机连接未确认；请先完成已审查的本机登记。';}catch{status.textContent='本机连接未确认；没有开始购买。';}
-});
+import {createReadonlyConnection,nativeConnectionText} from './desktop-link.js';
+export function createDesktopBridge(api,{button,setStatus,currentUrl}){
+ let busy=false;const link=createReadonlyConnection(api,setStatus);
+ return async event=>{
+  if(!event.isTrusted||currentUrl()!==api.runtime.getURL('desktop-bridge.html')||busy)return;
+  busy=true;button.disabled=true;
+  try{
+   let allowed;try{allowed=await api.permissions.request({permissions:['nativeMessaging']});}catch{setStatus(nativeConnectionText('PERMISSION_REQUEST_FAILED'));return;}
+   if(!allowed){setStatus(nativeConnectionText('PERMISSION_NOT_GRANTED'));return;}
+   const result=await link.connect();if(!result.connected)setStatus(nativeConnectionText(result.reason));
+  }catch{setStatus(nativeConnectionText('CONNECT_UNCONFIRMED'));}
+  finally{busy=false;button.disabled=false;}
+ };
+}
+if(typeof document!=='undefined'&&typeof chrome!=='undefined'){
+ const status=document.getElementById('status'),button=document.getElementById('connect');
+ button.addEventListener('click',createDesktopBridge(chrome,{button,setStatus:text=>{status.textContent=text;},currentUrl:()=>location.href}));
+}

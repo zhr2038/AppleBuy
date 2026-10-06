@@ -1,0 +1,95 @@
+{
+  "task": "C116",
+  "author": "Codex",
+  "sourceFiles": 258,
+  "sha256": "b1068f2599342792b28d3ee772d51c452a9119460882a0bda0b919a55c761971",
+  "checks": {
+    "exitCode": 0,
+    "timeout": false,
+    "ownedCleanupConfirmed": true,
+    "rows": [
+      {
+        "scope": "bounded-review-checks",
+        "order": 1,
+        "exitCode": 0,
+        "timedOut": false,
+        "ownedTreeCleanupConfirmed": true,
+        "manifest": {
+          "ok": true,
+          "files": 258,
+          "sha256": "b1068f2599342792b28d3ee772d51c452a9119460882a0bda0b919a55c761971",
+          "mismatches": []
+        },
+        "passed": true
+      },
+      {
+        "scope": "bounded-review-checks",
+        "order": 2,
+        "exitCode": 0,
+        "timedOut": false,
+        "ownedTreeCleanupConfirmed": true,
+        "counts": {
+          "tests": 72,
+          "pass": 72,
+          "fail": 0,
+          "cancelled": 0,
+          "skipped": 0
+        },
+        "passed": true
+      },
+      {
+        "scope": "bounded-review-checks",
+        "order": 3,
+        "exitCode": 0,
+        "timedOut": false,
+        "ownedTreeCleanupConfirmed": true,
+        "tests": 47,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "passed": true
+      },
+      {
+        "scope": "bounded-review-checks",
+        "order": 4,
+        "exitCode": 0,
+        "timedOut": false,
+        "ownedTreeCleanupConfirmed": true,
+        "counts": {
+          "tests": 1478,
+          "pass": 1478,
+          "fail": 0,
+          "cancelled": 0,
+          "skipped": 0
+        },
+        "passed": true
+      },
+      {
+        "scope": "bounded-review-checks",
+        "order": 5,
+        "exitCode": 0,
+        "timedOut": false,
+        "ownedTreeCleanupConfirmed": true,
+        "manifest": {
+          "ok": true,
+          "files": 258,
+          "sha256": "b1068f2599342792b28d3ee772d51c452a9119460882a0bda0b919a55c761971",
+          "mismatches": []
+        },
+        "passed": true
+      },
+      {
+        "scope": "bounded-review-checks",
+        "complete": true,
+        "orderedChecks": 5,
+        "passed": true
+      }
+    ]
+  },
+  "scope": "allowlisted native error diagnostics; no capabilities expanded",
+  "actualNativeConnectionStillUnconfirmed": true,
+  "actualHostRegistrationVerified": true,
+  "humanNewPermissionActionReported": true,
+  "livePurchasingActions": 0,
+  "accepted": false
+}

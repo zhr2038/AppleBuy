@@ -1,0 +1,17 @@
+{
+  "sourceCommit": "abf0afdd2db1f4bf62d2cd052ecc8d9fe37cd041",
+  "candidateRemote": "abf0afdd2db1f4bf62d2cd052ecc8d9fe37cd041",
+  "mainUnchanged": "bd130ee77d8e914f6373432e1061c4de820fbc66",
+  "files": 257,
+  "sha256": "b991da31387a20a6596d8a33d4dc8cd66e477905413e1233e9e5c7ad863187d6",
+  "allHeadBlobsMatch": true,
+  "allRemoteBlobsMatch": true,
+  "privacyScanPassed": true,
+  "boundedSourceAccepted": true,
+  "installationAuthorized": false,
+  "nativeHostInstalled": false,
+  "liveLoginOrOrderVerified": false,
+  "computerUseStoppedByUser": true,
+  "duplicateGuiCleanupConfirmed": false,
+  "verifiedAtUtc": "2026-10-06T13:28:17.903130+00:00"
+}

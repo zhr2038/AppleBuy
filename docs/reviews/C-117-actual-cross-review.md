@@ -1,0 +1,7 @@
+# C117 actual rejection and reproduction
+
+Actual original-session first-party Opus5.5/xhigh review returned in363.91 seconds/21 actual turns. All17 fresh EOF reads, current258 maps,72focused/47Python/1478full Node and the five sequential check rows passed with terminal owned cleanup. Source was unchanged at return. The reviewer returned DISAGREE for overlapping connect calls, explicitly correcting its earlier missed issue. Green tests did not substitute for agreement.
+
+One initially unapproved prefixed Bash invocation was rejected by the local permission boundary. It did not execute. The reviewer subsequently executed only the separately preauthorized exact check command; no extra directory command was executed. Preserve the denial, no denied-resource payload or private source was read or reused. No source edits or private reads; no cap/quota/tool errors in the allowed command. This is not a zero-denial review.
+
+Root's independent three-concurrent-connect reproduction failed with3 ports rather than1. C118 shares one pending attempt before any await, blocks reconnect while a dispatched old read drains, guards a trusted bridge double-click before requesting permission, reports permission-request failure separately and tests stale disconnect/read cleanup. Host/origin/permissions/parser/ledger are unchanged. C115's actual UNKNOWN cause remains unknown; the race is not claimed as its cause.

@@ -1,9 +1,9 @@
 {
-  "task": "C-114-CROSS-REVIEW",
-  "sourceFiles": 257,
+  "task": "C-117-CROSS-REVIEW",
+  "sourceFiles": 258,
   "status": "returned_for_review",
-  "durationSeconds": 282.16,
-  "turns": 32,
+  "durationSeconds": 363.91,
+  "turns": 21,
   "models": [
     "claude-opus-5-5"
   ],
@@ -16,30 +16,30 @@
   "modelVerified": true,
   "resultError": false,
   "subtype": "success",
-  "permissionDenialCount": 0,
+  "permissionDenialCount": 1,
   "timedOut": false,
   "cleanupConfirmed": true,
   "toolCounts": {
-    "Read": 30,
+    "Read": 17,
     "Bash": 1
   },
   "sourceEditCalls": 0,
   "privateReadCalls": 0,
   "unexpectedCommands": 0,
   "commandOrderMatched": true,
-  "requiredEOFCount": 29,
-  "requiredEOFComplete": 29,
+  "requiredEOFCount": 17,
+  "requiredEOFComplete": 17,
   "EOFgaps": [],
   "toolResultErrors": [],
   "commandResults": [
     {
       "index": 1,
       "error": false,
-      "tail": "iew-checks\", \"order\": 4, \"exitCode\": 0, \"timedOut\": false, \"ownedTreeCleanupConfirmed\": true, \"counts\": {\"tests\": 1475, \"pass\": 1475, \"fail\": 0, \"cancelled\": 0, \"skipped\": 0}, \"passed\": true}\r\n{\"scope\": \"bounded-review-checks\", \"order\": 5, \"exitCode\": 0, \"timedOut\": false, \"ownedTreeCleanupConfirmed\": true, \"manifest\": {\"ok\": true, \"files\": 257, \"sha256\": \"b991da31387a20a6596d8a33d4dc8cd66e477905413e1233e9e5c7ad863187d6\", \"mismatches\": []}, \"passed\": true}\r\n{\"scope\": \"bounded-review-checks\", \"complete\": true, \"orderedChecks\": 5, \"passed\": true}"
+      "tail": "iew-checks\", \"order\": 4, \"exitCode\": 0, \"timedOut\": false, \"ownedTreeCleanupConfirmed\": true, \"counts\": {\"tests\": 1478, \"pass\": 1478, \"fail\": 0, \"cancelled\": 0, \"skipped\": 0}, \"passed\": true}\r\n{\"scope\": \"bounded-review-checks\", \"order\": 5, \"exitCode\": 0, \"timedOut\": false, \"ownedTreeCleanupConfirmed\": true, \"manifest\": {\"ok\": true, \"files\": 258, \"sha256\": \"b1068f2599342792b28d3ee772d51c452a9119460882a0bda0b919a55c761971\", \"mismatches\": []}, \"passed\": true}\r\n{\"scope\": \"bounded-review-checks\", \"complete\": true, \"orderedChecks\": 5, \"passed\": true}"
     }
   ],
   "usageScope": "resumed history aggregate, not this round cost",
-  "accepted": true,
+  "accepted": false,
   "realOrderVerified": false,
   "orderedChecks": [
     {
@@ -50,8 +50,8 @@
       "ownedTreeCleanupConfirmed": true,
       "manifest": {
         "ok": true,
-        "files": 257,
-        "sha256": "b991da31387a20a6596d8a33d4dc8cd66e477905413e1233e9e5c7ad863187d6",
+        "files": 258,
+        "sha256": "b1068f2599342792b28d3ee772d51c452a9119460882a0bda0b919a55c761971",
         "mismatches": []
       },
       "passed": true
@@ -63,8 +63,8 @@
       "timedOut": false,
       "ownedTreeCleanupConfirmed": true,
       "counts": {
-        "tests": 69,
-        "pass": 69,
+        "tests": 72,
+        "pass": 72,
         "fail": 0,
         "cancelled": 0,
         "skipped": 0
@@ -90,8 +90,8 @@
       "timedOut": false,
       "ownedTreeCleanupConfirmed": true,
       "counts": {
-        "tests": 1475,
-        "pass": 1475,
+        "tests": 1478,
+        "pass": 1478,
         "fail": 0,
         "cancelled": 0,
         "skipped": 0
@@ -106,8 +106,8 @@
       "ownedTreeCleanupConfirmed": true,
       "manifest": {
         "ok": true,
-        "files": 257,
-        "sha256": "b991da31387a20a6596d8a33d4dc8cd66e477905413e1233e9e5c7ad863187d6",
+        "files": 258,
+        "sha256": "b1068f2599342792b28d3ee772d51c452a9119460882a0bda0b919a55c761971",
         "mismatches": []
       },
       "passed": true
@@ -125,10 +125,8 @@
   ],
   "BashCallsOverlapped": false,
   "separateSequentialBashCallsVerified": true,
-  "sourceSha256": "b991da31387a20a6596d8a33d4dc8cd66e477905413e1233e9e5c7ad863187d6",
-  "sourceImmutableVerified": true,
-  "rootAccepted": true,
-  "scope": "prepared C111 connection plus C113 finding fixes only",
-  "nativeRegistrationInstalled": false,
-  "realChromeConnectionVerified": false
+  "verdict": "DISAGREE: overlapping native connect",
+  "sourceSha256": "b1068f2599342792b28d3ee772d51c452a9119460882a0bda0b919a55c761971",
+  "sourceImmutableVerifiedAtReturn": true,
+  "denialScope": "one unapproved prefixed Bash command denied; only the independently allowed exact command actually executed"
 }

@@ -1,0 +1,100 @@
+{
+  "task": "C118",
+  "author": "Codex",
+  "sourceFiles": 259,
+  "sha256": "ca7424ea859b8a2d158ac013f9f106e4fbd63b08e5ea0be6be84462876b79617",
+  "checks": {
+    "exitCode": 0,
+    "timeout": false,
+    "ownedCleanupConfirmed": true,
+    "rows": [
+      {
+        "scope": "bounded-review-checks",
+        "order": 1,
+        "exitCode": 0,
+        "timedOut": false,
+        "ownedTreeCleanupConfirmed": true,
+        "manifest": {
+          "ok": true,
+          "files": 259,
+          "sha256": "ca7424ea859b8a2d158ac013f9f106e4fbd63b08e5ea0be6be84462876b79617",
+          "mismatches": []
+        },
+        "passed": true
+      },
+      {
+        "scope": "bounded-review-checks",
+        "order": 2,
+        "exitCode": 0,
+        "timedOut": false,
+        "ownedTreeCleanupConfirmed": true,
+        "counts": {
+          "tests": 77,
+          "pass": 77,
+          "fail": 0,
+          "cancelled": 0,
+          "skipped": 0
+        },
+        "passed": true
+      },
+      {
+        "scope": "bounded-review-checks",
+        "order": 3,
+        "exitCode": 0,
+        "timedOut": false,
+        "ownedTreeCleanupConfirmed": true,
+        "tests": 47,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "passed": true
+      },
+      {
+        "scope": "bounded-review-checks",
+        "order": 4,
+        "exitCode": 0,
+        "timedOut": false,
+        "ownedTreeCleanupConfirmed": true,
+        "counts": {
+          "tests": 1483,
+          "pass": 1483,
+          "fail": 0,
+          "cancelled": 0,
+          "skipped": 0
+        },
+        "passed": true
+      },
+      {
+        "scope": "bounded-review-checks",
+        "order": 5,
+        "exitCode": 0,
+        "timedOut": false,
+        "ownedTreeCleanupConfirmed": true,
+        "manifest": {
+          "ok": true,
+          "files": 259,
+          "sha256": "ca7424ea859b8a2d158ac013f9f106e4fbd63b08e5ea0be6be84462876b79617",
+          "mismatches": []
+        },
+        "passed": true
+      },
+      {
+        "scope": "bounded-review-checks",
+        "complete": true,
+        "orderedChecks": 5,
+        "passed": true
+      }
+    ]
+  },
+  "independentReproBeforeFix": {
+    "concurrentCalls": 3,
+    "ports": 3,
+    "expectedPorts": 1,
+    "failed": true
+  },
+  "fiveNewConcurrencyGestureCleanupCasesPass": true,
+  "permissionsOrHostChanged": false,
+  "nativeRuntimeVerified": false,
+  "realOrderVerified": false,
+  "accepted": false
+}

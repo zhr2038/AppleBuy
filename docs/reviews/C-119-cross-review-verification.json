@@ -1,9 +1,9 @@
 {
-  "task": "C-114-CROSS-REVIEW",
-  "sourceFiles": 257,
+  "task": "C-119-CROSS-REVIEW",
+  "sourceFiles": 259,
   "status": "returned_for_review",
-  "durationSeconds": 282.16,
-  "turns": 32,
+  "durationSeconds": 254.0,
+  "turns": 19,
   "models": [
     "claude-opus-5-5"
   ],
@@ -20,22 +20,22 @@
   "timedOut": false,
   "cleanupConfirmed": true,
   "toolCounts": {
-    "Read": 30,
+    "Read": 17,
     "Bash": 1
   },
   "sourceEditCalls": 0,
   "privateReadCalls": 0,
   "unexpectedCommands": 0,
   "commandOrderMatched": true,
-  "requiredEOFCount": 29,
-  "requiredEOFComplete": 29,
+  "requiredEOFCount": 17,
+  "requiredEOFComplete": 17,
   "EOFgaps": [],
   "toolResultErrors": [],
   "commandResults": [
     {
       "index": 1,
       "error": false,
-      "tail": "iew-checks\", \"order\": 4, \"exitCode\": 0, \"timedOut\": false, \"ownedTreeCleanupConfirmed\": true, \"counts\": {\"tests\": 1475, \"pass\": 1475, \"fail\": 0, \"cancelled\": 0, \"skipped\": 0}, \"passed\": true}\r\n{\"scope\": \"bounded-review-checks\", \"order\": 5, \"exitCode\": 0, \"timedOut\": false, \"ownedTreeCleanupConfirmed\": true, \"manifest\": {\"ok\": true, \"files\": 257, \"sha256\": \"b991da31387a20a6596d8a33d4dc8cd66e477905413e1233e9e5c7ad863187d6\", \"mismatches\": []}, \"passed\": true}\r\n{\"scope\": \"bounded-review-checks\", \"complete\": true, \"orderedChecks\": 5, \"passed\": true}"
+      "tail": "iew-checks\", \"order\": 4, \"exitCode\": 0, \"timedOut\": false, \"ownedTreeCleanupConfirmed\": true, \"counts\": {\"tests\": 1483, \"pass\": 1483, \"fail\": 0, \"cancelled\": 0, \"skipped\": 0}, \"passed\": true}\r\n{\"scope\": \"bounded-review-checks\", \"order\": 5, \"exitCode\": 0, \"timedOut\": false, \"ownedTreeCleanupConfirmed\": true, \"manifest\": {\"ok\": true, \"files\": 259, \"sha256\": \"ca7424ea859b8a2d158ac013f9f106e4fbd63b08e5ea0be6be84462876b79617\", \"mismatches\": []}, \"passed\": true}\r\n{\"scope\": \"bounded-review-checks\", \"complete\": true, \"orderedChecks\": 5, \"passed\": true}"
     }
   ],
   "usageScope": "resumed history aggregate, not this round cost",
@@ -50,8 +50,8 @@
       "ownedTreeCleanupConfirmed": true,
       "manifest": {
         "ok": true,
-        "files": 257,
-        "sha256": "b991da31387a20a6596d8a33d4dc8cd66e477905413e1233e9e5c7ad863187d6",
+        "files": 259,
+        "sha256": "ca7424ea859b8a2d158ac013f9f106e4fbd63b08e5ea0be6be84462876b79617",
         "mismatches": []
       },
       "passed": true
@@ -63,8 +63,8 @@
       "timedOut": false,
       "ownedTreeCleanupConfirmed": true,
       "counts": {
-        "tests": 69,
-        "pass": 69,
+        "tests": 77,
+        "pass": 77,
         "fail": 0,
         "cancelled": 0,
         "skipped": 0
@@ -90,8 +90,8 @@
       "timedOut": false,
       "ownedTreeCleanupConfirmed": true,
       "counts": {
-        "tests": 1475,
-        "pass": 1475,
+        "tests": 1483,
+        "pass": 1483,
         "fail": 0,
         "cancelled": 0,
         "skipped": 0
@@ -106,8 +106,8 @@
       "ownedTreeCleanupConfirmed": true,
       "manifest": {
         "ok": true,
-        "files": 257,
-        "sha256": "b991da31387a20a6596d8a33d4dc8cd66e477905413e1233e9e5c7ad863187d6",
+        "files": 259,
+        "sha256": "ca7424ea859b8a2d158ac013f9f106e4fbd63b08e5ea0be6be84462876b79617",
         "mismatches": []
       },
       "passed": true
@@ -125,10 +125,8 @@
   ],
   "BashCallsOverlapped": false,
   "separateSequentialBashCallsVerified": true,
-  "sourceSha256": "b991da31387a20a6596d8a33d4dc8cd66e477905413e1233e9e5c7ad863187d6",
+  "sourceSha256": "ca7424ea859b8a2d158ac013f9f106e4fbd63b08e5ea0be6be84462876b79617",
   "sourceImmutableVerified": true,
-  "rootAccepted": true,
-  "scope": "prepared C111 connection plus C113 finding fixes only",
-  "nativeRegistrationInstalled": false,
-  "realChromeConnectionVerified": false
+  "scope": "C116 allowlisted diagnostics plus C118 connect/gesture/read-drain fixes only",
+  "nativeRuntimeVerified": false
 }
