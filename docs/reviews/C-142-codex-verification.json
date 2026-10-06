@@ -1,0 +1,41 @@
+{
+  "task": "C-142-EXPIRED-CART-SUCCESSOR",
+  "sourceFiles": 289,
+  "sha256": "ee1488e87cc83f090e392b7ffcfcfd4b534a3fd665c26d3bd2168bc8f2d84d23",
+  "productionDelta": [
+    "src/desktop/cart-transfer.mjs",
+    "src/desktop/empty-restart.mjs"
+  ],
+  "newTests": [
+    "test/desktop-c142-expired-cart.test.ts"
+  ],
+  "oldAssertionsChanged": false,
+  "before": {
+    "tests": 8,
+    "pass": 7,
+    "fail": 1,
+    "failure": "DesktopTransferLegacyUnconfirmed for fully generated readonly expired empty-start descendant with matching singleton cart"
+  },
+  "after": {
+    "tests": 12,
+    "pass": 12,
+    "fail": 0,
+    "cancelled": 0,
+    "skipped": 0
+  },
+  "fullNode": {
+    "tests": 1546,
+    "pass": 1546,
+    "fail": 0,
+    "cancelled": 0,
+    "skipped": 0
+  },
+  "sourceBuyerAuthorityUnchanged": true,
+  "validateEmptyRestartStillRejectsReadonly": true,
+  "wholeCurrentSourceAndNestedUnknownsPreserved": true,
+  "newSourceRole": "existingCartOnly; no Add if cart becomes empty",
+  "actualNewTransferOrCheckout": false,
+  "humanAuthenticationStillPending": true,
+  "accepted": false,
+  "realOrderVerified": false
+}

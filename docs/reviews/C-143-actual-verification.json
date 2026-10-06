@@ -1,0 +1,147 @@
+{
+  "task": "C-143-EXPIRED-CART-REVIEW",
+  "sourceFiles": 289,
+  "status": "returned_for_review",
+  "durationSeconds": 310.53,
+  "turns": 31,
+  "models": [
+    "claude-opus-5-5"
+  ],
+  "primaryModels": [
+    "claude-opus-5-5"
+  ],
+  "provider": "firstParty",
+  "canonicalModel": "claude-opus-5-5",
+  "effort": "xhigh",
+  "modelVerified": true,
+  "resultError": false,
+  "subtype": "success",
+  "permissionDenialCount": 0,
+  "timedOut": false,
+  "cleanupConfirmed": true,
+  "toolCounts": {
+    "Read": 26,
+    "Bash": 3
+  },
+  "sourceEditCalls": 0,
+  "privateReadCalls": 0,
+  "unexpectedCommands": 0,
+  "commandOrderMatched": true,
+  "requiredEOFCount": 18,
+  "requiredEOFComplete": 18,
+  "EOFgaps": [],
+  "toolResultErrors": [],
+  "commandResults": [
+    {
+      "index": 1,
+      "error": false,
+      "tail": "{\"ok\": true, \"files\": 289, \"sha256\": \"ee1488e87cc83f090e392b7ffcfcfd4b534a3fd665c26d3bd2168bc8f2d84d23\", \"mismatches\": []}"
+    },
+    {
+      "index": 2,
+      "error": false,
+      "tail": "o-current-cart never writes a new successor (1.4277ms)\n\u2714 C142 tampered-lineage never writes a new successor (0.9407ms)\n\u2714 C142 hidden-final never writes a new successor (1.057ms)\n\u2714 C142 not-expired never writes a new successor (1.2823ms)\n\u2714 C142 not-readonly never writes a new successor (0.9739ms)\n\u2714 C142 live-slot-window never writes a new successor (1.3274ms)\n\u2714 C142 adopted descendant cannot add again when the current cart becomes empty (3.1653ms)\n\u2139 tests 26\n\u2139 suites 0\n\u2139 pass 26\n\u2139 fail 0\n\u2139 cancelled 0\n\u2139 skipped 0\n\u2139 todo 0\n\u2139 duration_ms 1552.9935"
+    },
+    {
+      "index": 3,
+      "error": false,
+      "tail": "iew-checks\", \"order\": 4, \"exitCode\": 0, \"timedOut\": false, \"ownedTreeCleanupConfirmed\": true, \"counts\": {\"tests\": 1546, \"pass\": 1546, \"fail\": 0, \"cancelled\": 0, \"skipped\": 0}, \"passed\": true}\r\n{\"scope\": \"bounded-review-checks\", \"order\": 5, \"exitCode\": 0, \"timedOut\": false, \"ownedTreeCleanupConfirmed\": true, \"manifest\": {\"ok\": true, \"files\": 289, \"sha256\": \"ee1488e87cc83f090e392b7ffcfcfd4b534a3fd665c26d3bd2168bc8f2d84d23\", \"mismatches\": []}, \"passed\": true}\r\n{\"scope\": \"bounded-review-checks\", \"complete\": true, \"orderedChecks\": 5, \"passed\": true}"
+    }
+  ],
+  "usageScope": "resumed history aggregate, not this round cost",
+  "accepted": true,
+  "realOrderVerified": false,
+  "orderedChecks": [
+    {
+      "scope": "bounded-review-checks",
+      "order": 1,
+      "exitCode": 0,
+      "timedOut": false,
+      "ownedTreeCleanupConfirmed": true,
+      "manifest": {
+        "ok": true,
+        "files": 289,
+        "sha256": "ee1488e87cc83f090e392b7ffcfcfd4b534a3fd665c26d3bd2168bc8f2d84d23",
+        "mismatches": []
+      },
+      "passed": true
+    },
+    {
+      "scope": "bounded-review-checks",
+      "order": 2,
+      "exitCode": 0,
+      "timedOut": false,
+      "ownedTreeCleanupConfirmed": true,
+      "counts": {
+        "tests": 108,
+        "pass": 108,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0
+      },
+      "passed": true
+    },
+    {
+      "scope": "bounded-review-checks",
+      "order": 3,
+      "exitCode": 0,
+      "timedOut": false,
+      "ownedTreeCleanupConfirmed": true,
+      "tests": 54,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "passed": true
+    },
+    {
+      "scope": "bounded-review-checks",
+      "order": 4,
+      "exitCode": 0,
+      "timedOut": false,
+      "ownedTreeCleanupConfirmed": true,
+      "counts": {
+        "tests": 1546,
+        "pass": 1546,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0
+      },
+      "passed": true
+    },
+    {
+      "scope": "bounded-review-checks",
+      "order": 5,
+      "exitCode": 0,
+      "timedOut": false,
+      "ownedTreeCleanupConfirmed": true,
+      "manifest": {
+        "ok": true,
+        "files": 289,
+        "sha256": "ee1488e87cc83f090e392b7ffcfcfd4b534a3fd665c26d3bd2168bc8f2d84d23",
+        "mismatches": []
+      },
+      "passed": true
+    },
+    {
+      "scope": "bounded-review-checks",
+      "complete": true,
+      "orderedChecks": 5,
+      "passed": true
+    }
+  ],
+  "orderedChecksVerified": true,
+  "BashInvocationGroupSizes": [
+    1,
+    1,
+    1
+  ],
+  "BashCallsOverlapped": false,
+  "separateSequentialBashCallsVerified": true,
+  "acceptedScope": "expired readonly legitimate empty-start source into explicitly approved cart-only task only; F1-F5 retained",
+  "sha256": "ee1488e87cc83f090e392b7ffcfcfd4b534a3fd665c26d3bd2168bc8f2d84d23",
+  "allPriorManifestDeltasVerified": [
+    "src/desktop/cart-transfer.mjs",
+    "src/desktop/empty-restart.mjs"
+  ],
+  "verifiedAtUtc": "2026-10-06T22:37:12.208986+00:00"
+}

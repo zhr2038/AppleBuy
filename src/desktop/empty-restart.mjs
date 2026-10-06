@@ -17,6 +17,11 @@ export function validateEmptyRestart(row,api){
  if(!t||row.reconcileOnly===true||typeof api?.sessionId!=='string'||row.desktopContext!==api.sessionId||sourceGeneration(row)===null||!legacyFinalProofClear(t.originalTask)||!legacyFinalProofClear(row.retiredHistory))return null;
  return {schema:t.schema,taskId:row.taskId,contextId:api.sessionId,sourceFingerprint:t.sourceFingerprint,newFromEmpty:true,accountAttested:true,oldCheckoutStoppedByUser:true,existingOrdersCheckedByUser:true};
 }
+// Provenance for a NEW, explicitly approved cart-only task. This never grants the readonly source buyer authority.
+export function validateReadonlyExpiredEmptySource(row){
+ if(!row?.desktopEmptyRestart||row.reconcileOnly!==true||!Number.isFinite(row.expiresAt)||row.expiresAt>Date.now()||sourceGeneration(row)===null||!legacyFinalProofClear(row))return null;
+ return {schema:'applebuy-readonly-expired-empty-source/v1',sourceFingerprint:hash(row)};
+}
 export async function restartFromCurrentEmpty({store,api,tabId,approved=false,accountConfirmedByUser=false,oldCheckoutStoppedByUser=false,existingOrdersCheckedByUser=false,live=()=>true}){
  if(approved!==true||accountConfirmedByUser!==true||oldCheckoutStoppedByUser!==true||existingOrdersCheckedByUser!==true||typeof live!=='function'||!live()||typeof api?.sessionId!=='string')throw Error('EmptyRestartCurrentConfirmationRequired');
  const old=await store.get(TASK_KEY);
