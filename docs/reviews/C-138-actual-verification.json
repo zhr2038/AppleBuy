@@ -1,0 +1,140 @@
+{
+  "task": "C-138-LATE-ADD-REVIEW",
+  "sourceFiles": 287,
+  "status": "returned_for_review",
+  "durationSeconds": 227.23,
+  "turns": 29,
+  "models": [
+    "claude-opus-5-5"
+  ],
+  "primaryModels": [
+    "claude-opus-5-5"
+  ],
+  "provider": "firstParty",
+  "canonicalModel": "claude-opus-5-5",
+  "effort": "xhigh",
+  "modelVerified": true,
+  "resultError": false,
+  "subtype": "success",
+  "permissionDenialCount": 0,
+  "timedOut": false,
+  "cleanupConfirmed": true,
+  "toolCounts": {
+    "Read": 25,
+    "Bash": 2
+  },
+  "sourceEditCalls": 0,
+  "privateReadCalls": 0,
+  "unexpectedCommands": 0,
+  "commandOrderMatched": true,
+  "requiredEOFCount": 15,
+  "requiredEOFComplete": 15,
+  "EOFgaps": [],
+  "toolResultErrors": [],
+  "commandResults": [
+    {
+      "index": 1,
+      "error": false,
+      "tail": "8ms)\n\u2714 C137 late Add control continues the same approved run to review without a manual resume or duplicate Add (401.2699ms)\n\u2714 C137 a control that stays absent is bounded NOT_READY, never stock absence or forced Continue (3151.8884ms)\n\u2714 C137 extra-conflict still blocks all Add and checkout (108.2757ms)\n\u2714 C137 prelaunch still blocks all Add and checkout (108.3896ms)\n\u2714 C137 higher-price-after-hydration still blocks all Add and checkout (170.5927ms)\n\u2139 tests 23\n\u2139 suites 0\n\u2139 pass 23\n\u2139 fail 0\n\u2139 cancelled 0\n\u2139 skipped 0\n\u2139 todo 0\n\u2139 duration_ms 4020.3723"
+    },
+    {
+      "index": 2,
+      "error": false,
+      "tail": "iew-checks\", \"order\": 4, \"exitCode\": 0, \"timedOut\": false, \"ownedTreeCleanupConfirmed\": true, \"counts\": {\"tests\": 1526, \"pass\": 1526, \"fail\": 0, \"cancelled\": 0, \"skipped\": 0}, \"passed\": true}\r\n{\"scope\": \"bounded-review-checks\", \"order\": 5, \"exitCode\": 0, \"timedOut\": false, \"ownedTreeCleanupConfirmed\": true, \"manifest\": {\"ok\": true, \"files\": 287, \"sha256\": \"fe999e77a319dce64fb1b18e8784fb3efd28f4b817b09cffdb3f01aa2b1eed8e\", \"mismatches\": []}, \"passed\": true}\r\n{\"scope\": \"bounded-review-checks\", \"complete\": true, \"orderedChecks\": 5, \"passed\": true}"
+    }
+  ],
+  "usageScope": "resumed history aggregate, not this round cost",
+  "accepted": true,
+  "realOrderVerified": false,
+  "orderedChecks": [
+    {
+      "scope": "bounded-review-checks",
+      "order": 1,
+      "exitCode": 0,
+      "timedOut": false,
+      "ownedTreeCleanupConfirmed": true,
+      "manifest": {
+        "ok": true,
+        "files": 287,
+        "sha256": "fe999e77a319dce64fb1b18e8784fb3efd28f4b817b09cffdb3f01aa2b1eed8e",
+        "mismatches": []
+      },
+      "passed": true
+    },
+    {
+      "scope": "bounded-review-checks",
+      "order": 2,
+      "exitCode": 0,
+      "timedOut": false,
+      "ownedTreeCleanupConfirmed": true,
+      "counts": {
+        "tests": 108,
+        "pass": 108,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0
+      },
+      "passed": true
+    },
+    {
+      "scope": "bounded-review-checks",
+      "order": 3,
+      "exitCode": 0,
+      "timedOut": false,
+      "ownedTreeCleanupConfirmed": true,
+      "tests": 54,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "passed": true
+    },
+    {
+      "scope": "bounded-review-checks",
+      "order": 4,
+      "exitCode": 0,
+      "timedOut": false,
+      "ownedTreeCleanupConfirmed": true,
+      "counts": {
+        "tests": 1526,
+        "pass": 1526,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0
+      },
+      "passed": true
+    },
+    {
+      "scope": "bounded-review-checks",
+      "order": 5,
+      "exitCode": 0,
+      "timedOut": false,
+      "ownedTreeCleanupConfirmed": true,
+      "manifest": {
+        "ok": true,
+        "files": 287,
+        "sha256": "fe999e77a319dce64fb1b18e8784fb3efd28f4b817b09cffdb3f01aa2b1eed8e",
+        "mismatches": []
+      },
+      "passed": true
+    },
+    {
+      "scope": "bounded-review-checks",
+      "complete": true,
+      "orderedChecks": 5,
+      "passed": true
+    }
+  ],
+  "orderedChecksVerified": true,
+  "BashInvocationGroupSizes": [
+    1,
+    1
+  ],
+  "BashCallsOverlapped": false,
+  "separateSequentialBashCallsVerified": true,
+  "acceptedScope": "bounded late-Add hydration branch only; N1/N2/N3/N4 and C136 residuals retained; not live current287 programme",
+  "sha256": "fe999e77a319dce64fb1b18e8784fb3efd28f4b817b09cffdb3f01aa2b1eed8e",
+  "verifiedAtUtc": "2026-10-06T17:54:41.351247+00:00",
+  "allPriorManifestDeltasVerified": [
+    "web/checkout-connector/job.js"
+  ]
+}

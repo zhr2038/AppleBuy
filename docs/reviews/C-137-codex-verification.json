@@ -1,0 +1,39 @@
+{
+  "task": "C-137-LATE-ADD-HYDRATION",
+  "sourceFiles": 287,
+  "sha256": "fe999e77a319dce64fb1b18e8784fb3efd28f4b817b09cffdb3f01aa2b1eed8e",
+  "productionDelta": [
+    "web/checkout-connector/job.js"
+  ],
+  "newTests": [
+    "test/desktop-c137-late-add.test.ts"
+  ],
+  "oldAssertionsChanged": false,
+  "before": {
+    "tests": 5,
+    "pass": 3,
+    "fail": 2
+  },
+  "after": {
+    "tests": 5,
+    "pass": 5,
+    "fail": 0,
+    "cancelled": 0,
+    "skipped": 0
+  },
+  "fullNode": {
+    "tests": 1526,
+    "pass": 1526,
+    "fail": 0,
+    "cancelled": 0,
+    "skipped": 0
+  },
+  "pythonScope": "unchanged since prior actual54; current reviewer ordered checker will repeat",
+  "actualObservedBasis": "accepted286 programme configured Pro/noTrade/noCare, stopped ENTRY with no Continue; later same-page readonly programme observation was VARIANT and visible Add enabled; same originating run resumed and reached BAG then checkout AUTH",
+  "liveProgrammeSourceFiles": 286,
+  "liveProgrammeSha256": "3b714ebcfe75880a573ed4d22338cb68b6bf05e5a6cab0b104975661da1f3242",
+  "currentLiveState": "paused, current same-context observe AUTH; stored pending checkout remains",
+  "newPatchLiveVerified": false,
+  "realOrderVerified": false,
+  "accepted": false
+}

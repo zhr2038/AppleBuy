@@ -1,0 +1,60 @@
+{
+  "task": "C-135-INITIAL-NATIVE-LOAD",
+  "verifiedAtUtc": "2026-10-06T17:16:09.279984+00:00",
+  "sourceFiles": 286,
+  "sha256": "3b714ebcfe75880a573ed4d22338cb68b6bf05e5a6cab0b104975661da1f3242",
+  "oldAssertionsChanged": false,
+  "productionDelta": [
+    "src/desktop/checkout-runtime.mjs"
+  ],
+  "newTests": [
+    "test/desktop-c135-initial-loading.test.ts"
+  ],
+  "before": {
+    "tests": 4,
+    "pass": 2,
+    "fail": 2,
+    "failures": [
+      "native get rejected while URL uncommitted",
+      "frame read rejected while loading"
+    ]
+  },
+  "after": {
+    "focusedC135": {
+      "tests": 7,
+      "pass": 7,
+      "fail": 0,
+      "cancelled": 0,
+      "skipped": 0
+    },
+    "fullNode": {
+      "tests": 1521,
+      "pass": 1521,
+      "fail": 0,
+      "cancelled": 0,
+      "skipped": 0
+    },
+    "pythonScope": "54 prior current-C133 tests unchanged; reviewer will run current ordered checker"
+  },
+  "actualChrome": {
+    "initialReadFailed": true,
+    "error": "NativeCheckoutResultUnconfirmed",
+    "createSucceeded": true,
+    "subsequentNamedReadRejected": true,
+    "brokerExitedNormally": true,
+    "initialCleanupConfirmed": true,
+    "afterRepairPhase": "EMPTY_BAG",
+    "afterRepairState": "OBSERVED",
+    "afterRepairLegacyReadOnly": true,
+    "afterRepairCleanupConfirmed": true,
+    "rawTabLoadingFieldsObserved": false,
+    "causeBasis": "actual startup error plus two independent loading-shape reproductions and successful bounded-read repair; no raw field proof",
+    "merchantResourceMutations": 0,
+    "finalSubmitted": false,
+    "paymentAttempted": false
+  },
+  "accepted": false,
+  "actualCrossAuthorReview": "pending C136",
+  "realOrderVerified": false,
+  "reference": "https://developer.chrome.com/docs/extensions/reference/api/tabs?hl=en"
+}

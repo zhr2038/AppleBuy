@@ -1,7 +1,7 @@
 // The desktop entry uses the production controller; a carried unknown record never enables a second buyer.
 import {runDesktopSession,PRO_PLAN,proDigest} from './browser-session.mjs';
 import {TASK_KEY,validStored} from '../../web/checkout-connector/job.js';
-import {ChromePort} from '../../web/checkout-connector/chrome-port.js';
+import {ChromePort,allowedMerchantUrl} from '../../web/checkout-connector/chrome-port.js';
 import {transferExistingCart,validateDesktopCartTransfer} from './cart-transfer.mjs';
 import {guardOwnedApi} from './owner-lease.mjs';
 import {restartFromCurrentEmpty,validateEmptyRestart} from './empty-restart.mjs';
@@ -19,8 +19,29 @@ export class DesktopCheckoutRuntime {
    const owned=await this.launch();this.api=guardOwnedApi(owned.api,this.lease);this.closeBrowser=owned.close;
    this.unwatchLease=this.lease.onLost?.(()=>{this.ownerLost=true;this.finalDescriptor=null;this.abort?.abort();try{this.onState({state:'NEEDS_VERIFICATION',phase:'UNKNOWN',pendingAction:null,readOnly:true,ownerLost:true});}finally{this.close().catch(()=>{this.cleanupConfirmed=false;});}});
    const tab=await this.api.create(BAG);this.tabId=tab.id;this.opened=true;
-   return await this.observe();
+   return await this.observeInitialPage();
   }catch(error){this.busy=false;await this.close();throw error;}finally{this.busy=false;}
+ }
+ async observeInitialPage(){
+  // Creation does not mean navigation has committed. Only bounded, same-tab reads may be retried here.
+  const until=Date.now()+15000;
+  for(let attempt=0;attempt<150;attempt++){
+   if(this.closing||this.ownerLost||this.lease?.owned!==true)throw Error('DesktopSessionCancelled');
+   try{
+    const tab=await this.api.tabs.get(this.tabId);
+    if(tab&&!['loading','unloaded'].includes(tab.status)){
+     if(!allowedMerchantUrl(tab.url))throw Error('UnsupportedMerchantPage');
+     return await this.observe();
+    }
+   }catch(error){
+    // A rejected loading metadata read or replaced initial frame is not a failed purchase action.
+    // Delivery/identity uncertainty, missing permission and other errors remain terminal.
+    if(!['NativeCheckoutResultUnconfirmed','ScriptTransportRejected'].includes(error.message))throw error;
+   }
+   if(Date.now()>=until)break;
+   await new Promise(resolve=>setTimeout(resolve,100));
+  }
+  throw Error('DesktopInitialPageUnconfirmed');
  }
  async observe(){
   if(!this.opened||this.closed||this.closing)throw Error('DesktopSessionNotOpen');

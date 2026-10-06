@@ -378,7 +378,14 @@ export class PurchaseJob {
           // Not yet hydrated or disabled: wait briefly, never force it, and never call it no stock.
           if(next.state!=='enabled'){if(await poll(this.hydrationMs))continue;return this.gate(s,`required-option-${next.state}; configuration incomplete, availability not established`,'NOT_READY');}
           command={action:'configureProduct',choice:next.choice};
-        }else if(o.phase==='ENTRY'){if(o.continueAvailable!==true)return this.gate(s,'official-continue-disabled; availability not established','NOT_READY');command={action:'continueProduct'};}
+        }else if(o.phase==='ENTRY'){
+          if(o.continueAvailable!==true){
+            // Selected public choices can precede the Add button. Re-read briefly; never force or invent it.
+            if(o.configuration?.complete===true&&await poll(this.hydrationMs))continue;
+            return this.gate(s,'official-continue-disabled; availability not established','NOT_READY');
+          }
+          command={action:'continueProduct'};
+        }
         else{
           // C069: public selections may be complete before the native Pro form reaches its current canonical SKU.
           // Wait only by re-reading before any Add; this never repeats an already-started addition.

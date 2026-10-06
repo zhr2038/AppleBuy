@@ -1,0 +1,42 @@
+{
+  "task": "C-134-ACTIVATE-PRO-REVIEW",
+  "verifiedAtUtc": "2026-10-06T17:51:20.904490+00:00",
+  "liveSourceFiles": 286,
+  "liveSourceSha256": "3b714ebcfe75880a573ed4d22338cb68b6bf05e5a6cab0b104975661da1f3242",
+  "entry": "reviewed native-chrome worker via own private CheckoutRunner protocol; not a physical GUI Start proof",
+  "nativeHostActuallyConnected": true,
+  "oldSourcePreservedAndArchived": true,
+  "normalPublicChoicesObserved": [
+    "iPhone 18 Pro",
+    "256GB",
+    "black",
+    "no trade-in",
+    "no AppleCare"
+  ],
+  "transientEntryStoppedBeforeAdd": true,
+  "sameContextReadonlyLaterPhase": "VARIANT",
+  "sameOriginatingRunExplicitlyResumed": true,
+  "programmeReachedVerifiedBag": true,
+  "programmeCheckoutIssued": true,
+  "currentReadonlyObservation": "AUTH",
+  "officialHost": "secure11.www.apple.com.cn",
+  "officialPath": "/shop/signIn",
+  "publicLoginHeadingVerified": true,
+  "runtimePauseAcknowledged": true,
+  "storedPendingAction": "checkout",
+  "bagAdditionStarted": true,
+  "slotSelectionIssued": false,
+  "pickupDateBound": false,
+  "finalIntentPresent": false,
+  "realOrderVerified": false,
+  "paymentAttempted": false,
+  "requiredNextHumanAction": "normal Apple authentication; credentials or OTP must not be sent",
+  "newC137PatchLiveVerified": false,
+  "remaining": [
+    "human authentication",
+    "programme pickup/details/payment/review",
+    "current final terms confirmation",
+    "programme one unpaid order and independent official verification",
+    "real refusal/update/hold/speed evidence"
+  ]
+}

@@ -1,0 +1,146 @@
+{
+  "task": "C-136-INITIAL-LOAD-REVIEW",
+  "sourceFiles": 286,
+  "status": "returned_for_review",
+  "durationSeconds": 253.28,
+  "turns": 19,
+  "models": [
+    "claude-opus-5-5"
+  ],
+  "primaryModels": [
+    "claude-opus-5-5"
+  ],
+  "provider": "firstParty",
+  "canonicalModel": "claude-opus-5-5",
+  "effort": "xhigh",
+  "modelVerified": true,
+  "resultError": false,
+  "subtype": "success",
+  "permissionDenialCount": 0,
+  "timedOut": false,
+  "cleanupConfirmed": true,
+  "toolCounts": {
+    "Read": 15,
+    "Bash": 3
+  },
+  "sourceEditCalls": 0,
+  "privateReadCalls": 0,
+  "unexpectedCommands": 0,
+  "commandOrderMatched": true,
+  "requiredEOFCount": 15,
+  "requiredEOFComplete": 15,
+  "EOFgaps": [],
+  "toolResultErrors": [],
+  "commandResults": [
+    {
+      "index": 1,
+      "error": false,
+      "tail": "{\"ok\": true, \"files\": 286, \"sha256\": \"3b714ebcfe75880a573ed4d22338cb68b6bf05e5a6cab0b104975661da1f3242\", \"mismatches\": []}"
+    },
+    {
+      "index": 2,
+      "error": false,
+      "tail": "ansport cannot be polled or re-created at startup (0.6612ms)\n\u2714 C135 repeated loading remains unknown within the fixed bound, with one tab and no mutations (7.2609ms)\n\u2714 C135 closing during loading cancels startup before any document or purchase command (115.6178ms)\n\u2714 C135 current invalid address does not grant navigation or repeated create (0.7375ms)\n\u2714 C135 an ungranted initial host stops before create, without polling or ledger changes (0.3363ms)\n\u2139 tests 21\n\u2139 suites 0\n\u2139 pass 21\n\u2139 fail 0\n\u2139 cancelled 0\n\u2139 skipped 0\n\u2139 todo 0\n\u2139 duration_ms 1566.1555"
+    },
+    {
+      "index": 3,
+      "error": false,
+      "tail": "iew-checks\", \"order\": 4, \"exitCode\": 0, \"timedOut\": false, \"ownedTreeCleanupConfirmed\": true, \"counts\": {\"tests\": 1521, \"pass\": 1521, \"fail\": 0, \"cancelled\": 0, \"skipped\": 0}, \"passed\": true}\r\n{\"scope\": \"bounded-review-checks\", \"order\": 5, \"exitCode\": 0, \"timedOut\": false, \"ownedTreeCleanupConfirmed\": true, \"manifest\": {\"ok\": true, \"files\": 286, \"sha256\": \"3b714ebcfe75880a573ed4d22338cb68b6bf05e5a6cab0b104975661da1f3242\", \"mismatches\": []}, \"passed\": true}\r\n{\"scope\": \"bounded-review-checks\", \"complete\": true, \"orderedChecks\": 5, \"passed\": true}"
+    }
+  ],
+  "usageScope": "resumed history aggregate, not this round cost",
+  "accepted": true,
+  "realOrderVerified": false,
+  "orderedChecks": [
+    {
+      "scope": "bounded-review-checks",
+      "order": 1,
+      "exitCode": 0,
+      "timedOut": false,
+      "ownedTreeCleanupConfirmed": true,
+      "manifest": {
+        "ok": true,
+        "files": 286,
+        "sha256": "3b714ebcfe75880a573ed4d22338cb68b6bf05e5a6cab0b104975661da1f3242",
+        "mismatches": []
+      },
+      "passed": true
+    },
+    {
+      "scope": "bounded-review-checks",
+      "order": 2,
+      "exitCode": 0,
+      "timedOut": false,
+      "ownedTreeCleanupConfirmed": true,
+      "counts": {
+        "tests": 108,
+        "pass": 108,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0
+      },
+      "passed": true
+    },
+    {
+      "scope": "bounded-review-checks",
+      "order": 3,
+      "exitCode": 0,
+      "timedOut": false,
+      "ownedTreeCleanupConfirmed": true,
+      "tests": 54,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "passed": true
+    },
+    {
+      "scope": "bounded-review-checks",
+      "order": 4,
+      "exitCode": 0,
+      "timedOut": false,
+      "ownedTreeCleanupConfirmed": true,
+      "counts": {
+        "tests": 1521,
+        "pass": 1521,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0
+      },
+      "passed": true
+    },
+    {
+      "scope": "bounded-review-checks",
+      "order": 5,
+      "exitCode": 0,
+      "timedOut": false,
+      "ownedTreeCleanupConfirmed": true,
+      "manifest": {
+        "ok": true,
+        "files": 286,
+        "sha256": "3b714ebcfe75880a573ed4d22338cb68b6bf05e5a6cab0b104975661da1f3242",
+        "mismatches": []
+      },
+      "passed": true
+    },
+    {
+      "scope": "bounded-review-checks",
+      "complete": true,
+      "orderedChecks": 5,
+      "passed": true
+    }
+  ],
+  "orderedChecksVerified": true,
+  "BashInvocationGroupSizes": [
+    1,
+    1,
+    1
+  ],
+  "BashCallsOverlapped": false,
+  "separateSequentialBashCallsVerified": true,
+  "acceptedScope": "bounded initial same-tab read wait only; C136-1/2/3/4 residuals explicitly tracked; not full lifecycle or live order",
+  "sha256": "3b714ebcfe75880a573ed4d22338cb68b6bf05e5a6cab0b104975661da1f3242",
+  "verifiedAtUtc": "2026-10-06T17:23:31.898814+00:00",
+  "allOldManifestDeltasVerified": [
+    "src/desktop/checkout-runtime.mjs"
+  ]
+}
