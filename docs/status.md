@@ -1,3 +1,9 @@
+# C088 current N7 repair candidate; C087 actual DISAGREE preserved
+
+C087 actual714.98s67turn, firstPartyOpus5.5/xhigh, complete47EOF/7ordered commands, no error/denial/cap or source changes, owned cleanup. N7 independently reproduced red then fixed. Only four source paths change from ac4e4099: same-context readonly downgrade rejects, GUI reconcile and readonly blocked states fixed, honest Chinese pause/restart/final-lookup disclosures.21transfer/1436Node/14Python pass, all FAKE. Current233 SHA ca2aed9804c442f9846e76e9de4ac1d5813bffe84e6e9a6c7d8ba69dc1dcac24. Exact C089 follow-up pending, original terminal C087 session privately; no acceptance yet.
+
+F8 stale owner and graceful-restart-only permanent readonly, unfunctional final lookup from restarted BAG, worker IPC/live GUI remain declared. Export/production ledger absent, no real merchant actions, real programme unpaid Pro and goal remain blocked. Candidate-only publication, mainC053 unchanged, no shutdown.
+
 # C086 current candidate; C085 rejected, C087 actual review still pending
 
 Current233 SHA 0c90acc40ada28b0e0025328246e8a6ee6bdf89bd6b4e94899459fd82dd38160. Root independent baseline reproductions plus repairs cover transferred readonly restart, oldslot expiry, transfer close/write draining, changed bag/record/product checks and GUI consent/readonly controls.20transfer/1435Node/12Python pass; all merchant/API/GUI fixtures are FAKE. ActualC085 DISAGREE and C083 incomplete AGREE stay historical. F8 forced-kill stale owner marker remains fail-closed, no unsafe auto-unlink. Worker transfer IPC/known-bound-ref lookup and installed GUI/live order remain unverified. No real merchant actions this cycle.

@@ -62,5 +62,14 @@ class DesktopWorkerTests(unittest.TestCase):
     def test_transfer_validates_identity_suffix_before_sending(self):
         app=fake_app();app.transfer_confirm.set(True)
         app.transfer_checkout();self.assertIn('格式不正确',app.status.get());self.assertTrue(app.transfer_confirm.get())
+    def test_readonly_blocked_does_not_reenable_advance(self):
+        app=fake_app();app.checkout.events.put({'generation':1,'type':'ready','readOnly':True,'message':'FAKE readonly'});app.poll()
+        app.checkout.events.put({'generation':1,'type':'blocked','message':'FAKE busy'});app.poll()
+        self.assertEqual(app.advance_button.state,'disabled');self.assertEqual(app.reconcile_button.state,'normal')
+    def test_transfer_disables_reconcile_during_send_and_nonreadonly_result(self):
+        app=fake_app();sent=[];app.checkout.send=sent.append;app.transfer_confirm.set(True);app.pickup_values={}
+        app.transfer_checkout();self.assertEqual(app.reconcile_button.state,'disabled');self.assertEqual(sent[0]['action'],'transfer')
+        app.checkout.events.put({'generation':1,'type':'result','phase':'AUTH','readOnly':False});app.poll()
+        self.assertEqual(app.reconcile_button.state,'disabled');self.assertEqual(app.advance_button.state,'normal')
 
 if __name__=='__main__':unittest.main()

@@ -1,0 +1,49 @@
+{
+  "task": "C-087-CROSS-REVIEW",
+  "sourceFiles": 233,
+  "status": "returned_for_review",
+  "durationSeconds": 714.98,
+  "turns": 67,
+  "models": [
+    "claude-opus-5-5"
+  ],
+  "primaryModels": [
+    "claude-opus-5-5"
+  ],
+  "provider": "firstParty",
+  "canonicalModel": "claude-opus-5-5",
+  "effort": "xhigh",
+  "modelVerified": true,
+  "resultError": false,
+  "subtype": "success",
+  "permissionDenialCount": 0,
+  "timedOut": false,
+  "cleanupConfirmed": true,
+  "toolCounts": {
+    "Read": 54,
+    "Bash": 7,
+    "Grep": 3
+  },
+  "sourceEditCalls": 0,
+  "privateReadCalls": 0,
+  "unexpectedCommands": 0,
+  "commandOrderMatched": true,
+  "requiredEOFCount": 47,
+  "requiredEOFComplete": 47,
+  "EOFgaps": [],
+  "toolResultErrors": [],
+  "usageScope": "resumed history aggregate, not this round cost",
+  "accepted": false,
+  "realOrderVerified": false,
+  "verdict": "DISAGREE N7; N8/N9 and D1/F8 remain disclosed",
+  "sha256": "0c90acc40ada28b0e0025328246e8a6ee6bdf89bd6b4e94899459fd82dd38160",
+  "sourceCommit": "ac4e4099d245d7c70c4a9b15412794c91e2b8ced",
+  "immutableDuringReview": true,
+  "allSixCommandsAndFinalManifest": true,
+  "nativeFixtures": {
+    "C060": 2,
+    "C040": 8,
+    "cleanup": true,
+    "scope": "FAKE localhost only"
+  }
+}

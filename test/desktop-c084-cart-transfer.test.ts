@@ -77,3 +77,8 @@ test('C086 runtime transfer reaches review and resumes the same authenticated ch
  const {w,store,api}=world();w.requireAuth=true;api.create=async()=>({id:7});const runtime=new DesktopCheckoutRuntime({store,launch:async()=>({api,close:async()=>{}})});await runtime.open();
  const first=await runtime.transfer({approved:true,newContextConfirmed:true});assert.equal(first.phase,'AUTH');w.phase='FULFILLMENT';const ready=await runtime.advance({checkoutApproved:true,newContextConfirmed:true});assert.equal(ready.phase,'REVIEW');assert.equal(w.commands.filter(x=>x==='checkout').length,1);assert.equal(w.commands.includes('addBag'),false);assert.equal(w.commands.includes('submitOrder'),false);await runtime.close();
 });
+test('C088 same-context reconcile cannot downgrade the live transferred buyer',async()=>{
+ const {w,store,api}=world();await transferExistingCart({store,api,tabId:7,approved:true,newContextConfirmed:true});const before=structuredClone(w.row),writes=w.writes;
+ await assert.rejects(runDesktopSession({store,api,tabId:7,mode:'reconcile'}),/ReadonlyHandoffRequired/);
+ assert.deepEqual(w.row,before);assert.equal(w.writes,writes);assert.deepEqual(w.commands,[]);
+});

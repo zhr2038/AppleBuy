@@ -25,7 +25,7 @@ async function executeSession({api,tabId,store,mode='public-config',authority=nu
   let old=null,grant=null;
   if(mode==='reconcile'){
     old=await store.get(TASK_KEY);
-    const recover=old?.desktopContext&&validateDesktopCartTransfer(old,{sessionId:old.desktopContext});
+    const recover=typeof api.sessionId==='string'&&old?.desktopContext!==api.sessionId&&old?.desktopContext&&validateDesktopCartTransfer(old,{sessionId:old.desktopContext});
     if(!old||!validStored(old)||old.state==='RETIRED'||old.reconcileOnly!==true&&!recover||canonicalJson(normalizeIntent(old.plan))!==canonicalJson(PRO_PLAN))throw Error('DesktopReadonlyHandoffRequired');
   }
   if(mode==='purchase'){
