@@ -1,0 +1,55 @@
+{
+  "scope": "current programme login spinner diagnosis, no authenticated request capture",
+  "currentDirectUserReport": "Password submitted, then continual spinner",
+  "browserConnectorInventory": "Default Chrome connected inventory exposes zero tabs; programme-owned context is not accessible through that surface",
+  "currentAuthenticationResult": "unknown, neither login success nor password error proved",
+  "officialSystemStatusRead": "Public official status page returned no readable service list; no availability verdict",
+  "historicalReference": "C056 current-recovery-evidence: October5 merchant auth handoff541 after identity request200; historical, not current diagnosis",
+  "nextRequiredEvidence": "Last failed/pending request Status plus hostname only from current programme Chrome",
+  "sensitiveDetailsNotRequested": [
+    "password",
+    "verification code",
+    "full auth URL",
+    "query",
+    "Cookie",
+    "headers",
+    "request or response payload"
+  ],
+  "noRepeatedLogin": true,
+  "noCheckoutSlotOrderPayment": true,
+  "programmeSessionPreserved": true,
+  "observedAtUtc": "2026-10-06T02:23:47.908306+00:00",
+  "currentSystemNetworkSample": {
+    "scope": "one unauthenticated DNS/TLS per host, not Chrome/authenticated HTTP or no-interception proof",
+    "hosts": [
+      {
+        "host": "www.apple.com.cn",
+        "dnsResolved": true,
+        "verifiedTLS": true
+      },
+      {
+        "host": "idmsa.apple.com.cn",
+        "dnsResolved": true,
+        "verifiedTLS": true
+      },
+      {
+        "host": "appleid.cdn-apple.com",
+        "dnsResolved": true,
+        "verifiedTLS": true
+      }
+    ]
+  },
+  "officialSystemStatusRendered": {
+    "url": "https://www.apple.com.cn/support/systemstatus/",
+    "labels": {
+      "Apple Account": "available",
+      "Apple Online Store": "available",
+      "Sign in with Apple": "available"
+    },
+    "visibleFooterRegion": "United States",
+    "displayedUpdate": "today,10:22AM",
+    "doesNotCertifyCurrentMainlandMerchantAuthentication": true
+  },
+  "browserResearchTabClosed": true,
+  "currentAuthenticationStatusStillUnknown": true
+}
