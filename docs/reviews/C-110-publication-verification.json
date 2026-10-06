@@ -1,0 +1,13 @@
+{
+  "sourceCommit": "31a97d8590232bbea2193eaedc629cbdb2c1c39b",
+  "candidateRemote": "31a97d8590232bbea2193eaedc629cbdb2c1c39b",
+  "mainUnchanged": "bd130ee77d8e914f6373432e1061c4de820fbc66",
+  "files": 242,
+  "sha256": "c5a8f9058c3b530da440a25d22fe61f8f3c7f10643f9c826b8b1943902cdab66",
+  "allHeadBlobsMatch": true,
+  "privacyScanPassed": true,
+  "boundedSourceAccepted": true,
+  "retentionConsent": "pending",
+  "liveLoginOrOrderVerified": false,
+  "verifiedAtUtc": "2026-10-06T11:28:20.217851+00:00"
+}
