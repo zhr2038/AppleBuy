@@ -4,6 +4,7 @@
   "version": "0.1.0",
   "description": "预先配置、一张订单、未知结果不重试。未安装联调与 Claude 复审前不代表可实购。",
   "permissions": ["scripting", "storage", "activeTab"],
+  "optional_permissions": ["nativeMessaging"],
   "optional_host_permissions": ["https://www.apple.com.cn/*", "https://*.www.apple.com.cn/*"],
   "action": {"default_popup": "open.html"},
   "content_security_policy": {"extension_pages": "script-src 'self'; object-src 'none'; connect-src 'none'"}

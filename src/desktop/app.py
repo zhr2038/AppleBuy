@@ -26,6 +26,16 @@ def command(node: str) -> list[str]:
 def probe_command(node: str) -> list[str]:
     return [node, str(ROOT / "src" / "desktop" / "public-probe.mjs")]
 
+def existing_chrome_command(node: str) -> list[str]:
+    return [node,str(ROOT/'src/desktop/chrome-readonly-probe.mjs')]
+
+def classify_existing_chrome(raw: str, exit_code: int) -> dict:
+    if exit_code!=0 or len(raw)>20000:raise ValueError('Chrome connection unconfirmed')
+    rows=[json.loads(line) for line in raw.splitlines() if line.startswith('{')];value=rows[-1] if rows else {}
+    if value.get('scope')!='existing-chrome-readonly' or value.get('readOnly') is not True or type(value.get('mutationCount')) is not int or value.get('mutationCount')!=0 or value.get('tabClosed') is not True or value.get('oldRecordUnchanged') is not True or value.get('phase') not in ('EMPTY_BAG','BAG','AUTH','UNKNOWN'):raise ValueError('Chrome result unconfirmed')
+    phase=value['phase'];label={'EMPTY_BAG':'官网购物袋为空；旧未知加购仍保留，不再次加购','BAG':'已读取当前购物袋；此步骤不开始结账','AUTH':'正常 Chrome 仍要求本人登录','UNKNOWN':'页面未确认，不能推断购物袋或登录状态'}[phase]
+    return {'message':'正常 Chrome 只读核对：'+label+'；登录及账户身份未核实。','existingChromeProbe':True,'phase':phase}
+
 def classify_probe(raw: str, exit_code: int) -> dict:
     if exit_code != 0 or len(raw) > 1_000_000:
         raise ValueError("官网预检未完成")
@@ -66,7 +76,7 @@ class Runner:
         self.process = None
 
     def start(self, mode="offline") -> bool:
-        if mode not in ("offline", "public-probe"):
+        if mode not in ("offline", "public-probe", "existing-chrome"):
             raise ValueError("运行模式未启用")
         with self.lock:
             if self.busy:
@@ -86,15 +96,16 @@ class Runner:
             with self.lock:
                 if generation != self.generation:
                     return
-                factory = ContainedChild if mode == "public-probe" and self.popen is subprocess.Popen else self.popen
-                process = factory(probe_command(node) if mode == "public-probe" else command(node), cwd=ROOT, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                factory = ContainedChild if mode != "offline" and self.popen is subprocess.Popen else self.popen
+                argv=existing_chrome_command(node) if mode=='existing-chrome' else probe_command(node) if mode=='public-probe' else command(node)
+                process = factory(argv, cwd=ROOT, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                                      text=True, encoding="utf-8", creationflags=subprocess.CREATE_NO_WINDOW if os.name == "nt" else 0)
                 self.process = process
-            stdout, _ = process.communicate(timeout=45 if mode == "public-probe" else 20)
-            result = classify_probe(stdout, process.returncode) if mode == "public-probe" else classify(stdout, process.returncode)
+            stdout, _ = process.communicate(timeout=110 if mode=='existing-chrome' else 45 if mode == "public-probe" else 20)
+            result = classify_existing_chrome(stdout,process.returncode) if mode=='existing-chrome' else classify_probe(stdout, process.returncode) if mode == "public-probe" else classify(stdout, process.returncode)
             self.events.put((generation, "done", result))
         except Exception:
-            self.events.put((generation, "error", {"message": "官网预检未确认完成；未新增购买请求，旧未知任务保持。" if mode == "public-probe" else "演练未确认完成；没有访问官网或创建真实订单。"}))
+            self.events.put((generation, "error", {"message": "正常 Chrome 连接未确认；先完成本机通道安装与扩展连接，旧任务保持，未执行购买。" if mode=='existing-chrome' else "官网预检未确认完成；未新增购买请求，旧未知任务保持。" if mode == "public-probe" else "演练未确认完成；没有访问官网或创建真实订单。"}))
         finally:
             if isinstance(process, ContainedChild) and process.done.is_set() and not process.cleanup_confirmed:
                 self.events.put((generation, "unresolved", {"message": "执行进程清理尚未确认，已阻止再次启动；旧购买记录保持。"}))
@@ -143,6 +154,7 @@ class App:
         self.start_button.pack(side="left")
         self.probe_button = ttk.Button(controls, text="核对官网 Pro（不加购）", command=self.probe)
         self.probe_button.pack(side="left", padx=6)
+        self.chrome_probe_button=ttk.Button(controls,text='读取正常 Chrome 购物袋（只读）',command=self.probe_existing_chrome);self.chrome_probe_button.pack(side='left',padx=6)
         self.import_button=ttk.Button(controls,text="导入原任务（仅核对）",command=self.import_handoff)
         self.import_button.pack(side="left",padx=6)
         self.stop_button = ttk.Button(controls, text="停止演练", command=self.stop, state="disabled")
@@ -179,6 +191,7 @@ class App:
         ttk.Label(pane,text="快捷键：Ctrl+Alt+P 开始 Pro；Ctrl+Alt+S 暂停。最终下单仍需本次条款确认。",wraplength=850).pack(anchor="w",pady=(6,0))
         root.bind('<Control-Alt-p>',lambda event:self.checkout_shortcut())
         root.bind('<Control-Alt-s>',lambda event:self.pause_shortcut())
+        root.bind('<Control-Alt-c>',lambda event:self.probe_existing_chrome())
         self.status.trace_add('write',self.update_window_title)
         self.update_window_title()
         root.protocol("WM_DELETE_WINDOW", self.close)
@@ -192,7 +205,7 @@ class App:
         elif '已停止' in message:label='已停止，旧记录保留'
         elif '原任务仍有未知' in message:label='旧动作未知，仅可核对'
         elif self.checkout.busy:label='程序执行中'
-        self.root.title(TITLE+' · '+label+' [Ctrl+Alt+P 开始；Ctrl+Alt+S 暂停]')
+        self.root.title(TITLE+' · '+label+' [Ctrl+Alt+P 开始；Ctrl+Alt+S 暂停；Ctrl+Alt+C 只读Chrome]')
 
     def checkout_shortcut(self):
         self.open_checkout();return 'break'
@@ -207,6 +220,7 @@ class App:
         if self.runner.start():
             self.start_button.config(state="disabled")
             self.probe_button.config(state="disabled")
+            self.chrome_probe_button.config(state='disabled')
             self.stop_button.config(state="normal")
             self.status.set("正在运行现有离线购买引擎……")
             self.result.set("本次使用虚构数据，真实订单 0。")
@@ -216,9 +230,17 @@ class App:
         if self.runner.start("public-probe"):
             self.start_button.config(state="disabled")
             self.probe_button.config(state="disabled")
+            self.chrome_probe_button.config(state='disabled')
             self.stop_button.config(state="normal")
             self.status.set("正在由桌面程序核对 Pro 官网公开配置……")
             self.result.set("使用程序自己的临时 Chrome；不读取个人会话，不查看或清空旧购物袋。")
+
+    def probe_existing_chrome(self):
+        if self.checkout.busy or self.runner.busy:return
+        if self.runner.start('existing-chrome'):
+            self.start_button.config(state='disabled');self.probe_button.config(state='disabled');self.chrome_probe_button.config(state='disabled');self.stop_button.config(state='normal')
+            self.status.set('正在连接本人已允许的正常 Chrome 通道，仅只读核对购物袋；登录及账户身份尚未核实……')
+            self.result.set('不读取或复制 Cookie、不附加个人浏览器调试端口；未连接不会打开购买流程。')
 
     def import_handoff(self):
         if self.runner.busy or self.checkout.busy:
@@ -252,7 +274,7 @@ class App:
                 self.keep_session_checkbox.config(state='disabled')
                 self.checkout_begin_pending=True
                 self.checkout_button.config(state='disabled');self.checkout_stop_button.config(state='normal')
-                self.start_button.config(state='disabled');self.probe_button.config(state='disabled')
+                self.start_button.config(state='disabled');self.probe_button.config(state='disabled');self.chrome_probe_button.config(state='disabled')
                 self.status.set('正在读取原任务并打开程序结账；没有原任务或仍未知时不会新建购买。')
                 self.result.set('本次尚未核对真实未付款订单；历史演练结果不代表本次官网结果。')
         except Exception:self.status.set('结账入口未确认，旧记录保持；没有开始新购买。')
@@ -308,10 +330,12 @@ class App:
             return
         self.start_button.config(state="normal")
         self.probe_button.config(state="normal")
+        self.chrome_probe_button.config(state='normal')
         self.stop_button.config(state="disabled")
         self.status.set("已停止本次执行。旧购买记录保持；已开始的只读浏览器请求可能已完成。")
 
     def poll(self):
+        if self.checkout.busy:self.chrome_probe_button.config(state='disabled')
         try:
             while True:
                 v=self.checkout.events.get_nowait()
@@ -324,7 +348,7 @@ class App:
                     continue
                 if kind=='owner-lost':
                     self.checkout_owner_lost=True;self.checkout_pause_ack=None;self.final_confirm.set(False);self.transfer_confirm.set(False)
-                    for control in (self.advance_button,self.reconcile_button,self.transfer_button,self.transfer_checkbox,self.submit_button,self.final_checkbox,self.checkout_stop_button):control.config(state='disabled')
+                    for control in (self.advance_button,self.reconcile_button,self.transfer_button,self.transfer_checkbox,self.submit_button,self.final_checkbox,self.checkout_stop_button,self.chrome_probe_button):control.config(state='disabled')
                     self.status.set(v['message']);continue
                 if getattr(self,'checkout_owner_lost',False) and kind!='worker-ended':continue
                 if kind in ('ready','blocked','result','worker-ended'):
@@ -356,9 +380,9 @@ class App:
                         self.browser_picker.config(state='readonly')
                         self.keep_session_checkbox.config(state='normal')
                         self.transfer_button.config(state='disabled');self.transfer_checkbox.config(state='disabled');self.transfer_confirm.set(False)
-                        self.checkout_button.config(state='normal');self.start_button.config(state='normal');self.probe_button.config(state='normal')
+                        self.checkout_button.config(state='normal');self.start_button.config(state='normal');self.probe_button.config(state='normal');self.chrome_probe_button.config(state='normal')
                         self.advance_button.config(state='disabled');self.reconcile_button.config(state='disabled');self.submit_button.config(state='disabled');self.checkout_stop_button.config(state='disabled')
-                    else:self.status.set('结账清理未确认，禁止再次启动。')
+                    else:self.chrome_probe_button.config(state='disabled');self.status.set('结账清理未确认，禁止再次启动。')
                 elif kind=='ready':
                     self.checkout_readonly=v.get('readOnly') is True
                     self.status.set(v['message']);self.advance_button.config(state='disabled' if v.get('readOnly') is True else 'normal');self.reconcile_button.config(state='normal' if v.get('readOnly') is True else 'disabled')
@@ -393,11 +417,13 @@ class App:
                 if kind == "unresolved":
                     self.start_button.config(state="disabled")
                     self.probe_button.config(state="disabled")
+                    self.chrome_probe_button.config(state='disabled')
                     continue
-                if kind == "done" and not value.get("publicProbe"):
+                if kind == "done" and not value.get("publicProbe") and not value.get('existingChromeProbe'):
                     self.result.set(f"自动选择 {value['choices']} 次；明确拒绝 {value['refusals']} 次；模拟付款前终点；真实订单 0。")
                 self.start_button.config(state="normal")
                 self.probe_button.config(state="normal")
+                self.chrome_probe_button.config(state='normal')
                 self.stop_button.config(state="disabled")
         except queue.Empty:
             pass

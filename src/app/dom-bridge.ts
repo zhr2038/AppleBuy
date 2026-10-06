@@ -50,6 +50,9 @@ const ASSETS:Record<string,[string,string]>={'/':['desktop/index.html','text/htm
 const ROOT=resolve(import.meta.dirname,'../..');
 const CLIENT=/^c-[a-z0-9-]{8,64}$/;const DOCUMENT=/^d-[a-z0-9-]{8,64}$/;
 const CSP="default-src 'none'; script-src 'self'; style-src 'self'; connect-src 'self'; img-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'";
+// Fetch Standard 2.9: do not expose our local FAKE demo on a browser-forbidden port.
+// Windows can have a low dynamic port range; this never changes OS or browser policy.
+const BROWSER_BLOCKED_PORTS=new Set([0,1,7,9,11,13,15,17,19,20,21,22,23,25,37,42,43,53,69,77,79,87,95,101,102,103,104,109,110,111,113,115,117,119,123,135,137,139,143,161,179,389,427,465,512,513,514,515,526,530,531,532,540,548,554,556,563,587,601,636,989,990,993,995,1719,1720,1723,2049,3659,4045,4190,5060,5061,6000,6566,6665,6666,6667,6668,6669,6679,6697,10080]);
 type Client={res:http.ServerResponse;document:string};
 
 export async function startDomDemo(taskDir:string,o:{port?:number;timeoutMs?:number;plan?:Plan}={}){
@@ -133,8 +136,17 @@ export async function startDomDemo(taskDir:string,o:{port?:number;timeoutMs?:num
       res.writeHead(ok?200:409,{'content-type':'application/json'});res.end(JSON.stringify({ok}));
     }catch{res.writeHead(409,{'content-type':'application/json'});res.end(JSON.stringify({ok:false,message:'已拒绝操作；请核对当前状态和记录'}));}
   });
-  try{await new Promise<void>((yes,no)=>{server.once('error',no);server.listen(o.port??0,'127.0.0.1',yes);});}
-  catch(e){await own.lock.release();throw e;}
+  try{
+    const requested=o.port??0;
+    if(!Number.isInteger(requested)||requested<0||requested>65535)throw new Error('DomInvalidPort');
+    if(requested!==0&&BROWSER_BLOCKED_PORTS.has(requested))throw new Error('DomBrowserPortBlocked');
+    for(let attempt=0;attempt<8;attempt++){
+      await new Promise<void>((yes,no)=>{const onError=(e:Error)=>no(e);server.once('error',onError);server.listen(requested,'127.0.0.1',()=>{server.off('error',onError);yes();});});
+      if(!BROWSER_BLOCKED_PORTS.has((server.address()as any).port))break;
+      await new Promise<void>(r=>server.close(()=>r()));
+    }
+    if(!server.listening)throw new Error('DomBrowserPortUnavailable');
+  }catch(e){if(server.listening)await new Promise<void>(r=>server.close(()=>r()));await own.lock.release();throw e;}
   const port=(server.address()as any).port;origin=`http://127.0.0.1:${port}`;
   return {url:origin+'/',port,token,taskDir:store.dir,snapshot:snap,mailbox,close:async()=>{closed=true;mailbox.disconnect();wake();for(const x of clients.values())x.res.end();clients.clear();await loop;await new Promise<void>(r=>server.close(()=>r()));await own.lock.release();}};
 }

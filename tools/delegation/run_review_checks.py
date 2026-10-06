@@ -6,6 +6,13 @@ import sys
 from process_tree import OwnedProcess
 
 ROOT=Path(__file__).resolve().parents[2]
+def python_counts(stderr):
+    count=re.search(r'Ran (\d+) tests',stderr)
+    if not count:return None
+    summary=re.search(r'^(OK|FAILED)(?: \(([^\n]*)\))?\s*$',stderr,re.M)
+    if not summary:return None
+    details={key:int(value) for key,value in re.findall(r'(failures|errors|skipped)=(\d+)',summary[2] or '')}
+    return {'tests':int(count[1]),'failures':details.get('failures',0),'errors':details.get('errors',0),'skipped':details.get('skipped',0)}
 def main():
     if len(sys.argv)!=2:
         raise SystemExit('Expected one public candidate manifest')
@@ -15,7 +22,7 @@ def main():
         raise SystemExit('Out-of-scope manifest')
     check=[sys.executable,'-B',str(ROOT/'tools/delegation/verify_candidate_manifest.py'),relative]
     commands=[check,
-      ['node','--test','--test-reporter=tap','test/desktop-c093-owner-recovery.test.ts','test/desktop-c072-store.test.ts','test/desktop-c078-runtime.test.ts','test/desktop-c084-cart-transfer.test.ts','test/desktop-c080-reconcile.test.ts','test/desktop-c107-browser.test.ts'],
+      ['node','--test','--test-reporter=tap','test/desktop-c093-owner-recovery.test.ts','test/desktop-c072-store.test.ts','test/desktop-c078-runtime.test.ts','test/desktop-c084-cart-transfer.test.ts','test/desktop-c080-reconcile.test.ts','test/desktop-c107-browser.test.ts','test/desktop-c111-native-readonly.test.ts','test/desktop-c113-probe.test.ts'],
       [sys.executable,'-B','-X','utf8','-m','unittest','discover','-s','test','-p','desktop_c*_test.py'],
       ['node','--test','--test-reporter=tap','test/*.test.ts','review/*.test.ts'],check]
     failed=False
@@ -31,8 +38,8 @@ def main():
             try:row['counts']={key:int(re.search(r'^# '+key+r' (\d+)$',stdout,re.M)[1]) for key in ('tests','pass','fail','cancelled','skipped')}
             except (TypeError,ValueError):passed=False
         else:
-            count=re.search(r'Ran (\d+) tests',stderr)
-            if count:row['tests']=int(count[1])
+            counts=python_counts(stderr)
+            if counts:row.update(counts);passed=passed and not any(counts[key] for key in ('failures','errors','skipped'))
             else:passed=False
         row['passed']=passed
         if not passed:

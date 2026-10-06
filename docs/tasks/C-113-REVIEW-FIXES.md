@@ -1,0 +1,11 @@
+# C113 Codex fixes for the C112 prepared-connection findings
+
+F-A: the application button and connector now say normal Chrome, not verified signed-in Chrome; both empty/nonempty bag result messages explicitly say login and account identity are unverified. Four actual Python reproductions initially failed and subsequently passed. The native read remains observation only, never identity proof or permission to retry Add.
+
+F-B: remove the unused unbound matchingSingleton field from extension/native/desktop result projections. The fixed Pro plan is parser context only. F-C: collect broker output through close, not exit, and project only allowlisted result fields; validate the same task under its owner and check owner/unchanged record after output. Production-probe FAKE child/store tests exercise late stdout, malformed/nonreadonly source, changed record, lost owner and overlong output, never a customer ledger or actual browser.
+
+F-D: the90-second deadline removes only its owned ticket before exit; next startup removes a stale expired ticket. Tests preserve another fresh nonce and exercise an actual one-second contained Windows broker fixture timeout. A forced tree kill can retain a not-yet-expired ticket until next startup; the host rejects expiry and all messages remain read-only.
+
+F-E: disable the normal-Chrome button during checkout, owner loss and unresolved cleanup, restoring after confirmed terminal. F-F: report Python failures/errors/skips and require zero, including the Windows-specific native fixture. F-G: production-probe tests, GUI runner FAKE child and isolated file/mock registry installer coverage now exist. F-H: reject non-ASCII/unsupported launcher paths before any writes; the current ASCII workspace/interpreter can be prepared. Real Chrome .cmd acceptance/policy/permission/timing is still untested.
+
+No personal registry/native permission was changed, no retained browser mode was enabled, no account/profile/cookie/private network data was read and no purchase action occurred. Source was modified only after the actual C112 call was terminal. Exact current map and C114 actual follow-up review are required before installation acceptance; C112's conditional255 verdict cannot approve these bytes.

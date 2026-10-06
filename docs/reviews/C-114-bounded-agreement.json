@@ -1,0 +1,19 @@
+{
+  "acceptedScope": "C111 prepared normal-Chrome read-only connection plus C113 finding fixes only",
+  "sourceFiles": 257,
+  "sha256": "b991da31387a20a6596d8a33d4dc8cd66e477905413e1233e9e5c7ad863187d6",
+  "actualClaudeAgreement": true,
+  "codexAcceptance": true,
+  "nodeTests": 1475,
+  "pythonTests": 47,
+  "nativeRegistrationInstalled": false,
+  "nativeMessagingGranted": false,
+  "normalChromeRuntimeVerified": false,
+  "accountIdentityVerified": false,
+  "realOrderVerified": false,
+  "goalComplete": false,
+  "deferredNonblockingFindings": ["N1 individual UI disable branch coverage", "N2 stray earlier unittest summary match"],
+  "computerUseStoppedByUser": true,
+  "candidateGuiLaunchAttempted": true,
+  "duplicateGuiCleanupConfirmed": false
+}

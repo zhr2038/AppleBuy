@@ -1,0 +1,11 @@
+{
+  "scope": "actual missing-registration programme path",
+  "phase": "UNKNOWN",
+  "confirmed": false,
+  "exitCode": 1,
+  "timeout": false,
+  "ownedCleanupConfirmed": true,
+  "privateLedgerBytesUnchanged": true,
+  "purchaseActions": 0,
+  "nativeRegistered": false
+}

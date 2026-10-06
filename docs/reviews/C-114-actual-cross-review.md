@@ -1,0 +1,13 @@
+# C114 actual agreement for the C113 finding fixes
+
+Actual reviewer verdict: bounded AGREE, F-A through F-H resolved for current257 SHA b991da31387a20a6596d8a33d4dc8cd66e477905413e1233e9e5c7ad863187d6. Codex accepts only the prepared C111 read-only connection plus these C113 fixes. This is not whole257/installation/account/login/checkout/order/speed/goal acceptance.
+
+The original-session first-party claude-opus-5-5/xhigh invocation returned in282.16 seconds and32 actual turns. All29 fresh required EOF reads were verified; one extra public historical manifest read, no gaps. One exact foreground command produced both current maps and69 focused,47 Python with zero failures/errors/skips,1475 full Node with zero failure/cancellation/skips. All five ordered checks plus completion passed. No denial, private read, source edit, tool error, unexpected command, overlap, wall/turn/USD cap or quota error; owned cleanup, OS lease freedom and source immutability verified. Actual structured receipts take precedence over the reviewer's own turn estimate.
+
+Root independently reproduced four failures before the fixes, ran the same full checks, and actually ran the missing-registration production path: UNKNOWN/exit1, original private ledger bytes unchanged, owned cleanup, no purchasing action. Actual Windows native framing/pipe/deadline fixtures use fake data; all Chrome API, registry and account results in tests remain fake.
+
+Two low nonblocking findings are deferred: N1 the owner-loss GUI test also passes because its fixture is busy, leaving some individual disable branches weakly covered; N2 Python summary parsing can select a stray early OK line. They do not grant installation, identity or purchasing authority. Keep them in the next check-runner/test maintenance task without delaying the actual normal-Chrome connection trial. No source was changed after this review.
+
+No new native registration or optional permission has been installed/granted. The human must complete the new Chrome permission/extension connector steps. Old unknown/finality/history and revoked source purchasing rights remain intact. No payment, new order, slot submission, shutdown or reboot.
+
+Desktop deployment was interrupted: native close of the prior GUI returned user-input-detected; a subsequent shell launch mistakenly opened an additional candidate GUI. No purchase was started. Before the next inventory the user stopped Computer Use using physical Escape. Codex stopped all UI actions and did not switch tools to force-close either GUI. The extra window's cleanup and current visible deployment are unconfirmed; exact local process recovery is saved privately. Respect the stop until the user requests further computer control.

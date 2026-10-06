@@ -1,0 +1,9 @@
+# C112 actual review of the C111 prepared connection
+
+Claude returned bounded AGREE for the prepared read-only connection, with mandatory F-A before any live use. Codex withheld installation acceptance and reproduced four failing Python cases before correcting account-status wording, non-ASCII launcher rejection, owner-loss UI disablement and the runner result wording.
+
+The actual original-session review used first-party claude-opus-5-5/xhigh, 431.94 seconds and49 turns. All36 fresh required EOF reads were verified from actual output, including the continued pages of two initially truncated reads. One allowed foreground command produced all five strict sequential checks and the completion row:66 focused,39 Python,1472 full Node, matching first/last255 SHA57b653138e7fb2fd904ad06f2b5cab4fb6a67a95b45e8c899d1ed4d66f2e61bb. No denial, tool error, edit, private read, unexpected command, overlap or cap; owned cleanup and source immutability confirmed. Reviewer speculation about possible time-cap exceedance is contradicted by the actual431.94-second receipt. Usage remains history aggregate, not round spend.
+
+Findings: F-A mandatory guest-bag/account wording; F-B unnecessary unbound matching boolean; F-C exit-before-output-close timing; F-D stale ticket cleanup; F-E disabled GUI control states; F-F missing Python skip/error evidence; F-G production-probe/runner/installer fixture coverage; F-H non-ASCII batch paths. C113 records the corresponding fixes and tests. This historical255 identity is preserved and does not approve later bytes.
+
+The reviewer did not touch personal Chrome, registry, authentication, customer ledger or Apple. Native Messaging installation/permissions, real authenticated account use, empty-bag buyer recovery, checkout/slots/unpaid Pro and speed remain unverified. Old unknown Add/slot/finality/history/source-stop facts remain intact. No reboot or shutdown.
