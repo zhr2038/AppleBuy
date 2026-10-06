@@ -2,7 +2,7 @@
 import {runDesktopSession,PRO_PLAN,proDigest} from './browser-session.mjs';
 import {TASK_KEY,validStored} from '../../web/checkout-connector/job.js';
 import {ChromePort} from '../../web/checkout-connector/chrome-port.js';
-import {transferExistingCart} from './cart-transfer.mjs';
+import {transferExistingCart,validateDesktopCartTransfer} from './cart-transfer.mjs';
 const BAG='https://www.apple.com.cn/shop/bag',TERMS='https://www.apple.com.cn/shop/open/salespolicies';
 const PHASES=new Set(['ENTRY','VARIANT','EMPTY_BAG','BAG','AUTH','FULFILLMENT','SLOTS','DETAILS','PAYMENT','REVIEW','ORDER_RECEIPT','ORDER_DETAIL','PROCESSING','UNKNOWN']);
 const safeState=s=>({state:typeof s.state==='string'?s.state:'NEEDS_VERIFICATION',phase:PHASES.has(s.phase)?s.phase:'UNKNOWN',pendingAction:['addBag','checkout','chooseSlot','submitOrder'].includes(s.pendingAction)?s.pendingAction:null});
@@ -22,7 +22,8 @@ export class DesktopCheckoutRuntime {
   if(!this.opened||this.closed||this.closing)throw Error('DesktopSessionNotOpen');
   if(this.active)throw Error('DesktopSessionAlreadyRunning');
   const port=new ChromePort(this.api,this.tabId,{mode:'observe'}),o=await port.observe(PRO_PLAN),old=await this.store.get(TASK_KEY);
-  const result={state:'OBSERVED',phase:o.phase,pendingAction:old?.pending?.action??null,legacyReadOnly:old?.reconcileOnly===true,realOrderVerified:false};
+  const recover=old?.desktopContext!==this.api.sessionId&&old?.desktopContext&&validateDesktopCartTransfer(old,{sessionId:old.desktopContext});
+  const result={state:'OBSERVED',phase:o.phase,pendingAction:old?.pending?.action??null,legacyReadOnly:old?.reconcileOnly===true||!!recover,realOrderVerified:false};
   this.onState(safeState(result));return result;
  }
  async execute(options){
@@ -44,7 +45,7 @@ export class DesktopCheckoutRuntime {
  async transfer({approved=false,newContextConfirmed=false,privatePickupData={}}={}){
   if(!this.opened||this.busy||this.closing||this.closed||this.lease?.owned!==true)throw Error('DesktopSessionAlreadyRunning');
   this.busy=true;
-  try{await transferExistingCart({store:this.store,api:this.api,tabId:this.tabId,approved,newContextConfirmed,live:()=>!this.closing});}finally{this.busy=false;}
+  try{this.active=transferExistingCart({store:this.store,api:this.api,tabId:this.tabId,approved,newContextConfirmed,live:()=>!this.closing});await this.active;}finally{this.active=null;this.busy=false;}
   return this.advance({checkoutApproved:true,newContextConfirmed:true,privatePickupData});
  }
  async prepareReview(){

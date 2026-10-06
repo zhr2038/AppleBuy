@@ -25,7 +25,8 @@ async function executeSession({api,tabId,store,mode='public-config',authority=nu
   let old=null,grant=null;
   if(mode==='reconcile'){
     old=await store.get(TASK_KEY);
-    if(!old||!validStored(old)||old.state==='RETIRED'||old.reconcileOnly!==true||canonicalJson(normalizeIntent(old.plan))!==canonicalJson(PRO_PLAN))throw Error('DesktopReadonlyHandoffRequired');
+    const recover=old?.desktopContext&&validateDesktopCartTransfer(old,{sessionId:old.desktopContext});
+    if(!old||!validStored(old)||old.state==='RETIRED'||old.reconcileOnly!==true&&!recover||canonicalJson(normalizeIntent(old.plan))!==canonicalJson(PRO_PLAN))throw Error('DesktopReadonlyHandoffRequired');
   }
   if(mode==='purchase'){
     old=await store.get(TASK_KEY);
@@ -50,6 +51,8 @@ async function executeSession({api,tabId,store,mode='public-config',authority=nu
   const cancel=()=>job.pause();signal?.addEventListener('abort',cancel,{once:true});if(signal?.aborted)cancel();
   try{
     const result=await job.run(PRO_PLAN,{tabId,planDigest:mode==='reconcile'?old.planDigest:proDigest,taskId:old?.state==='RETIRED'?randomUUID():old?.taskId??randomUUID(),mode:mode==='reconcile'?'purchase':mode,rebind:mode==='reconcile',grant});
-    return {state:result.state,phase:result.lastPhase,reason:result.reason,realOrderVerified:mode==='purchase'&&result.state==='CONFIRMED_UNPAID',quoteCny:port.last?.raw.quotedCny??null,skuPath:port.last?.raw.productForm?.ready===true?port.last.raw.path:null};
+    let boundOrderLookup=null;
+    if(mode==='reconcile'&&old.finalIntent?.sent===true&&typeof old.orderRefHash==='string'&&/^[a-f0-9]{64}$/.test(old.orderRefHash))boundOrderLookup=await port.lookupOrder(PRO_PLAN,old.orderRefHash);
+    return {state:result.state,phase:result.lastPhase,reason:result.reason,realOrderVerified:mode==='purchase'&&result.state==='CONFIRMED_UNPAID',boundOrderIndependentlyObserved:boundOrderLookup?.independent===true&&boundOrderLookup?.state==='unpaid',quoteCny:port.last?.raw.quotedCny??null,skuPath:port.last?.raw.productForm?.ready===true?port.last.raw.path:null};
   }finally{signal?.removeEventListener('abort',cancel);}
 }

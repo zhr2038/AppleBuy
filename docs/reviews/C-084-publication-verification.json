@@ -1,0 +1,12 @@
+{
+  "scope": "C084 pending candidate only",
+  "sourceCommit": "0177da53cf09005f53cbb6aeb4afc7ae35edafff",
+  "files": 233,
+  "sha256": "f1115167c2c58c37e3c46840e15b0d42a65b900ec43f4fc389a8ce6a96fe80a1",
+  "all233HeadBlobsMatch": true,
+  "remoteMatches": true,
+  "mainUnchanged": true,
+  "forcePush": false,
+  "privatePublished": false,
+  "verifiedAtUtc": "2026-10-05T23:11:30.630587+00:00"
+}

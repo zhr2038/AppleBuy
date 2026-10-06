@@ -3,6 +3,7 @@ import test from 'node:test';import assert from 'node:assert/strict';
 import {PRO_PLAN,proDigest,runDesktopSession} from '../src/desktop/browser-session.mjs';
 import {transferExistingCart} from '../src/desktop/cart-transfer.mjs';
 import {createPurchaseRecord,TASK_KEY,PurchaseJob} from '../web/checkout-connector/job.js';
+import {DesktopCheckoutRuntime} from '../src/desktop/checkout-runtime.mjs';
 const TERMS='https://www.apple.com.cn/shop/open/salespolicies';
 function world({phase='BAG',quantity=1,total=9999,final=false}={}){
  const original={...createPurchaseRecord(PRO_PLAN,{taskId:'FAKE-legacy',planDigest:proDigest,tabId:99,now:0,id:()=> 'FAKE'}),state:'NEEDS_VERIFICATION',bagAddStarted:true,resourceWritten:true,pending:{action:'addBag',id:'FAKE-unknown',documentId:'FAKE-original',beforePhase:'VARIANT',deadline:0},retiredHistory:[]};
@@ -38,4 +39,41 @@ test('C084 altered retained archive or another context cannot reuse a transfer p
 test('C084 a transferred buyer resumes its one pending checkout after authentication, with zero extra Add/checkout',async()=>{
  const {w,store,api}=world();w.requireAuth=true;await transferExistingCart({store,api,tabId:7,approved:true,newContextConfirmed:true});const authority={checkoutApproved:true,newContextConfirmed:true,legacyOwnershipRevoked:true,planDigest:proDigest};
  const first=await runDesktopSession({store,api,tabId:7,mode:'purchase',authority});assert.equal(first.phase,'AUTH');w.phase='FULFILLMENT';const ready=await runDesktopSession({store,api,tabId:7,mode:'purchase',authority});assert.equal(ready.phase,'REVIEW');assert.equal(w.commands.filter(x=>x==='checkout').length,1);assert.equal(w.commands.includes('addBag'),false);
+});
+for(const stage of ['AUTH','REVIEW','UNKNOWN_FINAL'])test('C086 a restarted transferred task remains readonly reconcilable at '+stage,async()=>{
+ const {w,store,api}=world();await transferExistingCart({store,api,tabId:7,approved:true,newContextConfirmed:true});
+ w.row.lastPhase=stage==='UNKNOWN_FINAL'?'UNKNOWN':stage;
+ w.row.pending=stage==='AUTH'?{action:'checkout',id:'FAKE-checkout',documentId:'FAKE-old',deadline:0}:stage==='UNKNOWN_FINAL'?{action:'submitOrder',id:'FAKE-final',documentId:'FAKE-old',deadline:0}:null;
+ if(stage==='UNKNOWN_FINAL')w.row.finalIntent={sent:true,id:'FAKE-final'};
+ const restarted={...api,sessionId:'FAKE-restarted'};const before=structuredClone(w.row);await assert.rejects(runDesktopSession({store,api:restarted,tabId:7,mode:'purchase',authority:{checkoutApproved:true,newContextConfirmed:true,legacyOwnershipRevoked:true,planDigest:proDigest}}));
+ const r=await runDesktopSession({store,api:restarted,tabId:7,mode:'reconcile'});assert.equal(r.realOrderVerified,false);assert.equal(w.row.reconcileOnly,true);assert.deepEqual(w.commands,[]);assert.deepEqual(w.row.desktopTransfer.originalTask,before.desktopTransfer.originalTask);if(stage==='UNKNOWN_FINAL')assert.equal(w.row.finalIntent.sent,true);
+});
+test('C086 an unexpired old slot window cannot be transferred, zero writes',async()=>{
+ const {w,store,api}=world();w.row.pending={action:'chooseSlot',id:'FAKE-live-slot',beforePhase:'SLOTS',documentId:'FAKE-slots',deadline:Date.now()+30000};w.row.expiresAt=Date.now()+60000;w.row.desktopHandoff.originalSnapshot=structuredClone({...w.row,desktopHandoff:undefined});const before=structuredClone(w.row);
+ await assert.rejects(transferExistingCart({store,api,tabId:7,approved:true,newContextConfirmed:true}),/OldSlotWindow/);assert.equal(w.writes,0);assert.deepEqual(w.row,before);assert.deepEqual(w.commands,[]);
+});
+test('C086 close drains a transfer write before releasing ownership; no checkout after pause',async()=>{
+ const {w,store,api}=world();let release,entered;const held=new Promise(r=>release=r),writing=new Promise(r=>entered=r),events=[];const put=store.put;
+ store.put=async(k,v)=>{events.push('write-start');entered();await held;await put(k,v);events.push('write-end');};
+ store.acquireOwner=async()=>({owned:true,release:async()=>events.push('lease-release')});api.create=async()=>({id:7});
+ const runtime=new DesktopCheckoutRuntime({store,launch:async()=>({api,close:async()=>events.push('browser-close')})});await runtime.open();
+ const transferring=runtime.transfer({approved:true,newContextConfirmed:true});const failure=assert.rejects(transferring,/AlreadyRunning/);await writing;
+ await assert.rejects(runtime.transfer({approved:true,newContextConfirmed:true}),/AlreadyRunning/);
+ const closing=runtime.close();await Promise.resolve();assert.deepEqual(events,['write-start']);release();await failure;await closing;
+ assert.deepEqual(events,['write-start','write-end','browser-close','lease-release']);assert.equal(w.writes,1);assert.deepEqual(w.commands,[]);assert.equal(runtime.cleanupConfirmed,true);
+});
+test('C086 close cancels a transfer before the local write and keeps the full unknown record',async()=>{
+ const {w,store,api}=world(),before=structuredClone(w.row),execute=api.scripting.executeScript;let release,entered;const held=new Promise(r=>release=r),reading=new Promise(r=>entered=r);let reads=0,releases=0;
+ api.scripting.executeScript=async q=>{if(++reads===3){entered();await held;}return execute(q);};api.create=async()=>({id:7});store.acquireOwner=async()=>({owned:true,release:async()=>releases++});
+ const runtime=new DesktopCheckoutRuntime({store,launch:async()=>({api,close:async()=>{}})});await runtime.open();const transferring=runtime.transfer({approved:true,newContextConfirmed:true});const failure=assert.rejects(transferring,/Cancelled/);await reading;const closing=runtime.close();release();await failure;await closing;
+ assert.equal(w.writes,0);assert.deepEqual(w.row,before);assert.deepEqual(w.commands,[]);assert.equal(releases,1);
+});
+for(const scenario of ['changed-bag','changed-record','wrong-product','unknown-extras'])test('C086 transfer refuses '+scenario+' without a write or merchant action',async()=>{
+ const {w,store,api}=world(),execute=api.scripting.executeScript;let reads=0;
+ api.scripting.executeScript=async q=>{reads++;if(scenario==='changed-bag'&&reads===2)w.total=9998;const result=await execute(q);if(scenario==='changed-record'&&reads===2)w.row.lastPhase='AUTH';if(scenario==='wrong-product')result[0].result.purchase.color='星光白色';if(scenario==='unknown-extras')result[0].result.extras=null;return result;};
+ await assert.rejects(transferExistingCart({store,api,tabId:7,approved:true,newContextConfirmed:true}));assert.equal(w.writes,0);assert.deepEqual(w.commands,[]);
+});
+test('C086 runtime transfer reaches review and resumes the same authenticated checkout, zero Add',async()=>{
+ const {w,store,api}=world();w.requireAuth=true;api.create=async()=>({id:7});const runtime=new DesktopCheckoutRuntime({store,launch:async()=>({api,close:async()=>{}})});await runtime.open();
+ const first=await runtime.transfer({approved:true,newContextConfirmed:true});assert.equal(first.phase,'AUTH');w.phase='FULFILLMENT';const ready=await runtime.advance({checkoutApproved:true,newContextConfirmed:true});assert.equal(ready.phase,'REVIEW');assert.equal(w.commands.filter(x=>x==='checkout').length,1);assert.equal(w.commands.includes('addBag'),false);assert.equal(w.commands.includes('submitOrder'),false);await runtime.close();
 });

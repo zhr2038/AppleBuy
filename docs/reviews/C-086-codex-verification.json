@@ -1,0 +1,48 @@
+{
+  "files": 233,
+  "sha256": "0c90acc40ada28b0e0025328246e8a6ee6bdf89bd6b4e94899459fd82dd38160",
+  "previousRejected233": "f1115167c2c58c37e3c46840e15b0d42a65b900ec43f4fc389a8ce6a96fe80a1",
+  "changedPaths": [
+    "src/desktop/app.py",
+    "src/desktop/browser-session.mjs",
+    "src/desktop/cart-transfer.mjs",
+    "src/desktop/checkout-runtime.mjs",
+    "test/desktop-c084-cart-transfer.test.ts",
+    "src/desktop/purchase-worker.mjs",
+    "test/desktop_c078_test.py"
+  ],
+  "C085Actual": "DISAGREE N2/N3,529.17s67turn,firstPartyOpus5.5/xhigh/no error/denial/timeout/ownedcleanup,reported45EOF",
+  "independentBaselineRepro": {
+    "sourceCommit": "0177da53cf09005f53cbb6aeb4afc7ae35edafff",
+    "fakeOnly": true,
+    "N2ReadonlyRestartRejected": true,
+    "N3UnexpiredSlotTransferCreated": true
+  },
+  "newRecoverySlotChecks": 4,
+  "allTransferChecks": 20,
+  "fullNodePass": 1435,
+  "pythonPass": 12,
+  "knownResiduals": [
+    "F8 forced-death stale owner marker remains fail-closed; no unsafe PID/unlink recovery",
+    "Worker transfer IPC itself lacks a direct fixture; runtime transfer AUTH/REVIEW and close are tested",
+    "Known-reference lookup recovery and actual installed GUI/live purchase remain unverified"
+  ],
+  "repairs": [
+    "Transferred AUTH/REVIEW/unknown-final can be permanently readonly reconciled after a new context; no new purchase authority or Add",
+    "Previously bound final hash only may use observe-mode lookup; unknown final never adopts another receipt",
+    "Unexpired or missing old slot windows anywhere in history block transfer; UI explicitly requires stopped old checkout/expired old slot window",
+    "GUI transfer controls disabled after stop/worker termination",
+    "Transfer pause drains a blocked local write before browser/lease cleanup; cancellation before write preserves the original record",
+    "Readable transfer errors; readonly advance disabled; transfer validates identity suffix; stop cleanup rejection is caught"
+  ],
+  "accepted": false,
+  "actualProUnpaidOrderVerified": false,
+  "goalStatus": "blocked, no false resume",
+  "restoreTask": "C087-CROSS-REVIEW",
+  "verifiedAtUtc": "2026-10-06T00:19:07.157603+00:00",
+  "newChecks": {
+    "nodeTransfer": 20,
+    "pythonGUI": 3,
+    "scope": "isolated FAKE transport/UI controls, no Apple or private state"
+  }
+}

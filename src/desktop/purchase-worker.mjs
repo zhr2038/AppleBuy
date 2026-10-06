@@ -5,6 +5,17 @@ import {DesktopBrowserApi} from './browser-api.mjs';import {DesktopCheckoutRunti
 import {AuthContinuation} from './auth-continuation.mjs';
 const emit=v=>process.stdout.write(JSON.stringify({scope:'desktop-pro-checkout',...v})+'\n');
 const errors={DesktopLegacyHandoffRequired:'需要导入原任务；未打开购买浏览器。',DesktopLegacyResultStillUnconfirmed:'原任务仍有未知动作，只能核对，未开始新购买。',DesktopHandoffPermanentlyRevokedSource:'已交接记录不能恢复原购买权限，未发购买动作。',DesktopLegacyFinalHistoryUnconfirmed:'原记录含最终订单事实，需要核对；未开始新购买。',DesktopOwnerHeldOrUnconfirmed:'另一执行器或未确认的记录正在持有任务。',DesktopSessionAlreadyRunning:'当前执行尚未结束，未再次开始。',DesktopFinalConsentNotCurrent:'当前订单复核或条款确认已失效，未重复提交。',DesktopContextIdentityUnconfirmed:'浏览器与旧任务不同，未恢复旧购买权限。'};
+Object.assign(errors,{
+ DesktopReadonlyHandoffRequired:'没有可核对的只读交接记录；原任务保持，未发购买动作。',
+ 'DesktopLegacyResultStillUnconfirmed; DesktopHandoffPermanentlyRevokedSource':'原任务仍有未知动作且原购买权限已停用；只能核对，不能直接继续购买。',
+ DesktopTransferNeedsExplicitCurrentApproval:'需确认接替当前同一账户的一台商品；没有接替或购买。',
+ DesktopTransferLegacyUnconfirmed:'旧交接或购买条件未核实；记录保持，没有接替。',
+ DesktopTransferOldSlotWindowUnconfirmed:'旧时段窗口尚未确认到期；未接替、未选择新的时段。',
+ DesktopTransferNeedsCurrentMatchingSingleton:'当前购物袋不是已核实的同款唯一一台；没有接替或加购。',
+ DesktopTransferBagChanged:'核对时购物袋发生变化；没有接替或购买。',
+ DesktopTransferRecordChanged:'旧任务记录发生变化；没有接替或购买。',
+ DesktopTransferCancelled:'接替已暂停，旧记录保持，未继续结账。'
+});
 let browser,context,closing=false;const store=new DesktopTaskStore(join(process.cwd(),'.local/desktop/task.json'));
 const runtime=new DesktopCheckoutRuntime({store,onState:s=>emit({type:'progress',...s}),launch:async()=>{
  const {chromium}=createRequire(import.meta.url)(join(homedir(),'.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright'));
@@ -26,7 +37,7 @@ try{
  }
  input.on('line',async line=>{
   if(line.length>12000||closing)return;let c;try{c=JSON.parse(line);}catch{return;}
-  if(c?.action==='stop'){closing=true;watch.stop();input.close();try{await runtime.close();}finally{emit({type:'closed',cleanupConfirmed:runtime.cleanupConfirmed});process.stdin.destroy();}return;}
+  if(c?.action==='stop'){closing=true;watch.stop();input.close();try{await runtime.close();}catch{process.exitCode=2;emit({type:'blocked',message:'浏览器清理未确认，保留任务锁，不得再启动。'});}finally{emit({type:'closed',cleanupConfirmed:runtime.cleanupConfirmed});process.stdin.destroy();}return;}
   if(active||watch.reading){emit({type:'blocked',message:'当前执行尚未结束，未再次发动作。'});return;}
   if(!['observe','reconcile','transfer','advance','submit'].includes(c?.action))return;
   watch.stop();active=true;

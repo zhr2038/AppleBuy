@@ -4,6 +4,13 @@ import {TASK_KEY,validStored,canonicalJson,normalizeIntent,createPurchaseRecord,
 import {PRO_PLAN,proDigest,legacyFinalProofClear} from './browser-session.mjs';
 import {ChromePort} from '../../web/checkout-connector/chrome-port.js';
 const fingerprint=r=>createHash('sha256').update(canonicalJson(r)).digest('hex');
+function previousSlotWindowsExpired(record,now){
+ const stack=[record],seen=new Set();let count=0;
+ while(stack.length){const v=stack.pop();if(!v||typeof v!=='object'||seen.has(v))continue;seen.add(v);if(++count>3000)return false;
+  if(v.pending?.action==='chooseSlot'||v.acceptedSlot!=null){if(!Number.isFinite(v.expiresAt)||v.expiresAt>now||v.pending?.action==='chooseSlot'&&(!Number.isFinite(v.pending.deadline)||v.pending.deadline>now))return false;}
+  stack.push(...Object.values(v));
+ }return true;
+}
 export function validateDesktopCartTransfer(row,api){
  const t=row?.desktopTransfer;
  if(!t||t.schema!=='applebuy-desktop-cart-transfer/v1'||t.existingCartOnly!==true||row.reconcileOnly===true||typeof api?.sessionId!=='string'||row.desktopContext!==api.sessionId||t.contextId!==api.sessionId||t.taskId!==row.taskId||t.planDigest!==proDigest||!validStored(t.originalTask)||t.originalTask.reconcileOnly!==true||!t.originalTask.desktopHandoff?.id||t.sourceFingerprint!==fingerprint(t.originalTask)||!legacyFinalProofClear(t.originalTask)||canonicalJson(normalizeIntent(row.plan))!==canonicalJson(PRO_PLAN))return null;
@@ -15,6 +22,7 @@ export async function transferExistingCart({store,api,tabId,approved=false,newCo
  if(approved!==true||newContextConfirmed!==true||!live()||typeof api?.sessionId!=='string')throw Error('DesktopTransferNeedsExplicitCurrentApproval');
  const old=await store.get(TASK_KEY);
  if(!validStored(old)||old.state==='RETIRED'||old.reconcileOnly!==true||old.desktopHandoff?.schema!=='applebuy-desktop-handoff/v1'||!old.desktopHandoff.id||!validStored(old.desktopHandoff.originalSnapshot)||canonicalJson(normalizeIntent(old.plan))!==canonicalJson(PRO_PLAN)||!legacyFinalProofClear(old))throw Error('DesktopTransferLegacyUnconfirmed');
+ if(!previousSlotWindowsExpired(old,Date.now()))throw Error('DesktopTransferOldSlotWindowUnconfirmed');
  const port=new ChromePort(api,tabId,{mode:'observe',initialSequence:old.lastRead??0});let current=null;
  for(let n=0;n<2;n++){
   const o=await port.observe(PRO_PLAN);

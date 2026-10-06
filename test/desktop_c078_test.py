@@ -10,6 +10,23 @@ sys.dont_write_bytecode=True
 ROOT=Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(ROOT/'src/desktop'))
 from interactive_child import InteractiveChild
+from app import App
+
+class FakeControl:
+    def __init__(self,value=False):self.value=value;self.state='normal'
+    def get(self):return self.value
+    def set(self,value):self.value=value
+    def config(self,**kw):self.state=kw.get('state',self.state)
+
+def fake_app():
+    app=App.__new__(App)
+    for name in ('final_confirm','final_checkbox','advance_button','reconcile_button','submit_button','transfer_button','transfer_checkbox','transfer_confirm','checkout_button','start_button','probe_button','checkout_stop_button','status','result'):
+        setattr(app,name,FakeControl())
+    app.root=type('Root',(),{'after':lambda *args:1})()
+    app.runner=type('Runner',(),{'events':queue.Queue(),'generation':1})()
+    app.checkout=type('Checkout',(),{'events':queue.Queue(),'generation':1,'busy':True,'terminal':lambda *args:True})()
+    app.pickup_values={'identitySuffix':FakeControl('123')}
+    return app
 
 class DesktopWorkerTests(unittest.TestCase):
     def test_owned_protocol_roundtrip_and_cleanup(self):
@@ -30,5 +47,20 @@ class DesktopWorkerTests(unittest.TestCase):
         with patch('interactive_child.OwnedProcess',FakeOwned),patch('interactive_child.threading.Thread.start',side_effect=RuntimeError('FAKE no thread')):
             with self.assertRaises(RuntimeError):InteractiveChild(['FAKE'],ROOT,queue.Queue())
         self.assertEqual(calls,['terminate','close'])
+    def test_current_review_consent_resets_on_every_new_result(self):
+        app=fake_app()
+        app.checkout.events.put({'generation':1,'type':'result','phase':'REVIEW','reviewReady':True})
+        app.poll();self.assertEqual(app.final_checkbox.state,'normal')
+        app.final_confirm.set(True)
+        app.checkout.events.put({'generation':1,'type':'blocked','message':'FAKE unconfirmed'})
+        app.poll();self.assertFalse(app.final_confirm.get());self.assertEqual(app.final_checkbox.state,'disabled');self.assertEqual(app.submit_button.state,'disabled')
+    def test_readonly_ready_disables_purchase_and_worker_end_disables_transfer(self):
+        app=fake_app();app.checkout.events.put({'generation':1,'type':'ready','readOnly':True,'message':'FAKE readonly'})
+        app.poll();self.assertEqual(app.advance_button.state,'disabled');self.assertEqual(app.reconcile_button.state,'normal');self.assertEqual(app.transfer_button.state,'normal')
+        app.checkout.events.put({'generation':1,'type':'worker-ended'})
+        app.poll();self.assertEqual(app.transfer_button.state,'disabled');self.assertEqual(app.transfer_checkbox.state,'disabled')
+    def test_transfer_validates_identity_suffix_before_sending(self):
+        app=fake_app();app.transfer_confirm.set(True)
+        app.transfer_checkout();self.assertIn('格式不正确',app.status.get());self.assertTrue(app.transfer_confirm.get())
 
 if __name__=='__main__':unittest.main()
