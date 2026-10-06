@@ -1,0 +1,15 @@
+{
+  "sourceCommit": "905680e5d1f90128d5ac9fa74118503842c1a489",
+  "candidateRemote": "905680e5d1f90128d5ac9fa74118503842c1a489",
+  "mainUnchanged": "bd130ee77d8e914f6373432e1061c4de820fbc66",
+  "files": 259,
+  "sha256": "ca7424ea859b8a2d158ac013f9f106e4fbd63b08e5ea0be6be84462876b79617",
+  "allHeadAndRemoteBlobsMatch": true,
+  "privacyScanPassed": true,
+  "boundedSourceAccepted": true,
+  "nativeRegistered": true,
+  "actualNativeRuntime": "C115 UNKNOWN; latest connector diagnostic pending",
+  "oneOwnGuiVerified": true,
+  "realOrderVerified": false,
+  "verifiedAtUtc": "2026-10-06T14:07:23.370347+00:00"
+}
