@@ -1,0 +1,24 @@
+{
+  "task": "C-179-host-access-blocked-audit",
+  "goalStatusActual": "blocked",
+  "sameRequiredHumanHandoffTurns": [
+    "C177 original host question after actual programme progress",
+    "C178 original handle live, paused native read still unconfirmed",
+    "C179 original handle live, paused native read still unconfirmed"
+  ],
+  "sameBlockerTurns": 3,
+  "host": "secure10.www.apple.com.cn",
+  "actionTimeHostApprovalReceived": false,
+  "nativeReadDiagnostic": "NativeCheckoutResultUnconfirmed",
+  "ownedActorVerifiedLive": true,
+  "runtimePaused": true,
+  "pendingAction": "checkout",
+  "fourthSourceAndHistoryRetained": true,
+  "fifthForbidden": true,
+  "newCheckoutSlotFinalPaymentSent": false,
+  "realOrderVerified": false,
+  "sourceFiles": 299,
+  "sha256": "cccb2f6476cfa68e4e12158d0174681401c6b1f7ad30f38eb830856807fe8bd7",
+  "resume": "actual secure10 permission grant, fresh same live actor/window verification, resume pendingCheckout; no new start or transfer",
+  "noShutdown": true
+}
