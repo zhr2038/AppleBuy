@@ -404,6 +404,8 @@ class App:
                     self.checkout_can_renew_ended=v.get('canRenewEndedDraft') is True
                     if self.checkout_can_renew_ended:
                         self.transfer_checkbox.config(text='本人核实官网已提示旧结账超时、旧执行已停止，同一账户没有同款待付款订单且购物袋只有这一台；保留全部旧记录，重新验证本次结账')
+                    else:
+                        self.transfer_checkbox.config(text='本人确认旧结账已停止、旧时段窗口已到期，当前同一账户购物袋为这一台 Pro；不再加购。暂停保留当前窗口；关闭或重启后只能只读核对')
                     self.status.set(v['message']);self.advance_button.config(state='disabled' if v.get('readOnly') is True else 'normal');self.reconcile_button.config(state='normal' if v.get('readOnly') is True else 'disabled')
                     self.transfer_button.config(state='normal' if v.get('readOnly') is True else 'disabled');self.transfer_checkbox.config(state='normal' if v.get('readOnly') is True else 'disabled')
                     native=getattr(self,'browser_choice',None);empty_ready=v.get('readOnly') is True and native and native.get()=='正常 Chrome 结账通道'

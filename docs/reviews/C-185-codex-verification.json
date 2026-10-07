@@ -1,0 +1,37 @@
+{
+  "task": "C-185-SOURCE-BACKUP",
+  "sourceFiles": 307,
+  "sha256": "f36f70792aa9eae075824d2105b33508f9a70cfb5eccf34f64b2260165d88fae",
+  "changed": [
+    "src/desktop/app.py",
+    "src/desktop/ended-draft.mjs",
+    "src/desktop/native-purchase-worker.mjs",
+    "src/desktop/task-store.mjs"
+  ],
+  "added": [
+    "test/desktop-c185-inline-source.test.ts",
+    "test/fixtures/c185-ended-world.mjs"
+  ],
+  "oldAssertionsChanged": false,
+  "fullNode": {
+    "tests": 1657,
+    "pass": 1657,
+    "fail": 0
+  },
+  "python": {
+    "tests": 64,
+    "failures": 0,
+    "errors": 0
+  },
+  "physicalNewCases": 6,
+  "fullSourceInSameAtomicActiveRow": true,
+  "archiveMissingFallbackOnlyWithVerifiedFullBackup": true,
+  "malformedOrTamperedProofStillDenied": true,
+  "backupPackedLimitCharacters": 2000000,
+  "backupDecompressedLimitBytes": 16000000,
+  "actualSourceReadOnlyBytes": 13298591,
+  "actualSourceReadOnlyPackedCharacters": 297000,
+  "actualSourceNotWritten": true,
+  "deployed": false,
+  "realOrderVerified": false
+}

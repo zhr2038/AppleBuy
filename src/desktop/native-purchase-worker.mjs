@@ -51,7 +51,7 @@ try{
     const result=c.action==='observe'?await runtime.observe():c.action==='reconcile'?runtime.paused?await runtime.resume({mode:'reconcile'}):await runtime.reconcile():await runtime.submit({termsAccepted:c.termsAccepted===true,existingOrdersChecked:c.existingOrdersChecked===true,noExtras:c.noExtras===true});
     emit({type:'result',state:result.state,phase:result.phase,paused:runtime.paused,readOnly:c.action==='reconcile',realOrderVerified:result.realOrderVerified===true,reviewReady:!!runtime.finalDescriptor,bagCheck:result.bagCheck??null});
    }
-  }catch(error){emit({type:'blocked',paused:runtime.paused,diagnosticCode:safeCheckoutDiagnostic(error),message:'本次结账推进未确认；旧任务、未知动作和权限保持，不重新下单。'});}finally{active=false;}
+  }catch(error){emit({type:'blocked',paused:runtime.paused,diagnosticCode:safeCheckoutDiagnostic(error),message:'本次结账结果未确认；须重新核对实际已保存记录，未重复下单。'});}finally{active=false;}
  });
  await new Promise(resolve=>input.once('close',resolve));watch.stop();
 }catch{process.exitCode=1;emit({type:'blocked',message:'正常 Chrome 结账通道未连接或原任务无法继续；未启用新购买。'});}

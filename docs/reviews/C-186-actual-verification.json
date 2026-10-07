@@ -1,0 +1,165 @@
+{
+  "task": "C-186-SOURCE-BACKUP-REVIEW",
+  "sourceFiles": 307,
+  "status": "returned_for_review",
+  "durationSeconds": 375.06,
+  "turns": 33,
+  "models": [
+    "claude-opus-5-5"
+  ],
+  "primaryModels": [
+    "claude-opus-5-5"
+  ],
+  "provider": "firstParty",
+  "canonicalModel": "claude-opus-5-5",
+  "effort": "xhigh",
+  "modelVerified": true,
+  "resultError": false,
+  "subtype": "success",
+  "permissionDenialCount": 0,
+  "timedOut": false,
+  "cleanupConfirmed": true,
+  "toolCounts": {
+    "Read": 28,
+    "Bash": 3
+  },
+  "sourceEditCalls": 0,
+  "privateReadCalls": 0,
+  "unexpectedCommands": 0,
+  "commandOrderMatched": true,
+  "requiredEOFCount": 24,
+  "requiredEOFComplete": 24,
+  "EOFgaps": [],
+  "toolResultErrors": [],
+  "commandResults": [
+    {
+      "index": 1,
+      "error": false,
+      "tail": "{\"ok\": true, \"files\": 307, \"sha256\": \"f36f70792aa9eae075824d2105b33508f9a70cfb5eccf34f64b2260165d88fae\", \"mismatches\": []}"
+    },
+    {
+      "index": 2,
+      "error": false,
+      "tail": "e transition preserves the complete old active row (52.4998ms)\n\u2714 C185 cart-only renewal cannot configure/add when landing on EMPTY_BAG (137.5139ms)\n\u2714 C185 cart-only renewal cannot configure/add when landing on VARIANT (138.6555ms)\n\u2714 C185 native host coverage query accepts only the fixed declared wildcard, grants nothing (0.6132ms)\n\u2714 C185 full old source survives missing archive name in the atomic active row, and tampered backup fails (302.0849ms)\n\u2139 tests 48\n\u2139 suites 0\n\u2139 pass 48\n\u2139 fail 0\n\u2139 cancelled 0\n\u2139 skipped 0\n\u2139 todo 0\n\u2139 duration_ms 1613.6226"
+    },
+    {
+      "index": 3,
+      "error": false,
+      "tail": "iew-checks\", \"order\": 4, \"exitCode\": 0, \"timedOut\": false, \"ownedTreeCleanupConfirmed\": true, \"counts\": {\"tests\": 1657, \"pass\": 1657, \"fail\": 0, \"cancelled\": 0, \"skipped\": 0}, \"passed\": true}\r\n{\"scope\": \"bounded-review-checks\", \"order\": 5, \"exitCode\": 0, \"timedOut\": false, \"ownedTreeCleanupConfirmed\": true, \"manifest\": {\"ok\": true, \"files\": 307, \"sha256\": \"f36f70792aa9eae075824d2105b33508f9a70cfb5eccf34f64b2260165d88fae\", \"mismatches\": []}, \"passed\": true}\r\n{\"scope\": \"bounded-review-checks\", \"complete\": true, \"orderedChecks\": 5, \"passed\": true}"
+    }
+  ],
+  "usageScope": "resumed history aggregate, not this round cost",
+  "accepted": false,
+  "realOrderVerified": false,
+  "orderedChecks": [
+    {
+      "scope": "bounded-review-checks",
+      "order": 1,
+      "exitCode": 0,
+      "timedOut": false,
+      "ownedTreeCleanupConfirmed": true,
+      "manifest": {
+        "ok": true,
+        "files": 307,
+        "sha256": "f36f70792aa9eae075824d2105b33508f9a70cfb5eccf34f64b2260165d88fae",
+        "mismatches": []
+      },
+      "passed": true
+    },
+    {
+      "scope": "bounded-review-checks",
+      "order": 2,
+      "exitCode": 0,
+      "timedOut": false,
+      "ownedTreeCleanupConfirmed": true,
+      "counts": {
+        "tests": 108,
+        "pass": 108,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0
+      },
+      "passed": true
+    },
+    {
+      "scope": "bounded-review-checks",
+      "order": 3,
+      "exitCode": 0,
+      "timedOut": false,
+      "ownedTreeCleanupConfirmed": true,
+      "tests": 64,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "passed": true
+    },
+    {
+      "scope": "bounded-review-checks",
+      "order": 4,
+      "exitCode": 0,
+      "timedOut": false,
+      "ownedTreeCleanupConfirmed": true,
+      "counts": {
+        "tests": 1657,
+        "pass": 1657,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0
+      },
+      "passed": true
+    },
+    {
+      "scope": "bounded-review-checks",
+      "order": 5,
+      "exitCode": 0,
+      "timedOut": false,
+      "ownedTreeCleanupConfirmed": true,
+      "manifest": {
+        "ok": true,
+        "files": 307,
+        "sha256": "f36f70792aa9eae075824d2105b33508f9a70cfb5eccf34f64b2260165d88fae",
+        "mismatches": []
+      },
+      "passed": true
+    },
+    {
+      "scope": "bounded-review-checks",
+      "complete": true,
+      "orderedChecks": 5,
+      "passed": true
+    }
+  ],
+  "orderedChecksVerified": true,
+  "BashInvocationGroupSizes": [
+    1,
+    1,
+    1
+  ],
+  "BashCallsOverlapped": false,
+  "separateSequentialBashCallsVerified": true,
+  "acceptedByCodex": true,
+  "sha256": "f36f70792aa9eae075824d2105b33508f9a70cfb5eccf34f64b2260165d88fae",
+  "acceptedScope": "integrated observation-only expiry and explicit once-only ended draft/complete source backup/host setup within recorded assumptions",
+  "rootNode": {
+    "tests": 1657,
+    "pass": 1657,
+    "fail": 0
+  },
+  "rootPython": {
+    "tests": 64,
+    "failures": 0,
+    "errors": 0
+  },
+  "oldSourceNotArchivedOrWritten": true,
+  "deployed": false,
+  "limitations": [
+    "operator attestations not programme authentication or hold-release proof",
+    "old hold not independently proved released",
+    "renewal context remains lifetime-only and cannot renew again",
+    "bag reads same document",
+    "existing quote comparison limits",
+    "compression/validation/fsync speed not measured",
+    "no physical power-cycle test",
+    "some tamper/lease cases remain indirect"
+  ]
+}

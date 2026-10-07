@@ -19,7 +19,7 @@ export class DesktopTaskStore {
   if(!/^[a-f0-9]{64}$/.test(digest))throw Error('DesktopArchiveUnconfirmed');
   const file=join(await this.archiveDirectory(),digest+'.json'),stat=await lstat(file);
   if(!stat.isFile()||stat.isSymbolicLink()||stat.size>OWNER_VALUE_BYTES)throw Error('DesktopArchiveUnconfirmed');
-  const bytes=await readFile(file);if(createHash('sha256').update(bytes).digest('hex')!==digest)throw Error('DesktopArchiveUnconfirmed');
+  const bytes=await readFile(file);if(bytes.length>OWNER_VALUE_BYTES||createHash('sha256').update(bytes).digest('hex')!==digest)throw Error('DesktopArchiveUnconfirmed');
   const row=JSON.parse(bytes.toString('utf8'));if(!validStored(row)||canonicalJson(row)!==bytes.toString('utf8'))throw Error('DesktopArchiveUnconfirmed');return row;
  }
  async archiveSnapshot(row){
