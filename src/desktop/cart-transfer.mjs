@@ -61,6 +61,14 @@ export function validateDesktopCartTransfer(row,api){
  if(!t||row.reconcileOnly===true||typeof api?.sessionId!=='string'||row.desktopContext!==api.sessionId||!transferRecordValid(row))return null;
  return {schema:t.schema,taskId:row.taskId,contextId:api.sessionId,sourceFingerprint:t.sourceFingerprint,existingCartOnly:true};
 }
+// Provenance classification only, not authority to transfer the fourth link or revive its context.
+export function stoppedCheckoutDraftSource(row,at=Date.now()){
+ if(!transferRecordValid(row)||depth(row)!==MAX_CONTACT_RECOVERY_DEPTH||!row.desktopTransfer.expiredContactRecovery||!sourceAllowed(row.desktopTransfer.originalTask,MAX_CART_TRANSFERS)||!legacyFinalProofClear(compactTransferLayer(row)))return null;
+ const p=row.pending;if(p?.action!=='checkout'||p.beforePhase!=='BAG'||p.dispatched===false||!Number.isFinite(p.deadline)||p.deadline>at||row.expiresAt>at||row.acceptedSlot!=null||row.inheritedIdentity!=null||row.orderRefHash!=null||row.orderDetailLink!=null)return null;
+ const todo=[compactTransferLayer(row)],seen=new Set();let count=0;
+ while(todo.length){const v=todo.pop();if(!v||typeof v!=='object'||seen.has(v))continue;seen.add(v);if(++count>3000||v.acceptedSlot!=null||v.inheritedIdentity!=null||v.action&&!['checkout','openBag'].includes(v.action)||typeof v.event==='string'&&/slot|details|payment|final/.test(v.event))return null;todo.push(...Object.values(v));}
+ return {sourceFingerprint:fingerprint(row),existingCartOnly:true};
+}
 // Invoke under the runtime's physical ledger lease. Reads only until the atomic local successor write.
 export async function transferExistingCart({store,api,tabId,approved=false,newContextConfirmed=false,live=()=>true}){
  if(approved!==true||newContextConfirmed!==true||!live()||typeof api?.sessionId!=='string')throw Error('DesktopTransferNeedsExplicitCurrentApproval');

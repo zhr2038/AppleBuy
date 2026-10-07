@@ -307,7 +307,10 @@ class App:
         if data.get('identitySuffix') and (len(data['identitySuffix'])!=4 or not data['identitySuffix'].isdigit()):
             self.status.set('证件后四位格式不正确；未发动作。');return
         self.transfer_confirm.set(False);self.transfer_button.config(state='disabled');self.final_confirm.set(False);self.final_checkbox.config(state='disabled');self.reconcile_button.config(state='disabled');self.advance_button.config(state='disabled')
-        try:self.checkout.send({'action':'transfer','approved':True,'newContextConfirmed':True,'privatePickupData':data})
+        try:
+            command={'action':'renew-draft' if getattr(self,'checkout_can_renew_ended',False) else 'transfer','approved':True,'newContextConfirmed':True,'privatePickupData':data}
+            if command['action']=='renew-draft':command.update(merchantExpiryConfirmed=True,oldExecutorStopped=True,sameAccountOrdersClear=True)
+            self.checkout.send(command)
         except Exception:self.status.set('接替未确认，旧未知记录保持，不重复加购或下单。')
 
     def submit_checkout(self):
@@ -398,6 +401,9 @@ class App:
                     else:self.chrome_probe_button.config(state='disabled');self.status.set('结账清理未确认，禁止再次启动。')
                 elif kind=='ready':
                     self.checkout_readonly=v.get('readOnly') is True
+                    self.checkout_can_renew_ended=v.get('canRenewEndedDraft') is True
+                    if self.checkout_can_renew_ended:
+                        self.transfer_checkbox.config(text='本人核实官网已提示旧结账超时、旧执行已停止，同一账户没有同款待付款订单且购物袋只有这一台；保留全部旧记录，重新验证本次结账')
                     self.status.set(v['message']);self.advance_button.config(state='disabled' if v.get('readOnly') is True else 'normal');self.reconcile_button.config(state='normal' if v.get('readOnly') is True else 'disabled')
                     self.transfer_button.config(state='normal' if v.get('readOnly') is True else 'disabled');self.transfer_checkbox.config(state='normal' if v.get('readOnly') is True else 'disabled')
                     native=getattr(self,'browser_choice',None);empty_ready=v.get('readOnly') is True and native and native.get()=='正常 Chrome 结账通道'

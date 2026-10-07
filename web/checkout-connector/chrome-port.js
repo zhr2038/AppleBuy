@@ -1,6 +1,7 @@
 import {merchantDocument} from './page-program.js';
 import {canonicalJson,itemMatches} from './job.js';
 export function allowedMerchantUrl(raw){try{const u=new URL(raw);return u.protocol==='https:'&&(u.hostname==='www.apple.com.cn'||/^secure(?:\d+)?\.www\.apple\.com\.cn$/.test(u.hostname))&&/^\/shop\/(?:buy-iphone\/(?:iphone-18-pro|iphone-duo)(?:\/[^/]+\/a)?|bag|checkout|order(?:\/[^?#]*)?|signIn(?:\/orders)?)(?:\/)?$/.test(u.pathname);}catch{return false;}}
+export function allowedMerchantObservationUrl(raw){try{const u=new URL(raw);return allowedMerchantUrl(raw)||u.protocol==='https:'&&!u.username&&!u.password&&!u.port&&(u.hostname==='www.apple.com.cn'||/^secure(?:\d+)?\.www\.apple\.com\.cn$/.test(u.hostname))&&u.pathname==='/shop/sorry/session_expired';}catch{return false;}}
 // C035 (Claude): the observed public purchase entries (C-031 Duo evidence, October 1 Pro probe). Configuration then uses normal controls.
 const PRODUCT_ENTRY={'iPhone Duo':'https://www.apple.com.cn/shop/buy-iphone/iphone-duo','iPhone 18 Pro':'https://www.apple.com.cn/shop/buy-iphone/iphone-18-pro'};
 // C035-R1 (Claude): the ordinary public bag page (C-035 official cart evidence), read before the one Add to Bag.
@@ -15,7 +16,7 @@ export class ChromePort {
   // C058 (Claude): called by the job when its run is not the originating purchase context (read-only reconciliation, a human rebind or
   // any later run of a rebound task). The stored choice and stored acceptance carried into this port are no longer reported as evidence.
   detachStoredChoice(){this.lastChoice=null;this.acceptedSlot=null;}
-  async permission(){this.currentOrigin=null;const t=await this.api.tabs.get(this.tabId);if(!allowedMerchantUrl(t.url))throw new Error('UnsupportedMerchantPage');const u=new URL(t.url);this.currentOrigin=u.origin;return await this.api.permissions.contains({origins:[u.origin+'/*']});}
+  async permission(){this.currentOrigin=null;const t=await this.api.tabs.get(this.tabId);if(!allowedMerchantObservationUrl(t.url))throw new Error('UnsupportedMerchantPage');const u=new URL(t.url);this.currentOrigin=u.origin;return await this.api.permissions.contains({origins:[u.origin+'/*']});}
   async observe(plan){
     this.addBagProof=null;
     if(!await this.permission())throw Object.assign(new Error('CurrentHostPermissionMissing'),{origin:this.currentOrigin});
@@ -37,6 +38,7 @@ export class ChromePort {
   }
   async act(command){
     if(!this.authorized||this.mode==='observe'||!this.last||command.documentId!==this.last.documentId||this.last.summaryUsable===false||!await this.permission())throw new Error('CurrentOperationNotAuthorized');
+    if(this.last.raw.path==='/shop/sorry/session_expired')throw new Error('CurrentOperationNotAuthorized');
     if(this.mode==='public-config'&&!['configureProduct','continueProduct'].includes(command.action))throw new Error('ValidationModeCannotMutate');
     // C035: navigation leaves only the verified empty bag this port last read, only in an authorized purchase port.
     const entry=command.action==='openProduct'?PRODUCT_ENTRY[command.plan?.product?.model]:command.action==='openBag'?BAG_ENTRY:null;

@@ -1,7 +1,7 @@
 // Own Chrome tabs only; fixed reviewed merchant program only. Prepared and unreachable from the installed readonly link.
 import {merchantDocument} from './page-program.js';
 import {canonicalJson} from './job.js';
-import {CHECKOUT_RPC,BAG,ENTRY,checkoutUrl,checkoutRequest,checkoutCommand,planAllowed,boundedCheckoutJson} from './checkout-rpc-contract.js';
+import {CHECKOUT_RPC,BAG,ENTRY,checkoutUrl,checkoutObservedUrl,checkoutRequest,checkoutCommand,planAllowed,boundedCheckoutJson} from './checkout-rpc-contract.js';
 const PAGE_KEYS=new Set(['schema','phase','purchase','verifiedStep','path','feedback','acceptedSlot','slotSummary','continueAvailable','variantVerified','quotedCny','listComplete','dates','times','selectedDate','paymentMethod','extras','existingOrdersChecked','orderRefHash','orderDetailLink','configuration','contactStep','extrasConflict','fulfillmentChoice','merchantError','needsSelection','nextChoice','orderSummary','prelaunchConfigurable','productForm','productFormLoading','quantitySource','receiptVerified','selectedProductChoices','summaryReadable','termsLinks','reason']);
 function safeOutput(value,depth=0){
  if(depth>16)throw Error('NativeResultNotAllowed');
@@ -11,7 +11,7 @@ function safeOutput(value,depth=0){
 }
 export class CheckoutRpcPeer{
  constructor({api,contextId,purchaseAllowed=false}){if(typeof contextId!=='string'||!/^[a-zA-Z0-9-]{16,80}$/.test(contextId)||typeof purchaseAllowed!=='boolean')throw Error('NativeContextNotAllowed');this.api=api;this.contextId=contextId;this.purchaseAllowed=purchaseAllowed;this.tabs=new Map();this.requests=new Set();this.actions=new Set();this.taskId=null;this.actionTabId=null;this.busy=false;this.closed=false;}
- async tab(id){if(!Number.isSafeInteger(id)||!this.tabs.has(id))throw Error('NativeTabNotOwned');const t=await this.api.tabs.get(id);if(!checkoutUrl(t.url))throw Error('NativeAddressNotAllowed');return t;}
+ async tab(id){if(!Number.isSafeInteger(id)||!this.tabs.has(id))throw Error('NativeTabNotOwned');const t=await this.api.tabs.get(id);if(!checkoutObservedUrl(t.url))throw Error('NativeAddressNotAllowed');return t;}
  async receive(value){
   let q;try{q=checkoutRequest(value,this.contextId);}catch{return {schema:CHECKOUT_RPC,kind:'reply',contextId:this.contextId,id:typeof value?.id==='string'?value.id.slice(0,80):'',ok:false,error:'NativeRequestNotAllowed'};}
   const reply=(ok,result)=>({schema:CHECKOUT_RPC,kind:'reply',contextId:this.contextId,id:q.id,ok,...(ok?{result}:{error:'NativeOperationUnconfirmed'})});
@@ -22,7 +22,7 @@ export class CheckoutRpcPeer{
  async operation(op,p){
   const keys=allowed=>{if(Object.keys(p).some(k=>!allowed.includes(k)))throw Error('NativePayloadNotAllowed');};
   if(op==='containsHost'){
-   keys(['origins']);if(!Array.isArray(p.origins)||p.origins.length!==1||typeof p.origins[0]!=='string'||!/^https:\/\/(?:www|secure\d*\.www)\.apple\.com\.cn\/\*$/.test(p.origins[0]))throw Error('NativeOriginNotAllowed');
+   keys(['origins']);if(!Array.isArray(p.origins)||p.origins.length!==1||typeof p.origins[0]!=='string'||p.origins[0]!=='https://*.www.apple.com.cn/*'&&!/^https:\/\/(?:www|secure\d*\.www)\.apple\.com\.cn\/\*$/.test(p.origins[0]))throw Error('NativeOriginNotAllowed');
    return await this.api.permissions.contains({origins:p.origins});
   }
   if(op==='closeSession'){
@@ -38,7 +38,7 @@ export class CheckoutRpcPeer{
   if(op==='removeTab'){keys(['tabId']);await this.api.tabs.remove(p.tabId);this.tabs.delete(p.tabId);return {removed:true};}
   if(!await this.api.permissions.contains({origins:[new URL(tab.url).origin+'/*']}))throw Error('NativeHostNotGranted');
   if(op==='updateTab'){
-   keys(['tabId','url']);if(!checkoutUrl(p.url))throw Error('NativeAddressNotAllowed');
+   keys(['tabId','url']);if(!checkoutUrl(tab.url)||!checkoutUrl(p.url))throw Error('NativeAddressNotAllowed');
    const receipt=state.last?.page.phase==='ORDER_RECEIPT'&&state.last.page.receiptVerified===true&&state.last.page.orderDetailLink===p.url;
    if(!receipt&&(!this.purchaseAllowed||state.navigation!==p.url))throw Error('NativeNavigationNotAuthorized');
    state.navigation=null;state.last=null;await this.api.tabs.update(p.tabId,{url:p.url});return {id:p.tabId,url:p.url,status:'loading'};
@@ -46,6 +46,7 @@ export class CheckoutRpcPeer{
   if(op!=='merchantDocument')throw Error('NativeOperationNotAllowed');
   keys(['tabId','documentId','plan','command']);if(!planAllowed(p.plan)||tab.status!=='complete')throw Error('NativeDocumentNotReady');
   const command=p.command;
+  if(command&&!checkoutUrl(tab.url))throw Error('NativeCommandNotAllowed');
   if(command){
    checkoutCommand(command,p.plan);
    if(!this.purchaseAllowed||!state.last||p.documentId!==state.last.documentId||command.documentId!==p.documentId||command.expected!==JSON.stringify(state.last.page)||this.actions.has(command.id))throw Error('NativeActionNotAuthorized');

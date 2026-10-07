@@ -1,0 +1,65 @@
+{
+  "task": "C-183-ENDED-DRAFT-LIFECYCLE",
+  "sourceFiles": 305,
+  "sha256": "e139ab5b01baa0fa38091bd1e8463e8151dbc9209e6c1beafecf2a157abcddb0",
+  "changed": [
+    "src/desktop/app.py",
+    "src/desktop/browser-session.mjs",
+    "src/desktop/cart-transfer.mjs",
+    "src/desktop/checkout-runtime.mjs",
+    "src/desktop/native-purchase-worker.mjs",
+    "src/desktop/task-store.mjs",
+    "web/checkout-connector/checkout-bridge.html",
+    "web/checkout-connector/checkout-bridge.js",
+    "web/checkout-connector/checkout-rpc-contract.js",
+    "web/checkout-connector/checkout-rpc-peer.js",
+    "web/checkout-connector/chrome-port.js",
+    "web/checkout-connector/job.js",
+    "web/checkout-connector/page-program.js"
+  ],
+  "added": [
+    "src/desktop/ended-draft.mjs",
+    "test/checkout-c181-expiry.test.ts",
+    "test/desktop-c183-ended-draft.test.ts",
+    "test/desktop-c183-archive.test.ts",
+    "test/checkout-c183-host-setup.test.ts",
+    "test/desktop_c183_test.py"
+  ],
+  "oldAssertionsChanged": false,
+  "expiryReproduction": {
+    "tests": 13,
+    "beforePass": 8,
+    "beforeFail": 5,
+    "afterPass": 13
+  },
+  "focusedNew": {
+    "tests": 42,
+    "pass": 42,
+    "fail": 0
+  },
+  "fullNode": {
+    "tests": 1651,
+    "pass": 1651,
+    "fail": 0
+  },
+  "python": {
+    "tests": 64,
+    "failures": 0,
+    "errors": 0
+  },
+  "actualCurrentSourceShapeEligible": true,
+  "actualSourceNotArchivedOrChanged": true,
+  "normalFifthTransferForbidden": true,
+  "renewalOnceOnlyWithExplicitCurrentOperatorEvidence": true,
+  "archiveFullSourcePreservedAndDigestVerified": true,
+  "currentSourceContainsNoCurrentSlotOrFinal": true,
+  "operatorAttestationNotProgrammeIdentityOrHoldProof": true,
+  "deployed": false,
+  "realOrderVerified": false,
+  "limitations": [
+    "ordinary login and security setup still follow actual tool rules",
+    "no native actual archive/retry/order yet",
+    "unknown earlier holds not certified released",
+    "narrower scopes may still need intervention on redirected hosts"
+  ]
+}

@@ -23,6 +23,14 @@ export async function merchantDocument(plan,command=null,internal=null){
     if(command.structured!==true)throw new Error(prior?'OperationAlreadyDelivered':reason);
     return {delivered:false,touched:prior,reason:prior?'OperationAlreadyDelivered':reason};};
   const u=new URL(location.href);
+  const expiry=u.protocol==='https:'&&!u.username&&!u.password&&!u.port&&(u.hostname==='www.apple.com.cn'||/^secure(?:\d+)?\.www\.apple\.com\.cn$/.test(u.hostname))&&u.pathname==='/shop/sorry/session_expired';
+  if(expiry){
+    const shown=e=>{if(!e?.isConnected)return false;for(let p=e;p;p=p.parentElement){const s=getComputedStyle(p);if(p.hidden||p.hasAttribute('inert')||p.getAttribute('aria-hidden')==='true'||s.display==='none'||['hidden','collapse'].includes(s.visibility))return false;}return true;};
+    const mains=[...document.querySelectorAll('main,[role="main"]')],headings=mains.length===1&&shown(mains[0])?[...mains[0].querySelectorAll('h1')].filter(shown):[];
+    const proved=headings.length===1&&headings[0].textContent.normalize('NFKC').replace(/\s+/g,' ').trim()==='你的操作已超时。';
+    if(command)return report(proved?'MerchantSessionExpired':'MerchantExpiryNotVerified');
+    return {schema:'applebuy-merchant-read/v1',phase:'UNKNOWN',verifiedStep:false,path:u.pathname,reason:proved?'merchant-session-expired':'merchant-expiry-not-verified',...(proved?{merchantError:'session-expired'}:{})};
+  }
   const safe=u.protocol==='https:'&&(u.hostname==='www.apple.com.cn'||/^secure(?:\d+)?\.www\.apple\.com\.cn$/.test(u.hostname))&&/^\/shop\/(?:buy-iphone\/(?:iphone-18-pro|iphone-duo)(?:\/[^/]+\/a)?|bag|checkout|order(?:\/[^?#]*)?|signIn(?:\/orders)?)(?:\/)?$/.test(u.pathname);
   if(!safe)return command?.structured===true?report('UnsupportedOfficialUrl'):{schema:'applebuy-merchant-read/v1',phase:'UNKNOWN',reason:'unsupported-official-url'};
   if(/^\/shop\/signIn(?:\/orders)?\/?$/.test(u.pathname)){

@@ -122,7 +122,7 @@ export function retirable(s){return s.resourceWritten===false&&s.bagAddStarted==
 export function hasDesktopHandoff(record){
   const pending=[record],seen=new Set();let count=0;
   while(pending.length){const v=pending.pop();if(!v||typeof v!=='object'||seen.has(v))continue;seen.add(v);
-    if(++count>3000||Object.hasOwn(v,'desktopHandoff'))return true;
+    if(++count>3000||Object.hasOwn(v,'desktopHandoff')||Object.hasOwn(v,'desktopEndedDraft')||Object.hasOwn(v,'retainedSourceArchives'))return true;
     if(Array.isArray(v)&&v.length>200)return true;pending.push(...Object.values(v));
   }return false;
 }
@@ -209,7 +209,9 @@ export class PurchaseJob {
     const desktopCartOwner=transfer?.schema==='applebuy-desktop-cart-transfer/v1'&&transfer.existingCartOnly===true&&t?.existingCartOnly===true&&transfer.taskId===old?.taskId&&transfer.contextId===old?.desktopContext&&transfer.contextId===this.port?.api?.sessionId&&transfer.sourceFingerprint===t?.sourceFingerprint;
     const empty=this.port?.desktopEmptyRestartProof,e=old?.desktopEmptyRestart;
     const desktopEmptyOwner=empty?.schema==='applebuy-desktop-empty-restart/v1'&&empty.newFromEmpty===true&&e?.newFromEmpty===true&&empty.accountAttested===true&&empty.oldCheckoutStoppedByUser===true&&empty.existingOrdersCheckedByUser===true&&empty.taskId===old?.taskId&&empty.contextId===old?.desktopContext&&empty.contextId===this.port?.api?.sessionId&&empty.sourceFingerprint===e?.sourceFingerprint;
-    if(old&&!readOnly&&!rebind&&hasDesktopHandoff(old)&&!desktopCartOwner&&!desktopEmptyOwner)throw new Error('DesktopHandoffPermanentlyRevokedSource');
+    const ended=this.port?.desktopEndedDraftProof,d=old?.desktopEndedDraft;
+    const desktopEndedOwner=ended?.schema==='applebuy-ended-draft/v1'&&ended.existingCartOnly===true&&d?.existingCartOnly===true&&ended.taskId===old?.taskId&&ended.contextId===old?.desktopContext&&ended.contextId===this.port?.api?.sessionId&&ended.sourceArchive===d?.sourceArchive;
+    if(old&&!readOnly&&!rebind&&hasDesktopHandoff(old)&&!desktopCartOwner&&!desktopEmptyOwner&&!desktopEndedOwner)throw new Error('DesktopHandoffPermanentlyRevokedSource');
     if(old&&!validStored(old))throw new Error('StoredPurchaseTaskCorrupt');
     if(readOnly&&(!old||old.state==='RETIRED'))throw new Error('NoPreservedTaskToReconcile');
     // Validation is bounded, never authorized and stored separately; it cannot use a purchase grant.
@@ -274,6 +276,7 @@ export class PurchaseJob {
       if(!o||o.schema!=='applebuy-merchant-read/v1'||!o.documentId||!Number.isSafeInteger(o.seq)||o.seq<=s.lastRead)return this.gate(s,'invalid-or-stale-observation','NEEDS_VERIFICATION');
       s.lastRead=o.seq;s.lastPhase=o.phase;s.lastDocumentId=o.documentId;s.entryDocumentId??=o.documentId;s.observationCurrent=true;delete s.permissionOrigin;await this.save(s);
       if(this.paused||this.stopped)return this.gate(s,'control-changed-during-read; sent operations preserved',this.stopped?'STOPPED':'PAUSED');
+      if(o.merchantError==='session-expired'&&!finalLookup)return this.gate(s,'merchant-session-expired; existing intent preserved; no automatic repeat','NEEDS_VERIFICATION');
       if(grant?.start===true&&!finalLookup&&(grant.entryDocumentId!==s.entryDocumentId||grant.taskId!==s.taskId||grant.planDigest!==s.planDigest||grant.existingOrdersChecked!==true||grant.noExtras!==true||grant.termsAccepted!==true||!Number.isFinite(grant.expiry)||grant.expiry<=this.now()||grant.expiry>this.now()+1800000))return this.gate(s,'start-authorization-no-longer-current','BLOCKED');
       // C029 (Claude): when quantity is the only missing checkout fact, the purchase port may read the ordinary order-summary
       // disclosure (open, read, close; no merchant resource, no human confirmation). Never in read-only, validation or rebound runs,
@@ -469,7 +472,7 @@ export class PurchaseJob {
         if(s.finalIntent)s.history=[...(s.history??[]),{event:'final-not-dispatched',intentId:s.finalIntent.id,grantId:s.finalIntent.grantId}];
         s.finalIntent={id:this.id(),grantId:grant.id,sent:false};await this.save(s);command={action:'submitOrder',intentId:s.finalIntent.id,finalGrant:{...clone(grant),documentId:o.documentId}};
       }else return this.gate(s,'unsupported-merchant-stage','NEEDS_VERIFICATION');
-      if(s.desktopTransfer?.existingCartOnly===true&&['configureProduct','continueProduct','addBag','openProduct','viewBag'].includes(command.action))return this.gate(s,'desktop-transferred-cart-missing; no new addition or configuration','NEEDS_VERIFICATION');
+      if((s.desktopTransfer?.existingCartOnly===true||s.desktopEndedDraft?.existingCartOnly===true)&&['configureProduct','continueProduct','addBag','openProduct','viewBag'].includes(command.action))return this.gate(s,'desktop-transferred-cart-missing; no new addition or configuration','NEEDS_VERIFICATION');
       if(validating&&!PUBLIC.has(command.action))return this.gate(s,'validation-mode-cannot-mutate-merchant-resources','VALIDATION_STOPPED');
       if(s.expiresAt<=this.now())return this.gate(s,'task-window-expired; existing intent preserved','EXPIRED');
       if(this.paused||this.stopped)return this.gate(s,'control-changed-before-send',this.stopped?'STOPPED':'PAUSED');

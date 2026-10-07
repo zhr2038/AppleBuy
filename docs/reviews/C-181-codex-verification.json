@@ -1,0 +1,40 @@
+{
+  "task": "C-181-MERCHANT-EXPIRY",
+  "sourceFiles": 300,
+  "sha256": "5405e653541c5dd43cf0926a14886b186da1cb231a968e1d3371d31fc0acf3a7",
+  "changed": [
+    "web/checkout-connector/checkout-rpc-contract.js",
+    "web/checkout-connector/checkout-rpc-peer.js",
+    "web/checkout-connector/chrome-port.js",
+    "web/checkout-connector/job.js",
+    "web/checkout-connector/page-program.js"
+  ],
+  "newTest": "test/checkout-c181-expiry.test.ts",
+  "before": {
+    "tests": 13,
+    "pass": 8,
+    "fail": 5
+  },
+  "after": {
+    "tests": 13,
+    "pass": 13,
+    "fail": 0
+  },
+  "fullNode": {
+    "tests": 1622,
+    "pass": 1622,
+    "fail": 0
+  },
+  "oldAssertionsChanged": false,
+  "realPublicStructuralEvidence": {
+    "path": "/shop/sorry/session_expired",
+    "mainCount": 1,
+    "mainH1": "你的操作已超时。",
+    "publicTemplateNotCheckoutOrHoldProof": true
+  },
+  "navigationOrMutationErrorRouteAdded": false,
+  "privilegedAccessAdded": false,
+  "currentActorActive": false,
+  "deployed": false,
+  "realOrderVerified": false
+}
