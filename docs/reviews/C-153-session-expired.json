@@ -1,0 +1,17 @@
+{
+  "scope": "current supported normal-Chrome browser observation, no raw authentication data",
+  "host": "www.apple.com.cn",
+  "path": "/shop/sorry/session_expired",
+  "title": "对不起 - Apple (中国大陆)",
+  "visibleHeading": "你的操作已超时。",
+  "previousStage": "DETAILS",
+  "previousProgrammeSlotSent": true,
+  "currentSlotAcceptanceVerified": false,
+  "finalOrPaymentSent": false,
+  "programmeUnpaidOrderVerified": false,
+  "peerNewPatchDeployed": false,
+  "sourceFiles": 292,
+  "sourceSHA256": "77f8dcfad5e0fa74a4f7e8d7e828f67413dede8d9998445db7004c92e2f99c97",
+  "newContextMustReconcileFirst": true,
+  "unknownHistoryMustBeKept": true
+}

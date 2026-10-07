@@ -1,0 +1,14 @@
+{
+  "task": "C-147-PUBLICATION",
+  "commit": "cf8def82f043f84b67acf13ba21d00ede44bd4ef",
+  "remoteCandidate": "cf8def82f043f84b67acf13ba21d00ede44bd4ef",
+  "sourceFiles": 291,
+  "sha256": "19c8610759880963dc5cc2a59bb359dc91a5bd8d95abd5e00c36dcd1f80d9ac5",
+  "headAndRemoteAllSourceBlobsMatch": true,
+  "mismatches": [],
+  "remoteMain": "bd130ee77d8e914f6373432e1061c4de820fbc66",
+  "mainPromoted": false,
+  "forcePushed": false,
+  "privatePublished": false,
+  "realOrderVerified": false
+}

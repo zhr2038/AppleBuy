@@ -53,6 +53,8 @@ October4 renewed human authorization (C046): the user specifically requests one 
 | R09 | Default rehearsal causes no real order/payment/slot occupancy, including errors/retries. Formal mode requires complete plan review and explicit one-run enablement by the user. At most one plan-conforming purchase. This development request does not enable real mode. |
 | R10 | Concise Chinese interface: step, target product/store, candidate slots, last valid observation time, failure/retry/takeover status. Sanitized diagnostic history explains choices/retries/stops; notifications cannot gate progression. |
 
+October7 direct user authentication steering: the user explicitly authorizes Codex to use the supplied existing Apple credentials for routine login in normal Chrome without asking again. This supersedes the earlier user-level human-only routine-login preference where the supported browser tool permits ordinary form interaction. Credentials stay out of repository files, Claude input and diagnostics; this does not authorize saving a new password, security-access expansion, native authentication UI, challenges or bypassing a tool restriction. The supported normal-Chrome login actually succeeded after one ordinary refresh in C148; later purchase actions still come from AppleBuy.
+
 ## Nonfunctional constraints
 
 Use the current computer. Verified baseline: Windows x64 build 26300, Node 24.16.0, Python 3.11.9, Git 2.53.0, installed Chrome; Claude Code authenticated with first-party Claude.ai. These are environment facts, not stack instructions.

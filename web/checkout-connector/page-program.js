@@ -421,8 +421,21 @@ export async function merchantDocument(plan,command=null,internal=null){
   const shownInputs=[...main.querySelectorAll('input')].filter(visible);
   const contactForm=CONTACT.every(([label,types,max])=>{const m=shownInputs.filter(e=>name(e)===label),e=m.length===1?m[0]:null;
     return !!e&&!disabled(e)&&e.readOnly!==true&&e.required===true&&types.includes(norm(e.getAttribute('type')).toLowerCase())&&(max===undefined||e.maxLength===max);});
+  // C149: current pickup contact has this exact native personal-invoice group, already selected by the merchant.
+  // It supplies no purchase/slot authority and is never changed here. Partial/other/duplicate groups remain unrecognized.
+  const invoiceName='checkout.pickupContact.eFapiaoSelector.selectFapiao';
+  const invoiceOptions=[['e_personal_fdf','电子发票 - 个人'],['e_company_fdf','电子发票 - 公司/其他'],['vat_special_fdf','电子发票 - 增值税专用发票']];
+  const invoiceInputs=[...main.querySelectorAll('input')].filter(e=>e.getAttribute('name')===invoiceName);
+  const invoiceHeaders=[...main.querySelectorAll('input')].filter(e=>e.getAttribute('name')==='invoiceHeader'),invoiceHeader=invoiceHeaders.length===1?invoiceHeaders[0]:null;
+  const personalInvoice=radios.length===3&&invoiceInputs.length===3&&radios.every(e=>invoiceInputs.includes(e))&&invoiceOptions.every(([value,label],i)=>{
+    const matches=invoiceInputs.filter(e=>e.id===invoiceName+'-'+value&&e.getAttribute('value')===value),e=matches.length===1?matches[0]:null,labels=[...e?.labels??[]];
+    return !!e&&e instanceof HTMLInputElement&&e.getAttribute('type')==='radio'&&visible(e)&&!disabled(e)&&e.required===false&&e.readOnly===false&&
+      e.parentElement?.tagName==='DIV'&&e.parentElement.classList.contains('form-selector')&&labels.length===1&&visible(labels[0])&&within(main,labels[0])&&
+      norm(labels[0].textContent)===label&&name(e)===label&&checked(e)===(i===0);
+  })&&invoiceHeader instanceof HTMLInputElement&&invoiceHeader.id==='checkout.pickupContact.eFapiaoSelector.ePersonalFapiao.invoiceHeader'&&
+    invoiceHeader.getAttribute('type')==='text'&&visible(invoiceHeader)&&!disabled(invoiceHeader)&&invoiceHeader.required===false&&invoiceHeader.readOnly===false&&name(invoiceHeader)==='发票抬头 (选填)';
   const contactOnly=checkoutScope&&!bagScoped&&phase==='DETAILS'&&contactForm&&mentions(main)===0&&productLines.length===0&&!mainQtyShown&&!/件商品|数量/.test(norm(main.textContent))&&
-    radios.length===0&&storeRadios.length===0&&fieldValues.length===0&&fulfillmentChoice===null&&!deliveryProse&&selects.length===0&&nativeDateInputs.length===0&&
+    (radios.length===0||personalInvoice)&&storeRadios.length===0&&fieldValues.length===0&&fulfillmentChoice===null&&!deliveryProse&&selects.length===0&&nativeDateInputs.length===0&&
     !texts.some(t=>/^(?:取货(?:日期|时间|地点|门店)|自提门店|店内取货地点)|AppleCare|折抵|换购/.test(t))&&!out.slotSummary&&!out.extrasConflict&&orderLabels.length===0&&!out.orderRefHash&&
     dialogs?.length===0&&bars.length===1&&bars[0].tagName==='BUTTON'&&visible(bars[0])&&!disabled(bars[0])&&barTotal>0&&totalLines.length===0&&total===barTotal;
   out.contactStep=contactOnly?{kind:'contact-only-details',verified:true,totalCny:barTotal,fields:CONTACT.length}:null;

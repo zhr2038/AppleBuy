@@ -1,0 +1,36 @@
+{
+  "task": "C-149-PICKUP-INVOICE",
+  "sourceFiles": 292,
+  "sha256": "7d80ba6c25f98e58e6775165f3a5031aa6c4ee87c6b866e5509dfbddd573ba59",
+  "productionChanges": [
+    "web/checkout-connector/page-program.js"
+  ],
+  "newTests": [
+    "test/checkout-c149-personal-invoice.test.ts"
+  ],
+  "oldAssertionsChanged": false,
+  "before": {
+    "tests": 11,
+    "pass": 9,
+    "fail": 2
+  },
+  "focusedAfter": {
+    "tests": 54,
+    "pass": 54,
+    "fail": 0
+  },
+  "fullNode": {
+    "tests": 1567,
+    "pass": 1567,
+    "fail": 0,
+    "cancelled": 0,
+    "skipped": 0
+  },
+  "invoiceActionSent": false,
+  "optionalHeaderReadOrWritten": false,
+  "stepOnlyNotPurchaseOrHoldEvidence": true,
+  "newPatchDeployed": false,
+  "accepted": false,
+  "realOrderVerified": false,
+  "actualOwnedWorker": "paused; same original context and sent-slot pending preserved"
+}

@@ -1,0 +1,66 @@
+{
+  "scope": "actual normal-Chrome rendered public contact/invoice metadata; no input values/authenticated requests/customer data",
+  "host": "secure11.www.apple.com.cn",
+  "path": "/shop/checkout",
+  "title": "取货详情 — 安全结账",
+  "main": {
+    "tag": "DIV",
+    "id": "checkout-container",
+    "role": "main"
+  },
+  "contactLabels": [
+    "姓氏",
+    "名字",
+    "电子邮件地址",
+    "联系人手机号码",
+    "政府颁发的身份证件号码的后四位"
+  ],
+  "requiredContacts": 5,
+  "identityMaximumLength": 4,
+  "invoiceGroup": "checkout.pickupContact.eFapiaoSelector.selectFapiao",
+  "invoiceOptions": [
+    {
+      "value": "e_personal_fdf",
+      "label": "电子发票 - 个人",
+      "checked": true,
+      "id": "checkout.pickupContact.eFapiaoSelector.selectFapiao-e_personal_fdf"
+    },
+    {
+      "value": "e_company_fdf",
+      "label": "电子发票 - 公司/其他",
+      "checked": false,
+      "id": "checkout.pickupContact.eFapiaoSelector.selectFapiao-e_company_fdf"
+    },
+    {
+      "value": "vat_special_fdf",
+      "label": "电子发票 - 增值税专用发票",
+      "checked": false,
+      "id": "checkout.pickupContact.eFapiaoSelector.selectFapiao-vat_special_fdf"
+    }
+  ],
+  "invoiceInputs": {
+    "tag": "INPUT",
+    "type": "radio",
+    "visible": true,
+    "required": false,
+    "disabled": false,
+    "parentTag": "DIV",
+    "parentClass": "form-selector"
+  },
+  "personalHeader": {
+    "id": "checkout.pickupContact.eFapiaoSelector.ePersonalFapiao.invoiceHeader",
+    "name": "invoiceHeader",
+    "type": "text",
+    "required": false,
+    "label": "发票抬头 (选填)"
+  },
+  "continueCaption": "继续选择付款方式",
+  "continueEnabled": true,
+  "visibleDialogs": 0,
+  "programmeSummaryActuallyRead": true,
+  "programmeSelectedStore": "R609 / Apple 大连恒隆广场",
+  "programmeSlotChoiceSent": true,
+  "currentSlotResultVerified": false,
+  "finalOrPaymentSent": false,
+  "radioIdsActuallyObserved": true
+}

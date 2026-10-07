@@ -1,0 +1,138 @@
+{
+  "task": "C-152-INVOICE-WRITE-REVIEW",
+  "sourceFiles": 292,
+  "status": "returned_for_review",
+  "durationSeconds": 282.31,
+  "turns": 24,
+  "models": [
+    "claude-opus-5-5"
+  ],
+  "primaryModels": [
+    "claude-opus-5-5"
+  ],
+  "provider": "firstParty",
+  "canonicalModel": "claude-opus-5-5",
+  "effort": "xhigh",
+  "modelVerified": true,
+  "resultError": false,
+  "subtype": "success",
+  "permissionDenialCount": 1,
+  "timedOut": false,
+  "cleanupConfirmed": true,
+  "toolCounts": {
+    "Read": 18,
+    "Bash": 3
+  },
+  "sourceEditCalls": 0,
+  "privateReadCalls": 0,
+  "unexpectedCommands": 0,
+  "commandOrderMatched": true,
+  "requiredEOFCount": 11,
+  "requiredEOFComplete": 11,
+  "EOFgaps": [],
+  "toolResultErrors": [],
+  "usageScope": "resumed history aggregate, not this round cost",
+  "accepted": false,
+  "realOrderVerified": false,
+  "orderedChecks": [
+    {
+      "scope": "bounded-review-checks",
+      "order": 1,
+      "exitCode": 0,
+      "timedOut": false,
+      "ownedTreeCleanupConfirmed": true,
+      "manifest": {
+        "ok": true,
+        "files": 292,
+        "sha256": "77f8dcfad5e0fa74a4f7e8d7e828f67413dede8d9998445db7004c92e2f99c97",
+        "mismatches": []
+      },
+      "passed": true
+    },
+    {
+      "scope": "bounded-review-checks",
+      "order": 2,
+      "exitCode": 0,
+      "timedOut": false,
+      "ownedTreeCleanupConfirmed": true,
+      "counts": {
+        "tests": 108,
+        "pass": 108,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0
+      },
+      "passed": true
+    },
+    {
+      "scope": "bounded-review-checks",
+      "order": 3,
+      "exitCode": 0,
+      "timedOut": false,
+      "ownedTreeCleanupConfirmed": true,
+      "tests": 54,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "passed": true
+    },
+    {
+      "scope": "bounded-review-checks",
+      "order": 4,
+      "exitCode": 0,
+      "timedOut": false,
+      "ownedTreeCleanupConfirmed": true,
+      "counts": {
+        "tests": 1568,
+        "pass": 1568,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0
+      },
+      "passed": true
+    },
+    {
+      "scope": "bounded-review-checks",
+      "order": 5,
+      "exitCode": 0,
+      "timedOut": false,
+      "ownedTreeCleanupConfirmed": true,
+      "manifest": {
+        "ok": true,
+        "files": 292,
+        "sha256": "77f8dcfad5e0fa74a4f7e8d7e828f67413dede8d9998445db7004c92e2f99c97",
+        "mismatches": []
+      },
+      "passed": true
+    },
+    {
+      "scope": "bounded-review-checks",
+      "complete": true,
+      "orderedChecks": 5,
+      "passed": true
+    }
+  ],
+  "orderedChecksVerified": true,
+  "BashInvocationGroupSizes": [
+    1,
+    1,
+    1
+  ],
+  "BashCallsOverlapped": false,
+  "separateSequentialBashCallsVerified": true,
+  "verdict": "bounded AGREE",
+  "acceptedByCodex": true,
+  "sourceSHA256": "77f8dcfad5e0fa74a4f7e8d7e828f67413dede8d9998445db7004c92e2f99c97",
+  "scope": "C150 personal-invoice recognition plus C151 actual writer test closure",
+  "permissionDenialDisposition": "One unapproved shell prefix was denied without execution; subsequent three exact approved foreground commands ran normally. No permission weakened or denied resource accessed.",
+  "compactionDisclosure": "Mid-round; fresh EOF coverage verified. Model reread seven files and received four full listed resources in context; no post-compaction reread claimed for all.",
+  "newPatchDeployed": false,
+  "publicEvidenceSHA256": "8ea472d8bcd16696cd20010517db39c43bfbde6e75b8dbb11eae4da1fcbe8dfa",
+  "rootFullNode": {
+    "tests": 1568,
+    "pass": 1568,
+    "fail": 0,
+    "cancelled": 0,
+    "skipped": 0
+  }
+}
