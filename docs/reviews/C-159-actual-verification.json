@@ -1,0 +1,48 @@
+{
+  "task": "C-159-PURCHASE-ENTRY-REVIEW",
+  "sourceFiles": 292,
+  "status": "returned_for_review",
+  "durationSeconds": 87.06,
+  "turns": 14,
+  "models": [
+    "claude-opus-5-5"
+  ],
+  "primaryModels": [
+    "claude-opus-5-5"
+  ],
+  "provider": "firstParty",
+  "canonicalModel": "claude-opus-5-5",
+  "effort": "xhigh",
+  "modelVerified": true,
+  "resultError": false,
+  "subtype": "success",
+  "permissionDenialCount": 0,
+  "timedOut": false,
+  "cleanupConfirmed": true,
+  "toolCounts": {
+    "Read": 11,
+    "Bash": 2
+  },
+  "sourceEditCalls": 0,
+  "privateReadCalls": 0,
+  "unexpectedCommands": 0,
+  "commandOrderMatched": true,
+  "requiredEOFCount": 11,
+  "requiredEOFComplete": 11,
+  "EOFgaps": [],
+  "toolResultErrors": [],
+  "usageScope": "resumed history aggregate, not this round cost",
+  "accepted": false,
+  "realOrderVerified": false,
+  "BashInvocationGroupSizes": [
+    1,
+    1
+  ],
+  "BashCallsOverlapped": false,
+  "separateSequentialBashCallsVerified": true,
+  "verdict": "bounded AGREE",
+  "acceptedByCodex": true,
+  "sha256": "5d2ee6d1f1d238c9aa6354d86b257ebfebbe9fa9c0acdfbe89bd2abe1cf9265e",
+  "scope": "menu route and width only",
+  "actualInstalledMenuVerified": false
+}

@@ -1,0 +1,46 @@
+{
+  "task": "C-158-PURCHASE-ENTRY",
+  "sha256": "5d2ee6d1f1d238c9aa6354d86b257ebfebbe9fa9c0acdfbe89bd2abe1cf9265e",
+  "sourceFiles": 292,
+  "changed": [
+    "web/checkout-connector/open.html",
+    "web/checkout-connector/open.js"
+  ],
+  "actualHumanScreenshot": "two entries only, vertically cramped",
+  "oldPopupMissingPurchaseEntry": true,
+  "userConnectedReadonlyFromExistingMenu": true,
+  "rootInstructionCorrection": "Earlier instruction referred to a menu entry that had not been wired; it was not the users mistake",
+  "render": {
+    "scope": "owned FAKE native rendering and stubbed link targets; not installed extension or purchase evidence",
+    "buttons": [
+      {
+        "label": "\u8fde\u63a5\u684c\u9762\u7a0b\u5e8f\uff08\u8d2d\u4e70\u901a\u9053\uff09",
+        "width": 276,
+        "height": 41
+      },
+      {
+        "label": "\u8fde\u63a5\u684c\u9762\u7a0b\u5e8f\uff08\u53ea\u8bfb\u8d2d\u7269\u888b\uff09",
+        "width": 276,
+        "height": 41
+      },
+      {
+        "label": "\u6253\u5f00\u5b98\u7f51\u8d2d\u4e70\u63a7\u5236\u9875",
+        "width": 276,
+        "height": 41
+      }
+    ],
+    "linksMatch": true,
+    "realChromeTouched": false,
+    "purchaseAction": false,
+    "cleanup": {
+      "browserClosed": true,
+      "contextClosed": true,
+      "serverClosed": true
+    }
+  },
+  "syntaxCheckExit": 0,
+  "manifestOrPrivilegesChanged": false,
+  "newPurchaseAuthority": false,
+  "actualInstalledMenuVerified": false,
+  "realOrderVerified": false
+}
