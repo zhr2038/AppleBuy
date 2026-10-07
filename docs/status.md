@@ -1,3 +1,9 @@
+# C170 contact preflight bounded accepted; actual unpaid-order goal remains incomplete
+
+Actual original-session Opus5.5/xhigh168.47s20turn review freshly read all14 required resources, passed54focused/108runner/61Python/1588full and exact298 SHA35e29aa16c497e6f1c4c024c149532c8e48604f16dcc3f7abef81888836c06e0. Root independently1588/1588 and changed-scope comparison passed. Only page-program.js and one new test differ from accepted297; no old authority/controller/transport/recovery/test assertions changed. Source-private writes are refused before any event when a supplied contact value or unsupplied required input is invalid. Explicitly supplied valid email corrects bad prefill. Min/max/pattern/customError covered. C168 remains partial/not accepted; C170 closes its actual fresh-read gaps. Remaining event-created invalidity/full-purchase branch/prefill-length limitations are disclosed in the actual report.
+
+Programme has not made an unpaid order. Actual previous source remains expired, depth3, pending fillDetails, old slot/history retained and final never sent. No buyer is active; accepted preflight is not deployment or permission to revive it or repeat unknown operations. Further bounded source recovery needs a separately reviewed implementation and accurate current evidence. Goal tool is active at this human-resumed continuation; historical blocked/live text below is not current. No shutdown/reboot.
+
 # C166 contact session later expired; earlier personal-data handoff is obsolete
 
 Fresh supported browser observation confirmed www.apple.com.cn/shop/sorry/session_expired and explicit operation timeout after the email-validation stop. The earlier instruction to correct the old contact form and Continue is now obsolete; the user has been told not to act on it. No final/payment or programme unpaid order exists. Old pending fillDetails, contact-only slot basis and all original history remain; do not turn timeout into a failed submission or repeat.

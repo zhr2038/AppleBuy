@@ -1,0 +1,38 @@
+{
+  "task": "C-167-CONTACT-PREFLIGHT",
+  "sourceFiles": 298,
+  "sha256": "2a21a998e466c97ac3f76fc63d3fb1daa21f16c6b0af8297487885a3824da432",
+  "changed": [
+    "web/checkout-connector/page-program.js"
+  ],
+  "newTest": "test/checkout-c167-contact-preflight.test.ts",
+  "oldTestsOrAuthorityChanged": false,
+  "before": {
+    "tests": 6,
+    "pass": 2,
+    "fail": 4
+  },
+  "intermediateBroadPlacement": {
+    "tests": 51,
+    "pass": 42,
+    "fail": 9,
+    "cause": "native clone validation was applied to old C016 full-purchase synthetic fixtures; scoped to actual recognized contact-only branch without modifying tests"
+  },
+  "focusedAfter": {
+    "tests": 51,
+    "pass": 51,
+    "fail": 0
+  },
+  "fullNode": {
+    "tests": 1585,
+    "pass": 1585,
+    "fail": 0,
+    "cancelled": 0,
+    "skipped": 0
+  },
+  "privateValuesInCodeOrResults": false,
+  "activeBuyer": false,
+  "oldContactUnknownAndDepth3Unchanged": true,
+  "actualNewCodeDeployed": false,
+  "realOrderVerified": false
+}

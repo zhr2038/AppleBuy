@@ -602,6 +602,16 @@ export async function merchantDocument(plan,command=null,internal=null){
     }else if(command.action==='fillDetails'&&detailsStep(command)){
       const supplied=command.privatePickupData??{};if(Object.keys(supplied).some(k=>!Object.hasOwn(rules,k)))throw new Error('PrivateFieldNotAllowed');
       const bound={};for(const [key,value] of Object.entries(supplied)){if(typeof value!=='string'||value.length>100||(key==='identitySuffix'&&!/^\d{4}$/.test(value)))throw new Error('PrivateFieldInvalid');bound[key]=bind(key);if(!bound[key])throw new Error('PrivateFieldContractUnrecognized');}
+      // C167: a different invalid prefill must not strand a partially transmitted private value.
+      // Check proposed values on disconnected native clones; retain all merchant/native constraints and never bypass custom errors.
+      if(command.contactOnly===true&&out.contactStep?.verified===true){
+        const proposedValid=(e,value)=>{if(e.validity.customError||e.maxLength>=0&&value.length>e.maxLength||e.minLength>=0&&value.length<e.minLength)return false;const clone=e.cloneNode(false),set=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value')?.set;if(!set)return false;set.call(clone,value);return clone.validity.valid;};
+        if(Object.entries(bound).some(([key,e])=>!proposedValid(e,supplied[key])))throw new Error('PickupDetailsRequireHuman');
+        for(const e of [...main.querySelectorAll('input[required]')].filter(visible)){
+          const key=Object.keys(bound).find(key=>bound[key]===e);
+          if(key===undefined&&!e.validity.valid)throw new Error('PickupDetailsRequireHuman');
+        }
+      }
       // Validate all field bindings BEFORE transmitting the first value. Never return or persist values.
       // Nothing supplied: nothing is written, so this synchronous decode is still current for Continue.
       if(!Object.keys(bound).length){if(requiredInvalid())throw new Error('PickupDetailsRequireHuman');click('继续选择付款方式');}

@@ -1,0 +1,157 @@
+{
+  "task": "C-170-CONTACT-FINAL-REVIEW",
+  "sourceFiles": 298,
+  "status": "returned_for_review",
+  "durationSeconds": 168.47,
+  "turns": 20,
+  "models": [
+    "claude-opus-5-5"
+  ],
+  "primaryModels": [
+    "claude-opus-5-5"
+  ],
+  "provider": "firstParty",
+  "canonicalModel": "claude-opus-5-5",
+  "effort": "xhigh",
+  "modelVerified": true,
+  "resultError": false,
+  "subtype": "success",
+  "permissionDenialCount": 0,
+  "timedOut": false,
+  "cleanupConfirmed": true,
+  "toolCounts": {
+    "Read": 16,
+    "Bash": 3
+  },
+  "sourceEditCalls": 0,
+  "privateReadCalls": 0,
+  "unexpectedCommands": 0,
+  "commandOrderMatched": true,
+  "requiredEOFCount": 14,
+  "requiredEOFComplete": 14,
+  "EOFgaps": [],
+  "toolResultErrors": [],
+  "commandResults": [
+    {
+      "index": 1,
+      "error": false,
+      "tail": "{\"ok\": true, \"files\": 298, \"sha256\": \"35e29aa16c497e6f1c4c024c149532c8e48604f16dcc3f7abef81888836c06e0\", \"mismatches\": []}"
+    },
+    {
+      "index": 2,
+      "error": false,
+      "tail": "custom error cannot be bypassed by detached validation (130.1882ms)\n\u2714 C167 another unfilled required receiver stops before a provided value is transmitted (142.8664ms)\n\u2714 C169 minimum length rejects an explicit correction before any value or Continue (148.66ms)\n\u2714 C169 maximum length rejects an explicit correction before any value or Continue (142.5149ms)\n\u2714 C169 native pattern rejects an explicit correction before any value or Continue (149.8057ms)\n\u2139 tests 54\n\u2139 suites 0\n\u2139 pass 54\n\u2139 fail 0\n\u2139 cancelled 0\n\u2139 skipped 0\n\u2139 todo 0\n\u2139 duration_ms 4422.6781"
+    },
+    {
+      "index": 3,
+      "error": false,
+      "tail": "iew-checks\", \"order\": 4, \"exitCode\": 0, \"timedOut\": false, \"ownedTreeCleanupConfirmed\": true, \"counts\": {\"tests\": 1588, \"pass\": 1588, \"fail\": 0, \"cancelled\": 0, \"skipped\": 0}, \"passed\": true}\r\n{\"scope\": \"bounded-review-checks\", \"order\": 5, \"exitCode\": 0, \"timedOut\": false, \"ownedTreeCleanupConfirmed\": true, \"manifest\": {\"ok\": true, \"files\": 298, \"sha256\": \"35e29aa16c497e6f1c4c024c149532c8e48604f16dcc3f7abef81888836c06e0\", \"mismatches\": []}, \"passed\": true}\r\n{\"scope\": \"bounded-review-checks\", \"complete\": true, \"orderedChecks\": 5, \"passed\": true}"
+    }
+  ],
+  "usageScope": "resumed history aggregate, not this round cost",
+  "accepted": false,
+  "realOrderVerified": false,
+  "orderedChecks": [
+    {
+      "scope": "bounded-review-checks",
+      "order": 1,
+      "exitCode": 0,
+      "timedOut": false,
+      "ownedTreeCleanupConfirmed": true,
+      "manifest": {
+        "ok": true,
+        "files": 298,
+        "sha256": "35e29aa16c497e6f1c4c024c149532c8e48604f16dcc3f7abef81888836c06e0",
+        "mismatches": []
+      },
+      "passed": true
+    },
+    {
+      "scope": "bounded-review-checks",
+      "order": 2,
+      "exitCode": 0,
+      "timedOut": false,
+      "ownedTreeCleanupConfirmed": true,
+      "counts": {
+        "tests": 108,
+        "pass": 108,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0
+      },
+      "passed": true
+    },
+    {
+      "scope": "bounded-review-checks",
+      "order": 3,
+      "exitCode": 0,
+      "timedOut": false,
+      "ownedTreeCleanupConfirmed": true,
+      "tests": 61,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "passed": true
+    },
+    {
+      "scope": "bounded-review-checks",
+      "order": 4,
+      "exitCode": 0,
+      "timedOut": false,
+      "ownedTreeCleanupConfirmed": true,
+      "counts": {
+        "tests": 1588,
+        "pass": 1588,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0
+      },
+      "passed": true
+    },
+    {
+      "scope": "bounded-review-checks",
+      "order": 5,
+      "exitCode": 0,
+      "timedOut": false,
+      "ownedTreeCleanupConfirmed": true,
+      "manifest": {
+        "ok": true,
+        "files": 298,
+        "sha256": "35e29aa16c497e6f1c4c024c149532c8e48604f16dcc3f7abef81888836c06e0",
+        "mismatches": []
+      },
+      "passed": true
+    },
+    {
+      "scope": "bounded-review-checks",
+      "complete": true,
+      "orderedChecks": 5,
+      "passed": true
+    }
+  ],
+  "orderedChecksVerified": true,
+  "BashInvocationGroupSizes": [
+    1,
+    1,
+    1
+  ],
+  "BashCallsOverlapped": false,
+  "separateSequentialBashCallsVerified": true,
+  "acceptedByCodex": true,
+  "acceptedScope": "contact-only native preflight; no live recovery or order acceptance",
+  "sha256": "35e29aa16c497e6f1c4c024c149532c8e48604f16dcc3f7abef81888836c06e0",
+  "rootFullNode": {
+    "tests": 1588,
+    "pass": 1588,
+    "fail": 0
+  },
+  "priorPartialReviewAccepted": false,
+  "actualDeploymentVerified": false,
+  "remainingLimitations": [
+    "later merchant event can cause partial write",
+    "untouched invalid refusal uses generic bounded stop",
+    "generic full-purchase DETAILS branch unchanged",
+    "untouched prefills rely on native length validity",
+    "live expired depth3 recovery unresolved"
+  ]
+}
