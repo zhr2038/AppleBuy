@@ -1,3 +1,9 @@
+# C166 contact session later expired; earlier personal-data handoff is obsolete
+
+Fresh supported browser observation confirmed www.apple.com.cn/shop/sorry/session_expired and explicit operation timeout after the email-validation stop. The earlier instruction to correct the old contact form and Continue is now obsolete; the user has been told not to act on it. No final/payment or programme unpaid order exists. Old pending fillDetails, contact-only slot basis and all original history remain; do not turn timeout into a failed submission or repeat.
+
+The live owner was normally requested to Stop; check the actual terminal/cleanup receipt before another actor. Current archive has3 structural cart transfers, so a fourth automatic adoption is forbidden. Any next recovery needs accurate current private source/unknown verification and a legitimate plan; no cap/history/finality weakening, fake blank ledger or user-profile/API workaround. Current297 and prior actual bounded reviews/test evidence remain, full one unpaidPro beforeDuo objective uncompleted. No shutdown/reboot. Older same-context-live/handoff text below is historical.
+
 # C165 actual programme crossed the large-write barrier and reached contact validation
 
 Current297 SHAfa56150223068548add53690818c860e076d30e7090cea9a6ae9a52ca85eb623. Actual C164 Opus5.5/xhigh288.89s21turn16freshEOF/three exactsequentialcommands AGREE, Root1579Node/61Python and reviewer108/61/1579 passed with exact map/model/cleanup/no denial/private/edit/error/cap. Bounded framing acceptance includes disclosed nonblocking malformed-stream/queued-write uncertainty, additional Unicode cases, latency/growth and inherited reply-timeout limits; unknown is never a success or retry. Existing frame2MB stays, aggregate16MB bounded stream, whole original archive/no authority/disk format changes.

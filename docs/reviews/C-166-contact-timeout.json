@@ -1,0 +1,15 @@
+{
+  "task": "C-166-CONTACT-SESSION-TIMEOUT",
+  "sourceFiles": 297,
+  "sha256": "fa56150223068548add53690818c860e076d30e7090cea9a6ae9a52ca85eb623",
+  "host": "www.apple.com.cn",
+  "path": "/shop/sorry/session_expired",
+  "visibleHeading": "你的操作已超时。",
+  "previousContactEmailInvalid": true,
+  "priorManualContactCorrectionInstructionObsolete": true,
+  "currentTransferDepth": 3,
+  "oldUnknownsRetained": true,
+  "finalOrPaymentSent": false,
+  "realOrderVerified": false,
+  "automaticFourthTransferForbidden": true
+}

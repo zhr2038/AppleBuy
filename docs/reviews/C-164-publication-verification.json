@@ -1,0 +1,12 @@
+{
+  "task": "C-164-PUBLICATION",
+  "codeCommit": "4dae9f6153d19881bbe226f9a9733737f5d11fcd",
+  "remoteCandidate": "4dae9f6153d19881bbe226f9a9733737f5d11fcd",
+  "sourceFiles": 297,
+  "sha256": "fa56150223068548add53690818c860e076d30e7090cea9a6ae9a52ca85eb623",
+  "allHeadRemoteBlobsMatch": true,
+  "mainPromoted": false,
+  "forcePushed": false,
+  "privatePublished": false,
+  "realOrderVerified": false
+}
