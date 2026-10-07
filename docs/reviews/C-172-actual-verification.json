@@ -1,0 +1,149 @@
+{
+  "task": "C-172-EXPIRED-CONTACT-REVIEW",
+  "sourceFiles": 299,
+  "status": "returned_for_review",
+  "durationSeconds": 507.03,
+  "turns": 26,
+  "models": [
+    "claude-opus-5-5"
+  ],
+  "primaryModels": [
+    "claude-opus-5-5"
+  ],
+  "provider": "firstParty",
+  "canonicalModel": "claude-opus-5-5",
+  "effort": "xhigh",
+  "modelVerified": true,
+  "resultError": false,
+  "subtype": "success",
+  "permissionDenialCount": 0,
+  "timedOut": false,
+  "cleanupConfirmed": true,
+  "toolCounts": {
+    "Read": 21,
+    "Bash": 3
+  },
+  "sourceEditCalls": 0,
+  "privateReadCalls": 0,
+  "unexpectedCommands": 0,
+  "commandOrderMatched": true,
+  "requiredEOFCount": 16,
+  "requiredEOFComplete": 16,
+  "EOFgaps": [],
+  "toolResultErrors": [],
+  "commandResults": [
+    {
+      "index": 1,
+      "error": false,
+      "tail": "{\"ok\": true, \"files\": 299, \"sha256\": \"2e5aef0878e8823bafc45e7c73de6f2534aa1808adc2319f6a3dc4644f5cefca\", \"mismatches\": []}"
+    },
+    {
+      "index": 2,
+      "error": false,
+      "tail": " bag document changed cannot write an exceptional successor (12.0284ms)\n\u2714 C171 source changed during read cannot write an exceptional successor (13.185ms)\n\u2714 C171 exceptional marker cannot permit a fifth or survive fingerprint tampering (33.3663ms)\n\u2714 C171 owner lost during read cannot persist an exceptional replacement (11.5689ms)\n\u2714 C171 owned production runtime advances its real fixed store/API once; caller cannot replace those objects (54.4064ms)\n\u2139 tests 50\n\u2139 suites 0\n\u2139 pass 50\n\u2139 fail 0\n\u2139 cancelled 0\n\u2139 skipped 0\n\u2139 todo 0\n\u2139 duration_ms 825.7908"
+    },
+    {
+      "index": 3,
+      "error": false,
+      "tail": "iew-checks\", \"order\": 4, \"exitCode\": 0, \"timedOut\": false, \"ownedTreeCleanupConfirmed\": true, \"counts\": {\"tests\": 1608, \"pass\": 1608, \"fail\": 0, \"cancelled\": 0, \"skipped\": 0}, \"passed\": true}\r\n{\"scope\": \"bounded-review-checks\", \"order\": 5, \"exitCode\": 0, \"timedOut\": false, \"ownedTreeCleanupConfirmed\": true, \"manifest\": {\"ok\": true, \"files\": 299, \"sha256\": \"2e5aef0878e8823bafc45e7c73de6f2534aa1808adc2319f6a3dc4644f5cefca\", \"mismatches\": []}, \"passed\": true}\r\n{\"scope\": \"bounded-review-checks\", \"complete\": true, \"orderedChecks\": 5, \"passed\": true}"
+    }
+  ],
+  "usageScope": "resumed history aggregate, not this round cost",
+  "accepted": false,
+  "realOrderVerified": false,
+  "orderedChecks": [
+    {
+      "scope": "bounded-review-checks",
+      "order": 1,
+      "exitCode": 0,
+      "timedOut": false,
+      "ownedTreeCleanupConfirmed": true,
+      "manifest": {
+        "ok": true,
+        "files": 299,
+        "sha256": "2e5aef0878e8823bafc45e7c73de6f2534aa1808adc2319f6a3dc4644f5cefca",
+        "mismatches": []
+      },
+      "passed": true
+    },
+    {
+      "scope": "bounded-review-checks",
+      "order": 2,
+      "exitCode": 0,
+      "timedOut": false,
+      "ownedTreeCleanupConfirmed": true,
+      "counts": {
+        "tests": 108,
+        "pass": 108,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0
+      },
+      "passed": true
+    },
+    {
+      "scope": "bounded-review-checks",
+      "order": 3,
+      "exitCode": 0,
+      "timedOut": false,
+      "ownedTreeCleanupConfirmed": true,
+      "tests": 61,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "passed": true
+    },
+    {
+      "scope": "bounded-review-checks",
+      "order": 4,
+      "exitCode": 0,
+      "timedOut": false,
+      "ownedTreeCleanupConfirmed": true,
+      "counts": {
+        "tests": 1608,
+        "pass": 1608,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0
+      },
+      "passed": true
+    },
+    {
+      "scope": "bounded-review-checks",
+      "order": 5,
+      "exitCode": 0,
+      "timedOut": false,
+      "ownedTreeCleanupConfirmed": true,
+      "manifest": {
+        "ok": true,
+        "files": 299,
+        "sha256": "2e5aef0878e8823bafc45e7c73de6f2534aa1808adc2319f6a3dc4644f5cefca",
+        "mismatches": []
+      },
+      "passed": true
+    },
+    {
+      "scope": "bounded-review-checks",
+      "complete": true,
+      "orderedChecks": 5,
+      "passed": true
+    }
+  ],
+  "orderedChecksVerified": true,
+  "BashInvocationGroupSizes": [
+    1,
+    1,
+    1
+  ],
+  "BashCallsOverlapped": false,
+  "separateSequentialBashCallsVerified": true,
+  "acceptedByCodex": false,
+  "sha256": "2e5aef0878e8823bafc45e7c73de6f2534aa1808adc2319f6a3dc4644f5cefca",
+  "rootFullNode": {
+    "tests": 1608,
+    "pass": 1608,
+    "fail": 0
+  },
+  "reason": "C172 F5 considered material by Root: exception must preserve original date cohort and terminal floors before live acceptance",
+  "actualDeploymentVerified": false
+}

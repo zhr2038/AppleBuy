@@ -27,7 +27,7 @@ try{
   if(c?.action==='stop'){closing=true;watch.stop();input.close();try{await runtime.close();}catch{process.exitCode=2;emit({type:'blocked',message:'结账通道清理未确认，未知记录保持。'});}finally{emit({type:'closed',cleanupConfirmed:runtime.cleanupConfirmed});process.stdin.destroy();}return;}
   if(c?.action==='pause'){watch.stop();if(pausing)return;pausing=true;try{emit({type:'paused',...await runtime.pause()});}catch{emit({type:'blocked',paused:runtime.paused,message:'暂停未确认；已发送动作可能继续，未知记录保持。'});}finally{pausing=false;}return;}
   if(active||watch.reading||pausing){emit({type:'blocked',paused:runtime.paused,message:'当前执行尚未结束，未再次发动作。'});return;}
-  if(!['observe','reconcile','transfer','restart-empty','advance','resume','submit'].includes(c?.action))return;
+  if(!['observe','reconcile','transfer','transfer-contact','restart-empty','advance','resume','submit'].includes(c?.action))return;
   watch.stop();active=true;
   try{
    if(c.action==='advance'||c.action==='resume')await advance(c);
@@ -36,8 +36,9 @@ try{
     emit({type:'result',state:result.state,phase:result.phase,paused:runtime.paused,readOnly:false,realOrderVerified:result.realOrderVerified===true,reviewReady:!!runtime.finalDescriptor});
     if(!runtime.paused&&result.phase==='AUTH'&&result.state==='NEEDS_USER')watch.start(async()=>{active=true;try{await advance({checkoutApproved:true,newContextConfirmed:true,privatePickupData:c.privatePickupData??{}});}catch{emit({type:'blocked',paused:runtime.paused,message:'新尝试的登录衔接未确认，旧结果保持，不重复结账。'});}finally{active=false;}});
    }
-   else if(c.action==='transfer'){
-    const result=await runtime.transfer({approved:c.approved===true,newContextConfirmed:c.newContextConfirmed===true,privatePickupData:c.privatePickupData??{}});
+   else if(c.action==='transfer'||c.action==='transfer-contact'){
+    const options={approved:c.approved===true,newContextConfirmed:c.newContextConfirmed===true,privatePickupData:c.privatePickupData??{}};
+    const result=c.action==='transfer-contact'?await runtime.transferContact({...options,merchantExpiryConfirmed:c.merchantExpiryConfirmed===true,oldCheckoutStopped:c.oldCheckoutStopped===true,sameAccountOrdersChecked:c.sameAccountOrdersChecked===true}):await runtime.transfer(options);
     emit({type:'result',state:result.state,phase:result.phase,paused:runtime.paused,realOrderVerified:result.realOrderVerified===true,reviewReady:!!runtime.finalDescriptor});
     if(!runtime.paused&&result.phase==='AUTH'&&result.state==='NEEDS_USER')watch.start(async()=>{active=true;try{await advance({checkoutApproved:true,newContextConfirmed:true,privatePickupData:c.privatePickupData??{}});}catch{emit({type:'blocked',paused:runtime.paused,message:'接替后的登录衔接未确认；旧动作保持。'});}finally{active=false;}});
    }else{

@@ -1,0 +1,40 @@
+{
+  "task": "C-171-EXPIRED-CONTACT-RECOVERY",
+  "sourceFiles": 299,
+  "sha256": "2e5aef0878e8823bafc45e7c73de6f2534aa1808adc2319f6a3dc4644f5cefca",
+  "changed": [
+    "src/desktop/cart-transfer.mjs",
+    "src/desktop/checkout-runtime.mjs",
+    "src/desktop/native-purchase-worker.mjs"
+  ],
+  "newTest": "test/desktop-c171-contact-recovery.test.ts",
+  "before": {
+    "tests": 19,
+    "pass": 0,
+    "fail": 19,
+    "cause": "explicit contact recovery operation missing"
+  },
+  "fixtureCorrections": [
+    "set actual stopped contact NEEDS_VERIFICATION state",
+    "acceptedSlot absent is undefined on fresh production record"
+  ],
+  "focused": {
+    "tests": 50,
+    "pass": 50,
+    "fail": 0
+  },
+  "fullNode": {
+    "tests": 1608,
+    "pass": 1608,
+    "fail": 0
+  },
+  "ordinaryThreeTransferLimitKept": true,
+  "explicitLastLinkLimit": 4,
+  "requiresCurrentOperatorAttestations": true,
+  "attestationNotProgrammeAuthOrHoldProof": true,
+  "oldTestAssertionsChanged": false,
+  "allOldUnknownsPreserved": true,
+  "deployed": false,
+  "newBuyerActive": false,
+  "realOrderVerified": false
+}

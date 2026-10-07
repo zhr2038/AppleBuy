@@ -1,0 +1,173 @@
+{
+  "task": "C-175-CONTACT-DATE-REVIEW",
+  "sourceFiles": 299,
+  "status": "returned_for_review",
+  "durationSeconds": 168.84,
+  "turns": 15,
+  "models": [
+    "claude-opus-5-5"
+  ],
+  "primaryModels": [
+    "claude-opus-5-5"
+  ],
+  "provider": "firstParty",
+  "canonicalModel": "claude-opus-5-5",
+  "effort": "xhigh",
+  "modelVerified": true,
+  "resultError": false,
+  "subtype": "success",
+  "permissionDenialCount": 0,
+  "timedOut": false,
+  "cleanupConfirmed": true,
+  "toolCounts": {
+    "Read": 11,
+    "Bash": 3
+  },
+  "sourceEditCalls": 0,
+  "privateReadCalls": 0,
+  "unexpectedCommands": 0,
+  "commandOrderMatched": true,
+  "requiredEOFCount": 10,
+  "requiredEOFComplete": 10,
+  "EOFgaps": [],
+  "toolResultErrors": [],
+  "commandResults": [
+    {
+      "index": 1,
+      "error": false,
+      "tail": "{\"ok\": true, \"files\": 299, \"sha256\": \"cccb2f6476cfa68e4e12158d0174681401c6b1f7ad30f38eb830856807fe8bd7\", \"mismatches\": []}"
+    },
+    {
+      "index": 2,
+      "error": false,
+      "tail": " (13.5656ms)\n\u2714 C171 exceptional marker cannot permit a fifth or survive fingerprint tampering (33.3445ms)\n\u2714 C171 owner lost during read cannot persist an exceptional replacement (11.1777ms)\n\u2714 C171 owned production runtime advances its real fixed store/API once; caller cannot replace those objects (54.8858ms)\n\u2714 C174 renewed contact attempt keeps the frozen cohort, terminal floors and refusal progress; edited replacement cannot erase them (87.7915ms)\n\u2139 tests 51\n\u2139 suites 0\n\u2139 pass 51\n\u2139 fail 0\n\u2139 cancelled 0\n\u2139 skipped 0\n\u2139 todo 0\n\u2139 duration_ms 853.262"
+    },
+    {
+      "index": 3,
+      "error": false,
+      "tail": "iew-checks\", \"order\": 4, \"exitCode\": 0, \"timedOut\": false, \"ownedTreeCleanupConfirmed\": true, \"counts\": {\"tests\": 1609, \"pass\": 1609, \"fail\": 0, \"cancelled\": 0, \"skipped\": 0}, \"passed\": true}\r\n{\"scope\": \"bounded-review-checks\", \"order\": 5, \"exitCode\": 0, \"timedOut\": false, \"ownedTreeCleanupConfirmed\": true, \"manifest\": {\"ok\": true, \"files\": 299, \"sha256\": \"cccb2f6476cfa68e4e12158d0174681401c6b1f7ad30f38eb830856807fe8bd7\", \"mismatches\": []}, \"passed\": true}\r\n{\"scope\": \"bounded-review-checks\", \"complete\": true, \"orderedChecks\": 5, \"passed\": true}"
+    }
+  ],
+  "usageScope": "resumed history aggregate, not this round cost",
+  "accepted": false,
+  "realOrderVerified": false,
+  "orderedChecks": [
+    {
+      "scope": "bounded-review-checks",
+      "order": 1,
+      "exitCode": 0,
+      "timedOut": false,
+      "ownedTreeCleanupConfirmed": true,
+      "manifest": {
+        "ok": true,
+        "files": 299,
+        "sha256": "cccb2f6476cfa68e4e12158d0174681401c6b1f7ad30f38eb830856807fe8bd7",
+        "mismatches": []
+      },
+      "passed": true
+    },
+    {
+      "scope": "bounded-review-checks",
+      "order": 2,
+      "exitCode": 0,
+      "timedOut": false,
+      "ownedTreeCleanupConfirmed": true,
+      "counts": {
+        "tests": 108,
+        "pass": 108,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0
+      },
+      "passed": true
+    },
+    {
+      "scope": "bounded-review-checks",
+      "order": 3,
+      "exitCode": 0,
+      "timedOut": false,
+      "ownedTreeCleanupConfirmed": true,
+      "tests": 61,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "passed": true
+    },
+    {
+      "scope": "bounded-review-checks",
+      "order": 4,
+      "exitCode": 0,
+      "timedOut": false,
+      "ownedTreeCleanupConfirmed": true,
+      "counts": {
+        "tests": 1609,
+        "pass": 1609,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0
+      },
+      "passed": true
+    },
+    {
+      "scope": "bounded-review-checks",
+      "order": 5,
+      "exitCode": 0,
+      "timedOut": false,
+      "ownedTreeCleanupConfirmed": true,
+      "manifest": {
+        "ok": true,
+        "files": 299,
+        "sha256": "cccb2f6476cfa68e4e12158d0174681401c6b1f7ad30f38eb830856807fe8bd7",
+        "mismatches": []
+      },
+      "passed": true
+    },
+    {
+      "scope": "bounded-review-checks",
+      "complete": true,
+      "orderedChecks": 5,
+      "passed": true
+    }
+  ],
+  "orderedChecksVerified": true,
+  "BashInvocationGroupSizes": [
+    1,
+    1,
+    1
+  ],
+  "BashCallsOverlapped": false,
+  "separateSequentialBashCallsVerified": true,
+  "acceptedByCodex": true,
+  "sha256": "cccb2f6476cfa68e4e12158d0174681401c6b1f7ad30f38eb830856807fe8bd7",
+  "acceptedScope": "explicit last expired-contact recovery preserving current original cohort and monotonic floors/refusals; no live or whole-goal acceptance",
+  "changed": [
+    "src/desktop/cart-transfer.mjs",
+    "src/desktop/checkout-runtime.mjs",
+    "src/desktop/native-purchase-worker.mjs"
+  ],
+  "newTest": "test/desktop-c171-contact-recovery.test.ts",
+  "rootFocused": {
+    "tests": 51,
+    "pass": 51,
+    "fail": 0
+  },
+  "rootFullNode": {
+    "tests": 1609,
+    "pass": 1609,
+    "fail": 0
+  },
+  "oldAssertionsChanged": false,
+  "actualDeploymentVerified": false,
+  "actualCurrentTransferCohortsMatch": true,
+  "actualEstimatedNextValueBytes": 13361467,
+  "actualOwnerLimitBytes": 16000000,
+  "currentNativeConnection": false,
+  "limitations": [
+    "operator attestations are not programme authentication or server hold-release proof",
+    "pause or disconnect after durable recovery can report generic failure; fifth remains forbidden",
+    "some negative tests reject before their named guard",
+    "no basis-only source restriction",
+    "new record original context cannot survive close or re-deployment",
+    "full live unpaid order and speed remain unverified"
+  ]
+}

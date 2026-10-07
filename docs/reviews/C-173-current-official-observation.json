@@ -1,0 +1,24 @@
+{
+  "task": "C-173-current-official-observation",
+  "scope": "supported Chrome Root readonly, not programme recovery acceptance",
+  "ordinaryExistingCredentialLoginSucceeded": true,
+  "ordersHost": "secure10.www.apple.com.cn",
+  "ordersPath": "/shop/order/list",
+  "observedOrderCount": 4,
+  "observedStatusClasses": [
+    "picked up",
+    "pickup cancelled",
+    "cancelled"
+  ],
+  "sameModelUnpaidObserved": false,
+  "ordersIdentityBasis": "ordinary login to the explicitly authorised existing account, not native programme identity proof",
+  "bagModel": "iPhone 18 Pro",
+  "bagCapacity": "256GB",
+  "bagColor": "black",
+  "bagTotalCny": 9999,
+  "bagMutationSent": false,
+  "checkoutSlotFinalPaymentSent": false,
+  "checkoutNativeHostProcessCount": 0,
+  "oldUnknownsResolved": false,
+  "realOrderVerified": false
+}

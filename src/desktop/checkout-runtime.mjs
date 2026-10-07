@@ -2,7 +2,7 @@
 import {runDesktopSession,PRO_PLAN,proDigest} from './browser-session.mjs';
 import {TASK_KEY,validStored} from '../../web/checkout-connector/job.js';
 import {ChromePort,allowedMerchantUrl} from '../../web/checkout-connector/chrome-port.js';
-import {transferExistingCart,validateDesktopCartTransfer} from './cart-transfer.mjs';
+import {transferExistingCart,transferExpiredContactOnce,validateDesktopCartTransfer} from './cart-transfer.mjs';
 import {guardOwnedApi} from './owner-lease.mjs';
 import {restartFromCurrentEmpty,validateEmptyRestart} from './empty-restart.mjs';
 import {bagPlanCheck} from './checkout-diagnostic.mjs';
@@ -99,6 +99,14 @@ export class DesktopCheckoutRuntime {
   if(this.paused||this.closing||old?.desktopContext!==this.api.sessionId||old.lastPhase!=='REVIEW'||old.pending||old.finalIntent||old.reconcileOnly===true||o.phase!=='REVIEW'||o.documentId!==old.lastDocumentId||!o.termsLinks?.includes(TERMS))throw Error('DesktopFinalConsentNotCurrent');
   this.finalDescriptor={taskId:old.taskId,documentId:old.lastDocumentId,termsUrl:TERMS};
   return {phase:'REVIEW',termsUrl:TERMS,product:PRO_PLAN.product,totalCapCny:9999,quantity:1,store:PRO_PLAN.stores[0],paymentMethod:'支付宝'};
+ }
+ transferContact(options={}){return this.track(()=>this.transferContactOnce(options));}
+ async transferContactOnce({approved=false,newContextConfirmed=false,merchantExpiryConfirmed=false,oldCheckoutStopped=false,sameAccountOrdersChecked=false,privatePickupData={}}={}){
+  if(this.ownerLost||this.paused||!this.opened||this.busy||this.closing||this.closed||this.lease?.owned!==true)throw Error('DesktopSessionAlreadyRunning');
+  this.busy=true;let created;
+  try{this.active=transferExpiredContactOnce({store:this.store,api:this.api,tabId:this.tabId,approved,newContextConfirmed,merchantExpiryConfirmed,oldCheckoutStopped,sameAccountOrdersChecked,live:()=>!this.ownerLost&&!this.closing&&!this.paused&&this.lease?.owned===true});created=await this.active;}finally{this.active=null;this.busy=false;}
+  if(created?.created!==true||this.ownerLost||this.closing||this.paused||this.lease?.owned!==true)throw Error('DesktopTransferCancelled');
+  return this.advance({checkoutApproved:true,newContextConfirmed:true,privatePickupData});
  }
  restartEmpty(options={}){return this.track(()=>this.restartEmptyOnce(options));}
  async restartEmptyOnce({approved=false,accountConfirmedByUser=false,oldCheckoutStoppedByUser=false,existingOrdersCheckedByUser=false,privatePickupData={}}={}){

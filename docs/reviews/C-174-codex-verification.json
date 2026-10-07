@@ -1,0 +1,29 @@
+{
+  "task": "C-174-DATE-FLOOR-PRESERVATION",
+  "sourceFiles": 299,
+  "sha256": "cccb2f6476cfa68e4e12158d0174681401c6b1f7ad30f38eb830856807fe8bd7",
+  "before": {
+    "tests": 1,
+    "pass": 0,
+    "fail": 1
+  },
+  "focused": {
+    "tests": 51,
+    "pass": 51,
+    "fail": 0
+  },
+  "fullNode": {
+    "tests": 1609,
+    "pass": 1609,
+    "fail": 0
+  },
+  "changed": [
+    "src/desktop/cart-transfer.mjs",
+    "test/desktop-c171-contact-recovery.test.ts"
+  ],
+  "oldTestsChanged": false,
+  "fourthDateOrEarlierFloorForbidden": true,
+  "pendingOldFillDetailsPreserved": true,
+  "deployed": false,
+  "realOrderVerified": false
+}
