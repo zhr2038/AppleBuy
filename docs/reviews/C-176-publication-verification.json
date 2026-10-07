@@ -1,0 +1,12 @@
+{
+  "task": "C-176-PUBLICATION",
+  "sourceFiles": 299,
+  "sha256": "cccb2f6476cfa68e4e12158d0174681401c6b1f7ad30f38eb830856807fe8bd7",
+  "codeCommit": "ecb2c4284021fa124c4d3941da3b1d291dde78cf",
+  "remoteCandidate": "ecb2c4284021fa124c4d3941da3b1d291dde78cf",
+  "all299HeadRemoteBlobsMatch": true,
+  "mainPromoted": false,
+  "forcePushed": false,
+  "privatePublished": false,
+  "realOrderVerified": false
+}
