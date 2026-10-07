@@ -1,0 +1,16 @@
+{
+  "task": "C-152-PUBLICATION",
+  "codeCommit": "e47c7a0f4824fe61259129225948f8f6e450ba6f",
+  "remoteCandidate": "e47c7a0f4824fe61259129225948f8f6e450ba6f",
+  "sourceFiles": 292,
+  "sha256": "77f8dcfad5e0fa74a4f7e8d7e828f67413dede8d9998445db7004c92e2f99c97",
+  "headAndRemoteAllSourceBlobsMatch": true,
+  "publicEvidencePath": "docs/reviews/C-149-public-invoice-evidence.json",
+  "publicEvidenceSHA256": "8ea472d8bcd16696cd20010517db39c43bfbde6e75b8dbb11eae4da1fcbe8dfa",
+  "remoteMain": "bd130ee77d8e914f6373432e1061c4de820fbc66",
+  "mainPromoted": false,
+  "forcePushed": false,
+  "privatePublished": false,
+  "peerNewPatchDeployed": false,
+  "realOrderVerified": false
+}
