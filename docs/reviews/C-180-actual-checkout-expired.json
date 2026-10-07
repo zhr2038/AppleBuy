@@ -1,0 +1,20 @@
+{
+  "task": "C-180-actual-checkout-expired",
+  "goalStatusActual": "blocked",
+  "supportedBrowserHost": "www.apple.com.cn",
+  "supportedBrowserPath": "/shop/sorry/session_expired",
+  "visibleHeading": "你的操作已超时。",
+  "previousSecure10LiveResumeInstructionObsolete": true,
+  "originalActorNormallyStopped": true,
+  "ownedHandleTerminalExit": 0,
+  "cleanupAcknowledged": true,
+  "pendingActionRetained": "checkout",
+  "fourthRecordRetained": true,
+  "oldUnknownsAndFullHistoryRetained": true,
+  "fifthAutomaticTransferForbidden": true,
+  "noNewSlotFinalOrPayment": true,
+  "realOrderVerified": false,
+  "softwareSourceUnchanged": true,
+  "remainingEngineeringGap": "legitimate ended-prefinal checkout lifecycle and readable merchant-expiry handling; no fake context or cap bypass",
+  "noShutdown": true
+}
