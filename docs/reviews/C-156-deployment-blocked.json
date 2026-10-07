@@ -1,0 +1,17 @@
+{
+  "task": "C-156-DEPLOYMENT-BLOCKED",
+  "goalToolStatus": "blocked",
+  "consecutiveRevalidatedNoProgressTurns": 3,
+  "sourceFiles": 292,
+  "sha256": "77f8dcfad5e0fa74a4f7e8d7e828f67413dede8d9998445db7004c92e2f99c97",
+  "blocker": "existing approved Chrome extension module reload/reconnection remains unconfirmed and requires the human because the browser tool cannot operate extension internal pages",
+  "existingQuestionPending": true,
+  "activeBuyer": false,
+  "activeReviewer": false,
+  "nativeListenerIsNotBuyerOrReviewer": true,
+  "originalUnknownHistoryRetained": true,
+  "programmeUnpaidOrderVerified": false,
+  "scopeUnchanged": "full programme-created and independently verified one unpaid Pro under fixed conditions, then Duo",
+  "resumePoint": "after actual extension update/reconnection: source and OS owner check, current readonly original-source/cart reconciliation, bounded same-cart recovery, zero Add and no old-slot acceptance/resend",
+  "observedUtc": "2026-10-07T01:03:38.052030+00:00"
+}
