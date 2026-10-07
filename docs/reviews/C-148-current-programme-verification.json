@@ -1,0 +1,20 @@
+{
+  "task": "C-148-ACTUAL-NATIVE-SUMMARY-RECOVERY",
+  "sourceFiles": 291,
+  "sha256": "19c8610759880963dc5cc2a59bb359dc91a5bd8d95abd5e00c36dcd1f80d9ac5",
+  "programmeChannel": "existing registered normal-Chrome native checkout",
+  "readonlyReconciliation": true,
+  "sameMatchingSingletonCartAdopted": true,
+  "newAdd": false,
+  "ordinaryCheckoutSentOnce": true,
+  "currentPhase": "AUTH",
+  "currentState": "NEEDS_USER",
+  "pendingCheckoutPreserved": true,
+  "humanAuthenticationRequired": true,
+  "authenticationAutomated": false,
+  "authContinuationArmed": true,
+  "summaryNewPatchLiveVerified": false,
+  "slotOrFinalOrPaymentSent": false,
+  "ownedWorkerStillLive": true,
+  "realOrderVerified": false
+}

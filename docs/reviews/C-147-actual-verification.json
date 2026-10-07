@@ -1,0 +1,138 @@
+{
+  "task": "C-147-SUMMARY-REENTRY-REVIEW",
+  "sourceFiles": 291,
+  "status": "returned_for_review",
+  "durationSeconds": 717.41,
+  "turns": 27,
+  "models": [
+    "claude-opus-5-5"
+  ],
+  "primaryModels": [
+    "claude-opus-5-5"
+  ],
+  "provider": "firstParty",
+  "canonicalModel": "claude-opus-5-5",
+  "effort": "xhigh",
+  "modelVerified": true,
+  "resultError": false,
+  "subtype": "success",
+  "permissionDenialCount": 0,
+  "timedOut": false,
+  "cleanupConfirmed": true,
+  "toolCounts": {
+    "Read": 19,
+    "Bash": 3,
+    "Grep": 3
+  },
+  "sourceEditCalls": 0,
+  "privateReadCalls": 0,
+  "unexpectedCommands": 0,
+  "commandOrderMatched": true,
+  "requiredEOFCount": 19,
+  "requiredEOFComplete": 19,
+  "EOFgaps": [],
+  "toolResultErrors": [],
+  "usageScope": "resumed history aggregate, not this round cost",
+  "accepted": false,
+  "realOrderVerified": false,
+  "orderedChecks": [
+    {
+      "scope": "bounded-review-checks",
+      "order": 1,
+      "exitCode": 0,
+      "timedOut": false,
+      "ownedTreeCleanupConfirmed": true,
+      "manifest": {
+        "ok": true,
+        "files": 291,
+        "sha256": "19c8610759880963dc5cc2a59bb359dc91a5bd8d95abd5e00c36dcd1f80d9ac5",
+        "mismatches": []
+      },
+      "passed": true
+    },
+    {
+      "scope": "bounded-review-checks",
+      "order": 2,
+      "exitCode": 0,
+      "timedOut": false,
+      "ownedTreeCleanupConfirmed": true,
+      "counts": {
+        "tests": 108,
+        "pass": 108,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0
+      },
+      "passed": true
+    },
+    {
+      "scope": "bounded-review-checks",
+      "order": 3,
+      "exitCode": 0,
+      "timedOut": false,
+      "ownedTreeCleanupConfirmed": true,
+      "tests": 54,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "passed": true
+    },
+    {
+      "scope": "bounded-review-checks",
+      "order": 4,
+      "exitCode": 0,
+      "timedOut": false,
+      "ownedTreeCleanupConfirmed": true,
+      "counts": {
+        "tests": 1556,
+        "pass": 1556,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0
+      },
+      "passed": true
+    },
+    {
+      "scope": "bounded-review-checks",
+      "order": 5,
+      "exitCode": 0,
+      "timedOut": false,
+      "ownedTreeCleanupConfirmed": true,
+      "manifest": {
+        "ok": true,
+        "files": 291,
+        "sha256": "19c8610759880963dc5cc2a59bb359dc91a5bd8d95abd5e00c36dcd1f80d9ac5",
+        "mismatches": []
+      },
+      "passed": true
+    },
+    {
+      "scope": "bounded-review-checks",
+      "complete": true,
+      "orderedChecks": 5,
+      "passed": true
+    }
+  ],
+  "orderedChecksVerified": true,
+  "BashInvocationGroupSizes": [
+    1,
+    1,
+    1
+  ],
+  "BashCallsOverlapped": false,
+  "separateSequentialBashCallsVerified": true,
+  "verdict": "bounded AGREE",
+  "acceptedByCodex": true,
+  "acceptedSourceSHA256": "19c8610759880963dc5cc2a59bb359dc91a5bd8d95abd5e00c36dcd1f80d9ac5",
+  "existingSourceChanges": [
+    "src/desktop/cart-transfer.mjs",
+    "web/checkout-connector/chrome-port.js"
+  ],
+  "addedSourceFiles": [
+    "test/desktop-c145-native-summary.test.ts",
+    "test/desktop-c146-cart-reentry.test.ts"
+  ],
+  "compactionDisclosure": "19 fresh EOF before commands; compaction between reads and commands; 15 files later reasoned from summaries",
+  "scope": "two production fixes and two new test files only",
+  "newPatchLiveVerified": false
+}

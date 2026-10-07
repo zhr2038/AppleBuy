@@ -1,0 +1,70 @@
+{
+  "task": "C-145-NATIVE-SUMMARY-AND-REENTRY",
+  "sourceFiles": 291,
+  "sha256": "19c8610759880963dc5cc2a59bb359dc91a5bd8d95abd5e00c36dcd1f80d9ac5",
+  "productionDelta": [
+    "web/checkout-connector/chrome-port.js",
+    "src/desktop/cart-transfer.mjs"
+  ],
+  "newTests": [
+    "test/desktop-c145-native-summary.test.ts",
+    "test/desktop-c146-cart-reentry.test.ts"
+  ],
+  "oldAssertionsChanged": false,
+  "summaryBefore": {
+    "tests": 2,
+    "pass": 1,
+    "fail": 1,
+    "error": "NativeCheckoutResultUnconfirmed before summary disclosure"
+  },
+  "summaryAfter": {
+    "tests": 3,
+    "pass": 3,
+    "fail": 0
+  },
+  "cartReentryBefore": {
+    "tests": 7,
+    "pass": 0,
+    "fail": 7,
+    "cause": "large duplicated legitimate archive failed readonly source recognition"
+  },
+  "cartIntermediate": {
+    "tests": 19,
+    "pass": 18,
+    "fail": 1,
+    "cause": "new tamper fixture originally changed already-null field; made fixture include actual pending checkout"
+  },
+  "oldRegressionFoundAndCorrected": "UNKNOWN_FINAL readonly lookup provenance was initially rejected; separated source no-final from live-record provenance",
+  "after": {
+    "focused": 33,
+    "pass": 33,
+    "fail": 0
+  },
+  "fullNode": {
+    "tests": 1556,
+    "pass": 1556,
+    "fail": 0,
+    "cancelled": 0,
+    "skipped": 0
+  },
+  "archiveFolding": "exact full archive equality and fingerprints checked before scanning each distinct transfer layer and original source; generic3000-node guard unchanged",
+  "maxStructuralCartTransfers": 3,
+  "prospectiveBuyerProofCheckedBeforeWrite": true,
+  "actualProgramme": {
+    "sourceFiles": 289,
+    "connectedAgain": true,
+    "oldSourceReadonlyReconciled": true,
+    "currentCartOnlyAdoptionActuallyCreated": true,
+    "noNewAdd": true,
+    "newCheckoutReachedAUTH": true,
+    "humanLoginReceived": true,
+    "programmeReachedFULFILLMENT": true,
+    "summaryFailureObserved": true,
+    "storedCheckoutPending": true,
+    "slotOrFinalOrPayment": false,
+    "ownedWorkerNormallyStoppedForReload": true
+  },
+  "newPatchLiveVerified": false,
+  "accepted": false,
+  "realOrderVerified": false
+}

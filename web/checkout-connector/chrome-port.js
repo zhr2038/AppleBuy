@@ -65,7 +65,7 @@ export class ChromePort {
   // not available to observe/validation ports. Returns only a sanitized count and money; the page keeps the record for later reads.
   async readSummary(plan,taskId){
     if(!this.orderSummary||!this.last||!taskId||!await this.permission())throw new Error('SummaryDisclosureNotAuthorized');
-    const documentId=this.last.documentId,command={id:crypto.randomUUID(),taskId,action:'readOrderSummary',summaryKey:this.summaryKey,authorized:true,structured:true,expected:JSON.stringify(this.last.raw)};
+    const documentId=this.last.documentId,command={id:crypto.randomUUID(),taskId,documentId,action:'readOrderSummary',summaryKey:this.summaryKey,authorized:true,structured:true,expected:JSON.stringify(this.last.raw)};
     const r=await this.api.scripting.executeScript({target:{tabId:this.tabId,documentIds:[documentId]},world:'ISOLATED',func:merchantDocument,args:[plan,command]});
     const x=r.length===1&&r[0].documentId===documentId&&!r[0].error?r[0].result:null,s=x?.summary;
     if(x?.delivered===true&&Number.isSafeInteger(s?.goodsCount)&&Number.isFinite(s.subtotalCny)&&Number.isFinite(s.totalCny)){this.summaryDocumentId=documentId;return {read:true,goodsCount:s.goodsCount,subtotalCny:s.subtotalCny,totalCny:s.totalCny};}

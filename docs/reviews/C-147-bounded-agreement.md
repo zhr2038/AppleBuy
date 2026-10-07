@@ -1,0 +1,11 @@
+# C147 bounded native-summary and cart re-entry agreement
+
+Codex independently reproduced and repaired the missing native summary document binding, then preserved the existing UNKNOWN_FINAL lookup while adding structurally bounded cart-only recovery. Actual Claude Opus5.5/xhigh returned bounded AGREE for 291 files, SHA 19c8610759880963dc5cc2a59bb359dc91a5bd8d95abd5e00c36dcd1f80d9ac5. Codex accepts these two production changes and two new test files within that exact scope.
+
+The actual invocation lasted 717.41 seconds and 27 turns. Its structured firstParty canonical model and CLI effort passed verification; 19 required files were freshly read to EOF, three exact commands ran separately in order, and there were no denied/private/edit calls, tool errors, quota/cap failures or unconfirmed owned cleanup. Claude disclosed context compaction after those reads and before commands; its later reasoning used summaries for 15 files. The trace establishes the earlier reads, rather than a claimed post-compaction reread.
+
+Checks passed: 45 focused tests, 108 runner tests, 54 Python tests and 1556 full Node tests, with unchanged source manifests before and after. Root's earlier failing reproductions and corrected intermediate fixture/regression remain in C-145-codex-verification.json. The ChromePort diff is exactly the required documentId field; the generic 3000-node final-proof guard and all old assertions remain unchanged.
+
+Known gaps remain: extra negative combinations and maximum-depth record size/timing have not all been measured; C143 F3 still relies on the physical store/lease guard at write rather than a lease check in its transfer live callback. No unsafe reproducible issue was found in this review. This agreement does not certify the whole repository, installed extension, current account, server slot hold, refusal/reselection, live new patch, real order or speed.
+
+The preceding actual programme reached FULFILLMENT after human login, then failed native summary disclosure. Its owned worker was paused and normally stopped to reload the repaired Node module; all old unknown records remain. Next is new-context readonly reconciliation and bounded adoption of the same matching single-item cart, with zero Add, followed by programme checkout to current review. Final submission and payment remain disabled in that operational harness.
