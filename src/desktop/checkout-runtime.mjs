@@ -5,6 +5,7 @@ import {ChromePort,allowedMerchantUrl} from '../../web/checkout-connector/chrome
 import {transferExistingCart,validateDesktopCartTransfer} from './cart-transfer.mjs';
 import {guardOwnedApi} from './owner-lease.mjs';
 import {restartFromCurrentEmpty,validateEmptyRestart} from './empty-restart.mjs';
+import {bagPlanCheck} from './checkout-diagnostic.mjs';
 const BAG='https://www.apple.com.cn/shop/bag',TERMS='https://www.apple.com.cn/shop/open/salespolicies';
 const PHASES=new Set(['ENTRY','VARIANT','EMPTY_BAG','BAG','AUTH','FULFILLMENT','SLOTS','DETAILS','PAYMENT','REVIEW','ORDER_RECEIPT','ORDER_DETAIL','PROCESSING','UNKNOWN']);
 const safeState=s=>({state:typeof s.state==='string'?s.state:'NEEDS_VERIFICATION',phase:PHASES.has(s.phase)?s.phase:'UNKNOWN',pendingAction:['addBag','checkout','chooseSlot','submitOrder'].includes(s.pendingAction)?s.pendingAction:null});
@@ -58,7 +59,7 @@ export class DesktopCheckoutRuntime {
   if(this.active)throw Error('DesktopSessionAlreadyRunning');
   const port=new ChromePort(this.api,this.tabId,{mode:'observe'}),o=await port.observe(PRO_PLAN),old=await this.store.get(TASK_KEY);
   const recover=old?.desktopContext!==this.api.sessionId&&old?.desktopContext&&(validateDesktopCartTransfer(old,{sessionId:old.desktopContext})||validateEmptyRestart(old,{sessionId:old.desktopContext}));
-  const result={state:'OBSERVED',phase:o.phase,pendingAction:old?.pending?.action??null,legacyReadOnly:old?.reconcileOnly===true||!!recover,realOrderVerified:false};
+  const result={state:'OBSERVED',phase:o.phase,pendingAction:old?.pending?.action??null,legacyReadOnly:old?.reconcileOnly===true||!!recover,realOrderVerified:false,bagCheck:bagPlanCheck(o,PRO_PLAN)};
   if(!this.paused&&!this.closing&&!this.ownerLost)this.onState(safeState(result));return result;
  }
  execute(options){return this.track(()=>this.executeOnce(options));}

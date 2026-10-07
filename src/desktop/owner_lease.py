@@ -4,9 +4,59 @@ import os
 from pathlib import Path
 import sys
 import uuid
+import base64
+import hashlib
+import re
+import time
 
 MAGIC = b"APPLEBUY-OS-LEASE-v1\n"
 TASK_KEY = "applebuy-single-personal-purchase/v1"
+MAX_VALUE_BYTES = 16_000_000
+MAX_CHUNK_BYTES = 48_000
+
+class ChunkedPut:
+    """Only a complete, sequential, bounded, hashed value reaches the existing atomic writer."""
+    def __init__(self):
+        self.stage = None
+
+    def receive(self, path, request):
+        if not isinstance(request, dict) or type(request.get("id")) is not int or request["id"] <= 0:
+            raise ValueError()
+        action = request.get("action")
+        if self.stage and time.monotonic() - self.stage["at"] > 30:
+            raise ValueError()
+        if action == "put":
+            if self.stage or request.get("key") != TASK_KEY or not isinstance(request.get("value"), dict):
+                raise ValueError()
+            put_task(path, request["value"])
+            return True
+        if action == "putBegin":
+            if self.stage or set(request) != {"action", "id", "key", "bytes", "sha256"} or request.get("key") != TASK_KEY or type(request.get("bytes")) is not int or not 0 < request["bytes"] <= MAX_VALUE_BYTES or not isinstance(request.get("sha256"), str) or not re.fullmatch(r"[a-f0-9]{64}", request["sha256"]):
+                raise ValueError()
+            self.stage = {"id":request["id"], "bytes":request["bytes"], "sha256":request["sha256"], "data":bytearray(), "seq":0, "at":time.monotonic()}
+            return None
+        stage = self.stage
+        if not stage or request["id"] != stage["id"]:
+            raise ValueError()
+        if action == "putChunk":
+            if set(request) != {"action", "id", "seq", "data"} or type(request.get("seq")) is not int or request["seq"] != stage["seq"] or not isinstance(request.get("data"), str) or len(request["data"]) > 64_000:
+                raise ValueError()
+            data = base64.b64decode(request["data"], validate=True)
+            if not data or len(data) != min(MAX_CHUNK_BYTES, stage["bytes"] - len(stage["data"])):
+                raise ValueError()
+            stage["data"].extend(data)
+            stage["seq"] += 1
+            return None
+        if action == "putCommit":
+            if set(request) != {"action", "id"} or len(stage["data"]) != stage["bytes"] or hashlib.sha256(stage["data"]).hexdigest() != stage["sha256"]:
+                raise ValueError()
+            value = json.loads(stage["data"].decode("utf-8"))
+            if not isinstance(value, dict):
+                raise ValueError()
+            put_task(path, value)
+            self.stage = None
+            return True
+        raise ValueError()
 
 def emit(owned):
     print(json.dumps({"scope": "applebuy-owner-lease", "owned": owned}), flush=True)
@@ -77,6 +127,7 @@ def main():
             emit(False)
             return 2
         emit(True)
+        transaction = ChunkedPut()
         # This private pipe stays open for the lease lifetime. Parent death closes it;
         # a contained worker tree death also kills this holder and the OS releases the lock.
         while True:
@@ -88,12 +139,14 @@ def main():
                 if len(line.encode("utf-8")) > 2_000_000 or not line.endswith("\n"):
                     raise ValueError()
                 request = json.loads(line)
-                if request.get("action") != "put" or request.get("key") != TASK_KEY or not isinstance(request.get("value"), dict) or type(request.get("id")) is not int:
-                    raise ValueError()
-                put_task(path, request["value"])
+                done = transaction.receive(path, request)
+                if done is None:
+                    continue
                 reply = {"scope": "applebuy-owner-lease", "id": request["id"], "ok": True}
             except (OSError, ValueError, TypeError, AttributeError):
-                reply = {"scope": "applebuy-owner-lease", "id": request.get("id") if isinstance(request, dict) else None, "ok": False}
+                failed_id = transaction.stage["id"] if transaction.stage else request.get("id") if isinstance(request, dict) else None
+                transaction.stage = None
+                reply = {"scope": "applebuy-owner-lease", "id": failed_id, "ok": False}
             print(json.dumps(reply), flush=True)
         return 0
     except (OSError, ValueError):

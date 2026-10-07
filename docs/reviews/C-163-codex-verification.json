@@ -1,0 +1,53 @@
+{
+  "task": "C-163-OWNER-STREAM",
+  "sourceFiles": 297,
+  "sha256": "fa56150223068548add53690818c860e076d30e7090cea9a6ae9a52ca85eb623",
+  "changed": [
+    "src/desktop/checkout-diagnostic.mjs",
+    "src/desktop/owner-lease.mjs",
+    "src/desktop/owner_lease.py"
+  ],
+  "added": [
+    "src/desktop/owner-write-frames.mjs",
+    "test/desktop-c162-large-owner-write.test.ts",
+    "test/desktop_c163_owner_chunks_test.py"
+  ],
+  "actualObservedCart": {
+    "matchesPlan": true,
+    "quantity": 1,
+    "totalCny": 9999,
+    "extrasClear": true
+  },
+  "actualCurrentTransfers": 2,
+  "prospectiveIPCBytes": 4430312,
+  "oldFrameLimitBytes": 2000000,
+  "sourceAndProspectiveGuardsPassedWithNoWriteStub": true,
+  "physicalBefore": {
+    "tests": 1,
+    "pass": 0,
+    "fail": 1,
+    "error": "DesktopOwnerWriteUnconfirmed"
+  },
+  "newPhysicalFramingTests": 6,
+  "newPythonNegativeTests": 7,
+  "fullNode": {
+    "tests": 1579,
+    "pass": 1579,
+    "fail": 0,
+    "cancelled": 0,
+    "skipped": 0
+  },
+  "fullPython": {
+    "tests": 61,
+    "failures": 0,
+    "errors": 0
+  },
+  "perFrameLimitUnchanged": 2000000,
+  "newAggregateValueLimit": 16000000,
+  "rawChunkBytes": 48000,
+  "originalGeneric3000Depth3AndHistoryChecksUnchanged": true,
+  "diskFormatAndAtomicWriterUnchanged": true,
+  "actualProductionLargeWritePerformed": false,
+  "actualTransferFailureBeforeWriteRetained": true,
+  "realOrderVerified": false
+}

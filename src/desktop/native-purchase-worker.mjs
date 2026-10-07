@@ -2,6 +2,7 @@
 import {createInterface} from 'node:readline';import {join} from 'node:path';
 import {DesktopCheckoutRuntime} from './checkout-runtime.mjs';import {DesktopTaskStore} from './task-store.mjs';
 import {AuthContinuation} from './auth-continuation.mjs';import {launchNativeCheckout} from './native-checkout-channel.mjs';
+import {safeCheckoutDiagnostic} from './checkout-diagnostic.mjs';
 if(process.argv.length>2)throw Error('NativeWorkerArgumentsNotAllowed');
 const emit=value=>process.stdout.write(JSON.stringify({scope:'desktop-pro-checkout',...value})+'\n');
 let input,watch,closing=false;const store=new DesktopTaskStore(join(process.cwd(),'.local/desktop/task.json'));
@@ -41,9 +42,9 @@ try{
     if(!runtime.paused&&result.phase==='AUTH'&&result.state==='NEEDS_USER')watch.start(async()=>{active=true;try{await advance({checkoutApproved:true,newContextConfirmed:true,privatePickupData:c.privatePickupData??{}});}catch{emit({type:'blocked',paused:runtime.paused,message:'接替后的登录衔接未确认；旧动作保持。'});}finally{active=false;}});
    }else{
     const result=c.action==='observe'?await runtime.observe():c.action==='reconcile'?runtime.paused?await runtime.resume({mode:'reconcile'}):await runtime.reconcile():await runtime.submit({termsAccepted:c.termsAccepted===true,existingOrdersChecked:c.existingOrdersChecked===true,noExtras:c.noExtras===true});
-    emit({type:'result',state:result.state,phase:result.phase,paused:runtime.paused,readOnly:c.action==='reconcile',realOrderVerified:result.realOrderVerified===true,reviewReady:!!runtime.finalDescriptor});
+    emit({type:'result',state:result.state,phase:result.phase,paused:runtime.paused,readOnly:c.action==='reconcile',realOrderVerified:result.realOrderVerified===true,reviewReady:!!runtime.finalDescriptor,bagCheck:result.bagCheck??null});
    }
-  }catch{emit({type:'blocked',paused:runtime.paused,message:'本次结账推进未确认；旧任务、未知动作和权限保持，不重新下单。'});}finally{active=false;}
+  }catch(error){emit({type:'blocked',paused:runtime.paused,diagnosticCode:safeCheckoutDiagnostic(error),message:'本次结账推进未确认；旧任务、未知动作和权限保持，不重新下单。'});}finally{active=false;}
  });
  await new Promise(resolve=>input.once('close',resolve));watch.stop();
 }catch{process.exitCode=1;emit({type:'blocked',message:'正常 Chrome 结账通道未连接或原任务无法继续；未启用新购买。'});}

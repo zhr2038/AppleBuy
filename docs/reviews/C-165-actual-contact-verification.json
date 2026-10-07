@@ -1,0 +1,29 @@
+{
+  "task": "C-165-ACTUAL-PRO-CONTACT",
+  "sourceFiles": 297,
+  "sha256": "fa56150223068548add53690818c860e076d30e7090cea9a6ae9a52ca85eb623",
+  "actualLargeJournalWriteSucceeded": true,
+  "transferDepth": 3,
+  "wholeOldHistoryRetained": true,
+  "actualCurrentBag": {
+    "quantity": 1,
+    "totalCny": 9999,
+    "matchesPlan": true,
+    "extrasClear": true
+  },
+  "newAdd": false,
+  "oneCheckout": true,
+  "rootSupportedChromeLoginSucceeded": true,
+  "programmeReachedSlotSelectionAndContact": true,
+  "sameTaskContactSlotBasisRecognized": true,
+  "slotHoldClaimed": false,
+  "programmeIdentitySuffixWriteStarted": true,
+  "currentDetailsEmailTypeMismatch": true,
+  "otherRequiredNativeFieldsValid": true,
+  "currentPending": "fillDetails",
+  "ownerPausedWithContextRetained": true,
+  "humanContactCorrectionQuestionPending": true,
+  "manualContactCorrectionIsNotAutomaticAcceptance": true,
+  "finalOrPaymentSent": false,
+  "realOrderVerified": false
+}

@@ -1,0 +1,39 @@
+{
+  "task": "C-160-BAG-DIAGNOSTIC",
+  "sourceFiles": 294,
+  "sha256": "073105e554e2d52595436dba08593b5697920fc309ad7ffcebf6757b3e171df5",
+  "changed": [
+    "src/desktop/checkout-runtime.mjs",
+    "src/desktop/native-purchase-worker.mjs"
+  ],
+  "added": [
+    "src/desktop/checkout-diagnostic.mjs",
+    "test/desktop-c160-bag-diagnostic.test.ts"
+  ],
+  "oldTestsOrPurchasingGuardsChanged": false,
+  "before": {
+    "tests": 3,
+    "pass": 0,
+    "fail": 3
+  },
+  "after": {
+    "tests": 20,
+    "pass": 20,
+    "fail": 0
+  },
+  "fullNode": {
+    "tests": 1573,
+    "pass": 1573,
+    "fail": 0,
+    "cancelled": 0,
+    "skipped": 0
+  },
+  "actualPurchaseNativeReady": true,
+  "actualReadonlyReconciliation": true,
+  "actualTransferGenericBlocked": true,
+  "actualCauseUnproved": true,
+  "readOnlyNoBrowserNoProductionWriteProbe": "source guards pass and prospective write boundary reached with a diagnostic stub; no real ledger write or buyer created",
+  "ownedPreviousWorkerStopped": true,
+  "newDiagnosticsLive": false,
+  "realOrderVerified": false
+}

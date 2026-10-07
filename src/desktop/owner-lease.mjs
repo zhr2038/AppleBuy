@@ -1,6 +1,7 @@
 // The own Python child holds a kernel lock, never a PID/TTL heuristic. Its pipe belongs only to this process.
 import {spawn} from 'node:child_process';import {fileURLToPath} from 'node:url';
 import {createInterface} from 'node:readline';
+import {ownerWriteFrames} from './owner-write-frames.mjs';
 const HELPER=fileURLToPath(new URL('./owner_lease.py',import.meta.url));
 export async function acquireDesktopOwner(file,{spawnProcess=spawn}={}){
  const child=spawnProcess('python',['-B',HELPER,file],{windowsHide:true,stdio:['pipe','pipe','pipe']});
@@ -23,12 +24,18 @@ export async function acquireDesktopOwner(file,{spawnProcess=spawn}={}){
  try{
   let timeout;try{await Promise.race([ready,new Promise((_,no)=>timeout=setTimeout(()=>no(Error('DesktopOwnerHeldOrUnconfirmed')),3000))]);}finally{clearTimeout(timeout);}
  }catch(error){releasing=true;await quiesce();throw error;}
- let releasePromise;
+ let releasePromise,writeTail=Promise.resolve();
+ async function putOnce(key,value){
+  if(!active||terminal||releasing)throw Error('DesktopOwnerLeaseLost');const id=nextId++;
+  const frames=ownerWriteFrames(key,value,id),first=frames.next();
+  await new Promise((yes,no)=>{
+   pending.set(id,{yes,no});
+   try{for(const line of (function*(){yield first.value;yield*frames;})())child.stdin.write(line,error=>{if(error){pending.delete(id);no(Error('DesktopOwnerLeaseLost'));}});}
+   catch(error){pending.delete(id);no(error);}
+  });
+ }
  return {get owned(){return active&&!terminal&&!releasing&&child.exitCode===null&&child.signalCode===null;},onLost(f){listeners.add(f);return ()=>listeners.delete(f);},
-  async put(key,value){
-   if(!active||terminal||releasing)throw Error('DesktopOwnerLeaseLost');const id=nextId++,line=JSON.stringify({action:'put',id,key,value})+'\n';if(Buffer.byteLength(line)>2_000_000)throw Error('DesktopOwnerWriteUnconfirmed');
-   await new Promise((yes,no)=>{pending.set(id,{yes,no});child.stdin.write(line,error=>{if(error){pending.delete(id);no(Error('DesktopOwnerLeaseLost'));}});});
-  },
+  put(key,value){const running=writeTail.then(()=>putOnce(key,value));writeTail=running.catch(()=>{});return running;},
   release(){if(!releasePromise){releasing=true;active=false;releasePromise=quiesce();}return releasePromise;}};
 }
 

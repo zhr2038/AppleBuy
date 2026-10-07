@@ -1,0 +1,13 @@
+{
+  "task": "C-159-PUBLICATION",
+  "codeCommit": "fe32bc6dc0416735e0e44c99c1def2a8163befab",
+  "remoteCandidate": "fe32bc6dc0416735e0e44c99c1def2a8163befab",
+  "sourceFiles": 292,
+  "sha256": "5d2ee6d1f1d238c9aa6354d86b257ebfebbe9fa9c0acdfbe89bd2abe1cf9265e",
+  "allHeadRemoteBlobsMatch": true,
+  "mainPromoted": false,
+  "forcePushed": false,
+  "privatePublished": false,
+  "installedMenuVerified": false,
+  "realOrderVerified": false
+}
