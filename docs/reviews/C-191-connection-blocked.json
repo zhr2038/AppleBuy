@@ -1,0 +1,22 @@
+{
+  "task": "C-191-connection-blocked",
+  "date": "2026-10-08",
+  "previousGoalTurnClassification": "no progress; same required human permission and connection handoff",
+  "consecutiveResumedGoalTurns": 3,
+  "currentSourceUnchangedAndWorktreeClean": true,
+  "sourceFiles": 307,
+  "sourceSha256": "f36f70792aa9eae075824d2105b33508f9a70cfb5eccf34f64b2260165d88fae",
+  "activeBuyerReviewOrNativeCheckoutProcessObserved": false,
+  "C189OwnedSupervisorTerminalAndCleanupPreserved": true,
+  "newHumanHostScopeApprovalReceived": false,
+  "newPurchaseConnectionEvidenceReceived": false,
+  "goalStatusReturnedByTool": "blocked",
+  "fullGoalPreserved": true,
+  "realProgrammeUnpaidOrderVerified": false,
+  "newPurchaseActions": false,
+  "pendingSetupQuestionRetainedWithoutReasking": true,
+  "browserInternalPageRejectionNotRetriedOrWorkedAround": true,
+  "resumePoint": "after current specific official checkout-subdomain approval and trusted fixed-Pro purchase connection: current readonly source/cart and orders check, then the reviewed explicit ended-draft continuation",
+  "unknownSourceAndHistoryPreserved": true,
+  "noShutdownOrReboot": true
+}
