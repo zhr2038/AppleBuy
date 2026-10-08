@@ -16,7 +16,7 @@
 // C035 (Claude): the observed complete normal empty bag is EMPTY_BAG; there only openProduct is accepted, as a write-free re-verification.
 // C037 (Claude): selectStore can choose the observed numbered native Dalian radio when it is not preselected, by the same exact proof.
 // C051 (Claude): the observed contact-only details step is a recognized step (contactStep), never purchase proof; see below.
-export const CHECKOUT_EXECUTOR_VERSION='C198-native-payment-expiry-v1';
+export const CHECKOUT_EXECUTOR_VERSION='C204-native-review-read-v1';
 export async function merchantDocument(plan,command=null,internal=null){
   // `internal` is set only by this program's own re-entry; ChromePort passes plan and command only.
   // A structured command always receives a structured report. Nothing was written unless this id was already delivered.
@@ -421,7 +421,23 @@ export async function merchantDocument(plan,command=null,internal=null){
     out.listComplete=one.length===1&&out.times.length>0&&[...timeSelects[0].options].every(o=>norm(o.textContent)==='可选时段'||/^\d{2}:\d{2}\s*[-–—至]\s*\d{2}:\d{2}$/.test(norm(o.textContent)));
   }
   // Known normal-flow transition is not a hold guarantee. ChromePort binds it to its delivered choice.
-  out.termsLinks=[...new Set([...document.querySelectorAll('a[href]')].filter(a=>visible(a)&&/条款|销售政策/.test(name(a))).flatMap(a=>{try{const h=new URL(a.href);return h.protocol==='https:'&&h.hostname==='www.apple.com.cn'&&/^\/shop\/open\/salespolicies\/?$/.test(h.pathname)?[h.origin+h.pathname.replace(/\/$/,'')]:[];}catch{return [];}}))];
+  // C204: the current native review links to the observed /shop/browse/open/salespolicies alias.
+  // Preserve the actual URL rather than pretending the current page linked to the older address.
+  out.termsLinks=[...new Set([...document.querySelectorAll('a[href]')].filter(a=>visible(a)&&/条款|销售政策/.test(name(a))).flatMap(a=>{try{const h=new URL(a.href);return h.protocol==='https:'&&!h.username&&!h.password&&!h.port&&!h.search&&!h.hash&&h.hostname==='www.apple.com.cn'&&/^\/shop\/(?:browse\/)?open\/salespolicies\/?$/.test(h.pathname)?[h.origin+h.pathname.replace(/\/$/,'')]:[];}catch{return [];}}))];
+  // C204: one visible native review billing section displays its provider as an IMG, not a selected radio.
+  // This supplies only the payment-method fact. Missing store/date/slot remain missing; no final guard is relaxed.
+  if(checkoutScope&&phase==='REVIEW'){
+    const sections=[...main.querySelectorAll('.rs-review-billing')],section=sections.length===1?sections[0]:null;
+    const titles=section?[...section.querySelectorAll('h2.rs-review-title')]:[],details=section?[...section.querySelectorAll('.rs-review-billing-details')]:[];
+    const images=[...main.querySelectorAll('.rs-review-payment-image')],image=images.length===1?images[0]:null;
+    const header=image?.closest('h3.rs-review-payment-header'),cards=header?.closest('.rs-review-billing-cards');
+    const billingControls=section?[...section.querySelectorAll('input,select,[role="radio"],[role="checkbox"]')]:[];
+    if(section?.tagName==='DIV'&&visible(section)&&titles.length===1&&visible(titles[0])&&norm(titles[0].textContent)==='付款方式'&&
+      details.length===1&&details[0].tagName==='DIV'&&visible(details[0])&&image?.tagName==='IMG'&&visible(image)&&norm(image.getAttribute('alt'))==='支付宝'&&
+      header&&visible(header)&&cards?.tagName==='DIV'&&visible(cards)&&within(details[0],cards)&&within(cards,header)&&within(header,image)&&
+      section.querySelectorAll('img').length===1&&header.querySelectorAll('img').length===1&&billingControls.length===0&&dialogs?.length===0)out.paymentMethod='支付宝';
+    if(out.paymentMethod==='支付宝'&&purchase.itemVerified&&purchase.store===null&&out.slotSummary===null)out.reason='native-review-missing-store-and-slot';
+  }
   const orderLabels=[...new Set(texts.filter(t=>/^订单(?:编号|号)\s*[:：]?\s*[A-Z0-9-]{6,30}$/.test(t)).map(t=>t.match(/[A-Z0-9-]{6,30}$/)[0]))];
   // C-015: hash a newly seen reference, then decode the WHOLE current document again with the hash cached. Only that final,
   // await-free decode is returned or acted on. A reference that changed while it was hashed is not current evidence.
