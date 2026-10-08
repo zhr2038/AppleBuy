@@ -1,0 +1,42 @@
+{
+  "task": "C-198-EXPIRED-PAYMENT-CONTINUATION",
+  "sourceFiles": 314,
+  "sourceSha256": "a615b6ad4294d8ae602e5a1d5e475edab55c53224e488c948cf0100923a3f9cf",
+  "status": "candidate; actual original-session cross-author review pending",
+  "newFocused": {
+    "tests": 32,
+    "pass": 32,
+    "fail": 0
+  },
+  "physicalManagedArchiveAndAtomicTaskTest": true,
+  "completeInlineSourceFallbackAndTamperRefusal": true,
+  "productionRuntimeOneFakeUnpaidZeroAddOneCheckout": true,
+  "productionRuntimeUnverifiedReviewKeepsPendingAndNoFinalDescriptor": true,
+  "readOnlySettlingDoesNotResendOrExtendDeadline": true,
+  "nativeApiPeerPortPaymentStepAndActionAllowlistExercised": true,
+  "loadedExecutorVersionCheckedBeforeAnyProbeArchiveOrIntent": true,
+  "expiryProbeOnlyOfficialOwnedInactiveNormalGet": true,
+  "oldGenericTransferAndRenewalLimitsChanged": false,
+  "newRecoveryIsOneSeparateExactPostContactSourceShape": true,
+  "actualPrivateSourceShapeEligible": true,
+  "actualPrivatePriorProvenanceVerifiedUnderRealLease": true,
+  "actualPrivateSourceBytesUnchanged": true,
+  "actualPrivateSourceArchiveOrRecoveryCreated": false,
+  "oldTestFixtureException": "C192 worker VM receives the newly imported actual shape helper; all old assertions unchanged",
+  "initialRelevantRegressions": "C103 pause must still reject preparation; C192 missing VM dependency; C121 unknown final must still signal final-consent error",
+  "oldRegressionAssertionsRestoredWithoutWeakening": true,
+  "fullChecks": {
+    "complete": true,
+    "orderedChecks": 5,
+    "protected": 108,
+    "python": 64,
+    "fullNode": 1734,
+    "passed": true,
+    "manifestBeforeAfterVerified": true,
+    "ownedCleanupConfirmed": true
+  },
+  "personalPeerDeployed": false,
+  "realProgrammeUnpaidOrderVerified": false,
+  "operatorAccountAndOldExecutorFactsRemainAttestations": true,
+  "merchantExpiryNotHoldReleaseGuarantee": true
+}

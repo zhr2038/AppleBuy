@@ -1,8 +1,8 @@
 // Own Chrome tabs only; fixed reviewed merchant program only. Prepared and unreachable from the installed readonly link.
-import {merchantDocument} from './page-program.js';
+import {merchantDocument,CHECKOUT_EXECUTOR_VERSION} from './page-program.js';
 import {canonicalJson} from './job.js';
 import {CHECKOUT_RPC,BAG,ENTRY,checkoutUrl,checkoutObservedUrl,checkoutRequest,checkoutCommand,planAllowed,boundedCheckoutJson} from './checkout-rpc-contract.js';
-const PAGE_KEYS=new Set(['schema','phase','purchase','verifiedStep','path','feedback','acceptedSlot','slotSummary','continueAvailable','variantVerified','quotedCny','listComplete','dates','times','selectedDate','paymentMethod','extras','existingOrdersChecked','orderRefHash','orderDetailLink','configuration','contactStep','extrasConflict','fulfillmentChoice','merchantError','needsSelection','nextChoice','orderSummary','prelaunchConfigurable','productForm','productFormLoading','quantitySource','receiptVerified','selectedProductChoices','summaryReadable','termsLinks','reason']);
+const PAGE_KEYS=new Set(['schema','phase','purchase','verifiedStep','path','feedback','acceptedSlot','slotSummary','continueAvailable','variantVerified','quotedCny','listComplete','dates','times','selectedDate','paymentMethod','extras','existingOrdersChecked','orderRefHash','orderDetailLink','configuration','contactStep','paymentStep','extrasConflict','fulfillmentChoice','merchantError','needsSelection','nextChoice','orderSummary','prelaunchConfigurable','productForm','productFormLoading','quantitySource','receiptVerified','selectedProductChoices','summaryReadable','termsLinks','reason']);
 function safeOutput(value,depth=0){
  if(depth>16)throw Error('NativeResultNotAllowed');
  if(!value||typeof value!=='object')return;
@@ -21,6 +21,12 @@ export class CheckoutRpcPeer{
  }
  async operation(op,p){
   const keys=allowed=>{if(Object.keys(p).some(k=>!allowed.includes(k)))throw Error('NativePayloadNotAllowed');};
+  if(op==='executorVersion'){keys([]);return CHECKOUT_EXECUTOR_VERSION;}
+  if(op==='createExpiryProbe'){
+   keys(['url']);let u;try{u=new URL(p.url);}catch{throw Error('NativeAddressNotAllowed');}
+   if(!this.purchaseAllowed||this.tabs.size>=4||u.protocol!=='https:'||u.username||u.password||u.port||u.search||u.hash||!/^secure\d+\.www\.apple\.com\.cn$/.test(u.hostname)&&u.hostname!=='www.apple.com.cn'||u.pathname!=='/shop/checkout')throw Error('NativeExpiryProbeNotAllowed');
+   const t=await this.api.tabs.create({url:p.url,active:false});this.tabs.set(t.id,{last:null,navigation:null});return {id:t.id};
+  }
   if(op==='containsHost'){
    keys(['origins']);if(!Array.isArray(p.origins)||p.origins.length!==1||typeof p.origins[0]!=='string'||p.origins[0]!=='https://*.www.apple.com.cn/*'&&!/^https:\/\/(?:www|secure\d*\.www)\.apple\.com\.cn\/\*$/.test(p.origins[0]))throw Error('NativeOriginNotAllowed');
    return await this.api.permissions.contains({origins:p.origins});

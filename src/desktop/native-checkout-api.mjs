@@ -14,6 +14,8 @@ export class NativeCheckoutApi{
   }finally{clearTimeout(timer);this.active=false;}
  }
  create(url){return this.tabs.create({url,active:true});}
+ executorVersion(){return this.request('executorVersion',{});}
+ createExpiryProbe(url){return this.request('createExpiryProbe',{url});}
  get tabs(){return {create:async({url,active=false})=>{if(!checkoutUrl(url))throw Error('NativeAddressNotAllowed');return this.request('createTab',{url,active});},get:tabId=>this.request('getTab',{tabId}),remove:async tabId=>{const r=await this.request('removeTab',{tabId});if(r?.removed!==true)throw Error('NativeTabCloseUnconfirmed');},update:async(tabId,{url})=>{if(!checkoutUrl(url))throw Error('NativeAddressNotAllowed');return this.request('updateTab',{tabId,url});}};}
  get permissions(){return {contains:origins=>this.request('containsHost',origins)};}
  get scripting(){return {executeScript:async q=>{

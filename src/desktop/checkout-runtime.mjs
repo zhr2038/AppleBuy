@@ -1,15 +1,16 @@
 // The desktop entry uses the production controller; a carried unknown record never enables a second buyer.
 import {runDesktopSession,PRO_PLAN,proDigest} from './browser-session.mjs';
-import {TASK_KEY,validStored} from '../../web/checkout-connector/job.js';
+import {TASK_KEY,validStored,purchaseMatches,sameAcceptedSlot} from '../../web/checkout-connector/job.js';
 import {ChromePort,allowedMerchantUrl} from '../../web/checkout-connector/chrome-port.js';
 import {transferExistingCart,transferExpiredContactOnce,validateDesktopCartTransfer} from './cart-transfer.mjs';
 import {guardOwnedApi} from './owner-lease.mjs';
 import {restartFromCurrentEmpty,validateEmptyRestart} from './empty-restart.mjs';
 import {bagPlanCheck} from './checkout-diagnostic.mjs';
 import {renewEndedDraft,validateEndedDraft} from './ended-draft.mjs';
+import {restartExpiredPayment,validateExpiredPaymentRestart} from './expired-payment-restart.mjs';
 const BAG='https://www.apple.com.cn/shop/bag',TERMS='https://www.apple.com.cn/shop/open/salespolicies';
 const PHASES=new Set(['ENTRY','VARIANT','EMPTY_BAG','BAG','AUTH','FULFILLMENT','SLOTS','DETAILS','PAYMENT','REVIEW','ORDER_RECEIPT','ORDER_DETAIL','PROCESSING','UNKNOWN']);
-const safeState=s=>({state:typeof s.state==='string'?s.state:'NEEDS_VERIFICATION',phase:PHASES.has(s.phase)?s.phase:'UNKNOWN',pendingAction:['addBag','checkout','chooseSlot','submitOrder'].includes(s.pendingAction)?s.pendingAction:null});
+const safeState=s=>({state:typeof s.state==='string'?s.state:'NEEDS_VERIFICATION',phase:PHASES.has(s.phase)?s.phase:'UNKNOWN',pendingAction:['addBag','checkout','chooseSlot','fillDetails','selectPayment','continuePayment','submitOrder'].includes(s.pendingAction)?s.pendingAction:null});
 export class DesktopCheckoutRuntime {
  constructor({store,launch,onState=()=>{}}){this.store=store;this.launch=launch;this.onState=onState;this.opened=false;this.busy=false;this.closing=false;this.closed=false;this.paused=false;this.cleanupConfirmed=false;this.finalDescriptor=null;this.active=null;this.operations=new Set();this.ownerLost=false;}
  track(operation){const running=Promise.resolve().then(operation);this.operations.add(running);running.then(()=>this.operations.delete(running),()=>this.operations.delete(running));return running;}
@@ -59,7 +60,7 @@ export class DesktopCheckoutRuntime {
   if(!this.opened||this.closed||this.closing)throw Error('DesktopSessionNotOpen');
   if(this.active)throw Error('DesktopSessionAlreadyRunning');
   const port=new ChromePort(this.api,this.tabId,{mode:'observe'}),o=await port.observe(PRO_PLAN),old=await this.store.get(TASK_KEY);
-  const recover=old?.desktopContext!==this.api.sessionId&&old?.desktopContext&&(validateDesktopCartTransfer(old,{sessionId:old.desktopContext})||validateEmptyRestart(old,{sessionId:old.desktopContext})||await validateEndedDraft(old,{sessionId:old.desktopContext},this.store,{readonly:true}));
+  const recover=old?.desktopContext!==this.api.sessionId&&old?.desktopContext&&(validateDesktopCartTransfer(old,{sessionId:old.desktopContext})||validateEmptyRestart(old,{sessionId:old.desktopContext})||await validateEndedDraft(old,{sessionId:old.desktopContext},this.store,{readonly:true})||await validateExpiredPaymentRestart(old,{sessionId:old.desktopContext},this.store,{readonly:true}));
   const result={state:'OBSERVED',phase:o.phase,pendingAction:old?.pending?.action??null,legacyReadOnly:old?.reconcileOnly===true||!!recover,realOrderVerified:false,bagCheck:bagPlanCheck(o,PRO_PLAN)};
   if(!this.paused&&!this.closing&&!this.ownerLost)this.onState(safeState(result));return result;
  }
@@ -72,7 +73,10 @@ export class DesktopCheckoutRuntime {
   const leased={get:k=>this.store.get(k),put:(k,v)=>this.store.put(k,v),readArchive:d=>this.store.readArchive(d),acquireOwner:async()=>({get owned(){return runtime.lease?.owned===true;},release:async()=>{}})},runtime=this;
   try{
    this.active=runDesktopSession({api:this.api,tabId:this.tabId,store:leased,mode:'purchase',signal:this.abort.signal,onState:s=>this.onState({...safeState(s),readOnly:options.mode==='reconcile',paused:this.paused}),...options});
-   const result=await this.active;if(options.mode!=='reconcile'&&result.phase==='REVIEW'&&!this.closing&&!this.paused)await this.prepareReview();this.onState({...safeState(result),paused:this.paused});return result;
+   const result=await this.active,record=await this.store.get(TASK_KEY);
+   if(options.mode!=='reconcile'&&result.phase==='REVIEW'&&record?.finalIntent)throw Error('DesktopFinalConsentNotCurrent');
+   if(options.mode!=='reconcile'&&result.phase==='REVIEW'&&!record?.pending&&!record?.finalIntent&&!this.closing&&!this.paused){try{await this.prepareReview();}catch(error){this.finalDescriptor=null;if(this.paused||this.closing||this.ownerLost)throw error;}}
+   this.onState({...safeState({...result,pendingAction:record?.pending?.action??null}),paused:this.paused});return {...result,pendingAction:record?.pending?.action??null};
   }finally{this.active=null;this.busy=false;}
  }
  advance(options={}){return this.track(()=>this.advanceOnce(options));}
@@ -96,12 +100,21 @@ export class DesktopCheckoutRuntime {
   return this.advance({checkoutApproved:true,newContextConfirmed:true,privatePickupData});
  }
  async prepareReview(){
-  const old=await this.store.get(TASK_KEY),port=new ChromePort(this.api,this.tabId,{mode:'observe'}),o=await port.observe(PRO_PLAN);
-  if(this.paused||this.closing||old?.desktopContext!==this.api.sessionId||old.lastPhase!=='REVIEW'||old.pending||old.finalIntent||old.reconcileOnly===true||o.phase!=='REVIEW'||o.documentId!==old.lastDocumentId||!o.termsLinks?.includes(TERMS))throw Error('DesktopFinalConsentNotCurrent');
+  const old=await this.store.get(TASK_KEY),port=new ChromePort(this.api,this.tabId,{mode:'purchase',authorized:true,orderSummary:true,acceptedSlot:old?.acceptedSlot});let o=await port.observe(PRO_PLAN);
+  if(!old?.pending&&!old?.finalIntent&&o.phase==='REVIEW'&&o.summaryReadable===true&&o.quantitySource!=='order-summary'){if((await port.readSummary(PRO_PLAN,old.taskId)).read!==true)throw Error('DesktopFinalConsentNotCurrent');o=await port.observe(PRO_PLAN);}
+  if(this.paused||this.closing||this.ownerLost||old?.expiresAt<=Date.now()||old?.desktopContext!==this.api.sessionId||old.lastPhase!=='REVIEW'||old.pending||old.finalIntent||old.reconcileOnly===true||o.phase!=='REVIEW'||o.documentId!==old.lastDocumentId||!o.termsLinks?.includes(TERMS)||!purchaseMatches(PRO_PLAN,o.purchase)||o.extras!==false||o.paymentMethod!=='支付宝'||!sameAcceptedSlot(old,o.slotSummary)||(old.bagTotalCny??old.quotedCny)!==o.purchase.totalCny)throw Error('DesktopFinalConsentNotCurrent');
   this.finalDescriptor={taskId:old.taskId,documentId:old.lastDocumentId,termsUrl:TERMS};
   return {phase:'REVIEW',termsUrl:TERMS,product:PRO_PLAN.product,totalCapCny:9999,quantity:1,store:PRO_PLAN.stores[0],paymentMethod:'支付宝'};
  }
  transferContact(options={}){return this.track(()=>this.transferContactOnce(options));}
+ restartPayment(options={}){return this.track(()=>this.restartPaymentOnce(options));}
+ async restartPaymentOnce({approved=false,newContextConfirmed=false,oldExecutorStopped=false,sameAccountOrdersClear=false,expiredCheckoutUrl,privatePickupData={}}={}){
+  if(this.ownerLost||this.paused||!this.opened||this.busy||this.closing||this.closed||this.lease?.owned!==true)throw Error('DesktopSessionAlreadyRunning');this.busy=true;let created;
+  try{this.active=restartExpiredPayment({store:this.store,api:this.api,tabId:this.tabId,expiredCheckoutUrl,approved,newContextConfirmed,oldExecutorStopped,sameAccountOrdersClear,live:()=>!this.ownerLost&&!this.closing&&!this.paused&&this.lease?.owned===true});created=await this.active;}finally{this.active=null;this.busy=false;}
+  if(created?.created!==true)throw Error('ExpiredPaymentProspectiveUnconfirmed');
+  if(this.paused||this.closing||this.ownerLost||this.lease?.owned!==true)return {state:this.paused?'PAUSED':'NEEDS_VERIFICATION',phase:'BAG',localTransitionCreated:true,realOrderVerified:false};
+  return {...await this.advance({checkoutApproved:true,newContextConfirmed:true,privatePickupData}),localTransitionCreated:true};
+ }
  renewDraft(options={}){return this.track(()=>this.renewDraftOnce(options));}
  async renewDraftOnce({approved=false,newContextConfirmed=false,merchantExpiryConfirmed=false,oldExecutorStopped=false,sameAccountOrdersClear=false,privatePickupData={}}={}){
   if(this.ownerLost||this.paused||!this.opened||this.busy||this.closing||this.closed||this.lease?.owned!==true)throw Error('DesktopSessionAlreadyRunning');this.busy=true;let created;
@@ -139,8 +152,8 @@ export class DesktopCheckoutRuntime {
   await Promise.allSettled([...this.operations,...(this.starting?[this.starting]:[])]);
   if(this.ownerLost)throw Error('DesktopOwnerLeaseLost');
   const old=await this.store.get(TASK_KEY);
-  const recovered=old?.desktopContext!==this.api.sessionId&&old?.desktopContext&&(validateDesktopCartTransfer(old,{sessionId:old.desktopContext})||validateEmptyRestart(old,{sessionId:old.desktopContext})||await validateEndedDraft(old,{sessionId:old.desktopContext},this.store,{readonly:true}));
-  return {...safeState({state:'PAUSED',phase:old?.lastPhase,pendingAction:old?.pending?.action}),paused:true,readOnly:old?.reconcileOnly===true||!!recovered,canContinue:old?.desktopContext===this.api.sessionId&&old?.reconcileOnly!==true&&old?.state!=='CONFIRMED_UNPAID'};
+  const recovered=old?.desktopContext!==this.api.sessionId&&old?.desktopContext&&(validateDesktopCartTransfer(old,{sessionId:old.desktopContext})||validateEmptyRestart(old,{sessionId:old.desktopContext})||await validateEndedDraft(old,{sessionId:old.desktopContext},this.store,{readonly:true})||await validateExpiredPaymentRestart(old,{sessionId:old.desktopContext},this.store,{readonly:true}));
+  return {...safeState({state:'PAUSED',phase:old?.lastPhase,pendingAction:old?.pending?.action}),paused:true,readOnly:old?.reconcileOnly===true||!!recovered,canContinue:old?.desktopContext===this.api.sessionId&&old?.reconcileOnly!==true&&old?.state!=='CONFIRMED_UNPAID'&&old?.expiresAt>Date.now()};
  }
  async resume({mode='purchase',...options}={}){
   if(this.ownerLost)throw Error('DesktopOwnerLeaseLost');

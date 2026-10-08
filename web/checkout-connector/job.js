@@ -90,7 +90,7 @@ function cohortAmbiguous(dates){
 // The accepted slot and an observed slot name the same pickup only when both carry a date and valid times (missing facts never compare
 // equal), the frozen cohort is unambiguous, and the dates are the same real calendar day or, for opaque labels, the identical raw string.
 // Nothing is rewritten, merged, dropped or rebound.
-function sameAcceptedSlot(s,o){
+export function sameAcceptedSlot(s,o){
   const a=s.acceptedSlot,facts=x=>!!x&&typeof x.date==='string'&&x.date!==''&&SLOT.test(x.start)&&SLOT.test(x.end);
   if(!facts(a)||!facts(o)||o.start!==a.start||o.end!==a.end||cohortAmbiguous(s.initialDates))return false;
   return CALENDAR_SHAPED.test(a.date)||CALENDAR_SHAPED.test(o.date)?sameCalendarDay(a.date,o.date):o.date===a.date;
@@ -219,7 +219,9 @@ export class PurchaseJob {
     const desktopEmptyOwner=empty?.schema==='applebuy-desktop-empty-restart/v1'&&empty.newFromEmpty===true&&e?.newFromEmpty===true&&empty.accountAttested===true&&empty.oldCheckoutStoppedByUser===true&&empty.existingOrdersCheckedByUser===true&&empty.taskId===old?.taskId&&empty.contextId===old?.desktopContext&&empty.contextId===this.port?.api?.sessionId&&empty.sourceFingerprint===e?.sourceFingerprint;
     const ended=this.port?.desktopEndedDraftProof,d=old?.desktopEndedDraft;
     const desktopEndedOwner=ended?.schema==='applebuy-ended-draft/v1'&&ended.existingCartOnly===true&&d?.existingCartOnly===true&&ended.taskId===old?.taskId&&ended.contextId===old?.desktopContext&&ended.contextId===this.port?.api?.sessionId&&ended.sourceArchive===d?.sourceArchive;
-    if(old&&!readOnly&&!rebind&&hasDesktopHandoff(old)&&!desktopCartOwner&&!desktopEmptyOwner&&!desktopEndedOwner)throw new Error('DesktopHandoffPermanentlyRevokedSource');
+    const recovered=this.port?.desktopPaymentRestartProof,r=old?.desktopPaymentRestart;
+    const desktopPaymentOwner=recovered?.schema==='applebuy-expired-payment-restart/v1'&&recovered.existingCartOnly===true&&r?.existingCartOnly===true&&recovered.taskId===old?.taskId&&recovered.contextId===old?.desktopContext&&recovered.contextId===this.port?.api?.sessionId&&recovered.sourceArchive===r?.sourceArchive;
+    if(old&&!readOnly&&!rebind&&hasDesktopHandoff(old)&&!desktopCartOwner&&!desktopEmptyOwner&&!desktopEndedOwner&&!desktopPaymentOwner)throw new Error('DesktopHandoffPermanentlyRevokedSource');
     if(old&&!validStored(old))throw new Error('StoredPurchaseTaskCorrupt');
     if(readOnly&&(!old||old.state==='RETIRED'))throw new Error('NoPreservedTaskToReconcile');
     // Validation is bounded, never authorized and stored separately; it cannot use a purchase grant.
@@ -285,6 +287,12 @@ export class PurchaseJob {
       s.lastRead=o.seq;s.lastPhase=o.phase;s.lastDocumentId=o.documentId;s.entryDocumentId??=o.documentId;s.observationCurrent=true;delete s.permissionOrigin;await this.save(s);
       if(this.paused||this.stopped)return this.gate(s,'control-changed-during-read; sent operations preserved',this.stopped?'STOPPED':'PAUSED');
       if(o.merchantError==='session-expired'&&!finalLookup)return this.gate(s,'merchant-session-expired; existing intent preserved; no automatic repeat','NEEDS_VERIFICATION');
+      // C198: a normal successor may briefly show the old or incomplete SPA step. Re-read only, within the original pending deadline.
+      // Auth/challenge/errors and any positively wrong purchased item/store remain immediate gates; never send again while waiting.
+      const transitioning=!readOnly&&!validating&&!s.reconcileOnly&&!finalLookup&&s.pending?.dispatched!==false&&['chooseSlot','fillDetails','continuePayment'].includes(s.pending?.action);
+      const wrongItem=o.purchase?.itemVerified===true&&!itemMatches(P,o.purchase),wrongPurchase=o.purchase?.verified===true&&!purchaseMatches(P,o.purchase);
+      if(transitioning&&(wrongItem||wrongPurchase||o.extras===true))return this.gate(s,'transition-purchase-conditions-differ','BLOCKED');
+      if(transitioning&&!o.merchantError&&!o.feedback&&['UNKNOWN','FULFILLMENT','PROCESSING'].includes(o.phase)&&this.now()<s.pending.deadline&&await poll(this.maxWaitMs))continue;
       if(grant?.start===true&&!finalLookup&&(grant.entryDocumentId!==s.entryDocumentId||grant.taskId!==s.taskId||grant.planDigest!==s.planDigest||grant.existingOrdersChecked!==true||grant.noExtras!==true||grant.termsAccepted!==true||!Number.isFinite(grant.expiry)||grant.expiry<=this.now()||grant.expiry>this.now()+1800000))return this.gate(s,'start-authorization-no-longer-current','BLOCKED');
       // C029 (Claude): when quantity is the only missing checkout fact, the purchase port may read the ordinary order-summary
       // disclosure (open, read, close; no merchant resource, no human confirmation). Never in read-only, validation or rebound runs,
@@ -482,7 +490,7 @@ export class PurchaseJob {
         if(s.finalIntent)s.history=[...(s.history??[]),{event:'final-not-dispatched',intentId:s.finalIntent.id,grantId:s.finalIntent.grantId}];
         s.finalIntent={id:this.id(),grantId:grant.id,sent:false};await this.save(s);command={action:'submitOrder',intentId:s.finalIntent.id,finalGrant:{...clone(grant),documentId:o.documentId}};
       }else return this.gate(s,'unsupported-merchant-stage','NEEDS_VERIFICATION');
-      if((s.desktopTransfer?.existingCartOnly===true||s.desktopEndedDraft?.existingCartOnly===true)&&['configureProduct','continueProduct','addBag','openProduct','viewBag'].includes(command.action))return this.gate(s,'desktop-transferred-cart-missing; no new addition or configuration','NEEDS_VERIFICATION');
+      if((s.desktopTransfer?.existingCartOnly===true||s.desktopEndedDraft?.existingCartOnly===true||s.desktopPaymentRestart?.existingCartOnly===true)&&['configureProduct','continueProduct','addBag','openProduct','viewBag'].includes(command.action))return this.gate(s,'desktop-transferred-cart-missing; no new addition or configuration','NEEDS_VERIFICATION');
       if(validating&&!PUBLIC.has(command.action))return this.gate(s,'validation-mode-cannot-mutate-merchant-resources','VALIDATION_STOPPED');
       if(s.expiresAt<=this.now())return this.gate(s,'task-window-expired; existing intent preserved','EXPIRED');
       if(this.paused||this.stopped)return this.gate(s,'control-changed-before-send',this.stopped?'STOPPED':'PAUSED');

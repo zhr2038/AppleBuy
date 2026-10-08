@@ -181,6 +181,7 @@ class App:
         ttk.Label(pane,text="取货资料仅用于本次程序会话。官网登录或验证请在程序打开的浏览器中完成。",wraplength=850).pack(anchor="w",pady=(5,0))
         self.transfer_confirm=tk.BooleanVar(value=False)
         self.transfer_checkbox=ttk.Checkbutton(pane,text="本人确认旧结账已停止、旧时段窗口已到期，当前同一账户购物袋为这一台 Pro；不再加购。暂停保留当前窗口；关闭或重启后只能只读核对",variable=self.transfer_confirm,state='disabled');self.transfer_checkbox.pack(anchor='w',pady=(6,0))
+        expiry_entry=ttk.Frame(pane);expiry_entry.pack(anchor='w',pady=(4,0));ttk.Label(expiry_entry,text='原官网结账入口（用于只读核对超时）：').pack(side='left');self.expired_checkout_url=tk.StringVar();ttk.Entry(expiry_entry,textvariable=self.expired_checkout_url,width=54).pack(side='left')
         self.empty_restart_confirm=tk.BooleanVar(value=False)
         self.empty_restart_checkbox=ttk.Checkbutton(pane,text='本人刚在苹果官网订单列表确认同一 Apple 账户、旧官网结账已停止且没有待付款同款订单；允许从当前空购物袋另行测试一台 Pro，旧未知历史保持。未登录时空袋不能证明账户购物袋；此勾选不是程序认证证据',variable=self.empty_restart_confirm,state='disabled');self.empty_restart_checkbox.pack(anchor='w',pady=(6,0))
         self.empty_restart_button=ttk.Button(pane,text='保留旧记录，从已核对空购物袋新开始 Pro',command=self.restart_empty_checkout,state='disabled');self.empty_restart_button.pack(anchor='w',pady=(3,0))
@@ -258,7 +259,7 @@ class App:
             if value.get("imported") is not True:
                 raise ValueError("unconfirmed")
             self.status.set("原任务已导入为只读，未知动作和全部历史保留；没有恢复购买。")
-            self.result.set("待确认动作："+{"addBag":"加入购物袋","chooseSlot":"选择时段","submitOrder":"提交订单"}.get(value.get("pendingAction"),"其它或无"))
+            self.result.set("待确认动作："+{"addBag":"加入购物袋","checkout":"结账","chooseSlot":"选择时段","fillDetails":"继续取货资料","selectPayment":"选择支付宝","continuePayment":"检查订单","submitOrder":"提交订单"}.get(value.get("pendingAction"),"其它或无"))
         except Exception:
             self.status.set("原任务导入未确认，旧记录保持；未开始新的购买。")
 
@@ -306,9 +307,13 @@ class App:
         data={k:v.get() for k,v in self.pickup_values.items() if v.get()}
         if data.get('identitySuffix') and (len(data['identitySuffix'])!=4 or not data['identitySuffix'].isdigit()):
             self.status.set('证件后四位格式不正确；未发动作。');return
+        restart_payment=getattr(self,'checkout_can_restart_payment',False)
+        expiry_url=self.expired_checkout_url.get().strip() if restart_payment else None
+        if restart_payment and not re.fullmatch(r'https://(?:www|secure\d+\.www)\.apple\.com\.cn/shop/checkout',expiry_url):self.status.set('请提供原官网结账入口，不带查询参数；未发动作。');return
         self.transfer_confirm.set(False);self.transfer_button.config(state='disabled');self.final_confirm.set(False);self.final_checkbox.config(state='disabled');self.reconcile_button.config(state='disabled');self.advance_button.config(state='disabled')
         try:
-            command={'action':'renew-draft' if getattr(self,'checkout_can_renew_ended',False) else 'transfer','approved':True,'newContextConfirmed':True,'privatePickupData':data}
+            command={'action':'restart-payment' if restart_payment else 'renew-draft' if getattr(self,'checkout_can_renew_ended',False) else 'transfer','approved':True,'newContextConfirmed':True,'privatePickupData':data}
+            if command['action']=='restart-payment':command.update(oldExecutorStopped=True,sameAccountOrdersClear=True,expiredCheckoutUrl=expiry_url)
             if command['action']=='renew-draft':command.update(merchantExpiryConfirmed=True,oldExecutorStopped=True,sameAccountOrdersClear=True)
             self.checkout.send(command)
         except Exception:self.status.set('接替未确认，旧未知记录保持，不重复加购或下单。')
@@ -402,7 +407,10 @@ class App:
                 elif kind=='ready':
                     self.checkout_readonly=v.get('readOnly') is True
                     self.checkout_can_renew_ended=v.get('canRenewEndedDraft') is True
-                    if self.checkout_can_renew_ended:
+                    self.checkout_can_restart_payment=v.get('canRestartExpiredPayment') is True
+                    if self.checkout_can_restart_payment:
+                        self.transfer_checkbox.config(text='本人确认旧执行已停止，同一账户没有同款待付款订单，购物袋只有这一台；程序先核对官网超时，保留全部记录与原日期限制再继续')
+                    elif self.checkout_can_renew_ended:
                         self.transfer_checkbox.config(text='本人核实官网已提示旧结账超时、旧执行已停止，同一账户没有同款待付款订单且购物袋只有这一台；保留全部旧记录，重新验证本次结账')
                     else:
                         self.transfer_checkbox.config(text='本人确认旧结账已停止、旧时段窗口已到期，当前同一账户购物袋为这一台 Pro；不再加购。暂停保留当前窗口；关闭或重启后只能只读核对')

@@ -5,6 +5,7 @@ import {createHash,randomUUID} from 'node:crypto';
 import {validateDesktopCartTransfer} from './cart-transfer.mjs';
 import {validateEmptyRestart} from './empty-restart.mjs';
 import {validateEndedDraft} from './ended-draft.mjs';
+import {validateExpiredPaymentRestart} from './expired-payment-restart.mjs';
 import {guardOwnedApi} from './owner-lease.mjs';
 export const PRO_PLAN={schema:'applebuy-intent/v1',product:{model:'iPhone 18 Pro',capacity:'256GB',color:'黑色'},quantity:1,maxTotalCny:9999,city:'大连',fulfillment:'pickup',stores:['Apple 大连恒隆广场'],dateRule:'initial-first-three-terminal',paymentMethod:'支付宝',extras:{...NO_EXTRAS}};
 export const proDigest=createHash('sha256').update(JSON.stringify(PRO_PLAN)).digest('hex');
@@ -28,14 +29,14 @@ async function executeSession({api,tabId,store,mode='public-config',authority=nu
   let old=null,grant=null;
   if(mode==='reconcile'){
     old=await store.get(TASK_KEY);
-    const recover=typeof api.sessionId==='string'&&old?.desktopContext!==api.sessionId&&old?.desktopContext&&(validateDesktopCartTransfer(old,{sessionId:old.desktopContext})||validateEmptyRestart(old,{sessionId:old.desktopContext})||await validateEndedDraft(old,{sessionId:old.desktopContext},store,{readonly:true}));
+    const recover=typeof api.sessionId==='string'&&old?.desktopContext!==api.sessionId&&old?.desktopContext&&(validateDesktopCartTransfer(old,{sessionId:old.desktopContext})||validateEmptyRestart(old,{sessionId:old.desktopContext})||await validateEndedDraft(old,{sessionId:old.desktopContext},store,{readonly:true})||await validateExpiredPaymentRestart(old,{sessionId:old.desktopContext},store,{readonly:true}));
     if(!old||!validStored(old)||old.state==='RETIRED'||old.reconcileOnly!==true&&!recover||canonicalJson(normalizeIntent(old.plan))!==canonicalJson(PRO_PLAN))throw Error('DesktopReadonlyHandoffRequired');
   }
   if(mode==='purchase'){
     old=await store.get(TASK_KEY);
     if(!old||!validStored(old))throw Error('DesktopLegacyHandoffRequired');
     if(old.reconcileOnly===true)throw Error('DesktopLegacyResultStillUnconfirmed; DesktopHandoffPermanentlyRevokedSource');
-    if((old.desktopEndedDraft||old.retainedSourceArchives)&&!await validateEndedDraft(old,api,store))throw Error('DesktopEndedDraftProofUnconfirmed');
+    if((old.desktopEndedDraft||old.desktopPaymentRestart||old.retainedSourceArchives)&&!await validateEndedDraft(old,api,store)&&!await validateExpiredPaymentRestart(old,api,store))throw Error('DesktopEndedDraftProofUnconfirmed');
     const own=typeof api.sessionId==='string'&&old.desktopContext===api.sessionId;
     if(!own&&!legacyFinalProofClear(old))throw Error('DesktopLegacyFinalHistoryUnconfirmed');
     if(!own&&(old.pending||old.finalIntent||old.acceptedSlot||old.reconcileOnly===true))throw Error('DesktopLegacyResultStillUnconfirmed');
@@ -52,6 +53,7 @@ async function executeSession({api,tabId,store,mode='public-config',authority=nu
   port.desktopTransferProof=mode==='purchase'?validateDesktopCartTransfer(old,api):null;
   port.desktopEmptyRestartProof=mode==='purchase'?validateEmptyRestart(old,api):null;
   port.desktopEndedDraftProof=mode==='purchase'?await validateEndedDraft(old,api,store):null;
+  port.desktopPaymentRestartProof=mode==='purchase'?await validateExpiredPaymentRestart(old,api,store):null;
   const boundStore={get:k=>store.get(k),put:(k,v)=>store.put(k,k===TASK_KEY&&mode!=='reconcile'?{...v,desktopContext:api.sessionId}:v)};
   const job=new PurchaseJob({store:boundStore,port,maxSteps:100,maxWaitMs:15000});job.onState=s=>onState({state:s.state,phase:s.phase,reason:s.reason,pendingAction:s.pendingAction});
   const cancel=()=>job.pause();signal?.addEventListener('abort',cancel,{once:true});if(signal?.aborted)cancel();
@@ -59,6 +61,6 @@ async function executeSession({api,tabId,store,mode='public-config',authority=nu
     const result=await job.run(PRO_PLAN,{tabId,planDigest:mode==='reconcile'?old.planDigest:proDigest,taskId:old?.state==='RETIRED'?randomUUID():old?.taskId??randomUUID(),mode:mode==='reconcile'?'purchase':mode,rebind:mode==='reconcile',grant});
     let boundOrderLookup=null;
     if(mode==='reconcile'&&old.finalIntent?.sent===true&&typeof old.orderRefHash==='string'&&/^[a-f0-9]{64}$/.test(old.orderRefHash))boundOrderLookup=await port.lookupOrder(PRO_PLAN,old.orderRefHash);
-    return {state:result.state,phase:result.lastPhase,reason:result.reason,realOrderVerified:mode==='purchase'&&result.state==='CONFIRMED_UNPAID',boundOrderIndependentlyObserved:boundOrderLookup?.independent===true&&boundOrderLookup?.state==='unpaid',quoteCny:port.last?.raw.quotedCny??null,skuPath:port.last?.raw.productForm?.ready===true?port.last.raw.path:null};
+    return {state:result.state,phase:result.lastPhase,reason:result.reason,pendingAction:result.pending?.action??null,realOrderVerified:mode==='purchase'&&result.state==='CONFIRMED_UNPAID',boundOrderIndependentlyObserved:boundOrderLookup?.independent===true&&boundOrderLookup?.state==='unpaid',quoteCny:port.last?.raw.quotedCny??null,skuPath:port.last?.raw.productForm?.ready===true?port.last.raw.path:null};
   }finally{signal?.removeEventListener('abort',cancel);}
 }

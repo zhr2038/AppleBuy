@@ -5,6 +5,7 @@ import {AuthContinuation} from './auth-continuation.mjs';import {launchNativeChe
 import {safeCheckoutDiagnostic} from './checkout-diagnostic.mjs';
 import {stoppedCheckoutDraftSource} from './cart-transfer.mjs';import {TASK_KEY} from '../../web/checkout-connector/job.js';
 import {probeCheckoutHostScope} from './checkout-host-scope.mjs';
+import {expiredPaymentSourceShape} from './expired-payment-restart.mjs';
 if(process.argv.length>2)throw Error('NativeWorkerArgumentsNotAllowed');
 const emit=value=>process.stdout.write(JSON.stringify({scope:'desktop-pro-checkout',...value})+'\n');
 let input,watch,closing=false;const store=new DesktopTaskStore(join(process.cwd(),'.local/desktop/task.json'));
@@ -14,14 +15,14 @@ const runtime=new DesktopCheckoutRuntime({store,launch:async()=>launchNativeChec
 }});
 try{
  const initial=await runtime.open();if(closing)throw Error('NativeOwnerLost');
- const hostScope=await probeCheckoutHostScope(runtime.api),canRenewEndedDraft=!!stoppedCheckoutDraftSource(await store.get(TASK_KEY));if(closing||runtime.ownerLost)throw Error('NativeOwnerLost');
- emit({type:'ready',readOnly:initial.legacyReadOnly===true,canRenewEndedDraft,...hostScope,message:'程序已连接正常 Chrome 的独立结账通道；旧只读和未知记录不增加购买权限。'});
+ const hostScope=await probeCheckoutHostScope(runtime.api),source=await store.get(TASK_KEY),canRenewEndedDraft=!!stoppedCheckoutDraftSource(source),canRestartExpiredPayment=!!expiredPaymentSourceShape(source);if(closing||runtime.ownerLost)throw Error('NativeOwnerLost');
+ emit({type:'ready',readOnly:initial.legacyReadOnly===true,canRenewEndedDraft,canRestartExpiredPayment,...hostScope,message:'程序已连接正常 Chrome 的独立结账通道；旧只读和未知记录不增加购买权限。'});
  input=createInterface({input:process.stdin});let active=false,pausing=false;
  watch=new AuthContinuation({observe:()=>runtime.observe(),isBusy:()=>closing||active||pausing||runtime.paused,onStopped:()=>emit({type:'blocked',paused:runtime.paused,message:'官网验证或页面仍未确认，自动衔接已停止；旧动作不重复。'})});
  async function advance(c){
   const options={checkoutApproved:c.checkoutApproved===true,newContextConfirmed:c.newContextConfirmed===true,privatePickupData:c.privatePickupData??{}};
   const result=c.action==='resume'?await runtime.resume(options):await runtime.advance(options);
-  emit({type:'result',state:result.state,phase:result.phase,paused:runtime.paused,realOrderVerified:result.realOrderVerified===true,reviewReady:!!runtime.finalDescriptor});
+  emit({type:'result',state:result.state,phase:result.phase,pendingAction:result.pendingAction??null,paused:runtime.paused,realOrderVerified:result.realOrderVerified===true,reviewReady:!!runtime.finalDescriptor});
   if(!runtime.paused&&result.phase==='AUTH'&&result.state==='NEEDS_USER')watch.start(async()=>{active=true;try{await advance({...c,action:'advance'});}catch{emit({type:'blocked',paused:runtime.paused,message:'登录后的推进未确认；旧结果保留，不重复结账。'});}finally{active=false;}});
   return result;
  }
@@ -30,10 +31,15 @@ try{
   if(c?.action==='stop'){closing=true;watch.stop();input.close();try{await runtime.close();}catch{process.exitCode=2;emit({type:'blocked',message:'结账通道清理未确认，未知记录保持。'});}finally{emit({type:'closed',cleanupConfirmed:runtime.cleanupConfirmed});process.stdin.destroy();}return;}
   if(c?.action==='pause'){watch.stop();if(pausing)return;pausing=true;try{emit({type:'paused',...await runtime.pause()});}catch{emit({type:'blocked',paused:runtime.paused,message:'暂停未确认；已发送动作可能继续，未知记录保持。'});}finally{pausing=false;}return;}
   if(active||watch.reading||pausing){emit({type:'blocked',paused:runtime.paused,message:'当前执行尚未结束，未再次发动作。'});return;}
-  if(!['observe','reconcile','transfer','transfer-contact','renew-draft','restart-empty','advance','resume','submit'].includes(c?.action))return;
+  if(!['observe','reconcile','transfer','transfer-contact','renew-draft','restart-payment','restart-empty','advance','resume','submit'].includes(c?.action))return;
   watch.stop();active=true;
   try{
    if(c.action==='advance'||c.action==='resume')await advance(c);
+   else if(c.action==='restart-payment'){
+    const result=await runtime.restartPayment({approved:c.approved===true,newContextConfirmed:c.newContextConfirmed===true,oldExecutorStopped:c.oldExecutorStopped===true,sameAccountOrdersClear:c.sameAccountOrdersClear===true,expiredCheckoutUrl:c.expiredCheckoutUrl,privatePickupData:c.privatePickupData??{}});
+    emit({type:'result',state:result.state,phase:result.phase,pendingAction:result.pendingAction??null,paused:runtime.paused,localTransitionCreated:result.localTransitionCreated===true,realOrderVerified:result.realOrderVerified===true,reviewReady:!!runtime.finalDescriptor});
+    if(!runtime.paused&&result.phase==='AUTH'&&result.state==='NEEDS_USER')watch.start(async()=>{active=true;try{await advance({checkoutApproved:true,newContextConfirmed:true,privatePickupData:c.privatePickupData??{}});}catch{emit({type:'blocked',paused:runtime.paused,message:'登录后的原任务衔接未确认；没有重复结账。'});}finally{active=false;}});
+   }
    else if(c.action==='restart-empty'){
     const result=await runtime.restartEmpty({approved:c.approved===true,accountConfirmedByUser:c.accountConfirmedByUser===true,oldCheckoutStoppedByUser:c.oldCheckoutStoppedByUser===true,existingOrdersCheckedByUser:c.existingOrdersCheckedByUser===true,privatePickupData:c.privatePickupData??{}});
     emit({type:'result',state:result.state,phase:result.phase,paused:runtime.paused,readOnly:false,realOrderVerified:result.realOrderVerified===true,reviewReady:!!runtime.finalDescriptor});
