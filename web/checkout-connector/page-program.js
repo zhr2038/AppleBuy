@@ -57,7 +57,18 @@ export async function merchantDocument(plan,command=null,internal=null){
   const lines=(re,fields=textEls)=>{const m=fields.filter(x=>re.test(x.t));return m.filter(x=>!m.some(y=>y!==x&&within(y.e,x.e)));};
   const exact=t=>buttons.filter(b=>name(b)===t&&!disabled(b));
   const checked=e=>e.checked===true||e.getAttribute('aria-checked')==='true';
-  const findRadio=t=>radios.filter(e=>(name(e)===t||name(e).startsWith(t+' '))&&!(t==='iPhone 18 Pro'&&name(e).startsWith('iPhone 18 Pro Max')));
+  // C194: actual native payment labels have no text; the bound IMG supplies the accessible Alipay name.
+  // This exact relation names a control only. It never supplies product, quantity, store, price or slot proof.
+  const nativeAlipay=e=>{
+    const id='checkout.billing.billingoptions.alipay',labelId=id+'_label';
+    if(u.pathname!=='/shop/checkout'||main.id!=='checkout-container'||e?.tagName!=='INPUT'||e.id!==id)return false;
+    const labels=[...e.labels??[]],label=labels.length===1?labels[0]:null,images=label?[...label.querySelectorAll('img')]:[];
+    return u.pathname==='/shop/checkout'&&main.id==='checkout-container'&&e instanceof HTMLInputElement&&e.getAttribute('type')==='radio'&&e.id===id&&
+      document.querySelectorAll(`[id="${id}"]`).length===1&&document.querySelectorAll(`[id="${labelId}"]`).length===1&&e.getAttribute('aria-label')===null&&e.getAttribute('aria-labelledby')===labelId&&
+      label?.tagName==='LABEL'&&label.id===labelId&&label.getAttribute('for')===id&&visible(label)&&within(main,label)&&norm(label.textContent)===''&&
+      images.length===1&&visible(images[0])&&norm(images[0].getAttribute('alt'))==='支付宝'&&label.querySelectorAll('button,a,input').length===0;
+  };
+  const findRadio=t=>radios.filter(e=>(name(e)===t||name(e).startsWith(t+' ')||t==='支付宝'&&nativeAlipay(e))&&!(t==='iPhone 18 Pro'&&name(e).startsWith('iPhone 18 Pro Max')));
   const fullVariant=norm(`${plan.product.model} ${plan.product.capacity} ${plan.product.color}`);
   const productRe=/^iPhone (?:18 Pro(?: Max)?|Duo)\b.*\b(?:256GB|512GB|1TB|2TB)\b/;
   // C-019 (Claude): observed public bag (October 3, supported read-only observation), used only on /shop/bag with exactly one
@@ -447,6 +458,14 @@ export async function merchantDocument(plan,command=null,internal=null){
     !texts.some(t=>/^(?:取货(?:日期|时间|地点|门店)|自提门店|店内取货地点)|AppleCare|折抵|换购/.test(t))&&!out.slotSummary&&!out.extrasConflict&&orderLabels.length===0&&!out.orderRefHash&&
     dialogs?.length===0&&bars.length===1&&bars[0].tagName==='BUTTON'&&visible(bars[0])&&!disabled(bars[0])&&barTotal>0&&totalLines.length===0&&total===barTotal;
   out.contactStep=contactOnly?{kind:'contact-only-details',verified:true,totalCny:barTotal,fields:CONTACT.length}:null;
+  const paymentInput=findRadio('支付宝'),paymentNext=exact('检查订单'),paymentHeads=[...main.querySelectorAll('h1')].filter(visible);
+  const paymentOnly=checkoutScope&&!bagScoped&&phase==='PAYMENT'&&paymentInput.length===1&&nativeAlipay(paymentInput[0])&&!disabled(paymentInput[0])&&
+    paymentHeads.length===1&&norm(paymentHeads[0].textContent)==='你希望如何付款?'&&paymentNext.length===1&&paymentNext[0].tagName==='BUTTON'&&paymentNext[0].getAttribute('data-autom')==='continue-button-review'&&
+    radios.length===8&&radios.every(e=>e instanceof HTMLInputElement&&e.getAttribute('type')==='radio'&&/^checkout\.billing\.billingoptions\.(?:alipay|wechat|credit|installments\d{10})$/.test(e.id))&&new Set(radios.map(e=>e.id)).size===8&&
+    radios.every(e=>!checked(e)||e===paymentInput[0])&&boxes.length===0&&selects.length===0&&nativeDateInputs.length===0&&storeRadios.length===0&&fieldValues.length===0&&
+    mentions(main)===0&&productLines.length===0&&!mainQtyShown&&!/件商品|数量/.test(norm(main.textContent))&&fulfillmentChoice===null&&!deliveryProse&&!out.slotSummary&&!out.extrasConflict&&orderLabels.length===0&&!out.orderRefHash&&
+    dialogs?.length===0&&bars.length===1&&bars[0].tagName==='BUTTON'&&visible(bars[0])&&!disabled(bars[0])&&barTotal>0&&totalLines.length===0&&total===barTotal;
+  out.paymentStep=paymentOnly?{kind:'native-alipay-payment-only',verified:true,totalCny:barTotal}:null;
   out.receiptVerified=phase==='ORDER_RECEIPT'&&!!out.orderRefHash&&purchase.verified;
   // Official refusal anchors are not yet observed: real alerts remain unknown rather than invented rejection.
   if(referenceChanged)return command?report('OperationEvidenceChanged'):{schema:'applebuy-merchant-read/v1',phase:'UNKNOWN',reason:'order-reference-changed'};
@@ -625,8 +644,10 @@ export async function merchantDocument(plan,command=null,internal=null){
       if(!Object.keys(bound).length){if(requiredInvalid())throw new Error('PickupDetailsRequireHuman');click('继续选择付款方式');}
       else{const next=exact('继续选择付款方式'),inputs=[...main.querySelectorAll('input')].filter(visible);if(next.length!==1||!next[0].isConnected)throw new Error('CurrentControlUnrecognized');
         return await fillDetail({keys:Object.keys(bound),bound,main,href:u.href,expected:JSON.stringify(out),next:next[0],inputs,inputSig:inputSig(inputs),limit:2000,contactOnly:command.contactOnly===true});}
-    }else if(command.action==='selectPayment'&&phase==='PAYMENT'&&purchase.verified){pick('支付宝');}
-    else if(command.action==='continuePayment'&&phase==='PAYMENT'&&purchase.verified&&out.paymentMethod==='支付宝'){if(exact('继续查看订单').length===1)click('继续查看订单');else click('继续');}
+    }else if(command.action==='selectPayment'&&phase==='PAYMENT'&&(purchase.verified||command.paymentOnly===true&&out.paymentStep?.verified===true)){pick('支付宝');}
+    else if(command.action==='continuePayment'&&phase==='PAYMENT'&&(purchase.verified||command.paymentOnly===true&&out.paymentStep?.verified===true)&&out.paymentMethod==='支付宝'){
+      if(command.paymentOnly===true&&out.paymentStep?.verified===true)click('检查订单');else if(exact('继续查看订单').length===1)click('继续查看订单');else click('继续');
+    }
     else if(command.action==='submitOrder'&&phase==='REVIEW'&&purchase.verified&&out.paymentMethod==='支付宝'){
       const g=command.finalGrant;if(!g||g.termsAccepted!==true||g.taskId!==command.taskId||g.planDigest!==command.planDigest||g.expiry<=Date.now()||g.existingOrdersChecked!==true||g.noExtras!==true||!out.termsLinks.includes(g.termsUrl)||!out.slotSummary)throw new Error('CurrentFinalGrantMissing');click('立即下单');
     }

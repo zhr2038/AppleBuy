@@ -108,6 +108,14 @@ function contactStepCurrent(P,s,o){
     Number.isFinite(basis)&&basis>0&&basis<=P.maxTotalCny&&p.totalCny===basis&&c.totalCny===basis&&o.slotSummary==null&&o.extras==null&&o.orderRefHash==null&&
     s.reconcileOnly!==true&&s.finalIntent===null&&s.bagAddStarted===true;
 }
+// C194: stage-only payment may continue the originating bound slot, never prove a purchase or final.
+function paymentStepCurrent(P,s,o){
+  const c=o?.paymentStep,p=o?.purchase,basis=s.bagTotalCny??s.quotedCny??null,a=s.acceptedSlot;
+  return P.paymentMethod==='支付宝'&&o?.phase==='PAYMENT'&&o.verifiedStep===true&&c?.kind==='native-alipay-payment-only'&&c.verified===true&&!!p&&p.verified===false&&p.itemVerified===false&&
+    p.model===null&&p.capacity===null&&p.color===null&&p.quantity===null&&p.store===null&&p.fulfillment===null&&o.slotSummary==null&&o.extras==null&&o.orderRefHash==null&&
+    Number.isFinite(basis)&&basis>0&&basis<=P.maxTotalCny&&p.totalCny===basis&&c.totalCny===basis&&s.reconcileOnly!==true&&s.finalIntent===null&&s.bagAddStarted===true&&
+    a?.verified===true&&SLOT.test(a.start)&&SLOT.test(a.end)&&a.start<a.end&&s.initialDates?.[s.dateCursor]===a.date&&s.floors?.[a.date]===a.start&&!s.rejected.some(r=>r.date===a.date&&r.start===a.start&&r.end===a.end);
+}
 // The sent chooseSlot must be this task's own current SLOTS decision: written from SLOTS (where purchaseMatches held), the frozen
 // date at the cursor, its own terminal floor, never refused, and no slot accepted before. A legacy/absent/contradictory record stops.
 function sentSlotBound(s,q){
@@ -356,7 +364,8 @@ export class PurchaseJob {
           return this.gate(s,'slot-result-unconfirmed; no resubmission','NEEDS_VERIFICATION');
         }
         const reached={configureProduct:['ENTRY','VARIANT','PRELAUNCH'],continueProduct:['VARIANT'],addBag:['ACCESSORIES','BAG'],viewBag:['BAG'],checkout:['FULFILLMENT','SLOTS'],selectPickup:['FULFILLMENT','SLOTS'],selectStore:['SLOTS'],selectDate:['SLOTS'],fillDetails:['PAYMENT'],selectPayment:['PAYMENT'],continuePayment:['REVIEW']}[pending.action]??[];
-        const conditions=o.phase==='BAG'||o.phase==='FULFILLMENT'?itemMatches(P,o.purchase):!['SLOTS','PAYMENT','REVIEW'].includes(o.phase)||purchaseMatches(P,o.purchase);
+        const paymentContinued=!readOnly&&paymentStepCurrent(P,s,o)&&((pending.action==='fillDetails'&&pending.beforePhase==='DETAILS'&&pending.contactOnly===true)||(pending.action==='selectPayment'&&pending.beforePhase==='PAYMENT'&&pending.paymentOnly===true));
+        const conditions=o.phase==='BAG'||o.phase==='FULFILLMENT'?itemMatches(P,o.purchase):!['SLOTS','PAYMENT','REVIEW'].includes(o.phase)||purchaseMatches(P,o.purchase)||paymentContinued;
         if(reached.includes(o.phase)&&o.verifiedStep===true&&conditions&&(!readOnly||o.extras!==true)&&(pending.action!=='selectPickup'||o.purchase?.fulfillment==='pickup')&&(pending.action!=='selectDate'||o.selectedDate===pending.date)&&(pending.action!=='configureProduct'||o.selectedProductChoices?.includes(pending.choice)&&(o.phase!=='PRELAUNCH'||o.prelaunchConfigurable===true))&&(pending.action!=='selectPayment'||o.paymentMethod===P.paymentMethod)){s.pending=null;s.untouchedStreak=0;await this.save(s);if(readOnly)return this.gate(s,'same-tab-read-only-reconciliation-complete; no new purchase action','NEEDS_USER');continue;}
         if(STOP.has(o.phase))return this.gate(s,o.phase.toLowerCase());
         if(!readOnly&&(o.phase===pending.beforePhase||o.phase==='PROCESSING')&&this.now()<pending.deadline&&await poll(this.maxWaitMs))continue;
@@ -462,7 +471,8 @@ export class PurchaseJob {
         if(contact&&!s.inheritedIdentity)s.inheritedIdentity=inheritedIdentity(P,s,o,'purchase-verified-at-slot-acceptance');
         command=contact?{action:'fillDetails',contactOnly:true}:{action:'fillDetails'};
       }else if(o.phase==='PAYMENT'){
-        if(!s.acceptedSlot||!purchaseMatches(P,o.purchase))return this.gate(s,'payment-conditions-not-verified','BLOCKED');command={action:o.paymentMethod===P.paymentMethod?'continuePayment':'selectPayment'};
+        const partial=!purchaseMatches(P,o.purchase)&&paymentStepCurrent(P,s,o);
+        if(!s.acceptedSlot||!purchaseMatches(P,o.purchase)&&!partial)return this.gate(s,'payment-conditions-not-verified','BLOCKED');command={action:o.paymentMethod===P.paymentMethod?'continuePayment':'selectPayment',...(partial?{paymentOnly:true}:{})};
       }else if(o.phase==='REVIEW'){
         // Merchant no-extras evidence only (never the human grant); the total must equal the quote recorded at Add to Bag.
         if(!s.acceptedSlot||!purchaseMatches(P,o.purchase)||o.paymentMethod!==P.paymentMethod||o.extras!==false||(s.quotedCny!==null&&o.purchase.totalCny!==s.quotedCny)||o.existingOrdersChecked!==true||!sameAcceptedSlot(s,o.slotSummary))return this.gate(s,'final-review-or-existing-order-check-missing','BLOCKED');

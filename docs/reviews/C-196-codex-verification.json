@@ -1,0 +1,35 @@
+{
+  "task": "C-196-payment-coverage",
+  "sourceFiles": 310,
+  "sourceSha256": "a351c682f22878514ec5b5068a3021466c3dd1656b60fa498f497593f028f6b3",
+  "productionUnchangedSinceC195": true,
+  "nativeFocused": {
+    "tests": 37,
+    "pass": 37,
+    "fail": 0
+  },
+  "oldProtectedAssertionsChanged": false,
+  "addedConflictingPublicFactsRefused": true,
+  "addedFinalRejectedFloorNoBagAndExpiredSourcesRefused": true,
+  "unconfirmedSelectionRerunDoesNotReselect": true,
+  "unconfirmedReviewRerunDoesNotRepeatContinuation": true,
+  "positiveKeepsContinuePaymentPendingWithoutFinal": true,
+  "fullChecks": {
+    "complete": true,
+    "orderedChecks": 5,
+    "protected": 108,
+    "python": 64,
+    "fullNode": 1702,
+    "passed": true,
+    "manifestBeforeAfterVerified": true,
+    "ownedCleanupConfirmed": true
+  },
+  "C195ActualBoundedAgreeReceived": true,
+  "C195AcceptanceHeldForCoverage": true,
+  "currentActualActorIdleStoppedNormally": true,
+  "currentLocalWindowExpired": true,
+  "newCandidateDeployed": false,
+  "newCheckoutSlotOrFinalAfterStop": false,
+  "realProgrammeUnpaidOrderVerified": false,
+  "scopeLimitationsRetained": true
+}

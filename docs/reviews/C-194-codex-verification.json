@@ -1,0 +1,45 @@
+{
+  "task": "C-194-NATIVE-PAYMENT",
+  "sourceFiles": 310,
+  "sourceSha256": "62c559b22d9a30a23105b65f4f9b2510051b99269bd4e8ed11cb99b8d6e9ba54",
+  "author": "Codex",
+  "status": "candidate; actual cross-author review pending",
+  "actualContractEvidence": "C-194-observed-payment-contract.json",
+  "initialNativeTestHookFailure": "packaged Chromium executable absent; corrected to existing system headless Chrome in a fresh contained context",
+  "nativeFocused": {
+    "tests": 19,
+    "pass": 19,
+    "fail": 0
+  },
+  "oldDecoderReproducedUnknown": true,
+  "controllerNativeSelectionAndReviewNavigationExercised": true,
+  "newFinalGateOrFinalSubmission": false,
+  "actualPaymentOnlyContinuationDeployed": false,
+  "initialFull": {
+    "tests": 1684,
+    "pass": 1665,
+    "fail": 19
+  },
+  "regressionCause": "image-label reads before exact native input/path guard affected old prelaunch test doubles",
+  "regressionFix": "guard exact current native path/main/input ID before any image-label reads",
+  "affectedOldAndNativeFocusedAfterFix": {
+    "tests": 39,
+    "pass": 39,
+    "fail": 0
+  },
+  "oldAssertionsModified": false,
+  "currentFullChecks": {
+    "complete": true,
+    "orderedChecks": 5,
+    "protected": 108,
+    "python": 64,
+    "fullNode": 1684,
+    "passed": true,
+    "manifestBeforeAfterVerified": true,
+    "ownedCleanupConfirmed": true
+  },
+  "realProgrammeUnpaidOrderVerified": false,
+  "currentActualTaskPausedWithContactOutcomeRetained": true,
+  "currentLocalExecutionWindowExpired": true,
+  "noDeadlineExtensionOrOldContextFabrication": true
+}

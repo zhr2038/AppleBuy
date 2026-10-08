@@ -1,0 +1,35 @@
+{
+  "scope": "normal supported Chrome readonly public payment-control metadata",
+  "officialPath": "/shop/checkout",
+  "main": {"tag": "DIV", "role": "main", "id": "checkout-container"},
+  "heading": "你希望如何付款？",
+  "alipay": {
+    "tag": "INPUT",
+    "type": "radio",
+    "id": "checkout.billing.billingoptions.alipay",
+    "ariaLabelledBy": "checkout.billing.billingoptions.alipay_label",
+    "label": {"tag": "LABEL", "id": "checkout.billing.billingoptions.alipay_label", "for": "checkout.billing.billingoptions.alipay", "text": "", "imageAlt": "支付宝"},
+    "checkedAtObservation": false,
+    "disabledAtObservation": false
+  },
+  "continue": {"tag": "BUTTON", "dataAutom": "continue-button-review", "text": "检查订单", "disabledAtObservation": false},
+  "companionBar": {"dataAutom": "companionbar-button", "text": "显示订单摘要： RMB 9,999"},
+  "visiblePaymentRadioCount": 8,
+  "productStoreQuantityAndSlotShownInMain": false,
+  "programmeActual": {
+    "reusedSingleMatchingBag": true,
+    "newAdd": false,
+    "checkoutSentOnce": true,
+    "routineDelegatedLoginSucceeded": true,
+    "pickupStoreSelected": "Apple 大连恒隆广场",
+    "acceptedCurrentSlot": {"date": "october8", "start": "21:15", "end": "21:30", "verified": true},
+    "pendingAction": "fillDetails",
+    "paymentPageActuallyRendered": true,
+    "programmePaymentPhase": "UNKNOWN",
+    "actorExplicitlyPaused": true,
+    "finalIntentPresent": false,
+    "realProgrammeUnpaidOrderVerified": false
+  },
+  "customerValuesRequestsIdsAndScreenshotsIncluded": false,
+  "rootClickedPaymentOrOrderControl": false
+}

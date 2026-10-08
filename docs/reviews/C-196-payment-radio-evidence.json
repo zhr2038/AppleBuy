@@ -1,0 +1,20 @@
+{
+  "scope": "public native radio IDs from the same actual readonly C194 payment-page observation",
+  "path": "/shop/checkout",
+  "radioIds": [
+    "checkout.billing.billingoptions.alipay",
+    "checkout.billing.billingoptions.wechat",
+    "checkout.billing.billingoptions.installments0001243254",
+    "checkout.billing.billingoptions.installments0001864343",
+    "checkout.billing.billingoptions.installments0001321713",
+    "checkout.billing.billingoptions.installments0000882476",
+    "checkout.billing.billingoptions.installments0000833448",
+    "checkout.billing.billingoptions.credit"
+  ],
+  "count": 8,
+  "inputIdsArePublicProviderControlsNotCustomerIdentifiers": true,
+  "customerValuesRequestsAndAuthUrlsIncluded": false,
+  "closesC195F1EvidenceOmission": true,
+  "newProviderTypeOrChangedCountRemainsUnrecognized": true,
+  "tenDigitInstallmentRenumberingRemainsRecognized": true
+}
