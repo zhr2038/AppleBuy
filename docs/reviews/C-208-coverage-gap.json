@@ -1,0 +1,19 @@
+{
+  "task":"C208-actual-coverage-gap",
+  "sourceFiles":317,
+  "sourceSha256":"3ef5de777dfd5b55bea6be0453412ba0b8a2d75b67d87793510b2a49ed6d5f51",
+  "actualModel":"firstParty claude-opus-5-5 xhigh",
+  "durationSeconds":276.72,
+  "turns":26,
+  "verdict":"bounded AGREE but exact acceptance withheld pending actual missing reads",
+  "requiredEOF":20,
+  "actualFreshEOF":16,
+  "missingFreshReadCalls":["src/desktop/browser-session.mjs","test/desktop-c205-current-terms.test.ts","test/checkout-c205-native-terms.test.ts","test/checkout-c204-native-review.test.ts"],
+  "reportClaimAll20":"contradicted by actual tool-use trace; not approved as complete coverage",
+  "allThreeRequiredCommandsActuallyPassed":true,
+  "commandTests":{"focused":82,"protected":108,"python":64,"fullNode":1779},
+  "modelAndExactCommandsCleanupVerified":true,
+  "sourceUnchanged":true,
+  "privateReadsEditsDenialsUnexpectedCommands":0,
+  "realOrderVerified":false
+}

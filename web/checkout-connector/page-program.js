@@ -16,7 +16,7 @@
 // C035 (Claude): the observed complete normal empty bag is EMPTY_BAG; there only openProduct is accepted, as a write-free re-verification.
 // C037 (Claude): selectStore can choose the observed numbered native Dalian radio when it is not preselected, by the same exact proof.
 // C051 (Claude): the observed contact-only details step is a recognized step (contactStep), never purchase proof; see below.
-export const CHECKOUT_EXECUTOR_VERSION='C204-native-review-read-v1';
+export const CHECKOUT_EXECUTOR_VERSION='C207-native-review-fail-closed-v1';
 export async function merchantDocument(plan,command=null,internal=null){
   // `internal` is set only by this program's own re-entry; ChromePort passes plan and command only.
   // A structured command always receives a structured report. Nothing was written unless this id was already delivered.
@@ -423,10 +423,14 @@ export async function merchantDocument(plan,command=null,internal=null){
   // Known normal-flow transition is not a hold guarantee. ChromePort binds it to its delivered choice.
   // C204: the current native review links to the observed /shop/browse/open/salespolicies alias.
   // Preserve the actual URL rather than pretending the current page linked to the older address.
-  out.termsLinks=[...new Set([...document.querySelectorAll('a[href]')].filter(a=>visible(a)&&/条款|销售政策/.test(name(a))).flatMap(a=>{try{const h=new URL(a.href);return h.protocol==='https:'&&!h.username&&!h.password&&!h.port&&!h.search&&!h.hash&&h.hostname==='www.apple.com.cn'&&/^\/shop\/(?:browse\/)?open\/salespolicies\/?$/.test(h.pathname)?[h.origin+h.pathname.replace(/\/$/,'')]:[];}catch{return [];}}))];
+  const termsUrlOf=a=>{try{const h=new URL(a.href);return h.protocol==='https:'&&!h.username&&!h.password&&!h.port&&!h.search&&!h.hash&&h.hostname==='www.apple.com.cn'&&/^\/shop\/(?:browse\/)?open\/salespolicies\/?$/.test(h.pathname)?h.origin+h.pathname.replace(/\/$/,''):null;}catch{return null;}};
+  out.termsLinks=[...new Set([...document.querySelectorAll('a[href]')].filter(a=>visible(a)&&/条款|销售政策/.test(name(a))).map(termsUrlOf).filter(Boolean))];
   // C204: one visible native review billing section displays its provider as an IMG, not a selected radio.
   // This supplies only the payment-method fact. Missing store/date/slot remain missing; no final guard is relaxed.
   if(checkoutScope&&phase==='REVIEW'){
+    const reviewHeads=[...main.querySelectorAll('h1')].filter(visible),nativeReviewHeading=main.id==='checkout-container'&&reviewHeads.length===1&&reviewHeads[0].classList.contains('rs-review-header')&&/^准备下单了吗\?\s*请确保以下信息均准确无误。$/.test(norm(reviewHeads[0].textContent));
+    // C205: native consent belongs to the one primary agreement in main, never the old footer alias.
+    if(main.id==='checkout-container'){out.primaryTermsUrl=null;out.paymentMethod=null;if(nativeReviewHeading){const links=[...main.querySelectorAll('a[href]')].filter(a=>visible(a)&&/条款|销售政策/.test(name(a)));out.primaryTermsUrl=links.length===1&&/^条款和条件(?:\s*\(在新窗口中打开\))?$/.test(name(links[0]))?termsUrlOf(links[0]):null;}}
     const sections=[...main.querySelectorAll('.rs-review-billing')],section=sections.length===1?sections[0]:null;
     const titles=section?[...section.querySelectorAll('h2.rs-review-title')]:[],details=section?[...section.querySelectorAll('.rs-review-billing-details')]:[];
     const images=[...main.querySelectorAll('.rs-review-payment-image')],image=images.length===1?images[0]:null;
@@ -435,7 +439,8 @@ export async function merchantDocument(plan,command=null,internal=null){
     if(section?.tagName==='DIV'&&visible(section)&&titles.length===1&&visible(titles[0])&&norm(titles[0].textContent)==='付款方式'&&
       details.length===1&&details[0].tagName==='DIV'&&visible(details[0])&&image?.tagName==='IMG'&&visible(image)&&norm(image.getAttribute('alt'))==='支付宝'&&
       header&&visible(header)&&cards?.tagName==='DIV'&&visible(cards)&&within(details[0],cards)&&within(cards,header)&&within(header,image)&&
-      section.querySelectorAll('img').length===1&&header.querySelectorAll('img').length===1&&billingControls.length===0&&dialogs?.length===0)out.paymentMethod='支付宝';
+      section.querySelectorAll('img').length===1&&header.querySelectorAll('img').length===1&&billingControls.length===0&&dialogs?.length===0&&
+      main.querySelectorAll('input[type="radio"],input[type="checkbox"],[role="radio"],[role="checkbox"],select').length===0&&!/微信|分期|信用卡|银行卡/.test(norm(section.textContent)))out.paymentMethod='支付宝';
     if(out.paymentMethod==='支付宝'&&purchase.itemVerified&&purchase.store===null&&out.slotSummary===null)out.reason='native-review-missing-store-and-slot';
   }
   const orderLabels=[...new Set(texts.filter(t=>/^订单(?:编号|号)\s*[:：]?\s*[A-Z0-9-]{6,30}$/.test(t)).map(t=>t.match(/[A-Z0-9-]{6,30}$/)[0]))];
@@ -666,7 +671,7 @@ export async function merchantDocument(plan,command=null,internal=null){
       if(command.paymentOnly===true&&out.paymentStep?.verified===true)click('检查订单');else if(exact('继续查看订单').length===1)click('继续查看订单');else click('继续');
     }
     else if(command.action==='submitOrder'&&phase==='REVIEW'&&purchase.verified&&out.paymentMethod==='支付宝'){
-      const g=command.finalGrant;if(!g||g.termsAccepted!==true||g.taskId!==command.taskId||g.planDigest!==command.planDigest||g.expiry<=Date.now()||g.existingOrdersChecked!==true||g.noExtras!==true||!out.termsLinks.includes(g.termsUrl)||!out.slotSummary)throw new Error('CurrentFinalGrantMissing');click('立即下单');
+      const g=command.finalGrant;if(!g||g.termsAccepted!==true||g.taskId!==command.taskId||g.planDigest!==command.planDigest||g.expiry<=Date.now()||g.existingOrdersChecked!==true||g.noExtras!==true||!out.termsLinks.includes(g.termsUrl)||Object.hasOwn(out,'primaryTermsUrl')&&out.primaryTermsUrl!==g.termsUrl||!out.slotSummary)throw new Error('CurrentFinalGrantMissing');click('立即下单');
     }
     // C035 (Claude): openProduct is only re-verified here: this exact document still decodes as the expected verified empty bag. No
     // control is touched; ChromePort then navigates the tab to the plan's public entry. Later additions use fresh product reads.

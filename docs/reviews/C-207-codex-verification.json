@@ -1,0 +1,19 @@
+{
+  "task":"C207-review-fail-closed",
+  "sourceFiles":317,
+  "sourceSha256":"3ef5de777dfd5b55bea6be0453412ba0b8a2d75b67d87793510b2a49ed6d5f51",
+  "priorActualReview":{"task":"C-206-CURRENT-REVIEW-REVIEW","durationSeconds":217.06,"turns":24,"model":"claude-opus-5-5","effort":"xhigh","provider":"firstParty","verdict":"bounded AGREE on historical 317/23c57f70 bytes; G1/G2 recommendations held for closeout","requiredEOF":18,"EOFComplete":18,"commandsExact":true,"denials":0,"edits":0,"privateReads":0,"error":false,"cleanupConfirmed":true},
+  "additionalChanges":"native container always emits primary terms null on unknown heading; legacy fallback no new alias; every recorded bag/quote amount compared; select blocks image-only provider",
+  "newC207Tests":7,
+  "focused":{"tests":45,"pass":45,"fail":0},
+  "fullNode":{"tests":1779,"pass":1779,"fail":0,"cancelled":0,"skipped":0},
+  "oldTestAssertionsWeakened":false,
+  "redScope":"C205 earlier runtime3/native12 failures retained; C207 recommendation cases added with patch, no separate red run claimed",
+  "currentSourceReview":"not yet invoked",
+  "liveActor":"old paused actor normally idle-Stopped terminal0; expired window, unknown continuePayment and full source/history preserved",
+  "sourceBoundReviewFinalImplemented":false,
+  "receiptOrOrderDetailVerified":false,
+  "realProgrammeUnpaidOrderVerified":false,
+  "fullGoalComplete":false,
+  "noShutdownOrReboot":true
+}

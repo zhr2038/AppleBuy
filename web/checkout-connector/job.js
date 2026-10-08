@@ -482,11 +482,12 @@ export class PurchaseJob {
         const partial=!purchaseMatches(P,o.purchase)&&paymentStepCurrent(P,s,o);
         if(!s.acceptedSlot||!purchaseMatches(P,o.purchase)&&!partial)return this.gate(s,'payment-conditions-not-verified','BLOCKED');command={action:o.paymentMethod===P.paymentMethod?'continuePayment':'selectPayment',...(partial?{paymentOnly:true}:{})};
       }else if(o.phase==='REVIEW'){
-        // Merchant no-extras evidence only (never the human grant); the total must equal the quote recorded at Add to Bag.
-        if(!s.acceptedSlot||!purchaseMatches(P,o.purchase)||o.paymentMethod!==P.paymentMethod||o.extras!==false||(s.quotedCny!==null&&o.purchase.totalCny!==s.quotedCny)||o.existingOrdersChecked!==true||!sameAcceptedSlot(s,o.slotSummary))return this.gate(s,'final-review-or-existing-order-check-missing','BLOCKED');
+        // Merchant no-extras evidence only. Reused bags have an explicit basis even though no Add quote was created.
+        const reviewMoneyDiffers=[s.bagTotalCny,s.quotedCny].filter(v=>v!=null).some(v=>v!==o.purchase?.totalCny);
+        if(!s.acceptedSlot||!purchaseMatches(P,o.purchase)||o.paymentMethod!==P.paymentMethod||o.extras!==false||reviewMoneyDiffers||o.existingOrdersChecked!==true||!sameAcceptedSlot(s,o.slotSummary))return this.gate(s,'final-review-or-existing-order-check-missing','BLOCKED');
         // A positively not-dispatched final may be prepared again only under a different, current human grant.
         if(s.finalIntent&&(s.finalIntent.sent!==false||!grant||grant.id===s.finalIntent.grantId))return this.gate(s,'final-intent-already-recorded','NEEDS_VERIFICATION');
-        if(!grant||typeof grant.id!=='string'||grant.taskId!==s.taskId||grant.planDigest!==s.planDigest||(grant.start!==true&&grant.documentId!==o.documentId)||grant.termsAccepted!==true||!o.termsLinks?.includes(grant.termsUrl)||!Number.isFinite(grant.expiry)||grant.expiry<=this.now()||grant.expiry>this.now()+(grant.start===true?1800000:180000))return this.gate(s,'confirm-current-terms-and-this-one-order');
+        if(!grant||typeof grant.id!=='string'||grant.taskId!==s.taskId||grant.planDigest!==s.planDigest||(grant.start!==true&&grant.documentId!==o.documentId)||grant.termsAccepted!==true||!o.termsLinks?.includes(grant.termsUrl)||(Object.hasOwn(o,'primaryTermsUrl')&&o.primaryTermsUrl!==grant.termsUrl)||!Number.isFinite(grant.expiry)||grant.expiry<=this.now()||grant.expiry>this.now()+(grant.start===true?1800000:180000))return this.gate(s,'confirm-current-terms-and-this-one-order');
         if(s.finalIntent)s.history=[...(s.history??[]),{event:'final-not-dispatched',intentId:s.finalIntent.id,grantId:s.finalIntent.grantId}];
         s.finalIntent={id:this.id(),grantId:grant.id,sent:false};await this.save(s);command={action:'submitOrder',intentId:s.finalIntent.id,finalGrant:{...clone(grant),documentId:o.documentId}};
       }else return this.gate(s,'unsupported-merchant-stage','NEEDS_VERIFICATION');

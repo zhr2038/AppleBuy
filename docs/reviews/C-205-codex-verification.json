@@ -1,0 +1,19 @@
+{
+  "task":"C205-current-review-consent",
+  "author":"Codex",
+  "sourceFiles":317,
+  "sourceSha256":"23c57f70c9af0eb681f97d0611f37d6102aa2a90caca6ee5b7cdc1b9346ef385",
+  "productionDelta":["web/checkout-connector/page-program.js","web/checkout-connector/checkout-rpc-peer.js","web/checkout-connector/job.js","src/desktop/checkout-runtime.mjs"],
+  "redBefore":{"runtimeTests":7,"runtimeFail":3,"nativeTests":16,"nativeFail":12,"nativeFailures":"missing primary agreement feature plus four actual conflicting-provider indications accepted by C204"},
+  "greenAfter":{"newTests":25,"pass":25,"fail":0,"fullNodeTests":1772,"fullPass":1772,"fullFail":0,"fullCancelled":0,"fullSkipped":0},
+  "fakeEvidence":"production runtime descriptor/current consent to one FAKE unpaid; changed under-cap recorded bag basis writes/sends no final; real native DOM and named native API/peer preserve exact primary URL and refuse private fields",
+  "oldProtectedAssertionsChanged":false,
+  "nativeMissingStoreAndSlotStillMissing":true,
+  "finalExpirySourceAndUnknownResultGuardsNotRelaxed":true,
+  "review":"not yet invoked",
+  "personalActor":{"previousPhase":"actual native REVIEW","actualHandle":3028,"terminal":true,"exitCode":0,"reason":"normal supervisor idle stop after paused development window","cleanupConfirmed":true,"originalWindowExpired":true,"unknownContinuePaymentRetained":true,"finalIntentPresent":false},
+  "newCodeInstalled":false,
+  "realProgrammeUnpaidOrderVerified":false,
+  "fullGoalComplete":false,
+  "noShutdownOrReboot":true
+}

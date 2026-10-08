@@ -1,0 +1,13 @@
+{
+  "task": "C204-publication",
+  "sourceCommit": "08c983d",
+  "receiptCommit": "b6d9f0a619742d06d831389d0d5fb72e7dfdabe7",
+  "candidateRemote": "b6d9f0a619742d06d831389d0d5fb72e7dfdabe7",
+  "sourceFiles": 315,
+  "sourceSha256": "2d40452016f47c1489bd5afdc4e8d74f1d65d7df801156db5e937bee607bbaef",
+  "allAcceptedSourceBlobsMatched": true,
+  "mainUnchanged": true,
+  "pending317NotIncludedInThisReceipt": true,
+  "noForcePush": true,
+  "privatePublished": false
+}

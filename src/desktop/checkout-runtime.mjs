@@ -9,6 +9,13 @@ import {bagPlanCheck} from './checkout-diagnostic.mjs';
 import {renewEndedDraft,validateEndedDraft} from './ended-draft.mjs';
 import {restartExpiredPayment,validateExpiredPaymentRestart} from './expired-payment-restart.mjs';
 const BAG='https://www.apple.com.cn/shop/bag',TERMS='https://www.apple.com.cn/shop/open/salespolicies';
+const REVIEW_TERMS=[TERMS,'https://www.apple.com.cn/shop/browse/open/salespolicies'];
+function currentTerms(o){
+ const links=Array.isArray(o?.termsLinks)?o.termsLinks.filter(u=>REVIEW_TERMS.includes(u)):[];
+ if(Object.hasOwn(o??{},'primaryTermsUrl'))return REVIEW_TERMS.includes(o.primaryTermsUrl)&&links.includes(o.primaryTermsUrl)?o.primaryTermsUrl:null;
+ // Earlier generic checkout fixtures have no native primary field. A present but failed native field never falls back.
+ return links.includes(TERMS)?TERMS:null;
+}
 const PHASES=new Set(['ENTRY','VARIANT','EMPTY_BAG','BAG','AUTH','FULFILLMENT','SLOTS','DETAILS','PAYMENT','REVIEW','ORDER_RECEIPT','ORDER_DETAIL','PROCESSING','UNKNOWN']);
 const safeState=s=>({state:typeof s.state==='string'?s.state:'NEEDS_VERIFICATION',phase:PHASES.has(s.phase)?s.phase:'UNKNOWN',pendingAction:['addBag','checkout','chooseSlot','fillDetails','selectPayment','continuePayment','submitOrder'].includes(s.pendingAction)?s.pendingAction:null});
 export class DesktopCheckoutRuntime {
@@ -102,9 +109,11 @@ export class DesktopCheckoutRuntime {
  async prepareReview(){
   const old=await this.store.get(TASK_KEY),port=new ChromePort(this.api,this.tabId,{mode:'purchase',authorized:true,orderSummary:true,acceptedSlot:old?.acceptedSlot});let o=await port.observe(PRO_PLAN);
   if(!old?.pending&&!old?.finalIntent&&o.phase==='REVIEW'&&o.summaryReadable===true&&o.quantitySource!=='order-summary'){if((await port.readSummary(PRO_PLAN,old.taskId)).read!==true)throw Error('DesktopFinalConsentNotCurrent');o=await port.observe(PRO_PLAN);}
-  if(this.paused||this.closing||this.ownerLost||old?.expiresAt<=Date.now()||old?.desktopContext!==this.api.sessionId||old.lastPhase!=='REVIEW'||old.pending||old.finalIntent||old.reconcileOnly===true||o.phase!=='REVIEW'||o.documentId!==old.lastDocumentId||!o.termsLinks?.includes(TERMS)||!purchaseMatches(PRO_PLAN,o.purchase)||o.extras!==false||o.paymentMethod!=='支付宝'||!sameAcceptedSlot(old,o.slotSummary)||(old.bagTotalCny??old.quotedCny)!==o.purchase.totalCny)throw Error('DesktopFinalConsentNotCurrent');
-  this.finalDescriptor={taskId:old.taskId,documentId:old.lastDocumentId,termsUrl:TERMS};
-  return {phase:'REVIEW',termsUrl:TERMS,product:PRO_PLAN.product,totalCapCny:9999,quantity:1,store:PRO_PLAN.stores[0],paymentMethod:'支付宝'};
+  const termsUrl=currentTerms(o);
+  const moneyBases=[old?.bagTotalCny,old?.quotedCny].filter(v=>v!=null);
+  if(this.paused||this.closing||this.ownerLost||old?.expiresAt<=Date.now()||old?.desktopContext!==this.api.sessionId||old.lastPhase!=='REVIEW'||old.pending||old.finalIntent||old.reconcileOnly===true||o.phase!=='REVIEW'||o.documentId!==old.lastDocumentId||!termsUrl||!purchaseMatches(PRO_PLAN,o.purchase)||o.extras!==false||o.paymentMethod!=='支付宝'||!sameAcceptedSlot(old,o.slotSummary)||moneyBases.length===0||moneyBases.some(v=>v!==o.purchase.totalCny))throw Error('DesktopFinalConsentNotCurrent');
+  this.finalDescriptor={taskId:old.taskId,documentId:old.lastDocumentId,termsUrl};
+  return {phase:'REVIEW',termsUrl,product:PRO_PLAN.product,totalCapCny:9999,quantity:1,store:PRO_PLAN.stores[0],paymentMethod:'支付宝'};
  }
  transferContact(options={}){return this.track(()=>this.transferContactOnce(options));}
  restartPayment(options={}){return this.track(()=>this.restartPaymentOnce(options));}

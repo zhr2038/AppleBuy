@@ -1,0 +1,320 @@
+{
+  "task": "C208-C210-combined-actual-verification",
+  "sourceFiles": 317,
+  "sourceSha256": "3ef5de777dfd5b55bea6be0453412ba0b8a2d75b67d87793510b2a49ed6d5f51",
+  "accepted": true,
+  "acceptanceScope": "C205/C207 bounded native reading and consent-money guards; not real final/order/full goal",
+  "originalCoverageClaimRejected": true,
+  "combinedRequiredFreshEOF": 20,
+  "combinedFreshEOFComplete": 20,
+  "testsReusedOnlyBecauseSourceUnchanged": true,
+  "realOrderVerified": false,
+  "invocations": {
+    "C-206-CURRENT-REVIEW-REVIEW": {
+      "task": "C-206-CURRENT-REVIEW-REVIEW",
+      "sourceFiles": 317,
+      "status": "returned_for_review",
+      "durationSeconds": 217.06,
+      "turns": 24,
+      "models": [
+        "claude-opus-5-5"
+      ],
+      "primaryModels": [
+        "claude-opus-5-5"
+      ],
+      "provider": "firstParty",
+      "canonicalModel": "claude-opus-5-5",
+      "effort": "xhigh",
+      "modelVerified": true,
+      "resultError": false,
+      "subtype": "success",
+      "permissionDenialCount": 0,
+      "timedOut": false,
+      "cleanupConfirmed": true,
+      "toolCounts": {
+        "Read": 20,
+        "Bash": 3
+      },
+      "sourceEditCalls": 0,
+      "privateReadCalls": 0,
+      "unexpectedCommands": 0,
+      "commandOrderMatched": true,
+      "requiredEOFCount": 18,
+      "requiredEOFComplete": 18,
+      "EOFgaps": [],
+      "toolResultErrors": [],
+      "usageScope": "resumed history aggregate, not this round cost",
+      "accepted": false,
+      "realOrderVerified": false,
+      "orderedChecks": [
+        {
+          "scope": "bounded-review-checks",
+          "order": 1,
+          "exitCode": 0,
+          "timedOut": false,
+          "ownedTreeCleanupConfirmed": true,
+          "manifest": {
+            "ok": true,
+            "files": 317,
+            "sha256": "23c57f70c9af0eb681f97d0611f37d6102aa2a90caca6ee5b7cdc1b9346ef385",
+            "mismatches": []
+          },
+          "passed": true
+        },
+        {
+          "scope": "bounded-review-checks",
+          "order": 2,
+          "exitCode": 0,
+          "timedOut": false,
+          "ownedTreeCleanupConfirmed": true,
+          "counts": {
+            "tests": 108,
+            "pass": 108,
+            "fail": 0,
+            "cancelled": 0,
+            "skipped": 0
+          },
+          "passed": true
+        },
+        {
+          "scope": "bounded-review-checks",
+          "order": 3,
+          "exitCode": 0,
+          "timedOut": false,
+          "ownedTreeCleanupConfirmed": true,
+          "tests": 64,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0,
+          "passed": true
+        },
+        {
+          "scope": "bounded-review-checks",
+          "order": 4,
+          "exitCode": 0,
+          "timedOut": false,
+          "ownedTreeCleanupConfirmed": true,
+          "counts": {
+            "tests": 1772,
+            "pass": 1772,
+            "fail": 0,
+            "cancelled": 0,
+            "skipped": 0
+          },
+          "passed": true
+        },
+        {
+          "scope": "bounded-review-checks",
+          "order": 5,
+          "exitCode": 0,
+          "timedOut": false,
+          "ownedTreeCleanupConfirmed": true,
+          "manifest": {
+            "ok": true,
+            "files": 317,
+            "sha256": "23c57f70c9af0eb681f97d0611f37d6102aa2a90caca6ee5b7cdc1b9346ef385",
+            "mismatches": []
+          },
+          "passed": true
+        },
+        {
+          "scope": "bounded-review-checks",
+          "complete": true,
+          "orderedChecks": 5,
+          "passed": true
+        }
+      ],
+      "orderedChecksVerified": true,
+      "BashInvocationGroupSizes": [
+        1,
+        1,
+        1
+      ],
+      "BashCallsOverlapped": false,
+      "separateSequentialBashCallsVerified": true
+    },
+    "C-208-REVIEW-CLOSEOUT": {
+      "task": "C-208-REVIEW-CLOSEOUT",
+      "sourceFiles": 317,
+      "status": "returned_for_review",
+      "durationSeconds": 276.72,
+      "turns": 26,
+      "models": [
+        "claude-opus-5-5"
+      ],
+      "primaryModels": [
+        "claude-opus-5-5"
+      ],
+      "provider": "firstParty",
+      "canonicalModel": "claude-opus-5-5",
+      "effort": "xhigh",
+      "modelVerified": true,
+      "resultError": false,
+      "subtype": "success",
+      "permissionDenialCount": 0,
+      "timedOut": false,
+      "cleanupConfirmed": true,
+      "toolCounts": {
+        "Read": 19,
+        "Bash": 3,
+        "Grep": 2
+      },
+      "sourceEditCalls": 0,
+      "privateReadCalls": 0,
+      "unexpectedCommands": 0,
+      "commandOrderMatched": true,
+      "requiredEOFCount": 20,
+      "requiredEOFComplete": 16,
+      "EOFgaps": [
+        {
+          "path": "src/desktop/browser-session.mjs",
+          "reason": "missing-or-inconsistent-total"
+        },
+        {
+          "path": "test/desktop-c205-current-terms.test.ts",
+          "reason": "missing-or-inconsistent-total"
+        },
+        {
+          "path": "test/checkout-c205-native-terms.test.ts",
+          "reason": "missing-or-inconsistent-total"
+        },
+        {
+          "path": "test/checkout-c204-native-review.test.ts",
+          "reason": "missing-or-inconsistent-total"
+        }
+      ],
+      "toolResultErrors": [],
+      "usageScope": "resumed history aggregate, not this round cost",
+      "accepted": false,
+      "realOrderVerified": false,
+      "orderedChecks": [
+        {
+          "scope": "bounded-review-checks",
+          "order": 1,
+          "exitCode": 0,
+          "timedOut": false,
+          "ownedTreeCleanupConfirmed": true,
+          "manifest": {
+            "ok": true,
+            "files": 317,
+            "sha256": "3ef5de777dfd5b55bea6be0453412ba0b8a2d75b67d87793510b2a49ed6d5f51",
+            "mismatches": []
+          },
+          "passed": true
+        },
+        {
+          "scope": "bounded-review-checks",
+          "order": 2,
+          "exitCode": 0,
+          "timedOut": false,
+          "ownedTreeCleanupConfirmed": true,
+          "counts": {
+            "tests": 108,
+            "pass": 108,
+            "fail": 0,
+            "cancelled": 0,
+            "skipped": 0
+          },
+          "passed": true
+        },
+        {
+          "scope": "bounded-review-checks",
+          "order": 3,
+          "exitCode": 0,
+          "timedOut": false,
+          "ownedTreeCleanupConfirmed": true,
+          "tests": 64,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0,
+          "passed": true
+        },
+        {
+          "scope": "bounded-review-checks",
+          "order": 4,
+          "exitCode": 0,
+          "timedOut": false,
+          "ownedTreeCleanupConfirmed": true,
+          "counts": {
+            "tests": 1779,
+            "pass": 1779,
+            "fail": 0,
+            "cancelled": 0,
+            "skipped": 0
+          },
+          "passed": true
+        },
+        {
+          "scope": "bounded-review-checks",
+          "order": 5,
+          "exitCode": 0,
+          "timedOut": false,
+          "ownedTreeCleanupConfirmed": true,
+          "manifest": {
+            "ok": true,
+            "files": 317,
+            "sha256": "3ef5de777dfd5b55bea6be0453412ba0b8a2d75b67d87793510b2a49ed6d5f51",
+            "mismatches": []
+          },
+          "passed": true
+        },
+        {
+          "scope": "bounded-review-checks",
+          "complete": true,
+          "orderedChecks": 5,
+          "passed": true
+        }
+      ],
+      "orderedChecksVerified": true,
+      "BashInvocationGroupSizes": [
+        1,
+        1,
+        1
+      ],
+      "BashCallsOverlapped": false,
+      "separateSequentialBashCallsVerified": true
+    },
+    "C-210-READ-COVERAGE": {
+      "task": "C-210-READ-COVERAGE",
+      "sourceFiles": 317,
+      "status": "returned_for_review",
+      "durationSeconds": 87.61,
+      "turns": 9,
+      "models": [
+        "claude-opus-5-5"
+      ],
+      "primaryModels": [
+        "claude-opus-5-5"
+      ],
+      "provider": "firstParty",
+      "canonicalModel": "claude-opus-5-5",
+      "effort": "xhigh",
+      "modelVerified": true,
+      "resultError": false,
+      "subtype": "success",
+      "permissionDenialCount": 0,
+      "timedOut": false,
+      "cleanupConfirmed": true,
+      "toolCounts": {
+        "Read": 7,
+        "Bash": 1
+      },
+      "sourceEditCalls": 0,
+      "privateReadCalls": 0,
+      "unexpectedCommands": 0,
+      "commandOrderMatched": true,
+      "requiredEOFCount": 7,
+      "requiredEOFComplete": 7,
+      "EOFgaps": [],
+      "toolResultErrors": [],
+      "usageScope": "resumed history aggregate, not this round cost",
+      "accepted": false,
+      "realOrderVerified": false,
+      "BashInvocationGroupSizes": [
+        1
+      ],
+      "BashCallsOverlapped": false,
+      "separateSequentialBashCallsVerified": true
+    }
+  }
+}

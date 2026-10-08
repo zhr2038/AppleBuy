@@ -1,0 +1,31 @@
+// Public native REVIEW metadata in an isolated loopback Chrome, all effects FAKE.
+import test,{before,after} from 'node:test';import assert from 'node:assert/strict';import http from 'node:http';
+import {createRequire} from 'node:module';import {homedir} from 'node:os';import {join} from 'node:path';
+import {merchantDocument} from '../web/checkout-connector/page-program.js';import {PRO_PLAN} from '../src/desktop/browser-session.mjs';
+const {chromium}=createRequire(import.meta.url)(join(homedir(),'.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright'));
+const current='https://www.apple.com.cn/shop/browse/open/salespolicies',old='https://www.apple.com.cn/shop/open/salespolicies';let server,browser,origin;
+before(async()=>{server=http.createServer((q,r)=>r.end('FAKE C205'));await new Promise(r=>server.listen(0,'127.0.0.1',r));origin='http://127.0.0.1:'+server.address().port;browser=await chromium.launch({headless:true,executablePath:'C:/Program Files/Google/Chrome/Application/chrome.exe',args:['--disable-background-networking']});});
+after(async()=>{await browser?.close();if(server)await new Promise(r=>server.close(r));});
+async function world({terms=current,duplicate=false,footer=false}={}){
+ const context=await browser.newContext({serviceWorkers:'block'});await context.route('**/*',r=>new URL(r.request().url()).origin===origin?r.continue():r.abort('blockedbyclient'));await context.routeWebSocket('**/*',s=>s.close());
+ const page=await context.newPage();page.setDefaultTimeout(5000);await page.goto(origin,{waitUntil:'domcontentloaded'});
+ await page.setContent(`<html data-fake="c205"><body><div role="main" id="checkout-container"><h1 class="rs-review-header">准备下单了吗？<span>请确保以下信息均准确无误。</span></h1><h2>iPhone 18 Pro 256GB 黑色</h2><p>数量 1</p><p>总计 RMB 9,999</p><div class="rs-review-billing"><h2 class="rs-review-title">付款方式</h2><div class="rs-review-billing-details"><div class="rs-review-billing-cards"><h3 class="rs-review-payment-header"><img class="rs-review-payment-image" alt="支付宝"></h3></div></div></div><a href="${terms}">条款和条件</a>${duplicate?`<a href="${terms}">条款和条件</a>`:''}<button>立即下单</button></div>${footer?`<footer><a href="${old}">销售政策</a></footer>`:''}</body></html>`,{waitUntil:'domcontentloaded'});
+ const read=()=>page.evaluate(async({source,plan})=>{if(location.hostname!=='127.0.0.1'||document.documentElement.dataset.fake!=='c205')throw Error('OwnedFixtureOnly');return new Function('location','return ('+source+')')({href:'https://secure10.www.apple.com.cn/shop/checkout'})(plan);},{source:merchantDocument.toString(),plan:PRO_PLAN});return {context,page,read};
+}
+for(const terms of [current,old])test('C205 exact current primary native terms '+terms+' is preserved',async()=>{const w=await world({terms,footer:true});try{assert.equal((await w.read()).primaryTermsUrl,terms);}finally{await w.context.close();}});
+for(const [name,terms]of [['query',current+'?FAKE=1'],['hash',current+'#FAKE'],['port','https://www.apple.com.cn:444/shop/browse/open/salespolicies'],['userinfo','https://FAKE@www.apple.com.cn/shop/browse/open/salespolicies'],['foreign host','https://example.invalid/terms']])test('C205 '+name+' is not primary agreement, even with a valid footer',async()=>{const w=await world({terms,footer:true});try{assert.equal((await w.read()).primaryTermsUrl,null);}finally{await w.context.close();}});
+test('C205 duplicate native primary agreement is ambiguous, not de-duplicated into consent',async()=>{const w=await world({duplicate:true,footer:true});try{assert.equal((await w.read()).primaryTermsUrl,null);}finally{await w.context.close();}});
+test('C207 unknown native heading emits null rather than disappearing into footer consent',async()=>{const w=await world({footer:true});try{await w.page.evaluate(()=>document.querySelector('h1').textContent='FAKE changed native heading');const o=await w.read();assert.equal(Object.hasOwn(o,'primaryTermsUrl'),true);assert.equal(o.primaryTermsUrl,null);}finally{await w.context.close();}});
+test('C207 observed opening-window suffix preserves the primary agreement',async()=>{const w=await world();try{await w.page.evaluate(()=>document.querySelector('[role="main"] a').textContent='条款和条件 (在新窗口中打开)');assert.equal((await w.read()).primaryTermsUrl,current);}finally{await w.context.close();}});
+test('C207 an additional agreement in main is not borrowed as the current primary',async()=>{const w=await world();try{await w.page.evaluate(old=>document.querySelector('[role="main"]').insertAdjacentHTML('beforeend',`<a href="${old}">销售政策</a>`),old);assert.equal((await w.read()).primaryTermsUrl,null);}finally{await w.context.close();}});
+test('C207 selection control outside billing cannot lend image-only provider proof',async()=>{const w=await world();try{await w.page.evaluate(()=>document.querySelector('[role="main"]').insertAdjacentHTML('beforeend','<select><option>FAKE WeChat</option></select>'));assert.notEqual((await w.read()).paymentMethod,'支付宝');}finally{await w.context.close();}});
+for(const [name,change]of [
+ ['duplicate billing section',()=>{const e=document.querySelector('.rs-review-billing');e.after(e.cloneNode(true));}],
+ ['wrong billing title',()=>document.querySelector('.rs-review-title').textContent='FAKE-other'],
+ ['billing input',()=>document.querySelector('.rs-review-billing').insertAdjacentHTML('beforeend','<input type="checkbox" checked>')],
+ ['visible dialog',()=>document.body.insertAdjacentHTML('beforeend','<div role="dialog" aria-modal="true">FAKE</div>')],
+ ['installment indication',()=>document.querySelector('.rs-review-billing').insertAdjacentHTML('beforeend','<p>分期付款</p>')],
+ ['contradicting provider text',()=>document.querySelector('.rs-review-billing').insertAdjacentHTML('beforeend','<p>微信支付</p>')],
+ ['checked provider outside billing',()=>document.querySelector('[role="main"]').insertAdjacentHTML('beforeend','<input type="radio" checked aria-label="微信支付">')],
+ ['hidden contradicting provider',()=>document.querySelector('[role="main"]').insertAdjacentHTML('beforeend','<input type="radio" checked hidden aria-label="微信支付">')]
+])test('C205 '+name+' cannot lend the image Alipay authority',async()=>{const w=await world();try{await w.page.evaluate(change);assert.notEqual((await w.read()).paymentMethod,'支付宝');}finally{await w.context.close();}});

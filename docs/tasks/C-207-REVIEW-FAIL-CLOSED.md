@@ -1,0 +1,5 @@
+# C207 close C206 review recommendations before source-bound final design
+
+Codex implementation; English review exchanges; same E:\Apple Store. Read requirements and actual C206 report. No real order/payment, new checkout/slot, source archive changes or expiry extension.
+
+C206 bounded AGREE closes current F2/F4 but identifies a heading-dependent native fallback, lost second money comparison and incomplete selection-control coverage. Close these before any future F1 final-progression authority: a REVIEW inside the native container always emits an explicit primary agreement field, null for unrecognized heading; legacy generic fallback retains only the old contract; every recorded bag/Add amount must agree before descriptor/final; a select anywhere in main cannot coexist with image-only provider proof. Cover the actual opening-window suffix and the true absent-field case separately from null. Preserve current old assertions and all missing-store/slot/source/expiry/no-repeat guards. Source-bound REVIEW/final continuation and actual receipt/detail remain unimplemented and require a deliberate separate design, current disclosure and fresh action-time approval.
