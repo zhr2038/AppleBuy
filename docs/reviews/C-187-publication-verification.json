@@ -1,0 +1,12 @@
+{
+  "task": "C-187-PUBLICATION",
+  "sourceFiles": 307,
+  "sha256": "f36f70792aa9eae075824d2105b33508f9a70cfb5eccf34f64b2260165d88fae",
+  "codeCommit": "e38f5d369bc660aa2606c5402479f2e22c92ac40",
+  "remoteCandidate": "e38f5d369bc660aa2606c5402479f2e22c92ac40",
+  "all307HeadRemoteBlobsMatch": true,
+  "mainPromoted": false,
+  "forcePushed": false,
+  "privatePublished": false,
+  "realOrderVerified": false
+}
