@@ -1,0 +1,22 @@
+{
+  "task": "C-202-deployment-blocked",
+  "date": "2026-10-08",
+  "previousGoalTurn": "no progress; same required trusted-person module reload and purchase connection",
+  "consecutiveSameBlockingGoalTurns": 3,
+  "readonlyNativeVersionProbeCurrent": false,
+  "probeCreatedTabs": false,
+  "probePurchaseActions": false,
+  "probeOwnedCleanupConfirmed": true,
+  "activeBuyerOrReviewer": false,
+  "sourceFiles": 314,
+  "sourceSha256": "a615b6ad4294d8ae602e5a1d5e475edab55c53224e488c948cf0100923a3f9cf",
+  "productionSourceUnchanged": true,
+  "actualGoalStatusReturned": "blocked",
+  "fullGoalIncompleteAndPreserved": true,
+  "realProgrammeUnpaidOrderVerified": false,
+  "existingSetupQuestionRetainedWithoutReasking": true,
+  "browserPolicyRejectionNotWorkedAround": true,
+  "recoveryPoint": "after original extension reload and fixedPro purchase connect: version verification, current account/orders/cart and exact merchant expiry, then the reviewed once-only restart",
+  "allOldUnknownsAndArchivesRetained": true,
+  "noShutdownOrReboot": true
+}
