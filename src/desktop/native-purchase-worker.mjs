@@ -4,6 +4,7 @@ import {DesktopCheckoutRuntime} from './checkout-runtime.mjs';import {DesktopTas
 import {AuthContinuation} from './auth-continuation.mjs';import {launchNativeCheckout} from './native-checkout-channel.mjs';
 import {safeCheckoutDiagnostic} from './checkout-diagnostic.mjs';
 import {stoppedCheckoutDraftSource} from './cart-transfer.mjs';import {TASK_KEY} from '../../web/checkout-connector/job.js';
+import {probeCheckoutHostScope} from './checkout-host-scope.mjs';
 if(process.argv.length>2)throw Error('NativeWorkerArgumentsNotAllowed');
 const emit=value=>process.stdout.write(JSON.stringify({scope:'desktop-pro-checkout',...value})+'\n');
 let input,watch,closing=false;const store=new DesktopTaskStore(join(process.cwd(),'.local/desktop/task.json'));
@@ -13,7 +14,8 @@ const runtime=new DesktopCheckoutRuntime({store,launch:async()=>launchNativeChec
 }});
 try{
  const initial=await runtime.open();if(closing)throw Error('NativeOwnerLost');
- emit({type:'ready',readOnly:initial.legacyReadOnly===true,canRenewEndedDraft:!!stoppedCheckoutDraftSource(await store.get(TASK_KEY)),message:'程序已连接正常 Chrome 的独立结账通道；旧只读和未知记录不增加购买权限。'});
+ const hostScope=await probeCheckoutHostScope(runtime.api),canRenewEndedDraft=!!stoppedCheckoutDraftSource(await store.get(TASK_KEY));if(closing||runtime.ownerLost)throw Error('NativeOwnerLost');
+ emit({type:'ready',readOnly:initial.legacyReadOnly===true,canRenewEndedDraft,...hostScope,message:'程序已连接正常 Chrome 的独立结账通道；旧只读和未知记录不增加购买权限。'});
  input=createInterface({input:process.stdin});let active=false,pausing=false;
  watch=new AuthContinuation({observe:()=>runtime.observe(),isBusy:()=>closing||active||pausing||runtime.paused,onStopped:()=>emit({type:'blocked',paused:runtime.paused,message:'官网验证或页面仍未确认，自动衔接已停止；旧动作不重复。'})});
  async function advance(c){

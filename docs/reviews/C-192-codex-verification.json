@@ -1,0 +1,84 @@
+{
+  "task": "C-192-READONLY-HOST-SCOPE",
+  "sourceFiles": 309,
+  "sourceSha256": "f92846c11af09c3adc85baa94a467528a8e39bf247966c47b2c51ff9b9405eff",
+  "author": "Codex",
+  "status": "candidate awaiting actual cross-author review",
+  "focusedTests": {
+    "tests": 8,
+    "pass": 8,
+    "fail": 0
+  },
+  "fakeWorkerStartupBodyExercised": true,
+  "fakeStartupOwnerLossReadySuppressed": true,
+  "scopeQueryOnly": "containsHost for the one already-declared official checkout wildcard",
+  "scopeTrueFalseAndUnknownDistinct": true,
+  "noPermissionRequestOrExpansion": true,
+  "existingProtectedAssertionsChanged": false,
+  "actualPriorNativeConnection": {
+    "programmeReady": true,
+    "readOnly": true,
+    "canRenewEndedDraft": true,
+    "page": "BAG",
+    "reconciliationWasReadOnly": true,
+    "sourcePendingCheckoutPreserved": true,
+    "newPurchaseActions": false,
+    "pausedThenStopped": true,
+    "ownedCallerExitCode": 0,
+    "cleanupAcknowledged": true
+  },
+  "newReadyScopeFieldsLiveVerified": false,
+  "actualBroaderHostGrantVerified": false,
+  "realProgrammeUnpaidOrderVerified": false,
+  "initialCandidateSha256": "7b4c739c1a22fdf3f5f3945f4b6da2ba67f43af51dd83ce217a8fd2a6d2347fd",
+  "initialRootManagedChecks": {
+    "complete": true,
+    "orderedChecks": 5,
+    "manifestBeforeAfterVerified": true,
+    "protectedRunner": {
+      "tests": 108,
+      "pass": 108
+    },
+    "python": {
+      "tests": 64,
+      "pass": 64
+    },
+    "fullNode": {
+      "tests": 1664,
+      "pass": 1664
+    },
+    "ownedProcessCleanupConfirmed": true
+  },
+  "independentOwnerLossReproduction": {
+    "before": {
+      "tests": 8,
+      "pass": 7,
+      "fail": 1
+    },
+    "after": {
+      "tests": 8,
+      "pass": 8,
+      "fail": 0
+    },
+    "cause": "owner loss during retained-source read after scope check could emit ready",
+    "fix": "owner check after both awaited reads before ready"
+  },
+  "rootManagedChecks": {
+    "complete": true,
+    "orderedChecks": 5,
+    "manifestBeforeAfterVerified": true,
+    "protectedRunner": {
+      "tests": 108,
+      "pass": 108
+    },
+    "python": {
+      "tests": 64,
+      "pass": 64
+    },
+    "fullNode": {
+      "tests": 1665,
+      "pass": 1665
+    },
+    "ownedProcessCleanupConfirmed": true
+  }
+}
