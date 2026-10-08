@@ -1,0 +1,11 @@
+{
+  "task": "C207-accepted-publication",
+  "sourceCommit": "1a5ed1420942de9af8cbf1b2a5b9e25e7c2568da",
+  "candidateRemote": "1a5ed1420942de9af8cbf1b2a5b9e25e7c2568da",
+  "sourceFiles": 317,
+  "sourceSha256": "3ef5de777dfd5b55bea6be0453412ba0b8a2d75b67d87793510b2a49ed6d5f51",
+  "allSourceHeadAndRemoteBlobsMatched": true,
+  "mainUnchanged": true,
+  "noForcePush": true,
+  "privatePublished": false
+}
