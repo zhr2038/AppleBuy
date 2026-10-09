@@ -16,7 +16,7 @@
 // C035 (Claude): the observed complete normal empty bag is EMPTY_BAG; there only openProduct is accepted, as a write-free re-verification.
 // C037 (Claude): selectStore can choose the observed numbered native Dalian radio when it is not preselected, by the same exact proof.
 // C051 (Claude): the observed contact-only details step is a recognized step (contactStep), never purchase proof; see below.
-export const CHECKOUT_EXECUTOR_VERSION='C229-controlled-review-v1';
+export const CHECKOUT_EXECUTOR_VERSION='C231-native-review-v1';
 export async function merchantDocument(plan,command=null,internal=null){
   // `internal` is set only by this program's own re-entry; ChromePort passes plan and command only.
   // A structured command always receives a structured report. Nothing was written unless this id was already delivered.
@@ -24,6 +24,9 @@ export async function merchantDocument(plan,command=null,internal=null){
     if(command.structured!==true)throw new Error(prior?'OperationAlreadyDelivered':reason);
     return {delivered:false,touched:prior,reason:prior?'OperationAlreadyDelivered':reason};};
   const u=new URL(location.href);
+  // The merchant's observed _s query selects checkout steps within this document.
+  // It is not a new task/document. Other query keys, fragments, paths or origins still differ.
+  const sameControlledLocation=href=>{try{const previous=new URL(href);const step=x=>x.pathname==='/shop/checkout'&&!x.username&&!x.password&&!x.port&&!x.hash&&[...x.searchParams.keys()].every(k=>k==='_s')&&[...x.searchParams.keys()].length<=1;return href===u.href||step(previous)&&step(u)&&previous.origin===u.origin;}catch{return false;}};
   const expiry=u.protocol==='https:'&&!u.username&&!u.password&&!u.port&&(u.hostname==='www.apple.com.cn'||/^secure(?:\d+)?\.www\.apple\.com\.cn$/.test(u.hostname))&&u.pathname==='/shop/sorry/session_expired';
   if(expiry){
     const shown=e=>{if(!e?.isConnected)return false;for(let p=e;p;p=p.parentElement){const s=getComputedStyle(p);if(p.hidden||p.hasAttribute('inert')||p.getAttribute('aria-hidden')==='true'||s.display==='none'||['hidden','collapse'].includes(s.visibility))return false;}return true;};
@@ -163,14 +166,20 @@ export async function merchantDocument(plan,command=null,internal=null){
     ns&&ns.tagName==='DIV'&&visible(ns)&&within(ni,ns)&&nn&&nn.tagName==='H3'&&visible(nn)&&within(ns,nn)&&norm(nn.textContent)===fullVariant&&
     nf&&nf.tagName==='DIV'&&visible(nf)&&within(ni,nf)&&nh&&nh.tagName==='H2'&&visible(nh)&&within(nf,nh)&&
     st&&st.tagName==='SPAN'&&visible(st)&&within(nh,st)&&!/iphone/i.test(norm(st.textContent))&&norm(nativeHeaderText)===norm(plan.product.model));
-  const oneLine=nativeScope?nativeLine:groups.length===0?lines(productRe).length===1:groupLine;
+  const reviewLists=checkoutScope&&exact('立即下单').length===1?[...main.querySelectorAll('ol[data-autom="bag-items"]')]:[],reviewScope=reviewLists.length>0;
+  const reviewItems=reviewLists.length===1?[...reviewLists[0].children]:[],reviewItem=reviewItems.length===1?reviewItems[0]:null;
+  const reviewTitles=reviewItem?[...reviewItem.querySelectorAll('h2.rs-iteminfo-title')]:[],reviewTitle=reviewTitles.length===1?reviewTitles[0]:null;
+  const reviewLine=!!(reviewLists.length===1&&visible(reviewLists[0])&&reviewItem?.tagName==='LI'&&/^bag-item-\d+$/.test(reviewItem.getAttribute('data-autom')??'')&&visible(reviewItem)&&
+    reviewTitle&&visible(reviewTitle)&&norm(reviewTitle.textContent)===fullVariant&&main.querySelectorAll('.rs-iteminfo-title').length===1&&
+    (norm(main.textContent).match(/iphone/gi)??[]).length===1&&[...reviewItem.querySelectorAll('.rs-bag-item-children')].every(e=>norm(e.textContent)===''&&e.children.length===0));
+  const oneLine=reviewScope?reviewLine:nativeScope?nativeLine:groups.length===0?lines(productRe).length===1:groupLine;
   // C028-R1 (Claude): the line rules above see only visible h1-h3/p/span/div text of at most 180 characters. Outside the observed
   // bag (which keeps its own structural purchased-line count), every iPhone mention in main's whole text - hidden, bare text,
   // any element type or long text - must be an accepted anchor's own mention: the recognized strip/copy pair, or the single
   // generic title line. Nested anchors count once. An ancestor holding the known copy lends no identity to further product
   // text. Only a count is derived; no page text is returned or kept.
   const mentions=e=>(norm(e?.textContent).match(/iphone/gi)??[]).length;
-  const anchors=[...new Set(nativeScope?[nn]:groups.length>0?[strip,copy]:lines(productRe).map(x=>x.e))].filter(Boolean);
+  const anchors=[...new Set(reviewScope?[reviewTitle]:nativeScope?[nn]:groups.length>0?[strip,copy]:lines(productRe).map(x=>x.e))].filter(Boolean);
   // C036 Codex quota adaptation: current native pickup adds a model-only date LEGEND beside the single selected-store product row.
   // It is metadata, not another purchased item. Whitelist only this observed structural counterpart; every other iPhone mention,
   // duplicate/hidden product scope or mismatching caption still conflicts. Neither this row nor the caption supplies quantity.
@@ -187,7 +196,7 @@ export async function merchantDocument(plan,command=null,internal=null){
   // C027 (Codex quota completion): the recognized strip/copy supply exact titles. Their real-DOM ancestors also contain
   // native option labels; that aggregate is not another title. Generic pages retain the strict textual proof.
   const exactProduct=bag?!!bag.title&&norm(bag.title.textContent)===fullVariant&&!bag.stray:!bagScoped&&oneLine&&soleMentions&&
-    (nativeScope?nativeLine:groups.length>0?groupLine:productLines.some(t=>t===fullVariant)&&productLines.every(t=>t===fullVariant));
+    (reviewScope?reviewLine:nativeScope?nativeLine:groups.length>0?groupLine:productLines.some(t=>t===fullVariant)&&productLines.every(t=>t===fullVariant));
   // C022 (Codex quota takeover): wrapper text includes every option, even hidden native clones (observed 数量121).
   // Remove descendant select text only; literal quantity outside those controls still conflicts with selected values.
   // Strip outermost controls once, before the length bound, so long/nested option lists cannot hide a real contradiction.
@@ -389,7 +398,7 @@ export async function merchantDocument(plan,command=null,internal=null){
   if(phase==='REVIEW'||phase==='BAG'){
     const b=phase==='BAG'?bag:null,markerText=t=>(/AppleCare/.test(t)&&!t.includes(NO_APPLECARE))||(/折抵|换购/.test(t)&&!t.includes(NO_TRADE_IN));
     const marker=b?textEls.some(x=>b.free(x.e)&&markerText(b.strip(x.e)))||(!!b.line&&markerText(b.strip(b.line))):texts.some(markerText);
-    const items=b?b.items:lines(productRe).length;
+    const items=b?b.items:reviewScope?reviewItems.length:lines(productRe).length;
     out.extras=out.extrasConflict||marker||items>1||quantityLines.length>1||(!!b&&(b.stray||b.otherRemove))?true:purchase.itemVerified&&items===1?false:null;
   }
   const timeSelects=selects.filter(e=>[...e.options].some(o=>/^\d{2}:\d{2}\s*[-–—至]\s*\d{2}:\d{2}$/.test(norm(o.textContent))));
@@ -434,17 +443,17 @@ export async function merchantDocument(plan,command=null,internal=null){
     // C229: decorative heading text/classes are not purchase facts. On our uninterrupted
     // same-document progression, use the actual enabled final control and primary agreement.
     // This shortcut never supplies missing item/money/provider/store/slot authority.
-    const sourceReview=source?.main===main&&source.href===u.href&&source.intervened===false&&source.finalSent!==true&&source.stage==='payment-sent'&&exact('立即下单').length===1;
+    const sourceReview=source?.main===main&&sameControlledLocation(source.href)&&source.intervened===false&&source.finalSent!==true&&source.stage==='payment-sent'&&exact('立即下单').length===1;
     if(main.id==='checkout-container'){out.primaryTermsUrl=null;out.paymentMethod=null;if(nativeReviewHeading||sourceReview){const links=[...main.querySelectorAll('a[href]')].filter(a=>visible(a)&&/条款|销售政策/.test(name(a)));out.primaryTermsUrl=links.length===1&&/^条款和条件(?:\s*\(在新窗口中打开\))?$/.test(name(links[0]))?termsUrlOf(links[0]):null;}}
     const sections=[...main.querySelectorAll('.rs-review-billing')],section=sections.length===1?sections[0]:null;
     const titles=section?[...section.querySelectorAll('h2.rs-review-title')]:[],details=section?[...section.querySelectorAll('.rs-review-billing-details')]:[];
     const images=[...main.querySelectorAll('.rs-review-payment-image')],image=images.length===1?images[0]:null;
-    const header=image?.closest('h3.rs-review-payment-header'),cards=header?.closest('.rs-review-billing-cards');
+    const cards=image?.closest('.rs-review-billing-cards'),paymentHeaders=cards?[...cards.querySelectorAll('h3.rs-review-payment-header')]:[],header=paymentHeaders.length===1?paymentHeaders[0]:null;
     const billingControls=section?[...section.querySelectorAll('input,select,[role="radio"],[role="checkbox"]')]:[];
-    if(section?.tagName==='DIV'&&visible(section)&&titles.length===1&&visible(titles[0])&&norm(titles[0].textContent)==='付款方式'&&
+    if(section?.tagName==='DIV'&&visible(section)&&titles.length===1&&visible(titles[0])&&['付款方式','付款详情'].includes(norm(titles[0].textContent))&&
       details.length===1&&details[0].tagName==='DIV'&&visible(details[0])&&image?.tagName==='IMG'&&visible(image)&&norm(image.getAttribute('alt'))==='支付宝'&&
-      header&&visible(header)&&cards?.tagName==='DIV'&&visible(cards)&&within(details[0],cards)&&within(cards,header)&&within(header,image)&&
-      section.querySelectorAll('img').length===1&&header.querySelectorAll('img').length===1&&billingControls.length===0&&dialogs?.length===0&&
+      header&&visible(header)&&cards?.tagName==='DIV'&&visible(cards)&&within(details[0],cards)&&within(cards,header)&&within(cards,image)&&
+      section.querySelectorAll('img').length===1&&billingControls.length===0&&dialogs?.length===0&&
       main.querySelectorAll('input[type="radio"],input[type="checkbox"],[role="radio"],[role="checkbox"],select').length===0&&!/微信|分期|信用卡|银行卡/.test(norm(section.textContent)))out.paymentMethod='支付宝';
     if(out.paymentMethod==='支付宝'&&purchase.itemVerified&&purchase.store===null&&out.slotSummary===null)out.reason='native-review-missing-store-and-slot';
   }
@@ -495,9 +504,9 @@ export async function merchantDocument(plan,command=null,internal=null){
   out.paymentStep=paymentOnly?{kind:'native-alipay-payment-only',verified:true,totalCny:barTotal}:null;
   // Same-document, originating programme trace. It is separate from current merchant purchase/store/slot evidence.
   const progress=globalThis.__applebuyControlledCheckout;
-  const progressCurrent=!!progress&&progress.main===main&&progress.href===u.href&&progress.intervened===false;
+  const progressCurrent=!!progress&&progress.main===main&&sameControlledLocation(progress.href)&&progress.intervened===false;
   // Native radio.click() emits trusted input/change events too. Mark only this synchronous, task-bound programme write.
-  const controlledWrite=fn=>{const t=globalThis.__applebuyControlledCheckout,own=!!t&&t.main===main&&t.href===u.href&&t.taskId===command?.taskId&&t.planDigest===command?.planDigest;if(own)t.writing=(t.writing??0)+1;try{return fn();}finally{if(own)t.writing--;}};
+  const controlledWrite=fn=>{const t=globalThis.__applebuyControlledCheckout,own=!!t&&t.main===main&&sameControlledLocation(t.href)&&t.taskId===command?.taskId&&t.planDigest===command?.planDigest;if(own)t.writing=(t.writing??0)+1;try{return fn();}finally{if(own)t.writing--;}};
   if(progressCurrent&&progress.stage==='slot-sent'&&out.contactStep?.verified===true&&out.contactStep.totalCny===progress.totalCny)progress.stage='contact-accepted';
   const reviewNotice=[...main.querySelectorAll('h2.rs-review-shipquote')].filter(visible);
   const retailEdit=exact('更改零售店').filter(e=>e.getAttribute('data-autom')==='changeShippingMethod');
@@ -511,7 +520,7 @@ export async function merchantDocument(plan,command=null,internal=null){
   // Report every failed existing predicate immediately. This is diagnostic only and changes no gate.
   // Deliberately contains no captured text, URLs, identifiers or customer-input values.
   if(phase==='REVIEW'&&!nativeControlledReview){
-    const checks=[['trace-missing',!!progress],['document-changed',!!progress&&progress.main===main&&progress.href===u.href],
+    const checks=[['trace-missing',!!progress],['document-changed',!!progress&&progress.main===main&&sameControlledLocation(progress.href)],
       ['interaction-detected',!!progress&&progress.intervened===false],['payment-step-unconfirmed',progress?.stage==='payment-sent'],['final-already-sent',progress?.finalSent!==true],
       ['review-root',main.id==='checkout-container'],['item',purchase.itemVerified===true],['quantity',purchase.quantity===1],
       ['unexpected-store-or-fulfillment',purchase.verified===false&&purchase.store===null&&purchase.fulfillment===null],['amount',!!progress&&purchase.totalCny===progress.totalCny],

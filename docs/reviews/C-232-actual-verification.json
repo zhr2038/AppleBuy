@@ -1,0 +1,123 @@
+{
+  "task": "C-232-NATIVE-COMPATIBILITY-REVIEW",
+  "sourceFiles": 338,
+  "sourceSha256": "17025b03d9eed8be1af6f17eb40f544865a634edda1e469c076e84fbc3110b2d",
+  "sourceUnchanged": true,
+  "status": "returned_for_review",
+  "durationSeconds": 425.99,
+  "turns": 15,
+  "models": [
+    "claude-opus-5-5"
+  ],
+  "primaryModels": [
+    "claude-opus-5-5"
+  ],
+  "provider": "firstParty",
+  "canonicalModel": "claude-opus-5-5",
+  "effort": "max",
+  "modelVerified": true,
+  "isError": false,
+  "subtype": "success",
+  "timedOut": false,
+  "cleanupConfirmed": true,
+  "permissionDenials": 0,
+  "privateReads": 0,
+  "edits": 0,
+  "toolCounts": {
+    "Read": 7,
+    "Glob": 1,
+    "Bash": 3,
+    "Grep": 2
+  },
+  "requiredEOF": 3,
+  "completeEOF": 3,
+  "gaps": [],
+  "commandsMatched": true,
+  "unexpectedCommands": 0,
+  "overlappingCommands": false,
+  "toolErrors": [],
+  "orderedChecks": [
+    {
+      "scope": "bounded-review-checks",
+      "order": 1,
+      "exitCode": 0,
+      "timedOut": false,
+      "ownedTreeCleanupConfirmed": true,
+      "manifest": {
+        "ok": true,
+        "files": 338,
+        "sha256": "17025b03d9eed8be1af6f17eb40f544865a634edda1e469c076e84fbc3110b2d",
+        "mismatches": []
+      },
+      "passed": true
+    },
+    {
+      "scope": "bounded-review-checks",
+      "order": 2,
+      "exitCode": 0,
+      "timedOut": false,
+      "ownedTreeCleanupConfirmed": true,
+      "counts": {
+        "tests": 108,
+        "pass": 108,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0
+      },
+      "passed": true
+    },
+    {
+      "scope": "bounded-review-checks",
+      "order": 3,
+      "exitCode": 0,
+      "timedOut": false,
+      "ownedTreeCleanupConfirmed": true,
+      "tests": 70,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "passed": true
+    },
+    {
+      "scope": "bounded-review-checks",
+      "order": 4,
+      "exitCode": 0,
+      "timedOut": false,
+      "ownedTreeCleanupConfirmed": true,
+      "counts": {
+        "tests": 1890,
+        "pass": 1890,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0
+      },
+      "passed": true
+    },
+    {
+      "scope": "bounded-review-checks",
+      "order": 5,
+      "exitCode": 0,
+      "timedOut": false,
+      "ownedTreeCleanupConfirmed": true,
+      "manifest": {
+        "ok": true,
+        "files": 338,
+        "sha256": "17025b03d9eed8be1af6f17eb40f544865a634edda1e469c076e84fbc3110b2d",
+        "mismatches": []
+      },
+      "passed": true
+    },
+    {
+      "scope": "bounded-review-checks",
+      "complete": true,
+      "orderedChecks": 5,
+      "passed": true
+    }
+  ],
+  "compactions": 1,
+  "usageScope": "resumed history aggregate, not this invocation spend",
+  "accepted": true,
+  "realOrderVerified": false,
+  "acceptanceScope": "Exact C231338 source snapshot only; subsequent C233 policy edits are unaccepted",
+  "auditTiming": "Working source matched at audit, before C233 edits"
+}

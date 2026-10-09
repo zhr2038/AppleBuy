@@ -1,0 +1,32 @@
+{
+  "observation": "supported Chrome read-only current programme REVIEW",
+  "publicStructureOnly": true,
+  "path": "/shop/checkout",
+  "queryKeys": [
+    "_s"
+  ],
+  "fragment": false,
+  "main": "DIV#checkout-container[role=main]",
+  "product": "one OL bag-items / LI bag-item-1 / H2 rs-iteminfo-title; title shares ancestors with quantity and price",
+  "item": "iPhone 18 Pro 256GB 黑色",
+  "quantity": 1,
+  "totalCny": 9999,
+  "providerCaption": "付款详情",
+  "providerImage": "IMG.rs-review-payment-image alt=支付宝 in DIV, H3 same cards section",
+  "noVisibleStoreOrSlot": true,
+  "oldDiagnosticCodes": [
+    "document-changed",
+    "interaction-detected",
+    "payment-step-unconfirmed",
+    "item",
+    "extras",
+    "payment-method"
+  ],
+  "traceCauseLimit": "URL query variation is a proved code failure in independent native reproduction; current historical event/main identity cause not separately captured",
+  "programmeGeneration": 2,
+  "pendingAction": "continuePayment",
+  "finalIntent": false,
+  "pausedAcknowledged": true,
+  "actualLiveOrder": false,
+  "actualNewRecoveryAvailable": false
+}

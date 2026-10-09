@@ -1,0 +1,101 @@
+{
+  "task": "C231",
+  "sourceFiles": 338,
+  "sourceSha256": "17025b03d9eed8be1af6f17eb40f544865a634edda1e469c076e84fbc3110b2d",
+  "beforeFix": {
+    "tests": 8,
+    "pass": 6,
+    "fail": 2,
+    "scope": "current public native structure and observed _s variation in an isolated renderer"
+  },
+  "focusedAfterFix": {
+    "tests": 53,
+    "pass": 53,
+    "fail": 0
+  },
+  "checks": [
+    {
+      "scope": "bounded-review-checks",
+      "order": 1,
+      "exitCode": 0,
+      "timedOut": false,
+      "ownedTreeCleanupConfirmed": true,
+      "manifest": {
+        "ok": true,
+        "files": 338,
+        "sha256": "17025b03d9eed8be1af6f17eb40f544865a634edda1e469c076e84fbc3110b2d",
+        "mismatches": []
+      },
+      "passed": true
+    },
+    {
+      "scope": "bounded-review-checks",
+      "order": 2,
+      "exitCode": 0,
+      "timedOut": false,
+      "ownedTreeCleanupConfirmed": true,
+      "counts": {
+        "tests": 108,
+        "pass": 108,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0
+      },
+      "passed": true
+    },
+    {
+      "scope": "bounded-review-checks",
+      "order": 3,
+      "exitCode": 0,
+      "timedOut": false,
+      "ownedTreeCleanupConfirmed": true,
+      "tests": 70,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "passed": true
+    },
+    {
+      "scope": "bounded-review-checks",
+      "order": 4,
+      "exitCode": 0,
+      "timedOut": false,
+      "ownedTreeCleanupConfirmed": true,
+      "counts": {
+        "tests": 1890,
+        "pass": 1890,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0
+      },
+      "passed": true
+    },
+    {
+      "scope": "bounded-review-checks",
+      "order": 5,
+      "exitCode": 0,
+      "timedOut": false,
+      "ownedTreeCleanupConfirmed": true,
+      "manifest": {
+        "ok": true,
+        "files": 338,
+        "sha256": "17025b03d9eed8be1af6f17eb40f544865a634edda1e469c076e84fbc3110b2d",
+        "mismatches": []
+      },
+      "passed": true
+    },
+    {
+      "scope": "bounded-review-checks",
+      "complete": true,
+      "orderedChecks": 5,
+      "passed": true
+    }
+  ],
+  "originalTestsChanged": false,
+  "realCurrentActorPaused": true,
+  "oldIntervenedTraceReset": false,
+  "rootCauseLimit": "native product/provider parser mismatches confirmed; varying only _s query independently reproduces a trace failure but exact earlier browser event/main history was not captured",
+  "accepted": false,
+  "review": "not dispatched yet; pending human recovery-policy clarification so one consolidated review can cover final scope",
+  "realOrderVerified": false
+}
