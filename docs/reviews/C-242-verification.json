@@ -1,0 +1,120 @@
+{
+  "recordedAt": "2026-10-09T14:38:21.027277+00:00",
+  "sourceFiles": 348,
+  "sourceSha256": "7580ccd072886f97b48eed890fedc2cf498f6c39d948c9f273a11ba983c78fc2",
+  "accepted": false,
+  "reviewRunning": true,
+  "reviewTask": "C-243-RECOVERY-CLOSEOUT-REVIEW",
+  "focusedTests": 41,
+  "focusedPassed": 41,
+  "rootChecks": [
+    {
+      "scope": "bounded-review-checks",
+      "order": 1,
+      "exitCode": 0,
+      "timedOut": false,
+      "ownedTreeCleanupConfirmed": true,
+      "manifest": {
+        "ok": true,
+        "files": 348,
+        "sha256": "7580ccd072886f97b48eed890fedc2cf498f6c39d948c9f273a11ba983c78fc2",
+        "mismatches": []
+      },
+      "passed": true
+    },
+    {
+      "scope": "bounded-review-checks",
+      "order": 2,
+      "exitCode": 0,
+      "timedOut": false,
+      "ownedTreeCleanupConfirmed": true,
+      "counts": {
+        "tests": 108,
+        "pass": 108,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0
+      },
+      "passed": true
+    },
+    {
+      "scope": "bounded-review-checks",
+      "order": 3,
+      "exitCode": 0,
+      "timedOut": false,
+      "ownedTreeCleanupConfirmed": true,
+      "tests": 90,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "passed": true
+    },
+    {
+      "scope": "bounded-review-checks",
+      "order": 4,
+      "exitCode": 0,
+      "timedOut": false,
+      "ownedTreeCleanupConfirmed": true,
+      "counts": {
+        "tests": 1961,
+        "pass": 1961,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0
+      },
+      "passed": true
+    },
+    {
+      "scope": "bounded-review-checks",
+      "order": 5,
+      "exitCode": 0,
+      "timedOut": false,
+      "ownedTreeCleanupConfirmed": true,
+      "manifest": {
+        "ok": true,
+        "files": 348,
+        "sha256": "7580ccd072886f97b48eed890fedc2cf498f6c39d948c9f273a11ba983c78fc2",
+        "mismatches": []
+      },
+      "passed": true
+    },
+    {
+      "scope": "bounded-review-checks",
+      "complete": true,
+      "orderedChecks": 5,
+      "passed": true
+    }
+  ],
+  "actualRedGreen": {
+    "closedLoginTab": {
+      "oldRetainedId": 7,
+      "oldMapSize": 1,
+      "newRetainedId": null,
+      "newMapSize": 0,
+      "newResult": "unknown"
+    },
+    "poisonedWorker": {
+      "oldClosed": false,
+      "newClosed": true,
+      "newFinalSent": 0
+    }
+  },
+  "initialFullRegression": {
+    "tests": 1961,
+    "pass": 1960,
+    "fail": 1,
+    "cause": "C185 permission-only API fixture has no tabs object; fixed production optional event access, original assertion unchanged"
+  },
+  "priorAssertionsUnchanged": true,
+  "allHistoryFinalAndSourceJournalPreserved": true,
+  "newRealOrders": 0,
+  "personalDeploymentVerified": false,
+  "guiPreview": "C240 final UI, entirely fake injected profile/runner, actual opt-in+start click, normal close; no customer values or files",
+  "limits": [
+    "Native detail quantity/time remain unknown",
+    "Existing historical final missing reference cannot be guessed in another context",
+    "No programme password autofill, challenge handling or first installation/update automation",
+    "Empty/pagination account contracts not yet observed",
+    "Recovery/account attestations unchanged"
+  ]
+}

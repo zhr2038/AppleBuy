@@ -18,6 +18,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from contained_child import ContainedChild
 from interactive_child import CheckoutRunner
 from ui_flow import primary_choice, current_consent
+from pickup_profile import PickupProfile
 SCENARIO = "last-slot-three-dates"
 TITLE = "AppleBuy 桌面助手 · Pro 结账候选"
 
@@ -136,12 +137,14 @@ class Runner:
             self.busy = False
 
 class App:
-    def __init__(self, root: tk.Tk, browser_channel='native-chrome'):
+    def __init__(self, root: tk.Tk, browser_channel='native-chrome',profile=None):
         routes={'chrome':'Chrome','msedge':'Edge','native-chrome':'正常 Chrome 结账通道','native-r2':'正常 Chrome 浏览器内执行 R2'}
         if browser_channel not in routes:raise ValueError('Browser choice is not enabled')
         self.root,self.runner,self.checkout=root,Runner(),CheckoutRunner()
         self.checkout_working=False;self.checkout_phase=None;self.checkout_submission_pending=False
         self.checkout_complete=False;self.checkout_receipt=False;self.current_consent=None
+        self.auto_connect=False;self.reconnect_attempts=0;self.order_check=None
+        self.profile=profile
         root.title(TITLE);root.geometry('800x640');root.minsize(720,570)
         pane=ttk.Frame(root,padding=18);pane.pack(fill='both',expand=True)
         ttk.Label(pane,text='AppleBuy 自提助手',font=('Microsoft YaHei UI',17)).pack(anchor='w')
@@ -156,7 +159,11 @@ class App:
             cell=ttk.Frame(fields);cell.grid(row=row,column=col,sticky='w',padx=(0,10),pady=4)
             ttk.Label(cell,text=label).pack(side='left');v=tk.StringVar();self.pickup_values[key]=v
             ttk.Entry(cell,textvariable=v,width=10 if key in ('firstName','lastName','identitySuffix') else 22,show='*' if key=='identitySuffix' else '').pack(side='left',padx=(4,0))
-        ttk.Label(fields,text='官网已有且有效的信息可留空。资料只用于本次会话，不保存账户密码。',wraplength=690).grid(row=2,column=0,columnspan=3,sticky='w',pady=(5,0))
+        ttk.Label(fields,text='官网已有且有效的信息可留空。默认只用于本次会话，可选择本机加密保存；不保存账户密码。',wraplength=690).grid(row=2,column=0,columnspan=3,sticky='w',pady=(5,0))
+        self.remember_pickup=tk.BooleanVar(value=False)
+        ttk.Checkbutton(fields,text='在本机加密保存取货资料（仅当前 Windows 用户可解密）',variable=self.remember_pickup,command=self.profile_preference,state='normal' if profile is not None else 'disabled').grid(row=3,column=0,columnspan=3,sticky='w')
+        self.profile_status=tk.StringVar(value='未保存取货资料。')
+        ttk.Label(fields,textvariable=self.profile_status,wraplength=690).grid(row=4,column=0,columnspan=3,sticky='w')
         state_box=ttk.LabelFrame(main,text='程序进度',padding=12);state_box.pack(fill='both',expand=True,pady=(12,8))
         self.status=tk.StringVar(value='准备就绪。开始后先读取已有任务，避免重复购买。')
         self.result=tk.StringVar(value='结账、门店、末档和支付宝由程序选择；遇到登录或验证时会提示。')
@@ -212,6 +219,25 @@ class App:
         root.protocol('WM_DELETE_WINDOW',self.close)
         self.timer=root.after(100,self.poll)
 
+    def load_pickup_profile(self):
+        if self.profile is None:return
+        try:
+            saved=self.profile.load()
+            if saved is not None:
+                for key,value in saved.items():self.pickup_values[key].set(value)
+                self.remember_pickup.set(True);self.profile_status.set('已读取本机加密资料；取消勾选即可删除保存副本。')
+        except Exception:self.profile_status.set('已存资料无法解密，未使用；可重新填写并选择保存。')
+
+    def profile_preference(self):
+        try:
+            if not self.remember_pickup.get():self.profile.forget();self.profile_status.set('已删除本机保存副本；当前输入仍可用于本次会话。')
+            else:self.profile_status.set('开始或继续时保存当前取货资料，不包含账户密码。')
+        except Exception:self.profile_status.set('保存偏好未完成，请检查本机文件；没有发官网动作。')
+
+    def save_pickup_if_selected(self):
+        if getattr(self,'remember_pickup',None) is not None and self.remember_pickup.get():
+            self.profile.save({k:v.get() for k,v in self.pickup_values.items()});self.profile_status.set('取货资料已在本机加密保存。')
+
     def _enabled(self,name):
         control=getattr(self,name,None)
         if control is None:return False
@@ -242,6 +268,10 @@ class App:
         self.consent_text.set(('本次总计：¥'+format(summary['totalCny'],',')+'。确认唯一一台、无附加项、账户无同款待付款订单，并接受本次条款：'+summary['termsUrl']) if action=='submit' and current_consent(summary) else '')
 
     def primary_action(self):
+        self.refresh_primary()
+        if hasattr(self,'remember_pickup') and getattr(self,'primary_mode',None) in ('open','advance') and not getattr(self,'checkout_submission_pending',False) and not getattr(self,'checkout_readonly',False):
+            try:self.save_pickup_if_selected()
+            except Exception:self.profile_status.set('资料格式或保存失败，未开始；修正资料或取消保存。');return
         self.refresh_primary();action=getattr(self,'primary_mode',None)
         if action is None:return
         if action=='submit':
@@ -262,6 +292,7 @@ class App:
         elif '已停止' in message:label='已停止，旧记录保留'
         elif '原任务仍有未知' in message:label='旧动作未知，仅可核对'
         elif getattr(self,'checkout_paused',False):label='已暂停，记录保留'
+        elif isinstance(getattr(self,'order_check',None),dict) and self.order_check.get('state')=='detail':label={'cancelled':'同一张订单已取消','fulfilled':'同一张订单已取货','unpaid':'同一张订单待付款'}.get(self.order_check.get('status'),'同一张订单待核验')
         elif getattr(self,'checkout_receipt',False):label='订单已创建，待付款'
         elif getattr(self,'checkout_submission_pending',False):label='已提交，待核验'
         elif getattr(self,'checkout_working',self.checkout.busy):label='程序执行中'
@@ -271,6 +302,7 @@ class App:
         self.open_checkout();return 'break'
 
     def pause_shortcut(self):
+        self.auto_connect=False
         if self.checkout.busy:self.stop_checkout()
         else:self.stop()
         return 'break'
@@ -319,8 +351,10 @@ class App:
         except Exception:
             self.status.set("原任务导入未确认，旧记录保持；未开始新的购买。")
 
-    def open_checkout(self):
+    def open_checkout(self,automatic=False):
         if self.runner.busy or self.checkout.busy:return
+        if not automatic:self.reconnect_attempts=0
+        self.auto_connect=True;self.order_check=None;self.checkout_receipt=False
         self.final_confirm.set(False)
         self.checkout_paused=False
         self.checkout_owner_lost=False
@@ -395,6 +429,7 @@ class App:
         except Exception:self.checkout_working=False;self.status.set('空购物袋新尝试未确认；旧记录保留，不重复加购或下单。')
 
     def stop_checkout(self):
+        self.auto_connect=False
         try:self.checkout.pause()
         except Exception:self.checkout_working=False;self.status.set('暂停指令未确认；不重新启动，旧动作保持。');return
         self.checkout_paused=True;self.checkout_pause_ack=None;self.final_confirm.set(False);self.final_checkbox.config(state='disabled')
@@ -466,6 +501,11 @@ class App:
                         self.empty_restart_button.config(state='disabled');self.empty_restart_checkbox.config(state='disabled');self.empty_restart_confirm.set(False)
                         self.checkout_button.config(state='normal');self.start_button.config(state='normal');self.probe_button.config(state='normal');self.chrome_probe_button.config(state='normal')
                         self.advance_button.config(state='disabled');self.reconcile_button.config(state='disabled');self.submit_button.config(state='disabled');self.checkout_stop_button.config(state='disabled')
+                        self.checkout_receipt=False;self.order_check=None
+                        if getattr(self,'auto_connect',False) and not getattr(self,'checkout_owner_lost',False) and getattr(self,'reconnect_attempts',0)<3 and self.browser_choice.get() in ('正常 Chrome 结账通道','正常 Chrome 浏览器内执行 R2'):
+                            self.reconnect_attempts+=1
+                            self.status.set('连接已结束，正在等待原通道重新连接；核对保留任务，不增加购买权限。')
+                            self.root.after(1500*self.reconnect_attempts,lambda:self.open_checkout(automatic=True) if self.auto_connect and not self.checkout.busy else None)
                     else:self.chrome_probe_button.config(state='disabled');self.status.set('结账清理未确认，禁止再次启动。')
                 elif kind=='ready':
                     self.checkout_readonly=v.get('readOnly') is True
@@ -491,11 +531,13 @@ class App:
                         self.checkout_begin_pending=False
                         if v.get('readOnly') is True:self.reconcile_checkout()
                         else:self.advance_checkout()
-                elif kind=='blocked':self.status.set(v['message']);self.advance_button.config(state='normal' if self.checkout.busy and not getattr(self,'checkout_readonly',False) else 'disabled');self.submit_button.config(state='disabled')
+                elif kind=='blocked':self.order_check=None;self.result.set(v['message']);self.status.set(v['message']);self.advance_button.config(state='normal' if self.checkout.busy and not getattr(self,'checkout_readonly',False) else 'disabled');self.submit_button.config(state='disabled')
                 elif kind in ('progress','result'):
                     if v.get('paused') is False:self.checkout_paused=False;self.checkout_stop_button.config(state='normal' if self.checkout.busy else 'disabled')
                     if isinstance(v.get('readOnly'),bool):self.checkout_readonly=v['readOnly']
                     phase=v.get('phase','UNKNOWN')
+                    if isinstance(v.get('orderCheck'),dict):self.order_check=v['orderCheck']
+                    else:self.order_check=None
                     self.checkout_phase=phase
                     if v.get('pendingAction')=='submitOrder':self.checkout_submission_pending=True
                     if v.get('state')=='RUNNING':self.checkout_working=True
@@ -552,9 +594,20 @@ class App:
         except queue.Empty:
             pass
         self.refresh_primary()
+        check=getattr(self,'order_check',None)
+        if isinstance(check,dict):
+            state=check.get('state')
+            labels={'waiting':'正在等待原订单查询页面，不重复登录或下单。','auth':'订单查询需要登录，登录后自动继续。','unpaid-exists':'已有同款待付款订单，已停止新购买。','unconfirmed':'同款订单状态未确认，未开始新购买。','permission':'订单查询缺少官网权限，未开始新购买。','unknown':'订单查询未确认，保留原记录。','not-found':'当前列表未找到原订单，不重复下单。','reference-missing':'原提交未保存订单身份，需要只读核对；不重复下单。'}
+            if state=='detail':
+                label={'cancelled':'同一张订单已取消，不自动重买。','fulfilled':'同一张订单已取货。','unpaid':'同一张订单仍待付款。','unknown':'同一张订单状态尚未确认。'}.get(check.get('status'),'订单状态未确认。')
+                self.summary_status.set(label)
+                self.result.set('已自动按订单身份查询详情；'+('商品、金额和门店一致。' if check.get('productMatches') is True and check.get('totalCny')==9999 and check.get('storeMatches') is True else '详情字段不全或与计划不同，请核对。')+' 数量与时段未在详情页独立确认；原提交记录保留。')
+                if check.get('status') in ('cancelled','fulfilled'):self.result.set('已按订单身份确认当前状态；原提交和历史记录保留，不自动重新购买。')
+            elif state in labels:self.summary_status.set(labels[state]);self.result.set(labels[state])
         self.timer = self.root.after(100, self.poll)
 
     def close(self):
+        self.auto_connect=False
         try:
             self.checkout.stop()
             self.runner.stop()
@@ -568,5 +621,6 @@ class App:
 
 if __name__ == "__main__":
     root = tk.Tk()
-    App(root)
+    app=App(root,profile=PickupProfile(ROOT/'.local/desktop/pickup-profile.bin'))
+    app.load_pickup_profile()
     root.mainloop()

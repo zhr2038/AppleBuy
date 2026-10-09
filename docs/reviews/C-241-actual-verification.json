@@ -1,0 +1,140 @@
+{
+  "task": "C-241-FINAL-AUTOMATION-REVIEW",
+  "sourceFiles": 348,
+  "sourceSha256": "7b668a4d3d283de87a1e3f134f92f240cbafb93efdc64a7ecd14abbaf987cdb6",
+  "sourceUnchanged": true,
+  "status": "returned_for_review",
+  "durationSeconds": 371.56,
+  "turns": 19,
+  "models": [
+    "claude-opus-5-5"
+  ],
+  "primaryModels": [
+    "claude-opus-5-5"
+  ],
+  "provider": "firstParty",
+  "canonicalModel": "claude-opus-5-5",
+  "effort": "max",
+  "modelVerified": true,
+  "isError": false,
+  "subtype": "success",
+  "timedOut": false,
+  "cleanupConfirmed": true,
+  "permissionDenials": 0,
+  "privateReads": 0,
+  "edits": 0,
+  "toolCounts": {
+    "Read": 12,
+    "Glob": 1,
+    "Bash": 3,
+    "Grep": 2
+  },
+  "requiredEOF": 10,
+  "completeEOF": 10,
+  "gaps": [],
+  "commandsMatched": true,
+  "unexpectedCommands": 0,
+  "overlappingCommands": false,
+  "toolErrors": [],
+  "orderedChecks": [
+    {
+      "scope": "bounded-review-checks",
+      "order": 1,
+      "exitCode": 0,
+      "timedOut": false,
+      "ownedTreeCleanupConfirmed": true,
+      "manifest": {
+        "ok": true,
+        "files": 348,
+        "sha256": "7b668a4d3d283de87a1e3f134f92f240cbafb93efdc64a7ecd14abbaf987cdb6",
+        "mismatches": []
+      },
+      "passed": true
+    },
+    {
+      "scope": "bounded-review-checks",
+      "order": 2,
+      "exitCode": 0,
+      "timedOut": false,
+      "ownedTreeCleanupConfirmed": true,
+      "counts": {
+        "tests": 108,
+        "pass": 108,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0
+      },
+      "passed": true
+    },
+    {
+      "scope": "bounded-review-checks",
+      "order": 3,
+      "exitCode": 0,
+      "timedOut": false,
+      "ownedTreeCleanupConfirmed": true,
+      "tests": 90,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "passed": true
+    },
+    {
+      "scope": "bounded-review-checks",
+      "order": 4,
+      "exitCode": 0,
+      "timedOut": false,
+      "ownedTreeCleanupConfirmed": true,
+      "counts": {
+        "tests": 1954,
+        "pass": 1954,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0
+      },
+      "passed": true
+    },
+    {
+      "scope": "bounded-review-checks",
+      "order": 5,
+      "exitCode": 0,
+      "timedOut": false,
+      "ownedTreeCleanupConfirmed": true,
+      "manifest": {
+        "ok": true,
+        "files": 348,
+        "sha256": "7b668a4d3d283de87a1e3f134f92f240cbafb93efdc64a7ecd14abbaf987cdb6",
+        "mismatches": []
+      },
+      "passed": true
+    },
+    {
+      "scope": "bounded-review-checks",
+      "complete": true,
+      "orderedChecks": 5,
+      "passed": true
+    }
+  ],
+  "commandResults": [
+    {
+      "index": 1,
+      "error": false,
+      "tail": "{\"ok\": true, \"files\": 348, \"sha256\": \"7b668a4d3d283de87a1e3f134f92f240cbafb93efdc64a7ecd14abbaf987cdb6\", \"mismatches\": []}"
+    },
+    {
+      "index": 2,
+      "error": false,
+      "tail": "r path from a private audit tab (114.4558ms)\n✔ C240 stop while native permission check is pending prevents a later connection (0.5532ms)\n✔ C123 unlinked checkout connector defaults observe, even when a message requests purchase (2.1715ms)\n✔ C123 completed owned close permits a fresh context, while a live peer refuses context replacement (0.7632ms)\n✔ C240 submit auth lookup automatically resumes with no second final (2.3844ms)\n✔ C240 reconcile auth lookup automatically resumes with no second final (1.4731ms)\n✔ C240 failed post-login read emits an actionable stop instead of silently waiting forever (0.633ms)\n✔ C240 an unconfirmed account preflight does not arm the late-checkout loop (0.5576ms)\nℹ tests 53\nℹ suites 0\nℹ pass 53\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 4244.8066"
+    },
+    {
+      "index": 3,
+      "error": false,
+      "tail": "ed\": 0, \"skipped\": 0}, \"passed\": true}\r\n{\"scope\": \"bounded-review-checks\", \"order\": 3, \"exitCode\": 0, \"timedOut\": false, \"ownedTreeCleanupConfirmed\": true, \"tests\": 90, \"failures\": 0, \"errors\": 0, \"skipped\": 0, \"passed\": true}\r\n{\"scope\": \"bounded-review-checks\", \"order\": 4, \"exitCode\": 0, \"timedOut\": false, \"ownedTreeCleanupConfirmed\": true, \"counts\": {\"tests\": 1954, \"pass\": 1954, \"fail\": 0, \"cancelled\": 0, \"skipped\": 0}, \"passed\": true}\r\n{\"scope\": \"bounded-review-checks\", \"order\": 5, \"exitCode\": 0, \"timedOut\": false, \"ownedTreeCleanupConfirmed\": true, \"manifest\": {\"ok\": true, \"files\": 348, \"sha256\": \"7b668a4d3d283de87a1e3f134f92f240cbafb93efdc64a7ecd14abbaf987cdb6\", \"mismatches\": []}, \"passed\": true}\r\n{\"scope\": \"bounded-review-checks\", \"complete\": true, \"orderedChecks\": 5, \"passed\": true}"
+    }
+  ],
+  "compactions": 0,
+  "usageScope": "resumed history aggregate, not this invocation spend",
+  "accepted": false,
+  "realOrderVerified": false,
+  "verdict": "DISAGREE",
+  "finding": "M1 closed login tab retains stale metadata and prevents future queries/session cleanup"
+}

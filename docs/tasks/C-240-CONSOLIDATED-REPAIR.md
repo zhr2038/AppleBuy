@@ -1,0 +1,14 @@
+# C240 final integrated repair of the five automation tracks
+
+C239 terminated at the local1500-second cap with cleanup confirmed and no final result/modelUsage receipt. It is not quota and not approval. Its partial analysis raised B1 (uncommitted Chrome URL/navigation race) and B2 (real-App tests loading the production profile), plus nonblocking integration notes. Root separately proved the late-final-reference regression. Preserve the exact old347 snapshot and do not approve new bytes using its manifest.
+
+Codex independently reproduced B1 and B2 on the SHA-verified old public source: B1 old TypeError/one metadata read vs new settled AUTH/two reads; B2 old App construction attempted profile load vs new no profile dependency by default. The spy never read customer data. Root late-reference old reads0/ref=false vs new reads1/ref=true/actions0. All are real red-to-green reproductions, not claims of a real browser purchase.
+
+Integrated fixes:
+- Same-originating-context sent final without a reference uses the existing readonly final controller to read the late receipt. Known references go to the native detail audit. Foreign/rebound/readonly missing references stay unknown. No final/Add/Checkout/slot repeat or source reset.
+- Owned blank/uncommitted tabs and stale list metadata after detail navigation wait within the existing bounded reads. No query success from loading. Retained login tabs survive transient loading, focus once, and keep one5-minute deadline. Stable unknown remains unknown; no account-preflight failure falls into a checkout retry loop.
+- Submit/reconcile lookup AUTH automatically resumes readonly after login; failure emits a stop. Final lookup results carry readOnly. Generic peer getTab/commands cannot expose private audit-tab URLs.
+- Test App construction has no profile storage dependency. Only the actual main entry injects Windows DPAPI storage and explicitly loads it. Tests inject temporary or fake storage. Optional saves skip final/query-only actions.
+- Same-model tile text with extra specifications is not silently excluded; cancellation is an exact observed label set. Stop during permission-read prevents connectNative. Existing grants/permissions stay unchanged.
+
+Remaining bounded limitations from C239 stay disclosed: no observed empty-list/pagination contract, no programmatic password autofill, native detail lacks quantity/time and does not set realOrderVerified, no new real purchase or installed candidate evidence, historical missing reference in a foreign context cannot be guessed, advanced recovery attestations remain. Do not spend another cycle on speculative unchanged-code hardening. Run focused real-renderer/R1/R2/worker/DPAPI/GUI-isolation and full checks, then one concise same-session Opus5.5/max review of the integrated result.

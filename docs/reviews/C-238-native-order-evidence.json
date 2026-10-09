@@ -1,0 +1,21 @@
+{
+  "recordedAt": "2026-10-09T13:26:45.767740+00:00",
+  "scope": "normal Chrome read-only observed account orders and matching C235 detail",
+  "normalDelegatedLoginSucceeded": true,
+  "listHeading": "你已订购的产品。",
+  "listPath": "/shop/order/list",
+  "rows": 5,
+  "currentExpectedReferenceMatched": true,
+  "expectedOrderStatus": "cancelled",
+  "expectedStatusText": "你的取货订单已取消。",
+  "detailPathTemplate": "/shop/order/detail/<account>/<order>",
+  "detailHeading": "你的订单详情。",
+  "detailItemTitle": "iPhone 18 Pro 256GB 黑色",
+  "totalCny": 9999,
+  "detailQuantityExplicit": false,
+  "cancelledDetailPickupStorePresent": false,
+  "rawIdentifiersOrAccountValuesRetained": false,
+  "merchantMutations": 0,
+  "noNewOrder": true,
+  "programmeDeploymentVerified": false
+}

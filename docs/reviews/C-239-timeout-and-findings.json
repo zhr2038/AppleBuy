@@ -1,0 +1,23 @@
+{
+  "task": "C239",
+  "status": "failed",
+  "durationSeconds": 1500.16,
+  "timedOut": true,
+  "providerQuotaProved": false,
+  "resultPresent": false,
+  "completeModelUsageVerified": false,
+  "primaryModelObserved": "claude-opus-5-5",
+  "requestedEffort": "max",
+  "cleanupConfirmed": true,
+  "accepted": false,
+  "sourceFiles": 347,
+  "sourceSha256": "2688c9f53e415751eab02db3ae390898f5085c6dbd6eaf42bb896f1dc03c953c",
+  "originalSnapshotExact": true,
+  "partialFindings": [
+    "B1 new Chrome tab uncommitted URL/navigation race",
+    "B2 App construction in tests loads production pickup profile"
+  ],
+  "rootAdditionalFinding": "original-context late final receipt intercepted before reference read",
+  "partialFindingsAreNotFinalReviewVerdict": true,
+  "sameOriginalSessionContinuation": "C-241-FINAL-AUTOMATION-REVIEW"
+}

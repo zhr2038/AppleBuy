@@ -1,0 +1,128 @@
+{
+  "recordedAt": "2026-10-09T13:29:53.638021+00:00",
+  "sourceFiles": 347,
+  "sourceSha256": "2688c9f53e415751eab02db3ae390898f5085c6dbd6eaf42bb896f1dc03c953c",
+  "accepted": false,
+  "reviewTask": "C-239-AUTOMATION-REVIEW",
+  "reviewInvoked": true,
+  "reviewRunning": true,
+  "rootFocused": {
+    "tests": 23,
+    "pass": 23
+  },
+  "rootFullBeforeFinalUIOnlyTextChange": [
+    {
+      "scope": "bounded-review-checks",
+      "order": 1,
+      "exitCode": 0,
+      "timedOut": false,
+      "ownedTreeCleanupConfirmed": true,
+      "manifest": {
+        "ok": true,
+        "files": 347,
+        "sha256": "bd702a545f69bf02ac03e94665e26180978017712fa54dbbfceb8309fee26e1e",
+        "mismatches": []
+      },
+      "passed": true
+    },
+    {
+      "scope": "bounded-review-checks",
+      "order": 2,
+      "exitCode": 0,
+      "timedOut": false,
+      "ownedTreeCleanupConfirmed": true,
+      "counts": {
+        "tests": 108,
+        "pass": 108,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0
+      },
+      "passed": true
+    },
+    {
+      "scope": "bounded-review-checks",
+      "order": 3,
+      "exitCode": 0,
+      "timedOut": false,
+      "ownedTreeCleanupConfirmed": true,
+      "tests": 88,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "passed": true
+    },
+    {
+      "scope": "bounded-review-checks",
+      "order": 4,
+      "exitCode": 0,
+      "timedOut": false,
+      "ownedTreeCleanupConfirmed": true,
+      "counts": {
+        "tests": 1943,
+        "pass": 1943,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0
+      },
+      "passed": true
+    },
+    {
+      "scope": "bounded-review-checks",
+      "order": 5,
+      "exitCode": 0,
+      "timedOut": false,
+      "ownedTreeCleanupConfirmed": true,
+      "manifest": {
+        "ok": true,
+        "files": 347,
+        "sha256": "bd702a545f69bf02ac03e94665e26180978017712fa54dbbfceb8309fee26e1e",
+        "mismatches": []
+      },
+      "passed": true
+    },
+    {
+      "scope": "bounded-review-checks",
+      "complete": true,
+      "orderedChecks": 5,
+      "passed": true
+    }
+  ],
+  "finalPython": {
+    "tests": 88,
+    "failures": 0,
+    "errors": 0
+  },
+  "jsSourcesUnchangedSinceFullSuite": true,
+  "priorTestsChanged": false,
+  "actualGuiPreview": {
+    "entirelyFakeRunnersAndProfile": true,
+    "nativeClicksStartReviewFakeSubmitLookup": true,
+    "cancelledReplacesUnpaid": true,
+    "normalCloseConfirmed": true,
+    "browserOrJournalOrPersonalProfileUsed": false
+  },
+  "actualWindowsDPAPI": {
+    "fictionalTempProfileRoundtrip": true,
+    "plaintextAbsentFromCiphertext": true,
+    "forgetVerified": true,
+    "failedEncryptionPreservesPriorFile": true
+  },
+  "initialFailures": [
+    "New FAKE context id too short; corrected only new fixture",
+    "Four new detail cases exposed fullwidth colon normalisation mismatch; reader corrected",
+    "New runtime fixture omitted required options; corrected fixture"
+  ],
+  "liveReadOnlyEvidence": "C-238-native-order-evidence.json",
+  "merchantMutations": 0,
+  "personalDeploymentVerified": false,
+  "limits": [
+    "No programme password autofill or challenge bypass",
+    "First installation/update/permission still user action",
+    "Native detail quantity/time absent; null not inferred, realOrderVerified remains false",
+    "Historical final lacking recorded order reference remains reference-missing",
+    "Empty/paginated/unrecognised account list fails closed",
+    "No new buyer or real order test",
+    "Advanced historical recovery prerequisites retained"
+  ]
+}

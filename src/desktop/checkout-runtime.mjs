@@ -11,6 +11,7 @@ import {restartExpiredPayment,validateExpiredPaymentRestart} from './expired-pay
 import {restartExpiredReview,validateExpiredReviewRestart,expiredReviewSourceShape,additionalExpiredReviewSourceShape,policyExpiredReviewSourceShape} from './expired-review-restart.mjs';
 import {currentReviewProgress,knownUnreleasedFinal} from '../../web/checkout-connector/review-progress.js';
 import {R2_VERSION} from '../../web/checkout-connector/r2-protocol.js';
+import {CHECKOUT_EXECUTOR_VERSION} from '../../web/checkout-connector/page-program.js';
 import {reviewCheckCodes} from '../../web/checkout-connector/review-diagnostic.js';
 const BAG='https://www.apple.com.cn/shop/bag',TERMS='https://www.apple.com.cn/shop/open/salespolicies';
 const REVIEW_TERMS=[TERMS,'https://www.apple.com.cn/shop/browse/open/salespolicies'];
@@ -23,7 +24,7 @@ function currentTerms(o){
 const PHASES=new Set(['ENTRY','VARIANT','EMPTY_BAG','BAG','AUTH','FULFILLMENT','SLOTS','DETAILS','PAYMENT','REVIEW','ORDER_RECEIPT','ORDER_DETAIL','PROCESSING','UNKNOWN']);
 const safeState=s=>({state:typeof s.state==='string'?s.state:'NEEDS_VERIFICATION',phase:PHASES.has(s.phase)?s.phase:'UNKNOWN',...(s.receiptAwaitingPayment===true?{receiptAwaitingPayment:true}:{}),pendingAction:['addBag','checkout','chooseSlot','fillDetails','selectPayment','continuePayment','submitOrder'].includes(s.pendingAction)?s.pendingAction:null,...(s.phase==='REVIEW'&&reviewCheckCodes(s.reason).length?{reviewDiagnostic:reviewCheckCodes(s.reason)}:{})});
 export class DesktopCheckoutRuntime {
- constructor({store,launch,onState=()=>{},executor='desktop'}){if(!['desktop','browser'].includes(executor))throw Error('DesktopExecutorNotAllowed');this.executor=executor;this.store=store;this.launch=launch;this.onState=onState;this.opened=false;this.busy=false;this.closing=false;this.closed=false;this.paused=false;this.cleanupConfirmed=false;this.finalDescriptor=null;this.active=null;this.operations=new Set();this.ownerLost=false;}
+ constructor({store,launch,onState=()=>{},executor='desktop',ordersEnabled=false}){this.ordersEnabled=ordersEnabled===true;if(!['desktop','browser'].includes(executor))throw Error('DesktopExecutorNotAllowed');this.executor=executor;this.store=store;this.launch=launch;this.onState=onState;this.opened=false;this.busy=false;this.closing=false;this.closed=false;this.paused=false;this.cleanupConfirmed=false;this.finalDescriptor=null;this.active=null;this.operations=new Set();this.ownerLost=false;}
  track(operation){const running=Promise.resolve().then(operation);this.operations.add(running);running.then(()=>this.operations.delete(running),()=>this.operations.delete(running));return running;}
  async open(){
   if(this.opened||this.busy||this.closing)throw Error('DesktopSessionAlreadyRunning');this.busy=true;
@@ -43,6 +44,7 @@ export class DesktopCheckoutRuntime {
    const owned=await this.launch();this.api=guardOwnedApi(owned.api,this.lease);this.closeBrowser=owned.close;
    if(this.closing||this.ownerLost||this.lease?.owned!==true)throw Error('DesktopSessionCancelled');
    if(this.executor==='browser'&&(typeof this.api.r2Exchange!=='function'||await this.api.r2Exchange('r2Version',{})!==R2_VERSION))throw Error('R2ExecutorUpdateRequired');
+   if(this.ordersEnabled&&(typeof this.api.executorVersion!=='function'||await this.api.executorVersion()!==CHECKOUT_EXECUTOR_VERSION))throw Error('NativeOrderExecutorUpdateRequired');
    const tab=await this.api.create(BAG);this.tabId=tab.id;this.opened=true;
    return await this.observeInitialPage();
  }
@@ -84,13 +86,35 @@ export class DesktopCheckoutRuntime {
   this.busy=true;this.finalDescriptor=null;this.abort=new AbortController();
   const leased={get:k=>this.store.get(k),put:(k,v)=>this.store.put(k,v),readArchive:d=>this.store.readArchive(d),acquireOwner:async()=>({get owned(){return runtime.lease?.owned===true;},release:async()=>{}})},runtime=this;
   try{
+   if(this.ordersEnabled){
+    const prior=await this.store.get(TASK_KEY),sent=prior?.finalIntent?.sent===true||prior?.pending?.action==='submitOrder'&&prior.pending.dispatched!==false;
+    if(sent&&(prior.orderRefHash||prior.desktopContext!==this.api.sessionId||prior.reconcileOnly===true||prior.state==='RETIRED'||options.mode==='reconcile'))return await this.checkNativeOrders(prior);
+    if(!sent&&options.mode!=='reconcile'){const preflight=await this.checkNativeOrders(null);if(preflight.orderCheck.state!=='clear')return preflight;}
+    if(this.paused||this.closing||this.ownerLost)throw Error('DesktopSessionCancelled');
+   }
    this.active=runDesktopSession({api:this.api,tabId:this.tabId,store:leased,mode:'purchase',signal:this.abort.signal,onState:s=>this.onState({...safeState(s),readOnly:options.mode==='reconcile',paused:this.paused}),...options,executor:this.executor});
    const result=await this.active,record=await this.store.get(TASK_KEY);
    if(options.mode!=='reconcile'&&result.phase==='REVIEW'&&record?.finalIntent&&!knownUnreleasedFinal(record))throw Error('DesktopFinalConsentNotCurrent');
    if(options.mode!=='reconcile'&&result.phase==='REVIEW'&&!record?.pending&&(!record?.finalIntent||knownUnreleasedFinal(record))&&!this.closing&&!this.paused){try{await this.prepareReview();}catch(error){this.finalDescriptor=null;if(this.paused||this.closing||this.ownerLost)throw error;}}
+   if(this.ordersEnabled&&record?.finalIntent?.sent===true&&record?.orderRefHash){return {...result,...await this.checkNativeOrders(record)};}
    this.onState({...safeState({...result,pendingAction:record?.pending?.action??null}),paused:this.paused});return {...result,pendingAction:record?.pending?.action??null};
   }finally{this.active=null;this.busy=false;}
  }
+ async checkNativeOrders(finalRecord=null){
+  if(!this.ordersEnabled||typeof this.api.auditOrders!=='function')throw Error('NativeOrderAuditUnavailable');
+  if(this.ownerLost||this.paused||this.closing||this.lease?.owned!==true)throw Error('DesktopSessionCancelled');
+  let check;
+  if(finalRecord&&!/^[a-f0-9]{64}$/.test(finalRecord.orderRefHash??''))check={state:'reference-missing'};
+  else check=await this.api.auditOrders(PRO_PLAN,finalRecord?.orderRefHash??null);
+  if(this.ownerLost||this.paused||this.closing||this.lease?.owned!==true)throw Error('DesktopSessionCancelled');
+  if(!check||!['clear','auth','waiting','unpaid-exists','unconfirmed','permission','unknown','not-found','detail','reference-missing'].includes(check.state))check={state:'unknown'};
+  if(check.state==='clear'&&(check.authenticated!==true||!/^[a-f0-9]{64}$/.test(check.accountHash??'')||!Number.isSafeInteger(check.matchingCount)||check.matchingCount<0))check={state:'unknown'};
+  if(check.state==='detail'&&(check.sameReference!==true||!['cancelled','fulfilled','unpaid','unknown'].includes(check.status)||typeof check.productMatches!=='boolean'||typeof check.storeMatches!=='boolean'||!Number.isFinite(check.totalCny)||check.totalCny<=0||check.quantity!==null||check.slot!==null))check={state:'unknown'};
+  // Public UI receives no account identity, reference or URL. This never patches a historical journal.
+  const publicCheck={state:check.state,...(check.state==='detail'?{status:check.status,sameReference:check.sameReference===true,productMatches:check.productMatches===true,totalCny:check.totalCny,storeMatches:check.storeMatches===true,quantity:null,slot:null}: {})};
+  return {readOnly:!!finalRecord,state:'NEEDS_VERIFICATION',phase:['auth','waiting'].includes(check.state)?'AUTH':check.state==='detail'?'ORDER_DETAIL':'UNKNOWN',pendingAction:finalRecord?.pending?.action??null,realOrderVerified:false,receiptAwaitingPayment:false,orderCheck:publicCheck};
+ }
+ orderAudit(){return this.track(async()=>{if(this.busy||this.closed||this.closing)throw Error('DesktopSessionAlreadyRunning');this.busy=true;try{const row=await this.store.get(TASK_KEY);return await this.checkNativeOrders(row?.finalIntent?.sent===true?row:null);}finally{this.busy=false;}});}
  advance(options={}){return this.track(()=>this.advanceOnce(options));}
  async advanceOnce({checkoutApproved=false,newContextConfirmed=false,privatePickupData={}}={}){
   if(this.ownerLost)throw Error('DesktopOwnerLeaseLost');

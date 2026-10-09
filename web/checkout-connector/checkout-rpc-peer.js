@@ -2,6 +2,7 @@
 import {merchantDocument,CHECKOUT_EXECUTOR_VERSION} from './page-program.js';
 import {canonicalJson} from './job.js';
 import {BrowserJobExecutor} from './r2-executor.js';
+import {OrderAudit,missingOwnedTab} from './order-audit.js';
 import {R2_OPERATIONS} from './r2-protocol.js';
 import {CHECKOUT_RPC,BAG,ENTRY,checkoutUrl,checkoutObservedUrl,checkoutRequest,checkoutCommand,planAllowed,boundedCheckoutJson} from './checkout-rpc-contract.js';
 const PAGE_KEYS=new Set(['schema','phase','purchase','verifiedStep','path','feedback','acceptedSlot','slotSummary','continueAvailable','variantVerified','quotedCny','listComplete','dates','times','selectedDate','paymentMethod','extras','existingOrdersChecked','orderRefHash','orderDetailLink','configuration','contactStep','paymentStep','reviewProgress','extrasConflict','fulfillmentChoice','merchantError','needsSelection','nextChoice','orderSummary','prelaunchConfigurable','productForm','productFormLoading','quantitySource','receiptVerified','receiptAwaitingPayment','selectedProductChoices','summaryReadable','termsLinks','primaryTermsUrl','reason']);
@@ -12,7 +13,10 @@ function safeOutput(value,depth=0){
  for(const [key,item]of Object.entries(value)){if(/^(?:password|passwd|cookie|cookies|authorization|accessToken|refreshToken|otp|email|phone|identitySuffix|firstName|lastName|privatePickupData|rawPrivate)$/i.test(key))throw Error('NativeResultNotAllowed');safeOutput(item,depth+1);}
 }
 export class CheckoutRpcPeer{
- constructor({api,contextId,purchaseAllowed=false}){if(typeof contextId!=='string'||!/^[a-zA-Z0-9-]{16,80}$/.test(contextId)||typeof purchaseAllowed!=='boolean')throw Error('NativeContextNotAllowed');this.api=api;this.contextId=contextId;this.purchaseAllowed=purchaseAllowed;this.tabs=new Map();this.requests=new Set();this.actions=new Set();this.taskId=null;this.actionTabId=null;this.busy=false;this.closed=false;}
+ constructor({api,contextId,purchaseAllowed=false}){if(typeof contextId!=='string'||!/^[a-zA-Z0-9-]{16,80}$/.test(contextId)||typeof purchaseAllowed!=='boolean')throw Error('NativeContextNotAllowed');this.api=api;this.contextId=contextId;this.purchaseAllowed=purchaseAllowed;this.tabs=new Map();this.requests=new Set();this.actions=new Set();this.taskId=null;this.actionTabId=null;this.busy=false;this.closed=false;
+  this.onRemoved=id=>{if(this.tabs.has(id)){this.orderAudit?.removed(id);this.tabs.delete(id);}};api.tabs?.onRemoved?.addListener(this.onRemoved);
+ }
+ dispose(){this.closed=true;this.api.tabs?.onRemoved?.removeListener(this.onRemoved);}
  async tab(id){if(!Number.isSafeInteger(id)||!this.tabs.has(id))throw Error('NativeTabNotOwned');const t=await this.api.tabs.get(id);if(!checkoutObservedUrl(t.url))throw Error('NativeAddressNotAllowed');return t;}
  async receive(value){
   let q;try{q=checkoutRequest(value,this.contextId);}catch{return {schema:CHECKOUT_RPC,kind:'reply',contextId:this.contextId,id:typeof value?.id==='string'?value.id.slice(0,80):'',ok:false,error:'NativeRequestNotAllowed'};}
@@ -35,6 +39,10 @@ export class CheckoutRpcPeer{
   }});
   const keys=allowed=>{if(Object.keys(p).some(k=>!allowed.includes(k)))throw Error('NativePayloadNotAllowed');};
   if(op==='executorVersion'){keys([]);return CHECKOUT_EXECUTOR_VERSION;}
+  if(op==='auditOrders'){
+   keys(['plan','expectedRefHash']);if(!planAllowed(p.plan))throw Error('NativeOrderPlanNotAllowed');
+   this.orderAudit??=new OrderAudit(this);return this.orderAudit.run(guarded,p.plan,p.expectedRefHash??null);
+  }
   if(op==='createExpiryProbe'){
    keys(['url']);let u;try{u=new URL(p.url);}catch{throw Error('NativeAddressNotAllowed');}
    if(!this.purchaseAllowed||this.tabs.size>=4||u.protocol!=='https:'||u.username||u.password||u.port||u.search||u.hash||!/^secure\d+\.www\.apple\.com\.cn$/.test(u.hostname)&&u.hostname!=='www.apple.com.cn'||u.pathname!=='/shop/checkout')throw Error('NativeExpiryProbeNotAllowed');
@@ -45,7 +53,7 @@ export class CheckoutRpcPeer{
    return await guarded.permissions.contains({origins:p.origins});
   }
   if(op==='closeSession'){
-   keys([]);for(const id of this.tabs.keys()){await guarded.tabs.remove(id);this.tabs.delete(id);}this.closed=true;return {closed:true};
+   keys([]);for(const id of this.tabs.keys()){try{await guarded.tabs.remove(id);}catch(error){if(this.tabs.has(id)&&!missingOwnedTab(error,id))throw error;}this.orderAudit?.removed(id);this.tabs.delete(id);}this.dispose();return {closed:true};
   }
   if(op==='createTab'){
    keys(['url','active']);if(![BAG,ENTRY].includes(p.url)||p.active!==undefined&&typeof p.active!=='boolean'||this.tabs.size>=4||p.url===ENTRY&&!this.purchaseAllowed)throw Error('NativeCreateNotAllowed');
@@ -53,6 +61,7 @@ export class CheckoutRpcPeer{
    const tab=await guarded.tabs.create({url:p.url,active:p.active===true});if(!Number.isSafeInteger(tab?.id))throw Error('NativeTabUnconfirmed');this.tabs.set(tab.id,{last:null,navigation:null});return {id:tab.id,url:p.url,status:tab.status??'loading'};
   }
   const tab=await this.tab(p.tabId),state=this.tabs.get(p.tabId);
+  if(state.orderAudit&&op!=='removeTab')throw Error('NativeOrderTabReserved');
   if(op==='getTab'){keys(['tabId']);const u=new URL(tab.url);return {id:p.tabId,url:u.origin+u.pathname,status:tab.status};}
   if(op==='removeTab'){keys(['tabId']);await guarded.tabs.remove(p.tabId);this.tabs.delete(p.tabId);return {removed:true};}
   if(!await guarded.permissions.contains({origins:[new URL(tab.url).origin+'/*']}))throw Error('NativeHostNotGranted');

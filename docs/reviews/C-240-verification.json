@@ -1,0 +1,121 @@
+{
+  "recordedAt": "2026-10-09T14:14:32.386263+00:00",
+  "sourceFiles": 348,
+  "sourceSha256": "7b668a4d3d283de87a1e3f134f92f240cbafb93efdc64a7ecd14abbaf987cdb6",
+  "accepted": false,
+  "reviewRunning": false,
+  "reviewTask": "C-241-FINAL-AUTOMATION-REVIEW",
+  "focusedTests": 34,
+  "focusedPassed": 34,
+  "rootChecks": [
+    {
+      "scope": "bounded-review-checks",
+      "order": 1,
+      "exitCode": 0,
+      "timedOut": false,
+      "ownedTreeCleanupConfirmed": true,
+      "manifest": {
+        "ok": true,
+        "files": 348,
+        "sha256": "7b668a4d3d283de87a1e3f134f92f240cbafb93efdc64a7ecd14abbaf987cdb6",
+        "mismatches": []
+      },
+      "passed": true
+    },
+    {
+      "scope": "bounded-review-checks",
+      "order": 2,
+      "exitCode": 0,
+      "timedOut": false,
+      "ownedTreeCleanupConfirmed": true,
+      "counts": {
+        "tests": 108,
+        "pass": 108,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0
+      },
+      "passed": true
+    },
+    {
+      "scope": "bounded-review-checks",
+      "order": 3,
+      "exitCode": 0,
+      "timedOut": false,
+      "ownedTreeCleanupConfirmed": true,
+      "tests": 90,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "passed": true
+    },
+    {
+      "scope": "bounded-review-checks",
+      "order": 4,
+      "exitCode": 0,
+      "timedOut": false,
+      "ownedTreeCleanupConfirmed": true,
+      "counts": {
+        "tests": 1954,
+        "pass": 1954,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0
+      },
+      "passed": true
+    },
+    {
+      "scope": "bounded-review-checks",
+      "order": 5,
+      "exitCode": 0,
+      "timedOut": false,
+      "ownedTreeCleanupConfirmed": true,
+      "manifest": {
+        "ok": true,
+        "files": 348,
+        "sha256": "7b668a4d3d283de87a1e3f134f92f240cbafb93efdc64a7ecd14abbaf987cdb6",
+        "mismatches": []
+      },
+      "passed": true
+    },
+    {
+      "scope": "bounded-review-checks",
+      "complete": true,
+      "orderedChecks": 5,
+      "passed": true
+    }
+  ],
+  "actualRedGreen": {
+    "lateReference": {
+      "oldReads": 0,
+      "oldPinned": false,
+      "newReads": 1,
+      "newPinned": true,
+      "actions": 0
+    },
+    "B1UncommittedTab": {
+      "oldExit": 1,
+      "oldError": "TypeError",
+      "newExit": 0,
+      "newState": "auth"
+    },
+    "B2ProfileIsolation": {
+      "oldAttemptedRead": true,
+      "newAttemptedRead": false,
+      "privateValuesRead": false
+    }
+  },
+  "originalAssertionsUnchanged": true,
+  "old347SnapshotShaVerified": true,
+  "personalDeploymentVerified": false,
+  "newRealOrders": 0,
+  "limits": [
+    "Same-order native status/facts are verified but quantity/time remain null; no fabricated complete state",
+    "No password autofill or challenge/security automation",
+    "Empty/pagination list not proven clear",
+    "Foreign-context historical missing reference cannot be guessed",
+    "Advanced prior-account/recovery attestations remain explicit"
+  ],
+  "reviewVerdict": "DISAGREE",
+  "materialFinding": "closed-auth-tab stale ownership M1"
+}
