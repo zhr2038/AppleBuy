@@ -1,0 +1,101 @@
+{
+  "task": "C233",
+  "sourceFiles": 340,
+  "sourceSha256": "87689ada94421279836e709abd0b4f58e0139e244afdaf6ae4de249f24c2891f",
+  "focused": {
+    "tests": 13,
+    "passed": 13
+  },
+  "checks": [
+    {
+      "scope": "bounded-review-checks",
+      "order": 1,
+      "exitCode": 0,
+      "timedOut": false,
+      "ownedTreeCleanupConfirmed": true,
+      "manifest": {
+        "ok": true,
+        "files": 340,
+        "sha256": "87689ada94421279836e709abd0b4f58e0139e244afdaf6ae4de249f24c2891f",
+        "mismatches": []
+      },
+      "passed": true
+    },
+    {
+      "scope": "bounded-review-checks",
+      "order": 2,
+      "exitCode": 0,
+      "timedOut": false,
+      "ownedTreeCleanupConfirmed": true,
+      "counts": {
+        "tests": 108,
+        "pass": 108,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0
+      },
+      "passed": true
+    },
+    {
+      "scope": "bounded-review-checks",
+      "order": 3,
+      "exitCode": 0,
+      "timedOut": false,
+      "ownedTreeCleanupConfirmed": true,
+      "tests": 72,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "passed": true
+    },
+    {
+      "scope": "bounded-review-checks",
+      "order": 4,
+      "exitCode": 0,
+      "timedOut": false,
+      "ownedTreeCleanupConfirmed": true,
+      "counts": {
+        "tests": 1903,
+        "pass": 1903,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0
+      },
+      "passed": true
+    },
+    {
+      "scope": "bounded-review-checks",
+      "order": 5,
+      "exitCode": 0,
+      "timedOut": false,
+      "ownedTreeCleanupConfirmed": true,
+      "manifest": {
+        "ok": true,
+        "files": 340,
+        "sha256": "87689ada94421279836e709abd0b4f58e0139e244afdaf6ae4de249f24c2891f",
+        "mismatches": []
+      },
+      "passed": true
+    },
+    {
+      "scope": "bounded-review-checks",
+      "complete": true,
+      "orderedChecks": 5,
+      "passed": true
+    }
+  ],
+  "authorityInterpretation": "Human asked for fewer restrictions and then said continue after the specified conditional automatic-recovery question. No paid-order/plan/unknown-final scope expansion. Product policy still requires explicit initial operator confirmation.",
+  "boundedAncestry": 16,
+  "timerRetryLoopAdded": false,
+  "actualPriorActorStoppedNormally": true,
+  "actualSourceReadUnderOwner": {
+    "generation": 2,
+    "verified": true,
+    "expired": true,
+    "noFinal": true,
+    "noRecordWrite": true,
+    "leaseReleased": true
+  },
+  "realNewRecovery": false,
+  "reviewStatus": "C234 actual original-session review live; no verdict yet"
+}

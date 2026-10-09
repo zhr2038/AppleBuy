@@ -1,0 +1,126 @@
+{
+  "task": "C-234-RECOVERY-POLICY-REVIEW",
+  "sourceFiles": 340,
+  "sourceSha256": "87689ada94421279836e709abd0b4f58e0139e244afdaf6ae4de249f24c2891f",
+  "sourceUnchanged": true,
+  "status": "returned_for_review",
+  "durationSeconds": 395.89,
+  "turns": 19,
+  "models": [
+    "claude-opus-5-5"
+  ],
+  "primaryModels": [
+    "claude-opus-5-5"
+  ],
+  "provider": "firstParty",
+  "canonicalModel": "claude-opus-5-5",
+  "effort": "max",
+  "modelVerified": true,
+  "isError": false,
+  "subtype": "success",
+  "timedOut": false,
+  "cleanupConfirmed": true,
+  "permissionDenials": 0,
+  "privateReads": 0,
+  "edits": 0,
+  "toolCounts": {
+    "Read": 8,
+    "Glob": 1,
+    "Bash": 4,
+    "Grep": 5
+  },
+  "requiredEOF": 6,
+  "completeEOF": 6,
+  "gaps": [],
+  "commandsMatched": false,
+  "unexpectedCommands": 1,
+  "overlappingCommands": false,
+  "toolErrors": [],
+  "orderedChecks": [
+    {
+      "scope": "bounded-review-checks",
+      "order": 1,
+      "exitCode": 0,
+      "timedOut": false,
+      "ownedTreeCleanupConfirmed": true,
+      "manifest": {
+        "ok": true,
+        "files": 340,
+        "sha256": "87689ada94421279836e709abd0b4f58e0139e244afdaf6ae4de249f24c2891f",
+        "mismatches": []
+      },
+      "passed": true
+    },
+    {
+      "scope": "bounded-review-checks",
+      "order": 2,
+      "exitCode": 0,
+      "timedOut": false,
+      "ownedTreeCleanupConfirmed": true,
+      "counts": {
+        "tests": 108,
+        "pass": 108,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0
+      },
+      "passed": true
+    },
+    {
+      "scope": "bounded-review-checks",
+      "order": 3,
+      "exitCode": 0,
+      "timedOut": false,
+      "ownedTreeCleanupConfirmed": true,
+      "tests": 72,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "passed": true
+    },
+    {
+      "scope": "bounded-review-checks",
+      "order": 4,
+      "exitCode": 0,
+      "timedOut": false,
+      "ownedTreeCleanupConfirmed": true,
+      "counts": {
+        "tests": 1903,
+        "pass": 1903,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0
+      },
+      "passed": true
+    },
+    {
+      "scope": "bounded-review-checks",
+      "order": 5,
+      "exitCode": 0,
+      "timedOut": false,
+      "ownedTreeCleanupConfirmed": true,
+      "manifest": {
+        "ok": true,
+        "files": 340,
+        "sha256": "87689ada94421279836e709abd0b4f58e0139e244afdaf6ae4de249f24c2891f",
+        "mismatches": []
+      },
+      "passed": true
+    },
+    {
+      "scope": "bounded-review-checks",
+      "complete": true,
+      "orderedChecks": 5,
+      "passed": true
+    }
+  ],
+  "compactions": 0,
+  "usageScope": "resumed history aggregate, not this invocation spend",
+  "accepted": true,
+  "realOrderVerified": false,
+  "acceptanceScope": "C233 exact software and policy entry; no live order or unattended timer recovery",
+  "managerCorrections": [
+    "One extra public readonly wc line/byte count ran; exact-command compliance is false, not relabelled. Technical scope accepted with this disclosed process deviation.",
+    "Reviewer per-call spend/tool-count estimate is not authoritative; actual trace and resumed aggregate usage prevail."
+  ]
+}

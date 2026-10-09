@@ -313,7 +313,7 @@ class App:
         self.transfer_confirm.set(False);self.transfer_button.config(state='disabled');self.final_confirm.set(False);self.final_checkbox.config(state='disabled');self.reconcile_button.config(state='disabled');self.advance_button.config(state='disabled')
         try:
             command={'action':'restart-payment' if restart_payment else 'renew-draft' if getattr(self,'checkout_can_renew_ended',False) else 'transfer','approved':True,'newContextConfirmed':True,'privatePickupData':data}
-            if command['action']=='restart-payment':command.update(oldExecutorStopped=True,sameAccountOrdersClear=True,expiredCheckoutUrl=expiry_url,additionalRecoveryApproved=getattr(self,'checkout_can_additional_review',False))
+            if command['action']=='restart-payment':command.update(oldExecutorStopped=True,sameAccountOrdersClear=True,expiredCheckoutUrl=expiry_url,additionalRecoveryApproved=getattr(self,'checkout_can_additional_review',False),automaticRecoveryApproved=getattr(self,'checkout_can_policy_review',False))
             if command['action']=='renew-draft':command.update(merchantExpiryConfirmed=True,oldExecutorStopped=True,sameAccountOrdersClear=True)
             self.checkout.send(command)
         except Exception:self.status.set('接替未确认，旧未知记录保持，不重复加购或下单。')
@@ -409,7 +409,10 @@ class App:
                     self.checkout_can_renew_ended=v.get('canRenewEndedDraft') is True
                     self.checkout_can_restart_payment=v.get('canRestartExpiredPayment') is True
                     self.checkout_can_additional_review=v.get('canAdditionalReviewRecovery') is True
-                    if self.checkout_can_additional_review:
+                    self.checkout_can_policy_review=v.get('canPolicyReviewRecovery') is True
+                    if self.checkout_can_policy_review:
+                        self.transfer_checkbox.config(text='按已确认条件恢复未下单的超时结账：旧执行已停、同账户无同款待付款订单；复用这一台，保留原记录和日期，未知下单结果不重提')
+                    elif self.checkout_can_additional_review:
                         self.transfer_checkbox.config(text='本人确认本次只追加一次恢复：旧执行已停止、同账户无同款待付款订单；保留原记录和日期限制，仅复用这一台')
                     elif self.checkout_can_restart_payment:
                         self.transfer_checkbox.config(text='本人确认旧执行已停止，同一账户没有同款待付款订单，购物袋只有这一台；程序先核对官网超时，保留全部记录与原日期限制再继续')

@@ -8,7 +8,7 @@ import {restartFromCurrentEmpty,validateEmptyRestart} from './empty-restart.mjs'
 import {bagPlanCheck} from './checkout-diagnostic.mjs';
 import {renewEndedDraft,validateEndedDraft} from './ended-draft.mjs';
 import {restartExpiredPayment,validateExpiredPaymentRestart} from './expired-payment-restart.mjs';
-import {restartExpiredReview,validateExpiredReviewRestart,expiredReviewSourceShape,additionalExpiredReviewSourceShape} from './expired-review-restart.mjs';
+import {restartExpiredReview,validateExpiredReviewRestart,expiredReviewSourceShape,additionalExpiredReviewSourceShape,policyExpiredReviewSourceShape} from './expired-review-restart.mjs';
 import {currentReviewProgress,knownUnreleasedFinal} from '../../web/checkout-connector/review-progress.js';
 import {R2_VERSION} from '../../web/checkout-connector/r2-protocol.js';
 import {reviewCheckCodes} from '../../web/checkout-connector/review-diagnostic.js';
@@ -123,9 +123,9 @@ export class DesktopCheckoutRuntime {
  }
  transferContact(options={}){return this.track(()=>this.transferContactOnce(options));}
  restartPayment(options={}){return this.track(()=>this.restartPaymentOnce(options));}
- async restartPaymentOnce({approved=false,newContextConfirmed=false,oldExecutorStopped=false,sameAccountOrdersClear=false,additionalRecoveryApproved=false,expiredCheckoutUrl,privatePickupData={}}={}){
+ async restartPaymentOnce({approved=false,newContextConfirmed=false,oldExecutorStopped=false,sameAccountOrdersClear=false,additionalRecoveryApproved=false,automaticRecoveryApproved=false,expiredCheckoutUrl,privatePickupData={}}={}){
   if(this.ownerLost||this.paused||!this.opened||this.busy||this.closing||this.closed||this.lease?.owned!==true)throw Error('DesktopSessionAlreadyRunning');this.busy=true;let created;
-  try{const source=await this.store.get(TASK_KEY),recover=expiredReviewSourceShape(source)||additionalExpiredReviewSourceShape(source)?restartExpiredReview:restartExpiredPayment;this.active=recover({store:this.store,api:this.api,tabId:this.tabId,expiredCheckoutUrl,approved,newContextConfirmed,oldExecutorStopped,sameAccountOrdersClear,additionalRecoveryApproved,live:()=>!this.ownerLost&&!this.closing&&!this.paused&&this.lease?.owned===true});created=await this.active;}finally{this.active=null;this.busy=false;}
+  try{const source=await this.store.get(TASK_KEY),recover=expiredReviewSourceShape(source)||additionalExpiredReviewSourceShape(source)||policyExpiredReviewSourceShape(source)?restartExpiredReview:restartExpiredPayment;this.active=recover({store:this.store,api:this.api,tabId:this.tabId,expiredCheckoutUrl,approved,newContextConfirmed,oldExecutorStopped,sameAccountOrdersClear,additionalRecoveryApproved,automaticRecoveryApproved,live:()=>!this.ownerLost&&!this.closing&&!this.paused&&this.lease?.owned===true});created=await this.active;}finally{this.active=null;this.busy=false;}
   if(created?.created!==true)throw Error('ExpiredPaymentProspectiveUnconfirmed');
   if(this.paused||this.closing||this.ownerLost||this.lease?.owned!==true)return {state:this.paused?'PAUSED':'NEEDS_VERIFICATION',phase:'BAG',localTransitionCreated:true,realOrderVerified:false};
   return {...await this.advance({checkoutApproved:true,newContextConfirmed:true,privatePickupData}),localTransitionCreated:true};
