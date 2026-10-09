@@ -1,0 +1,14 @@
+{
+  "sourceFiles": 337,
+  "sourceSha256": "c5ab4a4dacfe23248bc5839920a70917379dfebf026da04579546fb96fe1e8d7",
+  "acceptedCodeCommit": "56591ddac6f9844bec95a009675c3518310420ae",
+  "publishedReviewCommit": "50be155291fdec4fab79a0eb298ed3fa58a229c9",
+  "remoteVerifiedCommit": "50be155291fdec4fab79a0eb298ed3fa58a229c9",
+  "candidateBranch": "refs/heads/codex/c030-quota-checkpoint-20261004",
+  "allSourceHeadBlobsMatch": true,
+  "nonForcePush": true,
+  "mainUnchanged": "bd130ee77d8e914f6373432e1061c4de820fbc66",
+  "privateFilesPublished": false,
+  "deploymentVerified": false,
+  "realOrderVerified": false
+}
