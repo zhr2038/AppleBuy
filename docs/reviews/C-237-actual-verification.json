@@ -1,0 +1,146 @@
+{
+  "task": "C-237-PRODUCTIZATION-REVIEW",
+  "sourceFiles": 343,
+  "sourceSha256": "849387f3ee64348784737adf2407f31139e94f36ffe8343541de251faa23f63b",
+  "sourceUnchanged": true,
+  "status": "returned_for_review",
+  "durationSeconds": 708.14,
+  "turns": 38,
+  "models": [
+    "claude-opus-5-5"
+  ],
+  "primaryModels": [
+    "claude-opus-5-5"
+  ],
+  "provider": "firstParty",
+  "canonicalModel": "claude-opus-5-5",
+  "effort": "max",
+  "modelVerified": true,
+  "isError": false,
+  "subtype": "success",
+  "timedOut": false,
+  "cleanupConfirmed": true,
+  "permissionDenials": 0,
+  "privateReads": 0,
+  "edits": 0,
+  "toolCounts": {
+    "Read": 27,
+    "Glob": 1,
+    "Bash": 3,
+    "Grep": 5
+  },
+  "requiredEOF": 15,
+  "completeEOF": 15,
+  "gaps": [],
+  "commandsMatched": false,
+  "unexpectedCommands": 1,
+  "overlappingCommands": false,
+  "toolErrors": [],
+  "orderedChecks": [
+    {
+      "scope": "bounded-review-checks",
+      "order": 1,
+      "exitCode": 0,
+      "timedOut": false,
+      "ownedTreeCleanupConfirmed": true,
+      "manifest": {
+        "ok": true,
+        "files": 343,
+        "sha256": "849387f3ee64348784737adf2407f31139e94f36ffe8343541de251faa23f63b",
+        "mismatches": []
+      },
+      "passed": true
+    },
+    {
+      "scope": "bounded-review-checks",
+      "order": 2,
+      "exitCode": 0,
+      "timedOut": false,
+      "ownedTreeCleanupConfirmed": true,
+      "counts": {
+        "tests": 108,
+        "pass": 108,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0
+      },
+      "passed": true
+    },
+    {
+      "scope": "bounded-review-checks",
+      "order": 3,
+      "exitCode": 0,
+      "timedOut": false,
+      "ownedTreeCleanupConfirmed": true,
+      "tests": 82,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "passed": true
+    },
+    {
+      "scope": "bounded-review-checks",
+      "order": 4,
+      "exitCode": 0,
+      "timedOut": false,
+      "ownedTreeCleanupConfirmed": true,
+      "counts": {
+        "tests": 1920,
+        "pass": 1920,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0
+      },
+      "passed": true
+    },
+    {
+      "scope": "bounded-review-checks",
+      "order": 5,
+      "exitCode": 0,
+      "timedOut": false,
+      "ownedTreeCleanupConfirmed": true,
+      "manifest": {
+        "ok": true,
+        "files": 343,
+        "sha256": "849387f3ee64348784737adf2407f31139e94f36ffe8343541de251faa23f63b",
+        "mismatches": []
+      },
+      "passed": true
+    },
+    {
+      "scope": "bounded-review-checks",
+      "complete": true,
+      "orderedChecks": 5,
+      "passed": true
+    }
+  ],
+  "commandResults": [
+    {
+      "index": 1,
+      "error": false,
+      "tail": "{\"ok\": true, \"files\": 343, \"sha256\": \"849387f3ee64348784737adf2407f31139e94f36ffe8343541de251faa23f63b\", \"mismatches\": []}"
+    },
+    {
+      "index": 3,
+      "error": false,
+      "tail": "ed\": 0, \"skipped\": 0}, \"passed\": true}\r\n{\"scope\": \"bounded-review-checks\", \"order\": 3, \"exitCode\": 0, \"timedOut\": false, \"ownedTreeCleanupConfirmed\": true, \"tests\": 82, \"failures\": 0, \"errors\": 0, \"skipped\": 0, \"passed\": true}\r\n{\"scope\": \"bounded-review-checks\", \"order\": 4, \"exitCode\": 0, \"timedOut\": false, \"ownedTreeCleanupConfirmed\": true, \"counts\": {\"tests\": 1920, \"pass\": 1920, \"fail\": 0, \"cancelled\": 0, \"skipped\": 0}, \"passed\": true}\r\n{\"scope\": \"bounded-review-checks\", \"order\": 5, \"exitCode\": 0, \"timedOut\": false, \"ownedTreeCleanupConfirmed\": true, \"manifest\": {\"ok\": true, \"files\": 343, \"sha256\": \"849387f3ee64348784737adf2407f31139e94f36ffe8343541de251faa23f63b\", \"mismatches\": []}, \"passed\": true}\r\n{\"scope\": \"bounded-review-checks\", \"complete\": true, \"orderedChecks\": 5, \"passed\": true}"
+    }
+  ],
+  "compactions": 1,
+  "usageScope": "resumed history aggregate, not this invocation spend",
+  "accepted": true,
+  "realOrderVerified": false,
+  "acceptanceScope": "C236 compact R1 UI and partial native receipt recognition only",
+  "exactCommandCompliance": false,
+  "commandDeviation": "Focused command prefixed with cd E:/Apple Store &&; same directory, three sequential commands, no denial. Disclosed and technically accepted.",
+  "focusedCommandCounts": {
+    "tests": 27,
+    "pass": 27,
+    "fail": 0
+  },
+  "reviewerUsageClaimNotTrusted": true,
+  "actualWholeGoalComplete": false,
+  "personalDeploymentVerified": false,
+  "realOrderVerifiedByThisReview": false,
+  "priorTestsChanged": false
+}

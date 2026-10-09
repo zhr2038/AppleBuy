@@ -3,9 +3,9 @@
   "task": "C236",
   "sourceFiles": 343,
   "sourceSha256": "849387f3ee64348784737adf2407f31139e94f36ffe8343541de251faa23f63b",
-  "accepted": false,
+  "accepted": true,
   "reviewTask": "C-237-PRODUCTIZATION-REVIEW",
-  "reviewRunning": true,
+  "reviewRunning": false,
   "author": "Codex",
   "focused": {
     "newRendererAndComposedCases": 17,
@@ -121,5 +121,6 @@
     "Ordinary login not programme autofill",
     "Missing pickup fields remain session-only",
     "Initial/update/disconnected bridge connection needs human action"
-  ]
+  ],
+  "actualReview": "C-237-actual-verification.json"
 }
