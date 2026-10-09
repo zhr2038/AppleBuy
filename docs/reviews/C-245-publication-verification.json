@@ -1,0 +1,13 @@
+{
+  "sourceFiles": 348,
+  "sourceSha256": "001e5888d0cd32635004712a132ffb1a095e16452baea8633905a2f0c14db2fa",
+  "publishedAcceptedCommit": "46695d0de641138fc2458fdd52be8740e84717f4",
+  "remoteVerifiedCommit": "46695d0de641138fc2458fdd52be8740e84717f4",
+  "candidateBranch": "refs/heads/codex/c030-quota-checkpoint-20261004",
+  "allSourceHeadBlobsMatch": true,
+  "nonForcePush": true,
+  "mainUnchanged": true,
+  "privateFilesPublished": false,
+  "personalDeploymentVerified": false,
+  "additionalRealOrder": false
+}
