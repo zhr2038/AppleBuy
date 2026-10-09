@@ -1,0 +1,30 @@
+{
+  "task": "C220",
+  "author": "Codex",
+  "sourceFiles": 331,
+  "sourceSha256": "12955811175044dfa8f0391ccf008b5ee32ff71eaa366ec4fbffaec5481efb21",
+  "changedFromAcceptedC218Map": [
+    "src/desktop/r2-browser-run.mjs",
+    "web/checkout-connector/r2-protocol.js"
+  ],
+  "newTest": "test/desktop-c220-marker-guard.test.ts",
+  "focused": {
+    "tests": 16,
+    "pass": 16
+  },
+  "node": {
+    "tests": 1845,
+    "pass": 1845,
+    "fail": 0,
+    "cancelled": 0,
+    "skipped": 0
+  },
+  "pythonUnchangedPriorPass": 66,
+  "oldAssertionsChanged": false,
+  "R1BusinessLogicChanged": false,
+  "reviewPending": "C222",
+  "accepted": false,
+  "newNativeVersion": "applebuy-browser-job/C220-v1",
+  "realDeployment": false,
+  "realOrder": false
+}

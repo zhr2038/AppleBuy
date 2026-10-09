@@ -2,9 +2,19 @@
 
 Workspace: `E:\Apple Store`. Preserve this directory for both Codex and Claude Code.
 
+## Latest October 8 parallel R2 instruction
+
+The human now explicitly requires immediate parallel R2 implementation, strictly following C211's corrected thin-window route. Do not wait for R1 to fail first. Preserve R1 and its source snapshot; Codex implements/tests R2 and the combined result is reviewed once Claude quota recovers using exact Opus 5.5/max. Follow `docs/tasks/C-214-R2-IMPLEMENTATION.md`. Keep Python controls and the shared journal/ownership/history. The withdrawn extension-only/new-empty-namespace proposal remains rejected. Neither route may be deployed or called accepted from offline tests alone.
+
+## October 8 adopted C211 corrected roadmap
+
+The human explicitly adopted the corrected roadmap in `docs/reviews/C-211-Fable51-project-analysis.md` and the conversation titled "让 Claude 评估项目路线". R1 is primary: bounded completion of C209 on the current stack, keeping the Python window and existing ownership/history protections. The initial extension-only/new-namespace proposal in that report was withdrawn. Follow `docs/tasks/C-212-R1-IMPLEMENTATION.md` for the integrated delivery scope and R2 stop/reconsider criteria.
+
+Codex implements and tests. Claude reviews using exact `claude-opus-5-5` and `max`, in English, per the latest October 8 human instruction. If Claude reaches genuine provider quota, Codex continues implementation and accumulates changes for one consolidated review after recovery. Do not turn quota waiting or review micro-cycles into an implementation dependency. Code remains unaccepted until the consolidated actual review is resolved.
+
 Codex owns requirements, priorities, implementation, testing, task dispatch and final acceptance under the latest October6 direct goal. Claude Code is now the cross-author reviewer when available; do not wait for quota to implement. All communication with Claude, task sheets, and review exchanges must be in English. Product UI and end-user instructions must be concise Chinese.
 
-Use Anthropic Claude Opus 5.5 (`claude-opus-5-5`) at extra-high effort (`xhigh`, the CLI spelling of the requested extra level). Verify the actual model from structured `modelUsage`; do not silently substitute models.
+Use Anthropic Claude Opus 5.5 (`claude-opus-5-5`) at maximum effort (`max`). Verify the actual model from structured `modelUsage` and the requested effort in the invocation; do not silently substitute models or lower effort. Historical xhigh receipts remain historical evidence.
 
 Read `docs/requirements.md` and the assigned task before working. Claude may propose technical choices; Codex must not dictate language, framework, storage, or undocumented Apple interfaces in advance. Claude cannot approve its own work or weaken acceptance criteria.
 

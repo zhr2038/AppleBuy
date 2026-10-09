@@ -8,6 +8,9 @@ import {restartFromCurrentEmpty,validateEmptyRestart} from './empty-restart.mjs'
 import {bagPlanCheck} from './checkout-diagnostic.mjs';
 import {renewEndedDraft,validateEndedDraft} from './ended-draft.mjs';
 import {restartExpiredPayment,validateExpiredPaymentRestart} from './expired-payment-restart.mjs';
+import {restartExpiredReview,validateExpiredReviewRestart,expiredReviewSourceShape} from './expired-review-restart.mjs';
+import {currentReviewProgress,knownUnreleasedFinal} from '../../web/checkout-connector/review-progress.js';
+import {R2_VERSION} from '../../web/checkout-connector/r2-protocol.js';
 const BAG='https://www.apple.com.cn/shop/bag',TERMS='https://www.apple.com.cn/shop/open/salespolicies';
 const REVIEW_TERMS=[TERMS,'https://www.apple.com.cn/shop/browse/open/salespolicies'];
 function currentTerms(o){
@@ -19,7 +22,7 @@ function currentTerms(o){
 const PHASES=new Set(['ENTRY','VARIANT','EMPTY_BAG','BAG','AUTH','FULFILLMENT','SLOTS','DETAILS','PAYMENT','REVIEW','ORDER_RECEIPT','ORDER_DETAIL','PROCESSING','UNKNOWN']);
 const safeState=s=>({state:typeof s.state==='string'?s.state:'NEEDS_VERIFICATION',phase:PHASES.has(s.phase)?s.phase:'UNKNOWN',pendingAction:['addBag','checkout','chooseSlot','fillDetails','selectPayment','continuePayment','submitOrder'].includes(s.pendingAction)?s.pendingAction:null});
 export class DesktopCheckoutRuntime {
- constructor({store,launch,onState=()=>{}}){this.store=store;this.launch=launch;this.onState=onState;this.opened=false;this.busy=false;this.closing=false;this.closed=false;this.paused=false;this.cleanupConfirmed=false;this.finalDescriptor=null;this.active=null;this.operations=new Set();this.ownerLost=false;}
+ constructor({store,launch,onState=()=>{},executor='desktop'}){if(!['desktop','browser'].includes(executor))throw Error('DesktopExecutorNotAllowed');this.executor=executor;this.store=store;this.launch=launch;this.onState=onState;this.opened=false;this.busy=false;this.closing=false;this.closed=false;this.paused=false;this.cleanupConfirmed=false;this.finalDescriptor=null;this.active=null;this.operations=new Set();this.ownerLost=false;}
  track(operation){const running=Promise.resolve().then(operation);this.operations.add(running);running.then(()=>this.operations.delete(running),()=>this.operations.delete(running));return running;}
  async open(){
   if(this.opened||this.busy||this.closing)throw Error('DesktopSessionAlreadyRunning');this.busy=true;
@@ -38,6 +41,7 @@ export class DesktopCheckoutRuntime {
    if(this.closing||this.ownerLost)throw Error('DesktopSessionCancelled');
    const owned=await this.launch();this.api=guardOwnedApi(owned.api,this.lease);this.closeBrowser=owned.close;
    if(this.closing||this.ownerLost||this.lease?.owned!==true)throw Error('DesktopSessionCancelled');
+   if(this.executor==='browser'&&(typeof this.api.r2Exchange!=='function'||await this.api.r2Exchange('r2Version',{})!==R2_VERSION))throw Error('R2ExecutorUpdateRequired');
    const tab=await this.api.create(BAG);this.tabId=tab.id;this.opened=true;
    return await this.observeInitialPage();
  }
@@ -67,8 +71,8 @@ export class DesktopCheckoutRuntime {
   if(!this.opened||this.closed||this.closing)throw Error('DesktopSessionNotOpen');
   if(this.active)throw Error('DesktopSessionAlreadyRunning');
   const port=new ChromePort(this.api,this.tabId,{mode:'observe'}),o=await port.observe(PRO_PLAN),old=await this.store.get(TASK_KEY);
-  const recover=old?.desktopContext!==this.api.sessionId&&old?.desktopContext&&(validateDesktopCartTransfer(old,{sessionId:old.desktopContext})||validateEmptyRestart(old,{sessionId:old.desktopContext})||await validateEndedDraft(old,{sessionId:old.desktopContext},this.store,{readonly:true})||await validateExpiredPaymentRestart(old,{sessionId:old.desktopContext},this.store,{readonly:true}));
-  const result={state:'OBSERVED',phase:o.phase,pendingAction:old?.pending?.action??null,legacyReadOnly:old?.reconcileOnly===true||!!recover,realOrderVerified:false,bagCheck:bagPlanCheck(o,PRO_PLAN)};
+  const recover=old?.desktopContext!==this.api.sessionId&&old?.desktopContext&&(validateDesktopCartTransfer(old,{sessionId:old.desktopContext})||validateEmptyRestart(old,{sessionId:old.desktopContext})||await validateEndedDraft(old,{sessionId:old.desktopContext},this.store,{readonly:true})||await validateExpiredPaymentRestart(old,{sessionId:old.desktopContext},this.store,{readonly:true})||await validateExpiredReviewRestart(old,{sessionId:old.desktopContext},this.store,{readonly:true}));
+  const result={state:'OBSERVED',phase:o.phase,pendingAction:old?.pending?.action??null,legacyReadOnly:old?.reconcileOnly===true||!!recover,realOrderVerified:false,bagCheck:bagPlanCheck(o,PRO_PLAN),...(o.merchantError?{merchantError:true}:{}),...(o.feedback?{feedback:true}:{})};
   if(!this.paused&&!this.closing&&!this.ownerLost)this.onState(safeState(result));return result;
  }
  execute(options){return this.track(()=>this.executeOnce(options));}
@@ -79,10 +83,10 @@ export class DesktopCheckoutRuntime {
   this.busy=true;this.finalDescriptor=null;this.abort=new AbortController();
   const leased={get:k=>this.store.get(k),put:(k,v)=>this.store.put(k,v),readArchive:d=>this.store.readArchive(d),acquireOwner:async()=>({get owned(){return runtime.lease?.owned===true;},release:async()=>{}})},runtime=this;
   try{
-   this.active=runDesktopSession({api:this.api,tabId:this.tabId,store:leased,mode:'purchase',signal:this.abort.signal,onState:s=>this.onState({...safeState(s),readOnly:options.mode==='reconcile',paused:this.paused}),...options});
+   this.active=runDesktopSession({api:this.api,tabId:this.tabId,store:leased,mode:'purchase',signal:this.abort.signal,onState:s=>this.onState({...safeState(s),readOnly:options.mode==='reconcile',paused:this.paused}),...options,executor:this.executor});
    const result=await this.active,record=await this.store.get(TASK_KEY);
-   if(options.mode!=='reconcile'&&result.phase==='REVIEW'&&record?.finalIntent)throw Error('DesktopFinalConsentNotCurrent');
-   if(options.mode!=='reconcile'&&result.phase==='REVIEW'&&!record?.pending&&!record?.finalIntent&&!this.closing&&!this.paused){try{await this.prepareReview();}catch(error){this.finalDescriptor=null;if(this.paused||this.closing||this.ownerLost)throw error;}}
+   if(options.mode!=='reconcile'&&result.phase==='REVIEW'&&record?.finalIntent&&!knownUnreleasedFinal(record))throw Error('DesktopFinalConsentNotCurrent');
+   if(options.mode!=='reconcile'&&result.phase==='REVIEW'&&!record?.pending&&(!record?.finalIntent||knownUnreleasedFinal(record))&&!this.closing&&!this.paused){try{await this.prepareReview();}catch(error){this.finalDescriptor=null;if(this.paused||this.closing||this.ownerLost)throw error;}}
    this.onState({...safeState({...result,pendingAction:record?.pending?.action??null}),paused:this.paused});return {...result,pendingAction:record?.pending?.action??null};
   }finally{this.active=null;this.busy=false;}
  }
@@ -108,18 +112,19 @@ export class DesktopCheckoutRuntime {
  }
  async prepareReview(){
   const old=await this.store.get(TASK_KEY),port=new ChromePort(this.api,this.tabId,{mode:'purchase',authorized:true,orderSummary:true,acceptedSlot:old?.acceptedSlot});let o=await port.observe(PRO_PLAN);
-  if(!old?.pending&&!old?.finalIntent&&o.phase==='REVIEW'&&o.summaryReadable===true&&o.quantitySource!=='order-summary'){if((await port.readSummary(PRO_PLAN,old.taskId)).read!==true)throw Error('DesktopFinalConsentNotCurrent');o=await port.observe(PRO_PLAN);}
+  if(!old?.pending&&(!old?.finalIntent||knownUnreleasedFinal(old))&&o.phase==='REVIEW'&&o.summaryReadable===true&&o.quantitySource!=='order-summary'){if((await port.readSummary(PRO_PLAN,old.taskId)).read!==true)throw Error('DesktopFinalConsentNotCurrent');o=await port.observe(PRO_PLAN);}
   const termsUrl=currentTerms(o);
+  const nativeReview=currentReviewProgress(PRO_PLAN,old,o,{contextOwned:port.controlledReview===true});
   const moneyBases=[old?.bagTotalCny,old?.quotedCny].filter(v=>v!=null);
-  if(this.paused||this.closing||this.ownerLost||old?.expiresAt<=Date.now()||old?.desktopContext!==this.api.sessionId||old.lastPhase!=='REVIEW'||old.pending||old.finalIntent||old.reconcileOnly===true||o.phase!=='REVIEW'||o.documentId!==old.lastDocumentId||!termsUrl||!purchaseMatches(PRO_PLAN,o.purchase)||o.extras!==false||o.paymentMethod!=='支付宝'||!sameAcceptedSlot(old,o.slotSummary)||moneyBases.length===0||moneyBases.some(v=>v!==o.purchase.totalCny))throw Error('DesktopFinalConsentNotCurrent');
-  this.finalDescriptor={taskId:old.taskId,documentId:old.lastDocumentId,termsUrl};
-  return {phase:'REVIEW',termsUrl,product:PRO_PLAN.product,totalCapCny:9999,quantity:1,store:PRO_PLAN.stores[0],paymentMethod:'支付宝'};
+  if(this.paused||this.closing||this.ownerLost||old?.expiresAt<=Date.now()||old?.desktopContext!==this.api.sessionId||old.lastPhase!=='REVIEW'||old.pending||old.finalIntent&&!knownUnreleasedFinal(old)||old.reconcileOnly===true||o.phase!=='REVIEW'||o.documentId!==old.lastDocumentId||!termsUrl||(!purchaseMatches(PRO_PLAN,o.purchase)&&!nativeReview)||o.extras!==false||o.paymentMethod!=='支付宝'||(!sameAcceptedSlot(old,o.slotSummary)&&!nativeReview)||moneyBases.length===0||moneyBases.some(v=>v!==o.purchase.totalCny))throw Error('DesktopFinalConsentNotCurrent');
+  this.finalDescriptor={taskId:old.taskId,documentId:old.lastDocumentId,termsUrl,...(nativeReview?{reviewProgressId:nativeReview.id,sourceChoice:{store:nativeReview.store,date:nativeReview.date,start:nativeReview.start,end:nativeReview.end},pickupNotice:nativeReview.pickupNotice}: {})};
+  return {phase:'REVIEW',termsUrl,product:PRO_PLAN.product,totalCny:o.purchase.totalCny,totalCapCny:9999,quantity:1,store:PRO_PLAN.stores[0],paymentMethod:'支付宝',...(nativeReview?{factsOrigin:nativeReview.factsOrigin,pickupNotice:nativeReview.pickupNotice,heldSlotVerified:false,sourceDate:nativeReview.date,sourceStart:nativeReview.start,sourceEnd:nativeReview.end}: {})};
  }
  transferContact(options={}){return this.track(()=>this.transferContactOnce(options));}
  restartPayment(options={}){return this.track(()=>this.restartPaymentOnce(options));}
  async restartPaymentOnce({approved=false,newContextConfirmed=false,oldExecutorStopped=false,sameAccountOrdersClear=false,expiredCheckoutUrl,privatePickupData={}}={}){
   if(this.ownerLost||this.paused||!this.opened||this.busy||this.closing||this.closed||this.lease?.owned!==true)throw Error('DesktopSessionAlreadyRunning');this.busy=true;let created;
-  try{this.active=restartExpiredPayment({store:this.store,api:this.api,tabId:this.tabId,expiredCheckoutUrl,approved,newContextConfirmed,oldExecutorStopped,sameAccountOrdersClear,live:()=>!this.ownerLost&&!this.closing&&!this.paused&&this.lease?.owned===true});created=await this.active;}finally{this.active=null;this.busy=false;}
+  try{const recover=expiredReviewSourceShape(await this.store.get(TASK_KEY))?restartExpiredReview:restartExpiredPayment;this.active=recover({store:this.store,api:this.api,tabId:this.tabId,expiredCheckoutUrl,approved,newContextConfirmed,oldExecutorStopped,sameAccountOrdersClear,live:()=>!this.ownerLost&&!this.closing&&!this.paused&&this.lease?.owned===true});created=await this.active;}finally{this.active=null;this.busy=false;}
   if(created?.created!==true)throw Error('ExpiredPaymentProspectiveUnconfirmed');
   if(this.paused||this.closing||this.ownerLost||this.lease?.owned!==true)return {state:this.paused?'PAUSED':'NEEDS_VERIFICATION',phase:'BAG',localTransitionCreated:true,realOrderVerified:false};
   return {...await this.advance({checkoutApproved:true,newContextConfirmed:true,privatePickupData}),localTransitionCreated:true};
@@ -161,7 +166,7 @@ export class DesktopCheckoutRuntime {
   await Promise.allSettled([...this.operations,...(this.starting?[this.starting]:[])]);
   if(this.ownerLost)throw Error('DesktopOwnerLeaseLost');
   const old=await this.store.get(TASK_KEY);
-  const recovered=old?.desktopContext!==this.api.sessionId&&old?.desktopContext&&(validateDesktopCartTransfer(old,{sessionId:old.desktopContext})||validateEmptyRestart(old,{sessionId:old.desktopContext})||await validateEndedDraft(old,{sessionId:old.desktopContext},this.store,{readonly:true})||await validateExpiredPaymentRestart(old,{sessionId:old.desktopContext},this.store,{readonly:true}));
+  const recovered=old?.desktopContext!==this.api.sessionId&&old?.desktopContext&&(validateDesktopCartTransfer(old,{sessionId:old.desktopContext})||validateEmptyRestart(old,{sessionId:old.desktopContext})||await validateEndedDraft(old,{sessionId:old.desktopContext},this.store,{readonly:true})||await validateExpiredPaymentRestart(old,{sessionId:old.desktopContext},this.store,{readonly:true})||await validateExpiredReviewRestart(old,{sessionId:old.desktopContext},this.store,{readonly:true}));
   return {...safeState({state:'PAUSED',phase:old?.lastPhase,pendingAction:old?.pending?.action}),paused:true,readOnly:old?.reconcileOnly===true||!!recovered,canContinue:old?.desktopContext===this.api.sessionId&&old?.reconcileOnly!==true&&old?.state!=='CONFIRMED_UNPAID'&&old?.expiresAt>Date.now()};
  }
  async resume({mode='purchase',...options}={}){

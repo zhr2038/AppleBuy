@@ -85,15 +85,16 @@ class CheckoutRunner:
     @property
     def busy(self):return self.child is not None
     def open(self,browser_channel='chrome',keep_session=False):
-        if browser_channel not in ('chrome','msedge','native-chrome'):raise ValueError('Browser choice is not enabled')
+        if browser_channel not in ('chrome','msedge','native-chrome','native-r2'):raise ValueError('Browser choice is not enabled')
         if type(keep_session) is not bool:raise ValueError('Session choice is not enabled')
-        if browser_channel=='native-chrome' and keep_session:raise ValueError('Native channel cannot retain or copy a profile')
+        if browser_channel in ('native-chrome','native-r2') and keep_session:raise ValueError('Native channel cannot retain or copy a profile')
         if self.child is not None:return False
         from shutil import which
         node=which('node')
         if not node:raise RuntimeError('Node unavailable')
         self.generation+=1
-        args=[node,str(ROOT/'src/desktop/native-purchase-worker.mjs')] if browser_channel=='native-chrome' else [node,str(ROOT/'src/desktop/purchase-worker.mjs'),'--browser='+browser_channel]
+        args=[node,str(ROOT/'src/desktop/native-purchase-worker.mjs')] if browser_channel in ('native-chrome','native-r2') else [node,str(ROOT/'src/desktop/purchase-worker.mjs'),'--browser='+browser_channel]
+        if browser_channel=='native-r2':args.append('--browser-executor')
         if keep_session:args.append('--keep-session')
         self.child=InteractiveChild(args,ROOT,self.events,self.generation)
         return True

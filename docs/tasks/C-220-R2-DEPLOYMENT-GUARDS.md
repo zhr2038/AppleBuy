@@ -1,0 +1,7 @@
+# C220 small R2 deployment prerequisites from actual C218
+
+C218 returned actual bounded AGREE on source330, resolved F-A/F-B and recommended R1 first. Its R2 deployment recommendation asked for G2 (skip stopped checkpoints) and the F-C host-only final marker guard. The user explicitly requires both routes usable before comparing deployment. Codex implements these two small safeguards and G3's explicit receipt-field projection as one batch; R1's business code and all existing assertions remain unchanged.
+
+Scope: only r2-browser-run.mjs, r2-protocol.js/version, and a new test. A status already marked paused must not trigger a new journal write. Browser patches may preserve or remove an existing desktop marker but may not create or modify it. The desktop terminal-proof path builds a marker only from the run/sequence/hash it matched, never arbitrary extra receipt keys. Preserve fresh final intent/retry after a true positive nonrelease, unknown final constraints and original ownership/history.
+
+Test stopped-state zero writes, new/changed marker rejection, unchanged marker carry/removal, and receipt extra-key/kind injection. Re-run existing F-A/F-B/native-final cases and full regression. No new permission, profile, storage namespace, merchant actions, installation or real order. C218's other low/Info limitations remain disclosed. Return this exact delta to the original Opus5.5/max reviewer before the single deployment handoff.

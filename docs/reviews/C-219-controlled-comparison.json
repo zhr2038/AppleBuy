@@ -1,0 +1,178 @@
+{
+  "scope": "FAKE controlled existing-singleton BAG-to-REVIEW comparison; no Apple/personal Chrome",
+  "sourceManifest": "docs/reviews/C-216-candidate-manifest.json",
+  "node": "v24.16.0",
+  "os": "win32 10.0.26300",
+  "arch": "x64",
+  "samples": 80,
+  "warmupsExcluded": 8,
+  "failures": 0,
+  "orderedAlternatingPairs": true,
+  "nativeTransport": "in-process peer with explicit per-RPC injected delay",
+  "journal": "in-memory FAKE acknowledged store, no physical fsync latency",
+  "browserDOM": "FAKE fixture returns, not browser rendering",
+  "auth": "already authenticated FAKE flow",
+  "submission": "none; stops REVIEW",
+  "notes": [
+    "Does not measure Apple latency, installed native pipe, actual GUI, real disk or real speed.",
+    "Other machine background activity including reviewer may affect wall clock; native frame counts are deterministic."
+  ],
+  "groups": [
+    {
+      "route": "R1",
+      "rpcDelayInjectedMs": 0,
+      "fakeHistoryBytes": 0,
+      "samples": 10,
+      "failures": 0,
+      "advanceP50Ms": 3,
+      "advanceP95Ms": 4,
+      "openP50Ms": 0,
+      "nativeFrames": [
+        60
+      ],
+      "nativePageFrames": [
+        20
+      ],
+      "merchantActions": [
+        6
+      ]
+    },
+    {
+      "route": "R2",
+      "rpcDelayInjectedMs": 0,
+      "fakeHistoryBytes": 0,
+      "samples": 10,
+      "failures": 0,
+      "advanceP50Ms": 12,
+      "advanceP95Ms": 14,
+      "openP50Ms": 0,
+      "nativeFrames": [
+        78
+      ],
+      "nativePageFrames": [
+        1
+      ],
+      "merchantActions": [
+        6
+      ]
+    },
+    {
+      "route": "R1",
+      "rpcDelayInjectedMs": 0,
+      "fakeHistoryBytes": 300000,
+      "samples": 10,
+      "failures": 0,
+      "advanceP50Ms": 7,
+      "advanceP95Ms": 11,
+      "openP50Ms": 0,
+      "nativeFrames": [
+        60
+      ],
+      "nativePageFrames": [
+        20
+      ],
+      "merchantActions": [
+        6
+      ]
+    },
+    {
+      "route": "R2",
+      "rpcDelayInjectedMs": 0,
+      "fakeHistoryBytes": 300000,
+      "samples": 10,
+      "failures": 0,
+      "advanceP50Ms": 166,
+      "advanceP95Ms": 174,
+      "openP50Ms": 0,
+      "nativeFrames": [
+        88
+      ],
+      "nativePageFrames": [
+        1
+      ],
+      "merchantActions": [
+        6
+      ]
+    },
+    {
+      "route": "R1",
+      "rpcDelayInjectedMs": 10,
+      "fakeHistoryBytes": 0,
+      "samples": 10,
+      "failures": 0,
+      "advanceP50Ms": 930,
+      "advanceP95Ms": 932,
+      "openP50Ms": 78,
+      "nativeFrames": [
+        60
+      ],
+      "nativePageFrames": [
+        20
+      ],
+      "merchantActions": [
+        6
+      ]
+    },
+    {
+      "route": "R2",
+      "rpcDelayInjectedMs": 10,
+      "fakeHistoryBytes": 0,
+      "samples": 10,
+      "failures": 0,
+      "advanceP50Ms": 1209,
+      "advanceP95Ms": 1211,
+      "openP50Ms": 93,
+      "nativeFrames": [
+        78
+      ],
+      "nativePageFrames": [
+        1
+      ],
+      "merchantActions": [
+        6
+      ]
+    },
+    {
+      "route": "R1",
+      "rpcDelayInjectedMs": 10,
+      "fakeHistoryBytes": 300000,
+      "samples": 10,
+      "failures": 0,
+      "advanceP50Ms": 930,
+      "advanceP95Ms": 932,
+      "openP50Ms": 78,
+      "nativeFrames": [
+        60
+      ],
+      "nativePageFrames": [
+        20
+      ],
+      "merchantActions": [
+        6
+      ]
+    },
+    {
+      "route": "R2",
+      "rpcDelayInjectedMs": 10,
+      "fakeHistoryBytes": 300000,
+      "samples": 10,
+      "failures": 0,
+      "advanceP50Ms": 1380,
+      "advanceP95Ms": 1411,
+      "openP50Ms": 93,
+      "nativeFrames": [
+        88
+      ],
+      "nativePageFrames": [
+        1
+      ],
+      "merchantActions": [
+        6
+      ]
+    }
+  ],
+  "sourceSha256": "8b2e917ae0872e1c65a6d0db58b1f0bdaf3dfe7c25333ba68d17ee0f301dcd2b",
+  "deploymentVerified": false,
+  "realOrderVerified": false,
+  "provisionalRecommendation": "R1 first bounded live trial after actual software acceptance; R2 remains a candidate. Offline data alone cannot establish live readiness."
+}

@@ -17,7 +17,7 @@ from process_tree import OwnedProcess, ProcessTreeUnresolved
 
 ROOT = Path(__file__).resolve().parents[2]
 MODEL = "claude-opus-5-5"
-EFFORT = "xhigh"
+EFFORT = "max"
 # Codex dispatch boundary: a resumed session's compaction hint is not authority
 # to read private transcripts. Read denies also cover Claude's Grep/Glob tools.
 PRIVATE_READ_DENIES = ["Read(~/.claude/**)", "Read(~/.codex/**)", "Read(./.local/**)"]

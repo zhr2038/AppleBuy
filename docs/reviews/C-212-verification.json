@@ -1,0 +1,22 @@
+{
+  "task":"C212-corrected-R1-candidate",
+  "sourceFiles":322,
+  "sourceSha256":"47747d7fd213f8c71366e7bd0f6a4ffab1e01230054b6af327783042fe4c494e",
+  "author":"Codex",
+  "reviewAccepted":false,
+  "tests":{"node":1813,"nodePass":1813,"nodeFail":0,"nodeCancelled":0,"nodeSkipped":0,"python":64,"pythonPass":64,"nativeControlledFlow":12,"recoveryAndArchive":18,"boundedWaits":4},
+  "initialFailures":{"C209Native":2,"firstBroadRegression":14,"resolvedWithoutWeakeningAssertions":true,"fixtureException":"existing C192 VM gained the actual new shape helper dependency; assertions unchanged"},
+  "integratedEvidence":"real native DOM plus production peer/API/runtime/job reached source-disclosed consent and clicked one FAKE final; missing receipt stayed unknown, no second final and no claimed order",
+  "physicalEvidence":"real temporary kernel-held atomic store/archive preserves source, validates identical backup and rejects tamper",
+  "privateActualSourcePreflight":{"shapeEligible":true,"fullProvenanceVerified":true,"sourceUnchanged":true,"merchantQueried":false,"newIntent":false},
+  "reviewerSync":{"actualAttempt":true,"requestedModel":"claude-opus-5-5","requestedEffort":"xhigh","durationSeconds":2.84,"isError":true,"primarySynthetic":true,"completeModelGate":false,"reason":"provider session quota","resetAsiaShanghai":"2026-10-08T23:10:00+08:00","cleanupConfirmed":true,"acknowledgementReceived":false},
+  "nextReview":"C-213-R1-CONSOLIDATED-REVIEW; one integrated review after quota recovery",
+  "currentOrdersCheck":"fresh account-order read and attestation still required before real successor; not inferred from local source",
+  "newSourceInstalled":false,
+  "realFinalSent":false,
+  "realProgrammeUnpaidOrderVerified":false,
+  "receiptDetailContract":"unobserved; capture and adapt readonly on the same first real order; no unknown final resubmission",
+  "heldOrFinalizedPickupTimeClaimed":false,
+  "fullGoalComplete":false,
+  "noShutdownOrReboot":true
+}

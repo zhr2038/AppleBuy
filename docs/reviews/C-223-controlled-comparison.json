@@ -1,0 +1,177 @@
+{
+  "scope": "FAKE controlled existing-singleton BAG-to-REVIEW comparison; no Apple/personal Chrome",
+  "sourceManifest": "docs/reviews/C-220-candidate-manifest.json",
+  "node": "v24.16.0",
+  "os": "win32 10.0.26300",
+  "arch": "x64",
+  "samples": 80,
+  "warmupsExcluded": 8,
+  "failures": 0,
+  "orderedAlternatingPairs": true,
+  "nativeTransport": "in-process peer with explicit per-RPC injected delay",
+  "journal": "in-memory FAKE acknowledged store, no physical fsync latency",
+  "browserDOM": "FAKE fixture returns, not browser rendering",
+  "auth": "already authenticated FAKE flow",
+  "submission": "none; stops REVIEW",
+  "notes": [
+    "Does not measure Apple latency, installed native pipe, actual GUI, real disk or real speed.",
+    "Other machine background activity including reviewer may affect wall clock; native frame counts are deterministic."
+  ],
+  "groups": [
+    {
+      "route": "R1",
+      "rpcDelayInjectedMs": 0,
+      "fakeHistoryBytes": 0,
+      "samples": 10,
+      "failures": 0,
+      "advanceP50Ms": 3,
+      "advanceP95Ms": 3,
+      "openP50Ms": 0,
+      "nativeFrames": [
+        60
+      ],
+      "nativePageFrames": [
+        20
+      ],
+      "merchantActions": [
+        6
+      ]
+    },
+    {
+      "route": "R2",
+      "rpcDelayInjectedMs": 0,
+      "fakeHistoryBytes": 0,
+      "samples": 10,
+      "failures": 0,
+      "advanceP50Ms": 13,
+      "advanceP95Ms": 14,
+      "openP50Ms": 0,
+      "nativeFrames": [
+        78
+      ],
+      "nativePageFrames": [
+        1
+      ],
+      "merchantActions": [
+        6
+      ]
+    },
+    {
+      "route": "R1",
+      "rpcDelayInjectedMs": 0,
+      "fakeHistoryBytes": 300000,
+      "samples": 10,
+      "failures": 0,
+      "advanceP50Ms": 7,
+      "advanceP95Ms": 10,
+      "openP50Ms": 0,
+      "nativeFrames": [
+        60
+      ],
+      "nativePageFrames": [
+        20
+      ],
+      "merchantActions": [
+        6
+      ]
+    },
+    {
+      "route": "R2",
+      "rpcDelayInjectedMs": 0,
+      "fakeHistoryBytes": 300000,
+      "samples": 10,
+      "failures": 0,
+      "advanceP50Ms": 165,
+      "advanceP95Ms": 172,
+      "openP50Ms": 0,
+      "nativeFrames": [
+        88
+      ],
+      "nativePageFrames": [
+        1
+      ],
+      "merchantActions": [
+        6
+      ]
+    },
+    {
+      "route": "R1",
+      "rpcDelayInjectedMs": 10,
+      "fakeHistoryBytes": 0,
+      "samples": 10,
+      "failures": 0,
+      "advanceP50Ms": 930,
+      "advanceP95Ms": 932,
+      "openP50Ms": 78,
+      "nativeFrames": [
+        60
+      ],
+      "nativePageFrames": [
+        20
+      ],
+      "merchantActions": [
+        6
+      ]
+    },
+    {
+      "route": "R2",
+      "rpcDelayInjectedMs": 10,
+      "fakeHistoryBytes": 0,
+      "samples": 10,
+      "failures": 0,
+      "advanceP50Ms": 1209,
+      "advanceP95Ms": 1210,
+      "openP50Ms": 93,
+      "nativeFrames": [
+        78
+      ],
+      "nativePageFrames": [
+        1
+      ],
+      "merchantActions": [
+        6
+      ]
+    },
+    {
+      "route": "R1",
+      "rpcDelayInjectedMs": 10,
+      "fakeHistoryBytes": 300000,
+      "samples": 10,
+      "failures": 0,
+      "advanceP50Ms": 930,
+      "advanceP95Ms": 931,
+      "openP50Ms": 78,
+      "nativeFrames": [
+        60
+      ],
+      "nativePageFrames": [
+        20
+      ],
+      "merchantActions": [
+        6
+      ]
+    },
+    {
+      "route": "R2",
+      "rpcDelayInjectedMs": 10,
+      "fakeHistoryBytes": 300000,
+      "samples": 10,
+      "failures": 0,
+      "advanceP50Ms": 1380,
+      "advanceP95Ms": 1427,
+      "openP50Ms": 93,
+      "nativeFrames": [
+        88
+      ],
+      "nativePageFrames": [
+        1
+      ],
+      "merchantActions": [
+        6
+      ]
+    }
+  ],
+  "sourceSha256": "12955811175044dfa8f0391ccf008b5ee32ff71eaa366ec4fbffaec5481efb21",
+  "deploymentVerified": false,
+  "realOrderVerified": false
+}

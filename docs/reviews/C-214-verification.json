@@ -1,0 +1,60 @@
+{
+  "task": "C214-corrected-R2-parallel",
+  "author": "Codex",
+  "modelReviewPending": "C215 Opus 5.5 max",
+  "reviewInvoked": false,
+  "files": 328,
+  "sha256": "47011963c56aebd13874b9e8f260875941ac28a649c42830f176f0a154c54b12",
+  "node": {
+    "tests": 1829,
+    "pass": 1829,
+    "fail": 0,
+    "cancelled": 0,
+    "skipped": 0
+  },
+  "python": {
+    "tests": 66,
+    "pass": 66
+  },
+  "r2Focused": {
+    "node": 16,
+    "pass": 16,
+    "python": 2,
+    "passPython": 2
+  },
+  "realRenderer": {
+    "productionBrowserLocalModules": true,
+    "realDOM": true,
+    "chromeAPI": "FAKE",
+    "merchant": "FAKE loopback fixture",
+    "privateProfile": false,
+    "finalClicks": 1,
+    "receipt": "deliberately missing, unknown preserved, no second final",
+    "store": "FAKE durable-ack callback; actual kernel and atomic writer tested separately"
+  },
+  "physicalJournal": {
+    "temporaryKernelLease": true,
+    "atomicWriter": true,
+    "secondOwnerRefused": true,
+    "realUserJournalTouched": false
+  },
+  "failuresRetained": {
+    "initialR2Fixture": "frames getter collision fixed in new fixture only",
+    "initialPython": "R2 launch choice absent from GUI guard; production guard fixed",
+    "firstFullRegression": {
+      "tests": 1828,
+      "pass": 1825,
+      "fail": 3,
+      "reason": "worker VM source slice excluded executor declaration; moved declaration into actual startup body without changing protected assertions"
+    }
+  },
+  "existingAssertionsWeakened": false,
+  "applicationInstalled": false,
+  "realMerchantActions": false,
+  "realProgrammeUnpaidOrderVerified": false,
+  "realSpeedMeasured": false,
+  "wholeGoalComplete": false,
+  "noShutdown": true,
+  "allOwnedTestCallsTerminal": true,
+  "finalRegressionAfterLongPoll": true
+}

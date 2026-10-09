@@ -1,0 +1,56 @@
+{
+  "task": "C-217-ACK-TRUTH-REVIEW",
+  "sourceFiles": 330,
+  "sourceSha256": "8b2e917ae0872e1c65a6d0db58b1f0bdaf3dfe7c25333ba68d17ee0f301dcd2b",
+  "sourceUnchanged": true,
+  "status": "failed",
+  "durationSeconds": 352.26,
+  "turns": 25,
+  "models": [
+    "claude-opus-5-5"
+  ],
+  "primaryModels": [
+    "<synthetic>",
+    "claude-opus-5-5"
+  ],
+  "provider": "firstParty",
+  "canonicalModel": "claude-opus-5-5",
+  "effort": "max",
+  "modelVerified": false,
+  "isError": true,
+  "subtype": "success",
+  "timedOut": false,
+  "cleanupConfirmed": true,
+  "permissionDenials": 0,
+  "privateReads": 0,
+  "edits": 0,
+  "toolCounts": {
+    "Read": 16,
+    "Glob": 1,
+    "Bash": 2,
+    "Grep": 5
+  },
+  "requiredEOF": 10,
+  "completeEOF": 10,
+  "gaps": [],
+  "commandsMatched": false,
+  "unexpectedCommands": 0,
+  "overlappingCommands": false,
+  "toolErrors": [],
+  "orderedChecks": [],
+  "compactions": 0,
+  "usageScope": "resumed history aggregate, not this invocation spend",
+  "accepted": false,
+  "realOrderVerified": false,
+  "actualProviderQuota": true,
+  "resetAsiaShanghai": "2026-10-09T04:10:00+08:00",
+  "focusedTests": {
+    "tests": 62,
+    "pass": 62,
+    "fail": 0,
+    "cancelled": 0,
+    "skipped": 0
+  },
+  "fullSuiteAndVerdictMissing": true,
+  "modelGateNote": "Real Opus5.5 firstParty activity and max argv verified; provider synthetic error means complete model gate false, not accepted."
+}

@@ -16,7 +16,7 @@
 // C035 (Claude): the observed complete normal empty bag is EMPTY_BAG; there only openProduct is accepted, as a write-free re-verification.
 // C037 (Claude): selectStore can choose the observed numbered native Dalian radio when it is not preselected, by the same exact proof.
 // C051 (Claude): the observed contact-only details step is a recognized step (contactStep), never purchase proof; see below.
-export const CHECKOUT_EXECUTOR_VERSION='C207-native-review-fail-closed-v1';
+export const CHECKOUT_EXECUTOR_VERSION='C209-controlled-review-v1';
 export async function merchantDocument(plan,command=null,internal=null){
   // `internal` is set only by this program's own re-entry; ChromePort passes plan and command only.
   // A structured command always receives a structured report. Nothing was written unless this id was already delivered.
@@ -488,6 +488,21 @@ export async function merchantDocument(plan,command=null,internal=null){
     mentions(main)===0&&productLines.length===0&&!mainQtyShown&&!/件商品|数量/.test(norm(main.textContent))&&fulfillmentChoice===null&&!deliveryProse&&!out.slotSummary&&!out.extrasConflict&&orderLabels.length===0&&!out.orderRefHash&&
     dialogs?.length===0&&bars.length===1&&bars[0].tagName==='BUTTON'&&visible(bars[0])&&!disabled(bars[0])&&barTotal>0&&totalLines.length===0&&total===barTotal;
   out.paymentStep=paymentOnly?{kind:'native-alipay-payment-only',verified:true,totalCny:barTotal}:null;
+  // Same-document, originating programme trace. It is separate from current merchant purchase/store/slot evidence.
+  const progress=globalThis.__applebuyControlledCheckout;
+  const progressCurrent=!!progress&&progress.main===main&&progress.href===u.href&&progress.intervened===false;
+  // Native radio.click() emits trusted input/change events too. Mark only this synchronous, task-bound programme write.
+  const controlledWrite=fn=>{const t=globalThis.__applebuyControlledCheckout,own=!!t&&t.main===main&&t.href===u.href&&t.taskId===command?.taskId&&t.planDigest===command?.planDigest;if(own)t.writing=(t.writing??0)+1;try{return fn();}finally{if(own)t.writing--;}};
+  if(progressCurrent&&progress.stage==='slot-sent'&&out.contactStep?.verified===true&&out.contactStep.totalCny===progress.totalCny)progress.stage='contact-accepted';
+  const reviewNotice=[...main.querySelectorAll('h2.rs-review-shipquote')].filter(visible);
+  const retailEdit=exact('更改零售店').filter(e=>e.getAttribute('data-autom')==='changeShippingMethod');
+  if(progressCurrent&&['contact-accepted','payment-sent'].includes(progress.stage)&&['SLOTS','FULFILLMENT','BAG'].includes(phase))progress.intervened=true;
+  const nativeControlledReview=progressCurrent&&progress.intervened===false&&progress.finalSent!==true&&progress.stage==='payment-sent'&&phase==='REVIEW'&&main.id==='checkout-container'&&
+    purchase.itemVerified===true&&purchase.verified===false&&purchase.quantity===1&&purchase.store===null&&purchase.fulfillment===null&&purchase.totalCny===progress.totalCny&&
+    out.slotSummary===null&&out.extras===false&&out.paymentMethod==='支付宝'&&typeof out.primaryTermsUrl==='string'&&out.termsLinks.includes(out.primaryTermsUrl)&&
+    reviewNotice.length===1&&norm(reviewNotice[0].textContent)==='取货日期待付款完成后确定。'&&retailEdit.length===1&&dialogs?.length===0;
+  out.reviewProgress=nativeControlledReview?{kind:'native-controlled-review-progression/v1',id:progress.id,taskId:progress.taskId,planDigest:progress.planDigest,
+    controlled:true,intervened:false,store:progress.store,date:progress.date,start:progress.start,end:progress.end,totalCny:progress.totalCny,paymentMethod:'支付宝',pickupNotice:'取货日期待付款完成后确定。'}:null;
   out.receiptVerified=phase==='ORDER_RECEIPT'&&!!out.orderRefHash&&purchase.verified;
   // Official refusal anchors are not yet observed: real alerts remain unknown rather than invented rejection.
   if(referenceChanged)return command?report('OperationEvidenceChanged'):{schema:'applebuy-merchant-read/v1',phase:'UNKNOWN',reason:'order-reference-changed'};
@@ -581,7 +596,14 @@ export async function merchantDocument(plan,command=null,internal=null){
         phase!=='SLOTS'||out.listComplete!==true||out.selectedDate!==command.date||!purchase.verified||
         JSON.stringify(purchase)!==JSON.stringify(c.out.purchase)||JSON.stringify(out.dates)!==JSON.stringify(c.out.dates)||JSON.stringify(out.times)!==JSON.stringify(c.out.times)||
         liveNext.length!==1||liveNext[0]!==c.next||!c.next.isConnected||disabled(c.next))throw new Error('SlotEvidenceChangedAfterSelection');
-      c.next.click();return {delivered:true};
+      // A new witness is created only immediately before this verified native slot continuation, never from a stored old choice.
+      if(typeof main.addEventListener==='function'&&typeof main.removeEventListener==='function'&&typeof crypto.randomUUID==='function'&&typeof command.planDigest==='string'){
+        const prior=globalThis.__applebuyControlledCheckout;if(prior?.main===main&&prior.listener)for(const event of ['click','input','change'])main.removeEventListener(event,prior.listener,true);
+        const witness={id:crypto.randomUUID(),main,href:u.href,taskId:command.taskId,planDigest:command.planDigest,store:purchase.store,date:command.date,start:command.start,end:command.end,totalCny:purchase.totalCny,stage:'slot-sent',intervened:false};
+        witness.listener=e=>{if(!e.isTrusted||witness.writing>0)return;const readOnly=e.target?.closest?.('[data-autom="companionbar-button"],[data-autom="faq-button"],[data-autom="overlay-close"]');if(!readOnly)witness.intervened=true;};
+        for(const event of ['click','input','change'])main.addEventListener(event,witness.listener,true);globalThis.__applebuyControlledCheckout=witness;
+      }
+      controlledWrite(()=>c.next.click());return {delivered:true};
     }
     if(internal?.details){
       // C-016: details continuation, re-entered after the task boundary that follows the previous value's input/change events.
@@ -604,8 +626,8 @@ export async function merchantDocument(plan,command=null,internal=null){
     const canon=v=>JSON.stringify(v,(k,x)=>x!==null&&typeof x==='object'&&!Array.isArray(x)?Object.fromEntries(Object.keys(x).sort().map(n=>[n,x[n]])):x);
     let same=false;try{same=typeof command.expected==='string'&&canon(JSON.parse(command.expected))===canon(out);}catch{}
     if(!same)throw new Error('OperationEvidenceChanged');memo.add(command.id);
-    const click=t=>{const b=exact(t);if(b.length!==1||!b[0].isConnected)throw new Error('CurrentControlUnrecognized');touched=true;b[0].click();};
-    const pick=t=>{const r=findRadio(t).filter(e=>!disabled(e));if(r.length!==1||!r[0].isConnected)throw new Error('CurrentChoiceUnrecognized');touched=true;r[0].click();};
+    const click=t=>{const b=exact(t);if(b.length!==1||!b[0].isConnected)throw new Error('CurrentControlUnrecognized');touched=true;controlledWrite(()=>b[0].click());};
+    const pick=t=>{const r=findRadio(t).filter(e=>!disabled(e));if(r.length!==1||!r[0].isConnected)throw new Error('CurrentChoiceUnrecognized');touched=true;controlledWrite(()=>r[0].click());};
     if(command.action==='configureProduct'&&(phase==='ENTRY'||phase==='VARIANT'||phase==='PRELAUNCH'&&out.prelaunchConfigurable===true)){
       // Observe again after every individual public selection; only the current next enabled choice may be clicked.
       if(out.nextChoice?.choice!==command.choice||out.nextChoice.state!=='enabled'||out.extrasConflict)throw new Error('ProductChoiceChanged');pick(command.choice);
@@ -635,6 +657,7 @@ export async function merchantDocument(plan,command=null,internal=null){
       const index=Number(command.ref?.split(':')[1]),d=out.dates[index];if(!d||d.label!==command.date||!d.enabled)throw new Error('DateEvidenceChanged');
       touched=true;if(dateChoices.length)dateChoices[index].click();else{const s=dateSelects[0];s.selectedIndex=index;s.dispatchEvent(new Event('change',{bubbles:true}));}
     }else if(command.action==='chooseSlot'&&phase==='SLOTS'&&purchase.verified&&out.listComplete){
+      if(progress?.taskId===command.taskId&&(['contact-accepted','payment-sent'].includes(progress.stage)||progress.finalSent===true))throw new Error('ControlledSlotAlreadyProgressed');
       const t=out.times.find(t=>t.ref===command.ref);if(!t||!t.enabled||t.start!==command.start||t.end!==command.end||out.selectedDate!==command.date)throw new Error('SlotEvidenceChanged');
       const next=exact('继续填写取货详情');if(next.length!==1||!next[0].isConnected)throw new Error('CurrentControlUnrecognized');
       const s=timeSelects[0];touched=true;s.selectedIndex=Number(command.ref.split(':')[1]);s.dispatchEvent(new Event('change',{bubbles:true}));
@@ -668,10 +691,12 @@ export async function merchantDocument(plan,command=null,internal=null){
         return await fillDetail({keys:Object.keys(bound),bound,main,href:u.href,expected:JSON.stringify(out),next:next[0],inputs,inputSig:inputSig(inputs),limit:2000,contactOnly:command.contactOnly===true});}
     }else if(command.action==='selectPayment'&&phase==='PAYMENT'&&(purchase.verified||command.paymentOnly===true&&out.paymentStep?.verified===true)){pick('支付宝');}
     else if(command.action==='continuePayment'&&phase==='PAYMENT'&&(purchase.verified||command.paymentOnly===true&&out.paymentStep?.verified===true)&&out.paymentMethod==='支付宝'){
+      if(progressCurrent&&progress.stage==='contact-accepted'&&progress.taskId===command.taskId&&progress.planDigest===command.planDigest&&command.paymentOnly===true&&out.paymentStep?.verified===true&&out.paymentStep.totalCny===progress.totalCny)progress.stage='payment-sent';
       if(command.paymentOnly===true&&out.paymentStep?.verified===true)click('检查订单');else if(exact('继续查看订单').length===1)click('继续查看订单');else click('继续');
     }
-    else if(command.action==='submitOrder'&&phase==='REVIEW'&&purchase.verified&&out.paymentMethod==='支付宝'){
-      const g=command.finalGrant;if(!g||g.termsAccepted!==true||g.taskId!==command.taskId||g.planDigest!==command.planDigest||g.expiry<=Date.now()||g.existingOrdersChecked!==true||g.noExtras!==true||!out.termsLinks.includes(g.termsUrl)||Object.hasOwn(out,'primaryTermsUrl')&&out.primaryTermsUrl!==g.termsUrl||!out.slotSummary)throw new Error('CurrentFinalGrantMissing');click('立即下单');
+    else if(command.action==='submitOrder'&&phase==='REVIEW'&&(purchase.verified||command.reviewOnly===true&&nativeControlledReview)&&out.paymentMethod==='支付宝'){
+      const g=command.finalGrant,sourceReview=command.reviewOnly===true&&nativeControlledReview&&g?.reviewProgressId===progress.id&&progress.taskId===command.taskId&&progress.planDigest===command.planDigest;
+      if(!g||g.termsAccepted!==true||g.taskId!==command.taskId||g.planDigest!==command.planDigest||g.expiry<=Date.now()||g.existingOrdersChecked!==true||g.noExtras!==true||!out.termsLinks.includes(g.termsUrl)||Object.hasOwn(out,'primaryTermsUrl')&&out.primaryTermsUrl!==g.termsUrl||(!out.slotSummary&&!sourceReview))throw new Error('CurrentFinalGrantMissing');if(sourceReview)progress.finalSent=true;click('立即下单');
     }
     // C035 (Claude): openProduct is only re-verified here: this exact document still decodes as the expected verified empty bag. No
     // control is touched; ChromePort then navigates the tab to the plan's public entry. Later additions use fresh product reads.

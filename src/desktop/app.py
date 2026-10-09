@@ -162,7 +162,7 @@ class App:
         browser_controls=ttk.Frame(pane);browser_controls.pack(anchor='w',pady=(7,0))
         ttk.Label(browser_controls,text='程序浏览器：').pack(side='left')
         self.browser_choice=tk.StringVar(value='Edge' if browser_channel=='msedge' else 'Chrome')
-        self.browser_picker=ttk.Combobox(browser_controls,textvariable=self.browser_choice,values=('Chrome','Edge','正常 Chrome 结账通道'),state='readonly',width=22);self.browser_picker.pack(side='left')
+        self.browser_picker=ttk.Combobox(browser_controls,textvariable=self.browser_choice,values=('Chrome','Edge','正常 Chrome 结账通道','正常 Chrome 浏览器内执行 R2'),state='readonly',width=27);self.browser_picker.pack(side='left')
         self.keep_session=tk.BooleanVar(value=False)
         self.keep_session_checkbox=ttk.Checkbutton(browser_controls,text='本人同意在本程序独立目录保留登录会话（本机）',variable=self.keep_session);self.keep_session_checkbox.pack(side='left',padx=12)
         ttk.Label(pane,text='会话目录：'+str(ROOT/'.local/desktop/browser-profiles')+' 下的 chrome 或 msedge。取消勾选不会删除已存会话；撤销时请本人在该浏览器退出 Apple 账户，关闭程序后删除对应独立目录。',wraplength=850).pack(anchor='w',pady=(3,0))
@@ -271,9 +271,9 @@ class App:
         self.checkout_pause_ack=None
         try:
             choice=self.browser_choice.get()
-            if choice not in ('Chrome','Edge','正常 Chrome 结账通道'):raise ValueError('Browser choice is not enabled')
-            native=choice=='正常 Chrome 结账通道'
-            if self.checkout.open(browser_channel='native-chrome' if native else 'msedge' if choice=='Edge' else 'chrome',keep_session=False if native else self.keep_session.get()):
+            if choice not in ('Chrome','Edge','正常 Chrome 结账通道','正常 Chrome 浏览器内执行 R2'):raise ValueError('Browser choice is not enabled')
+            native=choice in ('正常 Chrome 结账通道','正常 Chrome 浏览器内执行 R2')
+            if self.checkout.open(browser_channel='native-r2' if choice=='正常 Chrome 浏览器内执行 R2' else 'native-chrome' if native else 'msedge' if choice=='Edge' else 'chrome',keep_session=False if native else self.keep_session.get()):
                 self.browser_diagnostic.set(choice+' 本次尚未记录失败响应；旧会话的错误提示已清除。')
                 self.browser_picker.config(state='disabled')
                 self.keep_session_checkbox.config(state='disabled')
@@ -325,7 +325,7 @@ class App:
         except Exception:self.status.set('最终动作未确认，保留记录，不重复提交。')
 
     def restart_empty_checkout(self):
-        if not self.empty_restart_confirm.get() or self.browser_choice.get()!='正常 Chrome 结账通道':self.status.set('需本人确认当前账户、旧官网结账停止和无已有待付款同款订单；没有新动作。');return
+        if not self.empty_restart_confirm.get() or self.browser_choice.get() not in ('正常 Chrome 结账通道','正常 Chrome 浏览器内执行 R2'):self.status.set('需本人确认当前账户、旧官网结账停止和无已有待付款同款订单；没有新动作。');return
         data={k:v.get() for k,v in self.pickup_values.items() if v.get()}
         if data.get('identitySuffix') and (len(data['identitySuffix'])!=4 or not data['identitySuffix'].isdigit()):self.status.set('证件后四位格式不正确；未发动作。');return
         self.empty_restart_confirm.set(False);self.empty_restart_button.config(state='disabled');self.empty_restart_checkbox.config(state='disabled');self.final_confirm.set(False);self.final_checkbox.config(state='disabled');self.submit_button.config(state='disabled')
@@ -416,7 +416,7 @@ class App:
                         self.transfer_checkbox.config(text='本人确认旧结账已停止、旧时段窗口已到期，当前同一账户购物袋为这一台 Pro；不再加购。暂停保留当前窗口；关闭或重启后只能只读核对')
                     self.status.set(v['message']);self.advance_button.config(state='disabled' if v.get('readOnly') is True else 'normal');self.reconcile_button.config(state='normal' if v.get('readOnly') is True else 'disabled')
                     self.transfer_button.config(state='normal' if v.get('readOnly') is True else 'disabled');self.transfer_checkbox.config(state='normal' if v.get('readOnly') is True else 'disabled')
-                    native=getattr(self,'browser_choice',None);empty_ready=v.get('readOnly') is True and native and native.get()=='正常 Chrome 结账通道'
+                    native=getattr(self,'browser_choice',None);empty_ready=v.get('readOnly') is True and native and native.get() in ('正常 Chrome 结账通道','正常 Chrome 浏览器内执行 R2')
                     self.empty_restart_button.config(state='normal' if empty_ready else 'disabled');self.empty_restart_checkbox.config(state='normal' if empty_ready else 'disabled');self.empty_restart_confirm.set(False)
                     if getattr(self,'checkout_begin_pending',False):
                         self.checkout_begin_pending=False
@@ -434,11 +434,15 @@ class App:
                         self.checkout_readonly=v.get('readOnly') is True
                         self.reconcile_button.config(state='normal' if self.checkout_readonly else 'disabled')
                         self.transfer_button.config(state='normal' if self.checkout_readonly else 'disabled');self.transfer_checkbox.config(state='normal' if self.checkout_readonly else 'disabled')
-                        native=getattr(self,'browser_choice',None);empty_ready=self.checkout_readonly and native and native.get()=='正常 Chrome 结账通道'
+                        native=getattr(self,'browser_choice',None);empty_ready=self.checkout_readonly and native and native.get() in ('正常 Chrome 结账通道','正常 Chrome 浏览器内执行 R2')
                         self.empty_restart_button.config(state='normal' if empty_ready else 'disabled');self.empty_restart_checkbox.config(state='normal' if empty_ready else 'disabled');self.empty_restart_confirm.set(False)
                         self.advance_button.config(state='normal' if v.get('realOrderVerified') is not True and v.get('readOnly') is not True else 'disabled')
                         self.submit_button.config(state='normal' if v.get('reviewReady') is True and v.get('realOrderVerified') is not True else 'disabled')
                         self.final_checkbox.config(state='normal' if v.get('reviewReady') is True and v.get('realOrderVerified') is not True else 'disabled')
+                        if v.get('reviewReady') is True:
+                            consent=v.get('consentSummary') or {};choice=consent.get('sourceChoice')
+                            if isinstance(choice,dict) and choice.get('store')=='Apple 大连恒隆广场' and consent.get('pickupNotice')=='取货日期待付款完成后确定。':
+                                self.result.set('复核页已核对商品、数量、金额和支付宝。门店和时段来自本次程序之前的选择：Apple 大连恒隆广场，'+str(choice.get('date',''))+' '+str(choice.get('start',''))+'–'+str(choice.get('end',''))+'。官网复核页未再次显示门店和时段；取货日期待付款完成后确定，未承诺名额保留。当前条款：'+str(consent.get('termsUrl','')))
                         if v.get('realOrderVerified') is True:self.result.set('已由程序另行核对同一张未付款订单；未支付，不再下单。')
         except queue.Empty:pass
         try:

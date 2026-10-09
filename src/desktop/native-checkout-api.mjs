@@ -2,7 +2,7 @@
 import {merchantDocument} from '../../web/checkout-connector/page-program.js';
 import {CHECKOUT_RPC,checkoutUrl,boundedCheckoutJson} from '../../web/checkout-connector/checkout-rpc-contract.js';
 export class NativeCheckoutApi{
- constructor({contextId,exchange,id=()=>crypto.randomUUID(),timeoutMs=10000}){if(typeof contextId!=='string'||typeof exchange!=='function'||!Number.isFinite(timeoutMs)||timeoutMs<=0||timeoutMs>30000)throw Error('NativeCheckoutNotConnected');this.sessionId=contextId;this.exchange=exchange;this.id=id;this.timeoutMs=timeoutMs;this.active=false;this.closed=false;this.poisoned=false;}
+ constructor({contextId,exchange,id=()=>crypto.randomUUID(),timeoutMs=10000}){if(typeof contextId!=='string'||typeof exchange!=='function'||!Number.isFinite(timeoutMs)||timeoutMs<=0||timeoutMs>30000)throw Error('NativeCheckoutNotConnected');this.sessionId=contextId;this.controlledReview=true;this.exchange=exchange;this.id=id;this.timeoutMs=timeoutMs;this.active=false;this.closed=false;this.poisoned=false;}
  async request(operation,payload){
   if(this.active||this.closed||this.poisoned)throw Error('NativeCheckoutAlreadyRunning');this.active=true;
   const id=this.id();let timer;try{
@@ -15,6 +15,7 @@ export class NativeCheckoutApi{
  }
  create(url){return this.tabs.create({url,active:true});}
  executorVersion(){return this.request('executorVersion',{});}
+ r2Exchange(operation,payload){if(!/^r2(?:Version|Begin|Chunk|Run|Poll|Ack|Pause|Finish)$/.test(operation))throw Error('R2OperationInvalid');return this.request(operation,payload);}
  createExpiryProbe(url){return this.request('createExpiryProbe',{url});}
  get tabs(){return {create:async({url,active=false})=>{if(!checkoutUrl(url))throw Error('NativeAddressNotAllowed');return this.request('createTab',{url,active});},get:tabId=>this.request('getTab',{tabId}),remove:async tabId=>{const r=await this.request('removeTab',{tabId});if(r?.removed!==true)throw Error('NativeTabCloseUnconfirmed');},update:async(tabId,{url})=>{if(!checkoutUrl(url))throw Error('NativeAddressNotAllowed');return this.request('updateTab',{tabId,url});}};}
  get permissions(){return {contains:origins=>this.request('containsHost',origins)};}

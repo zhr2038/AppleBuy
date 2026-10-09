@@ -10,6 +10,7 @@
 // C054-R1 (Claude): calendar-shaped labels need validity even when identical, an ambiguous frozen cohort blocks every representation,
 // and missing selected/observed slot facts never compare equal.
 // C058 (Claude): read-only and human-rebound runs detach the port's stored slot choice and never record a refusal for it.
+import {currentReviewProgress} from './review-progress.js';
 export const TASK_KEY='applebuy-single-personal-purchase/v1';
 // Public-configuration validation never uses the purchase task key, so it cannot consume a purchase task.
 export const VALIDATION_KEY='applebuy-public-configuration-validation/v1';
@@ -161,7 +162,7 @@ export function createPurchaseRecord(P,{taskId,planDigest,tabId,mode='purchase',
   return {schema:'applebuy-purchase-job/v1',taskId:(validating?null:taskId)??id(),plan:clone(P),planDigest,tabId,state:'RUNNING',lastPhase:null,lastDocumentId:null,entryDocumentId:null,reason:null,pending:null,finalIntent:null,orderRefHash:null,initialDates:null,dateCursor:0,floors:{},rejected:[],refusals:0,lastRead:0,expiresAt:now+(validating?300000:1800000),bagAddStarted:false,resourceWritten:false,untouchedFailures:0,untouchedStreak:0,quotedCny:null,mode};
 }
 export class PurchaseJob {
-  constructor({store,port,now=()=>Date.now(),id=()=>crypto.randomUUID(),maxSteps=100,maxWaitMs=30000,hydrationMs=3000,maxPolls=2000,maxUntouched=3,maxUntouchedPerRun=12,maxSummaryReads=30,onState=()=>{}}){Object.assign(this,{store,port,now,id,maxSteps,maxWaitMs,hydrationMs,maxPolls,maxUntouched,maxUntouchedPerRun,maxSummaryReads,onState});this.paused=false;this.stopped=false;this.key=TASK_KEY;this.runGrant=null;}
+  constructor({store,port,now=()=>Date.now(),id=()=>crypto.randomUUID(),maxSteps=100,maxWaitMs=30000,transitionMs=8000,pollIntervalMs=50,hydrationMs=3000,maxPolls=2000,maxUntouched=3,maxUntouchedPerRun=12,maxSummaryReads=30,onState=()=>{}}){if(!Number.isFinite(transitionMs)||transitionMs<8000||transitionMs>120000||!Number.isFinite(pollIntervalMs)||pollIntervalMs<50||pollIntervalMs>1000)throw Error('InvalidTransitionWait');Object.assign(this,{store,port,now,id,maxSteps,maxWaitMs,transitionMs,pollIntervalMs,hydrationMs,maxPolls,maxUntouched,maxUntouchedPerRun,maxSummaryReads,onState});this.paused=false;this.stopped=false;this.key=TASK_KEY;this.runGrant=null;}
   pause(){this.paused=true;} resume(){this.paused=false;} stop(){this.stopped=true;}
   async save(s){await this.store.put(this.key,clone(s));this.onState({state:s.state,phase:s.lastPhase,reason:s.reason??null,refusals:s.refusals,finalIntent:s.finalIntent!==null,pendingAction:ACTIONS.includes(s.pending?.action)?s.pending.action:null,permissionOrigin:safePermissionOrigin(s.permissionOrigin),observationCurrent:s.observationCurrent===true,retiredCart:!!s.retiredCart});}
   async gate(s,reason,state='NEEDS_USER'){
@@ -221,7 +222,9 @@ export class PurchaseJob {
     const desktopEndedOwner=ended?.schema==='applebuy-ended-draft/v1'&&ended.existingCartOnly===true&&d?.existingCartOnly===true&&ended.taskId===old?.taskId&&ended.contextId===old?.desktopContext&&ended.contextId===this.port?.api?.sessionId&&ended.sourceArchive===d?.sourceArchive;
     const recovered=this.port?.desktopPaymentRestartProof,r=old?.desktopPaymentRestart;
     const desktopPaymentOwner=recovered?.schema==='applebuy-expired-payment-restart/v1'&&recovered.existingCartOnly===true&&r?.existingCartOnly===true&&recovered.taskId===old?.taskId&&recovered.contextId===old?.desktopContext&&recovered.contextId===this.port?.api?.sessionId&&recovered.sourceArchive===r?.sourceArchive;
-    if(old&&!readOnly&&!rebind&&hasDesktopHandoff(old)&&!desktopCartOwner&&!desktopEmptyOwner&&!desktopEndedOwner&&!desktopPaymentOwner)throw new Error('DesktopHandoffPermanentlyRevokedSource');
+    const review=this.port?.desktopReviewRestartProof,rv=old?.desktopReviewRestart;
+    const desktopReviewOwner=review?.schema==='applebuy-expired-review-restart/v1'&&review.existingCartOnly===true&&rv?.existingCartOnly===true&&review.taskId===old?.taskId&&review.contextId===old?.desktopContext&&review.contextId===this.port?.api?.sessionId&&review.sourceArchive===rv?.sourceArchive;
+    if(old&&!readOnly&&!rebind&&hasDesktopHandoff(old)&&!desktopCartOwner&&!desktopEmptyOwner&&!desktopEndedOwner&&!desktopPaymentOwner&&!desktopReviewOwner)throw new Error('DesktopHandoffPermanentlyRevokedSource');
     if(old&&!validStored(old))throw new Error('StoredPurchaseTaskCorrupt');
     if(readOnly&&(!old||old.state==='RETIRED'))throw new Error('NoPreservedTaskToReconcile');
     // Validation is bounded, never authorized and stored separately; it cannot use a purchase grant.
@@ -267,7 +270,7 @@ export class PurchaseJob {
     // verified empty bag, so its Add (like every successor's) first needs a current bag read at the Add boundary (below).
     const productPath=productPathOf(P);let emptyStarted=false;
     // Waits are bounded by elapsed time per episode and an absolute poll cap; they never consume semantic steps.
-    const poll=async(limit)=>{if(!this.port.wait||polls>=this.maxPolls)return false;waitSince??=this.now();if(this.now()-waitSince>=limit)return false;polls++;await this.port.wait(50);return polling=true;};
+    const poll=async(limit)=>{if(!this.port.wait||polls>=this.maxPolls)return false;waitSince??=this.now();if(this.now()-waitSince>=limit)return false;polls++;await this.port.wait(this.pollIntervalMs);return polling=true;};
     for(;;){
       if(polling)polling=false;else{waitSince=null;storeWait=false;if(++step>this.maxSteps)return this.gate(s,'step-bound-reached','NEEDS_VERIFICATION');}
       const finalLookup=s.pending?.action==='submitOrder'&&s.pending.dispatched!==false;
@@ -304,6 +307,8 @@ export class PurchaseJob {
         let r=null;try{r=await this.port.readSummary(P,s.taskId);}catch{}
         s.history=[...(s.history??[]),{event:'order-summary-read',read:r?.read===true,goodsCount:r?.read===true?r.goodsCount:null,totalCny:r?.read===true?r.totalCny:null,reason:r?.read===true?null:typeof r?.reason==='string'?r.reason.slice(0,60):'result-unknown'}].slice(-50);await this.save(s);
         if(r?.read===true||r?.touched===false)continue;
+        // This exact failure is reported only after the disclosure closed. Re-read its changed context; never resend a purchase.
+        if(r?.reason==='OrderSummaryContextChanged'&&await poll(Math.min(this.maxWaitMs,10000)))continue;
         return this.gate(s,'order-summary-not-verified; no purchase action','NEEDS_VERIFICATION');
       }
       // A summary-sourced one unit also needs this order's money to equal the one-unit money this task recorded from explicit
@@ -330,7 +335,7 @@ export class PurchaseJob {
           if(readOnly||s.reconcileOnly===true)return this.gate(s,'final-result-unconfirmed; no resubmission','NEEDS_VERIFICATION');
           // C040-R1 (Claude): while merchant processing, or the final click's own unchanged review document, is still shown, wait read-only
           // within the ORIGINAL pending deadline and existing bounds. Never resubmit or extend authority; an expired one goes to lookup.
-          if((o.phase==='PROCESSING'||o.phase===pending.beforePhase&&o.documentId===pending.documentId&&o.verifiedStep===true&&purchaseMatches(P,o.purchase))&&this.now()<pending.deadline&&await poll(this.maxWaitMs))continue;
+          if((o.phase==='PROCESSING'||o.phase===pending.beforePhase&&o.documentId===pending.documentId&&o.verifiedStep===true&&(purchaseMatches(P,o.purchase)||pending.reviewOnly===true&&itemMatches(P,o.purchase)&&o.extras===false))&&this.now()<pending.deadline&&await poll(this.maxWaitMs))continue;
           if(!s.orderRefHash&&o.phase==='ORDER_RECEIPT'&&o.receiptVerified===true&&purchaseMatches(P,o.purchase)&&o.orderRefHash){s.orderRefHash=o.orderRefHash;await this.save(s);}
           // C-023 (Claude): the lookup may follow the receipt's own detail link and read pages this job never validates or
           // records, so from here the last validated read is named only as the last read page, never the current one.
@@ -373,8 +378,9 @@ export class PurchaseJob {
         }
         const reached={configureProduct:['ENTRY','VARIANT','PRELAUNCH'],continueProduct:['VARIANT'],addBag:['ACCESSORIES','BAG'],viewBag:['BAG'],checkout:['FULFILLMENT','SLOTS'],selectPickup:['FULFILLMENT','SLOTS'],selectStore:['SLOTS'],selectDate:['SLOTS'],fillDetails:['PAYMENT'],selectPayment:['PAYMENT'],continuePayment:['REVIEW']}[pending.action]??[];
         const paymentContinued=!readOnly&&paymentStepCurrent(P,s,o)&&((pending.action==='fillDetails'&&pending.beforePhase==='DETAILS'&&pending.contactOnly===true)||(pending.action==='selectPayment'&&pending.beforePhase==='PAYMENT'&&pending.paymentOnly===true));
-        const conditions=o.phase==='BAG'||o.phase==='FULFILLMENT'?itemMatches(P,o.purchase):!['SLOTS','PAYMENT','REVIEW'].includes(o.phase)||purchaseMatches(P,o.purchase)||paymentContinued;
-        if(reached.includes(o.phase)&&o.verifiedStep===true&&conditions&&(!readOnly||o.extras!==true)&&(pending.action!=='selectPickup'||o.purchase?.fulfillment==='pickup')&&(pending.action!=='selectDate'||o.selectedDate===pending.date)&&(pending.action!=='configureProduct'||o.selectedProductChoices?.includes(pending.choice)&&(o.phase!=='PRELAUNCH'||o.prelaunchConfigurable===true))&&(pending.action!=='selectPayment'||o.paymentMethod===P.paymentMethod)){s.pending=null;s.untouchedStreak=0;await this.save(s);if(readOnly)return this.gate(s,'same-tab-read-only-reconciliation-complete; no new purchase action','NEEDS_USER');continue;}
+        const nativeReview=!readOnly&&!validating&&pending.action==='continuePayment'?currentReviewProgress(P,s,o,{contextOwned:this.port.controlledReview===true,now:this.now()}):null;
+        const conditions=o.phase==='BAG'||o.phase==='FULFILLMENT'?itemMatches(P,o.purchase):!['SLOTS','PAYMENT','REVIEW'].includes(o.phase)||purchaseMatches(P,o.purchase)||paymentContinued||!!nativeReview;
+        if(reached.includes(o.phase)&&o.verifiedStep===true&&conditions&&(!readOnly||o.extras!==true)&&(pending.action!=='selectPickup'||o.purchase?.fulfillment==='pickup')&&(pending.action!=='selectDate'||o.selectedDate===pending.date)&&(pending.action!=='configureProduct'||o.selectedProductChoices?.includes(pending.choice)&&(o.phase!=='PRELAUNCH'||o.prelaunchConfigurable===true))&&(pending.action!=='selectPayment'||o.paymentMethod===P.paymentMethod)){if(nativeReview)s.reviewProgress=nativeReview;s.pending=null;s.untouchedStreak=0;await this.save(s);if(readOnly)return this.gate(s,'same-tab-read-only-reconciliation-complete; no new purchase action','NEEDS_USER');continue;}
         if(STOP.has(o.phase))return this.gate(s,o.phase.toLowerCase());
         if(!readOnly&&(o.phase===pending.beforePhase||o.phase==='PROCESSING')&&this.now()<pending.deadline&&await poll(this.maxWaitMs))continue;
         return this.gate(s,'mutation-result-unconfirmed; no automatic repeat','NEEDS_VERIFICATION');
@@ -482,21 +488,23 @@ export class PurchaseJob {
         const partial=!purchaseMatches(P,o.purchase)&&paymentStepCurrent(P,s,o);
         if(!s.acceptedSlot||!purchaseMatches(P,o.purchase)&&!partial)return this.gate(s,'payment-conditions-not-verified','BLOCKED');command={action:o.paymentMethod===P.paymentMethod?'continuePayment':'selectPayment',...(partial?{paymentOnly:true}:{})};
       }else if(o.phase==='REVIEW'){
+        const nativeReview=currentReviewProgress(P,s,o,{contextOwned:this.port.controlledReview===true,now:this.now()});
         // Merchant no-extras evidence only. Reused bags have an explicit basis even though no Add quote was created.
         const reviewMoneyDiffers=[s.bagTotalCny,s.quotedCny].filter(v=>v!=null).some(v=>v!==o.purchase?.totalCny);
-        if(!s.acceptedSlot||!purchaseMatches(P,o.purchase)||o.paymentMethod!==P.paymentMethod||o.extras!==false||reviewMoneyDiffers||o.existingOrdersChecked!==true||!sameAcceptedSlot(s,o.slotSummary))return this.gate(s,'final-review-or-existing-order-check-missing','BLOCKED');
+        if(!s.acceptedSlot||(!purchaseMatches(P,o.purchase)&&!nativeReview)||o.paymentMethod!==P.paymentMethod||o.extras!==false||reviewMoneyDiffers||o.existingOrdersChecked!==true||(!sameAcceptedSlot(s,o.slotSummary)&&!nativeReview))return this.gate(s,'final-review-or-existing-order-check-missing','BLOCKED');
         // A positively not-dispatched final may be prepared again only under a different, current human grant.
         if(s.finalIntent&&(s.finalIntent.sent!==false||!grant||grant.id===s.finalIntent.grantId))return this.gate(s,'final-intent-already-recorded','NEEDS_VERIFICATION');
         if(!grant||typeof grant.id!=='string'||grant.taskId!==s.taskId||grant.planDigest!==s.planDigest||(grant.start!==true&&grant.documentId!==o.documentId)||grant.termsAccepted!==true||!o.termsLinks?.includes(grant.termsUrl)||(Object.hasOwn(o,'primaryTermsUrl')&&o.primaryTermsUrl!==grant.termsUrl)||!Number.isFinite(grant.expiry)||grant.expiry<=this.now()||grant.expiry>this.now()+(grant.start===true?1800000:180000))return this.gate(s,'confirm-current-terms-and-this-one-order');
         if(s.finalIntent)s.history=[...(s.history??[]),{event:'final-not-dispatched',intentId:s.finalIntent.id,grantId:s.finalIntent.grantId}];
-        s.finalIntent={id:this.id(),grantId:grant.id,sent:false};await this.save(s);command={action:'submitOrder',intentId:s.finalIntent.id,finalGrant:{...clone(grant),documentId:o.documentId}};
+        if(nativeReview&&grant.reviewProgressId!==nativeReview.id)return this.gate(s,'confirm-current-source-bound-review-and-this-one-order');
+        s.finalIntent={id:this.id(),grantId:grant.id,sent:false};await this.save(s);command={action:'submitOrder',intentId:s.finalIntent.id,...(nativeReview?{reviewOnly:true}:{}),finalGrant:{...clone(grant),documentId:o.documentId}};
       }else return this.gate(s,'unsupported-merchant-stage','NEEDS_VERIFICATION');
-      if((s.desktopTransfer?.existingCartOnly===true||s.desktopEndedDraft?.existingCartOnly===true||s.desktopPaymentRestart?.existingCartOnly===true)&&['configureProduct','continueProduct','addBag','openProduct','viewBag'].includes(command.action))return this.gate(s,'desktop-transferred-cart-missing; no new addition or configuration','NEEDS_VERIFICATION');
+      if((s.desktopTransfer?.existingCartOnly===true||s.desktopEndedDraft?.existingCartOnly===true||s.desktopPaymentRestart?.existingCartOnly===true||s.desktopReviewRestart?.existingCartOnly===true)&&['configureProduct','continueProduct','addBag','openProduct','viewBag'].includes(command.action))return this.gate(s,'desktop-transferred-cart-missing; no new addition or configuration','NEEDS_VERIFICATION');
       if(validating&&!PUBLIC.has(command.action))return this.gate(s,'validation-mode-cannot-mutate-merchant-resources','VALIDATION_STOPPED');
       if(s.expiresAt<=this.now())return this.gate(s,'task-window-expired; existing intent preserved','EXPIRED');
       if(this.paused||this.stopped)return this.gate(s,'control-changed-before-send',this.stopped?'STOPPED':'PAUSED');
       // Write-ahead before EVERY mutation. Storage failure means zero send. Bag-add start is durable in the same write.
-      s.pending={...command,id:this.id(),documentId:o.documentId,beforePhase:o.phase,deadline:this.now()+8000};
+      s.pending={...command,id:this.id(),documentId:o.documentId,beforePhase:o.phase,deadline:Math.min(s.expiresAt,this.now()+(command.action==='submitOrder'?8000:this.transitionMs))};
       if(command.action==='submitOrder')s.finalIntent.sent=true;
       if(command.action==='addBag'){s.bagAddStarted=true;s.quotedCny=o.quotedCny;}
       // C-019 (Claude): checkout leaves a bag that already holds the item; this task never adds afterwards (kept if untouched).

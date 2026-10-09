@@ -12,7 +12,7 @@ export class ChromePort {
   // C058 (Claude): only a purchase port carries a stored slot choice. An observe-only port never turns a later document into that old
   // choice's acceptance; the job further limits resolution to the originating purchase run.
   constructor(api,tabId,{authorized=false,mode='purchase',privatePickupData={},initialSequence=0,acceptedSlot=null,pending=null,reviewGrant=null,orderSummary=false}={}){this.api=api;this.tabId=tabId;this.mode=mode;this.authorized=authorized&&mode!=='observe';this.seq=initialSequence;this.generation=pending?.generation??0;this.last=null;this.privatePickupData=privatePickupData;this.acceptedSlot=acceptedSlot;this.reviewGrant=reviewGrant;this.lastChoice=mode==='purchase'&&pending?.action==='chooseSlot'?{date:pending.date,start:pending.start,end:pending.end}:null;
-    this.orderSummary=orderSummary===true&&this.authorized&&mode==='purchase';this.summaryKey=this.orderSummary?crypto.randomUUID():null;this.summaryDocumentId=null;}
+    this.orderSummary=orderSummary===true&&this.authorized&&mode==='purchase';this.summaryKey=this.orderSummary?crypto.randomUUID():null;this.summaryDocumentId=null;this.controlledReview=this.authorized&&api.controlledReview===true&&typeof api.sessionId==='string';}
   // C058 (Claude): called by the job when its run is not the originating purchase context (read-only reconciliation, a human rebind or
   // any later run of a rebound task). The stored choice and stored acceptance carried into this port are no longer reported as evidence.
   detachStoredChoice(){this.lastChoice=null;this.acceptedSlot=null;}
@@ -34,7 +34,7 @@ export class ChromePort {
     if(this.lastChoice&&['DETAILS','PAYMENT','REVIEW'].includes(raw.phase)&&raw.verifiedStep&&raw.purchase?.verified){this.acceptedSlot={date:this.lastChoice.date,start:this.lastChoice.start,end:this.lastChoice.end,verified:true,basis:'normal-checkout-progression; not a hold guarantee'};this.lastChoice=null;}
     const humanReview=this.reviewGrant?.expiry>Date.now()&&(this.reviewGrant.documentId===r[0].documentId||(this.reviewGrant.start===true&&raw.termsLinks?.includes(this.reviewGrant.termsUrl)));
     // Existing-order check is a human confirmation by design. No-extras proof comes ONLY from merchant page evidence.
-    return {...raw,acceptedSlot:this.acceptedSlot,extras:raw.extras,existingOrdersChecked:humanReview&&this.reviewGrant.existingOrdersChecked===true,documentId:r[0].documentId,seq:++this.seq,generation:this.generation};
+    return {...raw,reviewProgress:this.controlledReview&&raw.reviewProgress?{...raw.reviewProgress,documentId:r[0].documentId}:null,acceptedSlot:this.acceptedSlot,extras:raw.extras,existingOrdersChecked:humanReview&&this.reviewGrant.existingOrdersChecked===true,documentId:r[0].documentId,seq:++this.seq,generation:this.generation};
   }
   async act(command){
     if(!this.authorized||this.mode==='observe'||!this.last||command.documentId!==this.last.documentId||this.last.summaryUsable===false||!await this.permission())throw new Error('CurrentOperationNotAuthorized');

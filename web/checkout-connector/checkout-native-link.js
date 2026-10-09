@@ -15,7 +15,7 @@ export function createCheckoutNativeLink(api,{purchaseAllowed=false,onStatus=()=
      if(active.closed&&peer===active)peer=null;
     }catch{onStatus('购买通道消息未确认；没有发出新的购买动作。');}
    });
-   current.onDisconnect.addListener(()=>{void api.runtime.lastError;if(current===port){port=null;onStatus('购买通道已断开；已发送动作结果仍可能未知，请勿重新开始。');}});
+   current.onDisconnect.addListener(()=>{void api.runtime.lastError;if(current===port){peer?.browserJob?.stop();port=null;onStatus('购买通道已断开；已发送动作结果仍可能未知，请勿重新开始。');}});
    onStatus('购买通道已申请；未开始购买，需在桌面程序单次确认。');return {connected:true};
   }).finally(()=>connecting=null);return connecting;
  }

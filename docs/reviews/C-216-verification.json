@@ -1,0 +1,40 @@
+{
+  "task": "C216",
+  "reviewAccepted": false,
+  "files": 330,
+  "sha256": "8b2e917ae0872e1c65a6d0db58b1f0bdaf3dfe7c25333ba68d17ee0f301dcd2b",
+  "changedFromC214": [
+    "src/desktop/browser-session.mjs",
+    "src/desktop/checkout-runtime.mjs",
+    "src/desktop/r2-browser-run.mjs",
+    "web/checkout-connector/r2-executor.js",
+    "web/checkout-connector/r2-protocol.js",
+    "web/checkout-connector/review-progress.js"
+  ],
+  "newTests": [
+    "test/desktop-c216-ack-truth.test.ts",
+    "test/checkout-c216-ack-native.test.ts"
+  ],
+  "independentRedReproductions": 5,
+  "focusedNewPassed": 12,
+  "node": {
+    "tests": 1841,
+    "pass": 1841,
+    "fail": 0,
+    "cancelled": 0,
+    "skipped": 0
+  },
+  "pythonPriorUnchanged": 66,
+  "nativeEvidence": "same renderer-local production modules, source-bound review; FAKE APIs/store/merchant; positive not-sent requires fresh consent then one click; missing receipt stays unknown",
+  "newTestCorrection": "initial assertion expected final phase ORDER_DETAIL, but controller preserves receipt phase while independently checking detail; replaced by stronger CONFIRMED_UNPAID and realOrderVerified checks",
+  "oldAssertionsChanged": false,
+  "limits": [
+    "C215 F-C key-only patch defence-in-depth remains",
+    "F-D disconnect requires explicit session close/reload",
+    "F-F actual challenge/throttle anchors unobserved; bounded readonly wait only",
+    "real receipt/detail/refusal and speed/installation unproved"
+  ],
+  "realJournalTouched": false,
+  "realOrderVerified": false,
+  "noShutdown": true
+}

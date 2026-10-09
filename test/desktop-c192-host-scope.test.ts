@@ -4,6 +4,7 @@ import {probeCheckoutHostScope} from '../src/desktop/checkout-host-scope.mjs';
 import {readFile} from 'node:fs/promises';
 import vm from 'node:vm';
 import {expiredPaymentSourceShape} from '../src/desktop/expired-payment-restart.mjs';
+import {expiredReviewSourceShape} from '../src/desktop/expired-review-restart.mjs';
 
 for(const granted of [true,false])test(`C192 existing host grant ${granted} is read once without permission request or browser action`,async()=>{
  const requests=[];
@@ -43,7 +44,7 @@ async function workerStartup(reply,{loseOwner=false,loseOwnerOnSourceRead=false}
  await vm.runInNewContext(`(async()=>{${source.slice(source.indexOf('const emit='))}})()`,{
   process,DesktopCheckoutRuntime:Runtime,DesktopTaskStore:Store,AuthContinuation:Watch,
   createInterface:()=>input,join:(...parts)=>parts.join('/'),launchNativeCheckout:()=>{throw Error('No real transport');},
-  stoppedCheckoutDraftSource:()=>true,expiredPaymentSourceShape,TASK_KEY:'FAKE',probeCheckoutHostScope,safeCheckoutDiagnostic:()=> 'FAKE',
+  stoppedCheckoutDraftSource:()=>true,expiredPaymentSourceShape,expiredReviewSourceShape,TASK_KEY:'FAKE',probeCheckoutHostScope,safeCheckoutDiagnostic:()=> 'FAKE',
  });
  return {rows,calls,currentRuntime};
 }

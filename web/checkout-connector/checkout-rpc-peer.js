@@ -1,8 +1,10 @@
 // Own Chrome tabs only; fixed reviewed merchant program only. Prepared and unreachable from the installed readonly link.
 import {merchantDocument,CHECKOUT_EXECUTOR_VERSION} from './page-program.js';
 import {canonicalJson} from './job.js';
+import {BrowserJobExecutor} from './r2-executor.js';
+import {R2_OPERATIONS} from './r2-protocol.js';
 import {CHECKOUT_RPC,BAG,ENTRY,checkoutUrl,checkoutObservedUrl,checkoutRequest,checkoutCommand,planAllowed,boundedCheckoutJson} from './checkout-rpc-contract.js';
-const PAGE_KEYS=new Set(['schema','phase','purchase','verifiedStep','path','feedback','acceptedSlot','slotSummary','continueAvailable','variantVerified','quotedCny','listComplete','dates','times','selectedDate','paymentMethod','extras','existingOrdersChecked','orderRefHash','orderDetailLink','configuration','contactStep','paymentStep','extrasConflict','fulfillmentChoice','merchantError','needsSelection','nextChoice','orderSummary','prelaunchConfigurable','productForm','productFormLoading','quantitySource','receiptVerified','selectedProductChoices','summaryReadable','termsLinks','primaryTermsUrl','reason']);
+const PAGE_KEYS=new Set(['schema','phase','purchase','verifiedStep','path','feedback','acceptedSlot','slotSummary','continueAvailable','variantVerified','quotedCny','listComplete','dates','times','selectedDate','paymentMethod','extras','existingOrdersChecked','orderRefHash','orderDetailLink','configuration','contactStep','paymentStep','reviewProgress','extrasConflict','fulfillmentChoice','merchantError','needsSelection','nextChoice','orderSummary','prelaunchConfigurable','productForm','productFormLoading','quantitySource','receiptVerified','selectedProductChoices','summaryReadable','termsLinks','primaryTermsUrl','reason']);
 function safeOutput(value,depth=0){
  if(depth>16)throw Error('NativeResultNotAllowed');
  if(!value||typeof value!=='object')return;
@@ -17,37 +19,48 @@ export class CheckoutRpcPeer{
   const reply=(ok,result)=>({schema:CHECKOUT_RPC,kind:'reply',contextId:this.contextId,id:q.id,ok,...(ok?{result}:{error:'NativeOperationUnconfirmed'})});
   if(this.closed||this.busy||this.requests.has(q.id)||this.requests.size>=5000&&q.operation!=='closeSession')return reply(false);
   this.requests.add(q.id);this.busy=true;
-  try{return boundedCheckoutJson(reply(true,await this.operation(q.operation,q.payload)));}catch{return reply(false);}finally{this.busy=false;}
+  try{
+   if(R2_OPERATIONS.has(q.operation)){this.browserJob??=new BrowserJobExecutor({peer:this,locks:this.api.locks??globalThis.navigator?.locks});return boundedCheckoutJson(reply(true,await this.browserJob.operation(q.operation,q.payload)));}
+   if(this.browserJob?.active){
+    if(q.operation!=='closeSession')throw Error('R2BrowserOwnerActive');
+    this.browserJob.stop();await this.browserJob.current?.promise;
+   }
+   return boundedCheckoutJson(reply(true,await this.operation(q.operation,q.payload)));
+  }catch{return reply(false);}finally{this.busy=false;}
  }
- async operation(op,p){
+ async operation(op,p,live=()=>{}){
+  const guarded=new Proxy(this.api,{get:(target,name)=>{
+   const group=Reflect.get(target,name,target);if(!['tabs','permissions','scripting'].includes(name))return group;
+   return new Proxy(group,{get:(g,k)=>typeof g[k]==='function'?async(...args)=>{live();return g[k](...args);}:g[k]});
+  }});
   const keys=allowed=>{if(Object.keys(p).some(k=>!allowed.includes(k)))throw Error('NativePayloadNotAllowed');};
   if(op==='executorVersion'){keys([]);return CHECKOUT_EXECUTOR_VERSION;}
   if(op==='createExpiryProbe'){
    keys(['url']);let u;try{u=new URL(p.url);}catch{throw Error('NativeAddressNotAllowed');}
    if(!this.purchaseAllowed||this.tabs.size>=4||u.protocol!=='https:'||u.username||u.password||u.port||u.search||u.hash||!/^secure\d+\.www\.apple\.com\.cn$/.test(u.hostname)&&u.hostname!=='www.apple.com.cn'||u.pathname!=='/shop/checkout')throw Error('NativeExpiryProbeNotAllowed');
-   const t=await this.api.tabs.create({url:p.url,active:false});this.tabs.set(t.id,{last:null,navigation:null});return {id:t.id};
+   const t=await guarded.tabs.create({url:p.url,active:false});this.tabs.set(t.id,{last:null,navigation:null});return {id:t.id};
   }
   if(op==='containsHost'){
    keys(['origins']);if(!Array.isArray(p.origins)||p.origins.length!==1||typeof p.origins[0]!=='string'||p.origins[0]!=='https://*.www.apple.com.cn/*'&&!/^https:\/\/(?:www|secure\d*\.www)\.apple\.com\.cn\/\*$/.test(p.origins[0]))throw Error('NativeOriginNotAllowed');
-   return await this.api.permissions.contains({origins:p.origins});
+   return await guarded.permissions.contains({origins:p.origins});
   }
   if(op==='closeSession'){
-   keys([]);for(const id of this.tabs.keys()){await this.api.tabs.remove(id);this.tabs.delete(id);}this.closed=true;return {closed:true};
+   keys([]);for(const id of this.tabs.keys()){await guarded.tabs.remove(id);this.tabs.delete(id);}this.closed=true;return {closed:true};
   }
   if(op==='createTab'){
    keys(['url','active']);if(![BAG,ENTRY].includes(p.url)||p.active!==undefined&&typeof p.active!=='boolean'||this.tabs.size>=4||p.url===ENTRY&&!this.purchaseAllowed)throw Error('NativeCreateNotAllowed');
-   if(!await this.api.permissions.contains({origins:[new URL(p.url).origin+'/*']}))throw Error('NativeHostNotGranted');
-   const tab=await this.api.tabs.create({url:p.url,active:p.active===true});if(!Number.isSafeInteger(tab?.id))throw Error('NativeTabUnconfirmed');this.tabs.set(tab.id,{last:null,navigation:null});return {id:tab.id,url:p.url,status:tab.status??'loading'};
+   if(!await guarded.permissions.contains({origins:[new URL(p.url).origin+'/*']}))throw Error('NativeHostNotGranted');
+   const tab=await guarded.tabs.create({url:p.url,active:p.active===true});if(!Number.isSafeInteger(tab?.id))throw Error('NativeTabUnconfirmed');this.tabs.set(tab.id,{last:null,navigation:null});return {id:tab.id,url:p.url,status:tab.status??'loading'};
   }
   const tab=await this.tab(p.tabId),state=this.tabs.get(p.tabId);
   if(op==='getTab'){keys(['tabId']);const u=new URL(tab.url);return {id:p.tabId,url:u.origin+u.pathname,status:tab.status};}
-  if(op==='removeTab'){keys(['tabId']);await this.api.tabs.remove(p.tabId);this.tabs.delete(p.tabId);return {removed:true};}
-  if(!await this.api.permissions.contains({origins:[new URL(tab.url).origin+'/*']}))throw Error('NativeHostNotGranted');
+  if(op==='removeTab'){keys(['tabId']);await guarded.tabs.remove(p.tabId);this.tabs.delete(p.tabId);return {removed:true};}
+  if(!await guarded.permissions.contains({origins:[new URL(tab.url).origin+'/*']}))throw Error('NativeHostNotGranted');
   if(op==='updateTab'){
    keys(['tabId','url']);if(!checkoutUrl(tab.url)||!checkoutUrl(p.url))throw Error('NativeAddressNotAllowed');
    const receipt=state.last?.page.phase==='ORDER_RECEIPT'&&state.last.page.receiptVerified===true&&state.last.page.orderDetailLink===p.url;
    if(!receipt&&(!this.purchaseAllowed||state.navigation!==p.url))throw Error('NativeNavigationNotAuthorized');
-   state.navigation=null;state.last=null;await this.api.tabs.update(p.tabId,{url:p.url});return {id:p.tabId,url:p.url,status:'loading'};
+   state.navigation=null;state.last=null;await guarded.tabs.update(p.tabId,{url:p.url});return {id:p.tabId,url:p.url,status:'loading'};
   }
   if(op!=='merchantDocument')throw Error('NativeOperationNotAllowed');
   keys(['tabId','documentId','plan','command']);if(!planAllowed(p.plan)||tab.status!=='complete')throw Error('NativeDocumentNotReady');
@@ -60,7 +73,7 @@ export class CheckoutRpcPeer{
    this.taskId=command.taskId;this.actionTabId=p.tabId;
    this.actions.add(command.id);state.navigation=null;state.last=null;
   }else{if(p.documentId!==undefined)throw Error('NativeReadTargetNotAllowed');state.last=null;state.navigation=null;}
-  const rows=await this.api.scripting.executeScript({target:command?{tabId:p.tabId,documentIds:[p.documentId]}:{tabId:p.tabId,frameIds:[0]},world:'ISOLATED',func:merchantDocument,args:command?[p.plan,command]:[p.plan]});
+  const rows=await guarded.scripting.executeScript({target:command?{tabId:p.tabId,documentIds:[p.documentId]}:{tabId:p.tabId,frameIds:[0]},world:'ISOLATED',func:merchantDocument,args:command?[p.plan,command]:[p.plan]});
   if(rows?.length!==1||rows[0].frameId!==0||!rows[0].documentId||rows[0].error||command&&rows[0].documentId!==p.documentId)throw Error('NativeScriptUnconfirmed');
   const result=boundedCheckoutJson(rows[0].result);
   if(!result||typeof result!=='object'||Array.isArray(result))throw Error('NativeScriptUnconfirmed');
