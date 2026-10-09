@@ -1,6 +1,6 @@
 // Shared browser/desktop framing. This transfers the same journal, never a new purchase namespace.
 import {canonicalJson,validStored} from './job.js';
-export const R2_VERSION='applebuy-browser-job/C220-v1';
+export const R2_VERSION='applebuy-browser-job/C229-v1';
 export const R2_MAX_BYTES=16_000_000,R2_CHUNK_BYTES=30000;
 export const R2_OPERATIONS=new Set(['r2Version','r2Begin','r2Chunk','r2Run','r2Poll','r2Ack','r2Pause','r2Finish']);
 const MUTABLE=new Set(['state','lastPhase','lastDocumentId','entryDocumentId','reason','pending','finalIntent','orderRefHash','orderDetailLink','initialDates','dateCursor','floors','rejected','refusals','lastRead','bagAddStarted','resourceWritten','untouchedFailures','untouchedStreak','bagTotalCny','quotedCny','acceptedSlot','inheritedIdentity','history','observationCurrent','permissionOrigin','reviewProgress']);

@@ -313,7 +313,7 @@ class App:
         self.transfer_confirm.set(False);self.transfer_button.config(state='disabled');self.final_confirm.set(False);self.final_checkbox.config(state='disabled');self.reconcile_button.config(state='disabled');self.advance_button.config(state='disabled')
         try:
             command={'action':'restart-payment' if restart_payment else 'renew-draft' if getattr(self,'checkout_can_renew_ended',False) else 'transfer','approved':True,'newContextConfirmed':True,'privatePickupData':data}
-            if command['action']=='restart-payment':command.update(oldExecutorStopped=True,sameAccountOrdersClear=True,expiredCheckoutUrl=expiry_url)
+            if command['action']=='restart-payment':command.update(oldExecutorStopped=True,sameAccountOrdersClear=True,expiredCheckoutUrl=expiry_url,additionalRecoveryApproved=getattr(self,'checkout_can_additional_review',False))
             if command['action']=='renew-draft':command.update(merchantExpiryConfirmed=True,oldExecutorStopped=True,sameAccountOrdersClear=True)
             self.checkout.send(command)
         except Exception:self.status.set('接替未确认，旧未知记录保持，不重复加购或下单。')
@@ -408,7 +408,10 @@ class App:
                     self.checkout_readonly=v.get('readOnly') is True
                     self.checkout_can_renew_ended=v.get('canRenewEndedDraft') is True
                     self.checkout_can_restart_payment=v.get('canRestartExpiredPayment') is True
-                    if self.checkout_can_restart_payment:
+                    self.checkout_can_additional_review=v.get('canAdditionalReviewRecovery') is True
+                    if self.checkout_can_additional_review:
+                        self.transfer_checkbox.config(text='本人确认本次只追加一次恢复：旧执行已停止、同账户无同款待付款订单；保留原记录和日期限制，仅复用这一台')
+                    elif self.checkout_can_restart_payment:
                         self.transfer_checkbox.config(text='本人确认旧执行已停止，同一账户没有同款待付款订单，购物袋只有这一台；程序先核对官网超时，保留全部记录与原日期限制再继续')
                     elif self.checkout_can_renew_ended:
                         self.transfer_checkbox.config(text='本人核实官网已提示旧结账超时、旧执行已停止，同一账户没有同款待付款订单且购物袋只有这一台；保留全部旧记录，重新验证本次结账')
@@ -428,6 +431,10 @@ class App:
                     if isinstance(v.get('readOnly'),bool):self.checkout_readonly=v['readOnly']
                     phase=v.get('phase','UNKNOWN');name={'AUTH':'等待本人登录/验证','SLOTS':'选择末档','DETAILS':'取货资料','PAYMENT':'付款方式','REVIEW':'核对订单','ORDER_DETAIL':'核对未付款订单'}.get(phase,phase)
                     self.status.set('程序结账：'+name+'；'+v.get('state','NEEDS_VERIFICATION'))
+                    review_labels={'trace-missing':'本次流程记录缺失','document-changed':'页面已更换','interaction-detected':'检测到流程外操作','payment-step-unconfirmed':'付款方式衔接未确认','final-already-sent':'已记录提交','review-root':'复核页面结构','item':'商品规格','quantity':'数量','unexpected-store-or-fulfillment':'配送信息结构','amount':'金额','unexpected-slot':'时段信息结构','extras':'附加项目','payment-method':'支付宝识别','terms':'当前条款识别','pickup-notice':'取货提示','store-edit':'门店入口','dialog':'弹窗','task-proof':'任务与当前页面绑定'}
+                    review_codes=v.get('reviewDiagnostic')
+                    if phase=='REVIEW' and isinstance(review_codes,list) and 0<len(review_codes)<=len(review_labels) and all(isinstance(c,str) and c in review_labels for c in review_codes):
+                        self.result.set('复核未通过：'+'、'.join(review_labels[c] for c in review_codes)+'。已停止，未提交订单；需修复后继续。')
                     if v.get('readOnly') is True:
                         self.result.set('当前只核对保留任务；重启后不能自动核对最终订单，请本人到官网订单页核对。旧确认不代表当前订单结果，程序不重新下单。')
                     if kind=='result':

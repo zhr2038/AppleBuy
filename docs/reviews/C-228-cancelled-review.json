@@ -1,0 +1,11 @@
+{
+  "task": "C-228-REVIEW-DIAGNOSTIC-REVIEW",
+  "status": "failed",
+  "durationSeconds": 461.36,
+  "cleanupConfirmed": true,
+  "modelVerified": false,
+  "interruption": "Root stopped its exact owned read-only reviewer after direct human scope amendments; no final verdict; not provider quota",
+  "commandsObserved": 3,
+  "sourceCandidate": "C227/334/4e88bbddf6ca5351a8dfd16fc2ab3164b5348e77e2e6ca136bdf42dcf102db64",
+  "accepted": false
+}

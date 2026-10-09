@@ -1,4 +1,5 @@
 // Codex C-012 quota takeover. Transport-independent official-checkout controller.
+import {reviewCheckReason} from './review-diagnostic.js';
 // This controller does not make a merchant request; ChromePort supplies normal UI operations.
 // C-012-R1 (Claude): fixed no-extras intent, durable bag-add record, expiry-safe final lookup, truthful
 // not-dispatched state, untouched-failure recovery, elapsed-time wait budget, validation modes, retire/rebind.
@@ -383,7 +384,7 @@ export class PurchaseJob {
         if(reached.includes(o.phase)&&o.verifiedStep===true&&conditions&&(!readOnly||o.extras!==true)&&(pending.action!=='selectPickup'||o.purchase?.fulfillment==='pickup')&&(pending.action!=='selectDate'||o.selectedDate===pending.date)&&(pending.action!=='configureProduct'||o.selectedProductChoices?.includes(pending.choice)&&(o.phase!=='PRELAUNCH'||o.prelaunchConfigurable===true))&&(pending.action!=='selectPayment'||o.paymentMethod===P.paymentMethod)){if(nativeReview)s.reviewProgress=nativeReview;s.pending=null;s.untouchedStreak=0;await this.save(s);if(readOnly)return this.gate(s,'same-tab-read-only-reconciliation-complete; no new purchase action','NEEDS_USER');continue;}
         if(STOP.has(o.phase))return this.gate(s,o.phase.toLowerCase());
         if(!readOnly&&(o.phase===pending.beforePhase||o.phase==='PROCESSING')&&this.now()<pending.deadline&&await poll(this.maxWaitMs))continue;
-        return this.gate(s,'mutation-result-unconfirmed; no automatic repeat','NEEDS_VERIFICATION');
+        return this.gate(s,pending.action==='continuePayment'&&o.phase==='REVIEW'?(reviewCheckReason(o.reason)??'review-check:task-proof; no automatic repeat'):'mutation-result-unconfirmed; no automatic repeat','NEEDS_VERIFICATION');
       }
       if(s.reconcileOnly)return this.gate(s,'read-only-reconciliation-complete; a rebound tab cannot add purchase authority','NEEDS_USER');
       if(STOP.has(o.phase)&&!afterAddCommand)return this.gate(s,o.phase.toLowerCase());

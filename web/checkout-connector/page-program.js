@@ -16,7 +16,7 @@
 // C035 (Claude): the observed complete normal empty bag is EMPTY_BAG; there only openProduct is accepted, as a write-free re-verification.
 // C037 (Claude): selectStore can choose the observed numbered native Dalian radio when it is not preselected, by the same exact proof.
 // C051 (Claude): the observed contact-only details step is a recognized step (contactStep), never purchase proof; see below.
-export const CHECKOUT_EXECUTOR_VERSION='C209-controlled-review-v1';
+export const CHECKOUT_EXECUTOR_VERSION='C229-controlled-review-v1';
 export async function merchantDocument(plan,command=null,internal=null){
   // `internal` is set only by this program's own re-entry; ChromePort passes plan and command only.
   // A structured command always receives a structured report. Nothing was written unless this id was already delivered.
@@ -430,7 +430,12 @@ export async function merchantDocument(plan,command=null,internal=null){
   if(checkoutScope&&phase==='REVIEW'){
     const reviewHeads=[...main.querySelectorAll('h1')].filter(visible),nativeReviewHeading=main.id==='checkout-container'&&reviewHeads.length===1&&reviewHeads[0].classList.contains('rs-review-header')&&/^准备下单了吗\?\s*请确保以下信息均准确无误。$/.test(norm(reviewHeads[0].textContent));
     // C205: native consent belongs to the one primary agreement in main, never the old footer alias.
-    if(main.id==='checkout-container'){out.primaryTermsUrl=null;out.paymentMethod=null;if(nativeReviewHeading){const links=[...main.querySelectorAll('a[href]')].filter(a=>visible(a)&&/条款|销售政策/.test(name(a)));out.primaryTermsUrl=links.length===1&&/^条款和条件(?:\s*\(在新窗口中打开\))?$/.test(name(links[0]))?termsUrlOf(links[0]):null;}}
+    const source=globalThis.__applebuyControlledCheckout;
+    // C229: decorative heading text/classes are not purchase facts. On our uninterrupted
+    // same-document progression, use the actual enabled final control and primary agreement.
+    // This shortcut never supplies missing item/money/provider/store/slot authority.
+    const sourceReview=source?.main===main&&source.href===u.href&&source.intervened===false&&source.finalSent!==true&&source.stage==='payment-sent'&&exact('立即下单').length===1;
+    if(main.id==='checkout-container'){out.primaryTermsUrl=null;out.paymentMethod=null;if(nativeReviewHeading||sourceReview){const links=[...main.querySelectorAll('a[href]')].filter(a=>visible(a)&&/条款|销售政策/.test(name(a)));out.primaryTermsUrl=links.length===1&&/^条款和条件(?:\s*\(在新窗口中打开\))?$/.test(name(links[0]))?termsUrlOf(links[0]):null;}}
     const sections=[...main.querySelectorAll('.rs-review-billing')],section=sections.length===1?sections[0]:null;
     const titles=section?[...section.querySelectorAll('h2.rs-review-title')]:[],details=section?[...section.querySelectorAll('.rs-review-billing-details')]:[];
     const images=[...main.querySelectorAll('.rs-review-payment-image')],image=images.length===1?images[0]:null;
@@ -503,6 +508,18 @@ export async function merchantDocument(plan,command=null,internal=null){
     reviewNotice.length===1&&norm(reviewNotice[0].textContent)==='取货日期待付款完成后确定。'&&retailEdit.length===1&&dialogs?.length===0;
   out.reviewProgress=nativeControlledReview?{kind:'native-controlled-review-progression/v1',id:progress.id,taskId:progress.taskId,planDigest:progress.planDigest,
     controlled:true,intervened:false,store:progress.store,date:progress.date,start:progress.start,end:progress.end,totalCny:progress.totalCny,paymentMethod:'支付宝',pickupNotice:'取货日期待付款完成后确定。'}:null;
+  // Report every failed existing predicate immediately. This is diagnostic only and changes no gate.
+  // Deliberately contains no captured text, URLs, identifiers or customer-input values.
+  if(phase==='REVIEW'&&!nativeControlledReview){
+    const checks=[['trace-missing',!!progress],['document-changed',!!progress&&progress.main===main&&progress.href===u.href],
+      ['interaction-detected',!!progress&&progress.intervened===false],['payment-step-unconfirmed',progress?.stage==='payment-sent'],['final-already-sent',progress?.finalSent!==true],
+      ['review-root',main.id==='checkout-container'],['item',purchase.itemVerified===true],['quantity',purchase.quantity===1],
+      ['unexpected-store-or-fulfillment',purchase.verified===false&&purchase.store===null&&purchase.fulfillment===null],['amount',!!progress&&purchase.totalCny===progress.totalCny],
+      ['unexpected-slot',out.slotSummary===null],['extras',out.extras===false],['payment-method',out.paymentMethod==='支付宝'],
+      ['terms',typeof out.primaryTermsUrl==='string'&&out.termsLinks.includes(out.primaryTermsUrl)],
+      ['pickup-notice',reviewNotice.length===1&&norm(reviewNotice[0].textContent)==='取货日期待付款完成后确定。'],['store-edit',retailEdit.length===1],['dialog',dialogs?.length===0]];
+    out.reason='review-check:'+checks.filter(([,ok])=>!ok).map(([code])=>code).join(',')+'; no automatic repeat';
+  }
   out.receiptVerified=phase==='ORDER_RECEIPT'&&!!out.orderRefHash&&purchase.verified;
   // Official refusal anchors are not yet observed: real alerts remain unknown rather than invented rejection.
   if(referenceChanged)return command?report('OperationEvidenceChanged'):{schema:'applebuy-merchant-read/v1',phase:'UNKNOWN',reason:'order-reference-changed'};
@@ -685,10 +702,12 @@ export async function merchantDocument(plan,command=null,internal=null){
         }
       }
       // Validate all field bindings BEFORE transmitting the first value. Never return or persist values.
-      // Nothing supplied: nothing is written, so this synchronous decode is still current for Continue.
-      if(!Object.keys(bound).length){if(requiredInvalid())throw new Error('PickupDetailsRequireHuman');click('继续选择付款方式');}
+      // Matching account-prefilled fields need no setter/events or another field-validation round trip.
+      // Equality is checked locally and never returned, logged or retained.
+      const changedKeys=Object.keys(bound).filter(key=>bound[key].value!==supplied[key]);
+      if(!changedKeys.length){if(requiredInvalid())throw new Error('PickupDetailsRequireHuman');click('继续选择付款方式');}
       else{const next=exact('继续选择付款方式'),inputs=[...main.querySelectorAll('input')].filter(visible);if(next.length!==1||!next[0].isConnected)throw new Error('CurrentControlUnrecognized');
-        return await fillDetail({keys:Object.keys(bound),bound,main,href:u.href,expected:JSON.stringify(out),next:next[0],inputs,inputSig:inputSig(inputs),limit:2000,contactOnly:command.contactOnly===true});}
+        return await fillDetail({keys:changedKeys,bound,main,href:u.href,expected:JSON.stringify(out),next:next[0],inputs,inputSig:inputSig(inputs),limit:2000,contactOnly:command.contactOnly===true});}
     }else if(command.action==='selectPayment'&&phase==='PAYMENT'&&(purchase.verified||command.paymentOnly===true&&out.paymentStep?.verified===true)){pick('支付宝');}
     else if(command.action==='continuePayment'&&phase==='PAYMENT'&&(purchase.verified||command.paymentOnly===true&&out.paymentStep?.verified===true)&&out.paymentMethod==='支付宝'){
       if(progressCurrent&&progress.stage==='contact-accepted'&&progress.taskId===command.taskId&&progress.planDigest===command.planDigest&&command.paymentOnly===true&&out.paymentStep?.verified===true&&out.paymentStep.totalCny===progress.totalCny)progress.stage='payment-sent';

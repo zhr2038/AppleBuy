@@ -53,7 +53,7 @@ export async function runInBrowser({api,store,record,run,port,proofs,signal,onSt
     if(signal?.aborted){await call('r2Pause');paused=true;continue;}
     if((await call('r2Ack',{sequence,sha256:hash})).committed!==true)throw Error('R2CommitNotAcknowledged');
     unreleasedWrite=null;
-    onState({state:after.state,phase:after.lastPhase,pendingAction:after.pending?.action??null});continue;
+    onState({state:after.state,phase:after.lastPhase,reason:after.reason,pendingAction:after.pending?.action??null});continue;
    }
    if(status.running===false){
     await finishRun();

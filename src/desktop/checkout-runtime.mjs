@@ -8,9 +8,10 @@ import {restartFromCurrentEmpty,validateEmptyRestart} from './empty-restart.mjs'
 import {bagPlanCheck} from './checkout-diagnostic.mjs';
 import {renewEndedDraft,validateEndedDraft} from './ended-draft.mjs';
 import {restartExpiredPayment,validateExpiredPaymentRestart} from './expired-payment-restart.mjs';
-import {restartExpiredReview,validateExpiredReviewRestart,expiredReviewSourceShape} from './expired-review-restart.mjs';
+import {restartExpiredReview,validateExpiredReviewRestart,expiredReviewSourceShape,additionalExpiredReviewSourceShape} from './expired-review-restart.mjs';
 import {currentReviewProgress,knownUnreleasedFinal} from '../../web/checkout-connector/review-progress.js';
 import {R2_VERSION} from '../../web/checkout-connector/r2-protocol.js';
+import {reviewCheckCodes} from '../../web/checkout-connector/review-diagnostic.js';
 const BAG='https://www.apple.com.cn/shop/bag',TERMS='https://www.apple.com.cn/shop/open/salespolicies';
 const REVIEW_TERMS=[TERMS,'https://www.apple.com.cn/shop/browse/open/salespolicies'];
 function currentTerms(o){
@@ -20,7 +21,7 @@ function currentTerms(o){
  return links.includes(TERMS)?TERMS:null;
 }
 const PHASES=new Set(['ENTRY','VARIANT','EMPTY_BAG','BAG','AUTH','FULFILLMENT','SLOTS','DETAILS','PAYMENT','REVIEW','ORDER_RECEIPT','ORDER_DETAIL','PROCESSING','UNKNOWN']);
-const safeState=s=>({state:typeof s.state==='string'?s.state:'NEEDS_VERIFICATION',phase:PHASES.has(s.phase)?s.phase:'UNKNOWN',pendingAction:['addBag','checkout','chooseSlot','fillDetails','selectPayment','continuePayment','submitOrder'].includes(s.pendingAction)?s.pendingAction:null});
+const safeState=s=>({state:typeof s.state==='string'?s.state:'NEEDS_VERIFICATION',phase:PHASES.has(s.phase)?s.phase:'UNKNOWN',pendingAction:['addBag','checkout','chooseSlot','fillDetails','selectPayment','continuePayment','submitOrder'].includes(s.pendingAction)?s.pendingAction:null,...(s.phase==='REVIEW'&&reviewCheckCodes(s.reason).length?{reviewDiagnostic:reviewCheckCodes(s.reason)}:{})});
 export class DesktopCheckoutRuntime {
  constructor({store,launch,onState=()=>{},executor='desktop'}){if(!['desktop','browser'].includes(executor))throw Error('DesktopExecutorNotAllowed');this.executor=executor;this.store=store;this.launch=launch;this.onState=onState;this.opened=false;this.busy=false;this.closing=false;this.closed=false;this.paused=false;this.cleanupConfirmed=false;this.finalDescriptor=null;this.active=null;this.operations=new Set();this.ownerLost=false;}
  track(operation){const running=Promise.resolve().then(operation);this.operations.add(running);running.then(()=>this.operations.delete(running),()=>this.operations.delete(running));return running;}
@@ -122,9 +123,9 @@ export class DesktopCheckoutRuntime {
  }
  transferContact(options={}){return this.track(()=>this.transferContactOnce(options));}
  restartPayment(options={}){return this.track(()=>this.restartPaymentOnce(options));}
- async restartPaymentOnce({approved=false,newContextConfirmed=false,oldExecutorStopped=false,sameAccountOrdersClear=false,expiredCheckoutUrl,privatePickupData={}}={}){
+ async restartPaymentOnce({approved=false,newContextConfirmed=false,oldExecutorStopped=false,sameAccountOrdersClear=false,additionalRecoveryApproved=false,expiredCheckoutUrl,privatePickupData={}}={}){
   if(this.ownerLost||this.paused||!this.opened||this.busy||this.closing||this.closed||this.lease?.owned!==true)throw Error('DesktopSessionAlreadyRunning');this.busy=true;let created;
-  try{const recover=expiredReviewSourceShape(await this.store.get(TASK_KEY))?restartExpiredReview:restartExpiredPayment;this.active=recover({store:this.store,api:this.api,tabId:this.tabId,expiredCheckoutUrl,approved,newContextConfirmed,oldExecutorStopped,sameAccountOrdersClear,live:()=>!this.ownerLost&&!this.closing&&!this.paused&&this.lease?.owned===true});created=await this.active;}finally{this.active=null;this.busy=false;}
+  try{const source=await this.store.get(TASK_KEY),recover=expiredReviewSourceShape(source)||additionalExpiredReviewSourceShape(source)?restartExpiredReview:restartExpiredPayment;this.active=recover({store:this.store,api:this.api,tabId:this.tabId,expiredCheckoutUrl,approved,newContextConfirmed,oldExecutorStopped,sameAccountOrdersClear,additionalRecoveryApproved,live:()=>!this.ownerLost&&!this.closing&&!this.paused&&this.lease?.owned===true});created=await this.active;}finally{this.active=null;this.busy=false;}
   if(created?.created!==true)throw Error('ExpiredPaymentProspectiveUnconfirmed');
   if(this.paused||this.closing||this.ownerLost||this.lease?.owned!==true)return {state:this.paused?'PAUSED':'NEEDS_VERIFICATION',phase:'BAG',localTransitionCreated:true,realOrderVerified:false};
   return {...await this.advance({checkoutApproved:true,newContextConfirmed:true,privatePickupData}),localTransitionCreated:true};

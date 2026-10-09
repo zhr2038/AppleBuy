@@ -1,0 +1,39 @@
+{
+  "schema": "applebuy-live-check/v1",
+  "recordedAt": "2026-10-09T03:24:18.782759+00:00",
+  "candidateAtRun": "C224/331/12955811175044dfa8f0391ccf008b5ee32ff71eaa366ec4fbffaec5481efb21",
+  "installedVersionsVerified": {
+    "r1": true,
+    "r2": true
+  },
+  "actualProgrammeReached": "REVIEW",
+  "zeroAdd": true,
+  "checkoutCount": 1,
+  "slot": {
+    "date": "October 9",
+    "start": "21:15",
+    "end": "21:30",
+    "fromOriginalCohort": true,
+    "heldSlotVerified": false
+  },
+  "contactAndAlipayProgressed": true,
+  "pendingAction": "continuePayment",
+  "finalIntentPresent": false,
+  "merchantExpired": true,
+  "actualGateCause": "not yet identified; diagnostic evidence was absent",
+  "rootDelayContributed": true,
+  "freshAuthenticatedOrderList": {
+    "collected": 1,
+    "cancelled": 3,
+    "visibleUnpaid": 0,
+    "completeAccountGuarantee": false
+  },
+  "currentActor": {
+    "lastPauseAcknowledged": true,
+    "stillOwnedWorker": true,
+    "freshGuiInspection": "minimized; no new input succeeded; no terminal claim"
+  },
+  "humanScopeReaffirmed": "programme only",
+  "noPayment": true,
+  "noProgrammeUnpaidOrderProved": true
+}

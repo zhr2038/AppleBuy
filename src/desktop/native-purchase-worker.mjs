@@ -6,7 +6,7 @@ import {safeCheckoutDiagnostic} from './checkout-diagnostic.mjs';
 import {stoppedCheckoutDraftSource} from './cart-transfer.mjs';import {TASK_KEY} from '../../web/checkout-connector/job.js';
 import {probeCheckoutHostScope} from './checkout-host-scope.mjs';
 import {expiredPaymentSourceShape} from './expired-payment-restart.mjs';
-import {expiredReviewSourceShape} from './expired-review-restart.mjs';
+import {expiredReviewSourceShape,additionalExpiredReviewSourceShape} from './expired-review-restart.mjs';
 if(process.argv.length>3||process.argv.length===3&&process.argv[2]!=='--browser-executor')throw Error('NativeWorkerArgumentsNotAllowed');
 const emit=value=>process.stdout.write(JSON.stringify({scope:'desktop-pro-checkout',...value})+'\n');
 const executor=process.argv[2]==='--browser-executor'?'browser':'desktop';
@@ -17,8 +17,8 @@ const runtime=new DesktopCheckoutRuntime({store,executor,launch:async()=>launchN
 }});
 try{
  const initial=await runtime.open();if(closing)throw Error('NativeOwnerLost');
- const hostScope=await probeCheckoutHostScope(runtime.api),source=await store.get(TASK_KEY),canRenewEndedDraft=!!stoppedCheckoutDraftSource(source),canRestartExpiredPayment=!!(expiredPaymentSourceShape(source)||expiredReviewSourceShape(source));if(closing||runtime.ownerLost)throw Error('NativeOwnerLost');
- emit({type:'ready',readOnly:initial.legacyReadOnly===true,canRenewEndedDraft,canRestartExpiredPayment,...hostScope,message:'程序已连接正常 Chrome 的独立结账通道；旧只读和未知记录不增加购买权限。'});
+ const hostScope=await probeCheckoutHostScope(runtime.api),source=await store.get(TASK_KEY),canRenewEndedDraft=!!stoppedCheckoutDraftSource(source),canAdditionalReviewRecovery=source?.desktopReviewRestart?.generation===1&&!!additionalExpiredReviewSourceShape(source),canRestartExpiredPayment=!!(expiredPaymentSourceShape(source)||expiredReviewSourceShape(source)||canAdditionalReviewRecovery);if(closing||runtime.ownerLost)throw Error('NativeOwnerLost');
+ emit({type:'ready',readOnly:initial.legacyReadOnly===true,canRenewEndedDraft,canRestartExpiredPayment,canAdditionalReviewRecovery,...hostScope,message:'程序已连接正常 Chrome 的独立结账通道；旧只读和未知记录不增加购买权限。'});
  input=createInterface({input:process.stdin});let active=false,pausing=false;
  watch=new AuthContinuation({observe:()=>runtime.observe(),isBusy:()=>closing||active||pausing||runtime.paused,onStopped:()=>emit({type:'blocked',paused:runtime.paused,message:'官网验证或页面仍未确认，自动衔接已停止；旧动作不重复。'})});
  function consentSummary(){const d=runtime.finalDescriptor;return d?{termsUrl:d.termsUrl,sourceChoice:d.sourceChoice??null,pickupNotice:d.pickupNotice??null}:null;}
@@ -48,7 +48,7 @@ try{
   try{
    if(c.action==='advance'||c.action==='resume')await advance(c);
    else if(c.action==='restart-payment'){
-    const result=await runtime.restartPayment({approved:c.approved===true,newContextConfirmed:c.newContextConfirmed===true,oldExecutorStopped:c.oldExecutorStopped===true,sameAccountOrdersClear:c.sameAccountOrdersClear===true,expiredCheckoutUrl:c.expiredCheckoutUrl,privatePickupData:c.privatePickupData??{}});
+    const result=await runtime.restartPayment({approved:c.approved===true,newContextConfirmed:c.newContextConfirmed===true,oldExecutorStopped:c.oldExecutorStopped===true,sameAccountOrdersClear:c.sameAccountOrdersClear===true,additionalRecoveryApproved:c.additionalRecoveryApproved===true,expiredCheckoutUrl:c.expiredCheckoutUrl,privatePickupData:c.privatePickupData??{}});
     emit({type:'result',state:result.state,phase:result.phase,pendingAction:result.pendingAction??null,paused:runtime.paused,localTransitionCreated:result.localTransitionCreated===true,realOrderVerified:result.realOrderVerified===true,reviewReady:!!runtime.finalDescriptor,consentSummary:consentSummary()});
     await continueWhenReady(result,{checkoutApproved:true,newContextConfirmed:true,privatePickupData:c.privatePickupData??{}});
    }
