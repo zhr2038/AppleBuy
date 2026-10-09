@@ -1,0 +1,18 @@
+{
+  "sourceCommit": "e6a31c0d2f9c02bbdc2d4deb370d9c5556849da9",
+  "candidateRemote": "e6a31c0d2f9c02bbdc2d4deb370d9c5556849da9",
+  "remoteMatched": true,
+  "sourceFiles": 331,
+  "sourceSha256": "12955811175044dfa8f0391ccf008b5ee32ff71eaa366ec4fbffaec5481efb21",
+  "allHeadBlobsMatched": true,
+  "mainRemote": "bd130ee77d8e914f6373432e1061c4de820fbc66",
+  "mainModifiedByThisWork": false,
+  "forcePush": false,
+  "privateFilesPublished": false,
+  "excludedUntracked": [
+    "docs/reviews/C-211-analysis-verification.json",
+    "docs/tasks/C-211-ROADMAP-CLARIFICATION.md"
+  ],
+  "softwareAcceptance": "C224 bounded, installed/live proof outstanding",
+  "realOrder": false
+}
