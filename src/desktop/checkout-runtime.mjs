@@ -100,12 +100,12 @@ export class DesktopCheckoutRuntime {
    this.onState({...safeState({...result,pendingAction:record?.pending?.action??null}),paused:this.paused});return {...result,pendingAction:record?.pending?.action??null};
   }finally{this.active=null;this.busy=false;}
  }
- async checkNativeOrders(finalRecord=null){
+ async checkNativeOrders(finalRecord=null,{automatic=false}={}){
   if(!this.ordersEnabled||typeof this.api.auditOrders!=='function')throw Error('NativeOrderAuditUnavailable');
   if(this.ownerLost||this.paused||this.closing||this.lease?.owned!==true)throw Error('DesktopSessionCancelled');
   let check;
   if(finalRecord&&!/^[a-f0-9]{64}$/.test(finalRecord.orderRefHash??''))check={state:'reference-missing'};
-  else check=await this.api.auditOrders(PRO_PLAN,finalRecord?.orderRefHash??null);
+  else check=await this.api.auditOrders(PRO_PLAN,finalRecord?.orderRefHash??null,{automatic});
   if(this.ownerLost||this.paused||this.closing||this.lease?.owned!==true)throw Error('DesktopSessionCancelled');
   if(!check||!['clear','auth','waiting','unpaid-exists','unconfirmed','permission','unknown','not-found','detail','reference-missing'].includes(check.state))check={state:'unknown'};
   if(check.state==='clear'&&(check.authenticated!==true||!/^[a-f0-9]{64}$/.test(check.accountHash??'')||!Number.isSafeInteger(check.matchingCount)||check.matchingCount<0))check={state:'unknown'};
@@ -114,7 +114,7 @@ export class DesktopCheckoutRuntime {
   const publicCheck={state:check.state,...(check.state==='detail'?{status:check.status,sameReference:check.sameReference===true,productMatches:check.productMatches===true,totalCny:check.totalCny,storeMatches:check.storeMatches===true,quantity:null,slot:null}: {})};
   return {readOnly:!!finalRecord,state:'NEEDS_VERIFICATION',phase:['auth','waiting'].includes(check.state)?'AUTH':check.state==='detail'?'ORDER_DETAIL':'UNKNOWN',pendingAction:finalRecord?.pending?.action??null,realOrderVerified:false,receiptAwaitingPayment:false,orderCheck:publicCheck};
  }
- orderAudit(){return this.track(async()=>{if(this.busy||this.closed||this.closing)throw Error('DesktopSessionAlreadyRunning');this.busy=true;try{const row=await this.store.get(TASK_KEY);return await this.checkNativeOrders(row?.finalIntent?.sent===true?row:null);}finally{this.busy=false;}});}
+ orderAudit(){return this.track(async()=>{if(this.busy||this.closed||this.closing)throw Error('DesktopSessionAlreadyRunning');this.busy=true;try{const row=await this.store.get(TASK_KEY);return await this.checkNativeOrders(row?.finalIntent?.sent===true?row:null,{automatic:true});}finally{this.busy=false;}});}
  advance(options={}){return this.track(()=>this.advanceOnce(options));}
  async advanceOnce({checkoutApproved=false,newContextConfirmed=false,privatePickupData={}}={}){
   if(this.ownerLost)throw Error('DesktopOwnerLeaseLost');

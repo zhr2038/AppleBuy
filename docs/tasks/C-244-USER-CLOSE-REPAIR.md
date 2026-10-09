@@ -1,0 +1,7 @@
+# C244 respect intentional login-tab closure
+
+C243 actually DISAGREE249.95s18turns after full model/effort/source/cleanup verification,6EOF/exact3commands/60focused108protected90Python1961Node. Prior M1 and poisoned-transport closure confirmed fixed. Its remaining M2 is real: onRemoved between polls clears the tab id, then the next automatic poll recreates/focuses a login tab.
+
+Root composed the actual Worker/AuthContinuation -> Runtime.orderAudit -> NativeCheckoutApi -> CheckoutRpcPeer -> OrderAudit with a fake browser event. Old source produced created2 rather than expected1, an actual failing assertion. C244 adds a strictly boolean automatic-observation mode across that fixed RPC, and retains a user-close marker. An automatic observation after that event returns unknown without any tab creation/focus; the watcher stops. Explicit main-button queries can clear it and open one fresh readonly tab. Own successful query cleanup is separately marked intentional so it never triggers a false user-close stop. No changes to purchase authority, final/history, profile data, permissions or real merchant actions.
+
+Test the full composed close-between-polls case, explicit re-open, own-cleanup distinction, existing known-gone/error paths and full regressions. Old assertions remain. One concise same-session Opus5.5/max closeout on an exact new map; do not re-open unrelated nonblocking limitations. No additional real order.

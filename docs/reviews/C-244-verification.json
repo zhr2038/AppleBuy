@@ -1,12 +1,10 @@
 {
-  "recordedAt": "2026-10-09T14:38:21.027277+00:00",
+  "recordedAt": "2026-10-09T14:53:56.407938+00:00",
   "sourceFiles": 348,
-  "sourceSha256": "7580ccd072886f97b48eed890fedc2cf498f6c39d948c9f273a11ba983c78fc2",
-  "accepted": false,
+  "sourceSha256": "001e5888d0cd32635004712a132ffb1a095e16452baea8633905a2f0c14db2fa",
+  "accepted": true,
   "reviewRunning": false,
-  "reviewTask": "C-243-RECOVERY-CLOSEOUT-REVIEW",
-  "focusedTests": 41,
-  "focusedPassed": 41,
+  "reviewTask": "C-245-FINAL-USER-CLOSE-REVIEW",
   "rootChecks": [
     {
       "scope": "bounded-review-checks",
@@ -17,7 +15,7 @@
       "manifest": {
         "ok": true,
         "files": 348,
-        "sha256": "7580ccd072886f97b48eed890fedc2cf498f6c39d948c9f273a11ba983c78fc2",
+        "sha256": "001e5888d0cd32635004712a132ffb1a095e16452baea8633905a2f0c14db2fa",
         "mismatches": []
       },
       "passed": true
@@ -56,8 +54,8 @@
       "timedOut": false,
       "ownedTreeCleanupConfirmed": true,
       "counts": {
-        "tests": 1961,
-        "pass": 1961,
+        "tests": 1963,
+        "pass": 1963,
         "fail": 0,
         "cancelled": 0,
         "skipped": 0
@@ -73,7 +71,7 @@
       "manifest": {
         "ok": true,
         "files": 348,
-        "sha256": "7580ccd072886f97b48eed890fedc2cf498f6c39d948c9f273a11ba983c78fc2",
+        "sha256": "001e5888d0cd32635004712a132ffb1a095e16452baea8633905a2f0c14db2fa",
         "mismatches": []
       },
       "passed": true
@@ -85,38 +83,18 @@
       "passed": true
     }
   ],
-  "actualRedGreen": {
-    "closedLoginTab": {
-      "oldRetainedId": 7,
-      "oldMapSize": 1,
-      "newRetainedId": null,
-      "newMapSize": 0,
-      "newResult": "unknown"
-    },
-    "poisonedWorker": {
-      "oldClosed": false,
-      "newClosed": true,
-      "newFinalSent": 0
-    }
+  "M2ActualRedGreen": {
+    "oldCreatedAfterUserClose": 2,
+    "newCreatedAfterUserClose": 1,
+    "newFocusCountAfterUserClose": 1,
+    "watchStopped": true,
+    "explicitReopenCreated": 2,
+    "secondFinal": false,
+    "actualWorkerRuntimeNativeApiPeerAuditComposed": true
   },
-  "initialFullRegression": {
-    "tests": 1961,
-    "pass": 1960,
-    "fail": 1,
-    "cause": "C185 permission-only API fixture has no tabs object; fixed production optional event access, original assertion unchanged"
-  },
-  "priorAssertionsUnchanged": true,
-  "allHistoryFinalAndSourceJournalPreserved": true,
+  "intentionalCleanupNotUserClose": true,
   "newRealOrders": 0,
   "personalDeploymentVerified": false,
-  "guiPreview": "C240 final UI, entirely fake injected profile/runner, actual opt-in+start click, normal close; no customer values or files",
-  "limits": [
-    "Native detail quantity/time remain unknown",
-    "Existing historical final missing reference cannot be guessed in another context",
-    "No programme password autofill, challenge handling or first installation/update automation",
-    "Empty/pagination account contracts not yet observed",
-    "Recovery/account attestations unchanged"
-  ],
-  "reviewVerdict": "DISAGREE",
-  "materialFinding": "M2 user-close between automatic polls"
+  "originalAssertionsUnchanged": true,
+  "actualReview": "C-245-actual-verification.json"
 }

@@ -50,8 +50,10 @@ export async function orderDocument(kind){
 }
 
 export class OrderAudit {
- constructor(peer,{wait=ms=>new Promise(r=>setTimeout(r,ms)),now=Date.now}={}){this.peer=peer;this.wait=wait;this.now=now;this.tabId=null;this.expected=null;this.authUntil=null;this.authFocused=false;this.removals=0;}
- removed(id){if(!Number.isSafeInteger(id))return;this.peer.tabs.delete(id);if(this.tabId===id){this.tabId=null;this.expected=null;this.authUntil=null;this.authFocused=false;this.removals++;}}
+ constructor(peer,{wait=ms=>new Promise(r=>setTimeout(r,ms)),now=Date.now}={}){this.peer=peer;this.wait=wait;this.now=now;this.tabId=null;this.expected=null;this.authUntil=null;this.authFocused=false;this.removals=0;this.userClosed=false;this.closingId=null;}
+ removed(id,{intentional=false}={}){if(!Number.isSafeInteger(id))return;this.peer.tabs.delete(id);if(this.tabId===id){if(!intentional&&this.closingId!==id)this.userClosed=true;this.tabId=null;this.expected=null;this.authUntil=null;this.authFocused=false;this.removals++;}}
+ beginClose(id){if(this.tabId===id)this.closingId=id;}
+ async closeTab(api){if(this.tabId===null)return;const id=this.tabId;this.beginClose(id);try{await api.tabs.remove(id);}catch(error){if(this.tabId===id&&!missingOwnedTab(error,id))throw error;}finally{this.closingId=null;}this.removed(id,{intentional:true});}
  async read(api,kind){
   for(let i=0;i<30;i++){
    const t=await api.tabs.get(this.tabId);
@@ -68,7 +70,9 @@ export class OrderAudit {
    await this.wait(100);
   }return {state:'loading'};
  }
- async run(api,plan,expectedRefHash=null){
+ async run(api,plan,expectedRefHash=null,{automatic=false}={}){
+  if(automatic&&this.userClosed)return {state:'unknown'};
+  if(!automatic)this.userClosed=false;
   let keep=false;const removalEpoch=this.removals;try{
    const result=await this.runOnce(api,plan,expectedRefHash);
    keep=['auth','waiting'].includes(result.state)||this.authUntil!==null&&result.state==='unknown';
@@ -76,11 +80,11 @@ export class OrderAudit {
   }catch(error){
    if(this.removals!==removalEpoch||missingOwnedTab(error,this.tabId)){this.removed(this.tabId);return {state:'unknown'};}
    throw error;
-  }finally{if(!keep&&this.tabId!==null){const id=this.tabId;try{await api.tabs.remove(id);}catch(error){if(this.tabId===id&&!missingOwnedTab(error,id))throw error;}this.removed(id);}}
+  }finally{if(!keep)await this.closeTab(api);}
  }
  async runOnce(api,plan,expectedRefHash=null){
   if(expectedRefHash!==null&&!/^[a-f0-9]{64}$/.test(expectedRefHash))throw Error('OrderReferenceInvalid');
-  if(this.tabId!==null&&this.expected!==expectedRefHash){await api.tabs.remove(this.tabId);this.peer.tabs.delete(this.tabId);this.tabId=null;this.authUntil=null;this.authFocused=false;}
+  if(this.tabId!==null&&this.expected!==expectedRefHash)await this.closeTab(api);
   this.expected=expectedRefHash;
   if(this.tabId===null){
    if(this.peer.tabs.size>=4||!await api.permissions.contains({origins:['https://www.apple.com.cn/*']}))return {state:'permission'};

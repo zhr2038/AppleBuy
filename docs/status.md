@@ -1,3 +1,15 @@
+# C245 accepts all five automation tracks; personal update handoff next
+
+Actual original-session Opus5.5/max AGREE352.3s17turn6EOF/exact3commands62focused108protected90Python1963Node, full structured model/provider/max/source/cleanup audit, zero denial/private/edit/error/timeout, one compaction disclosed. Root accepts integrated348 SHA001e5888d0cd32635004712a132ffb1a095e16452baea8633905a2f0c14db2fa; earlier timeout/rejections remain historical. Account preflight/same-order status, auto continuation, optional DPAPI profile and bounded user-respecting reconnect implemented. Native qty/time and the stated edge limits remain unverified, no password autofill or new order. Source final/history untouched. C235 order cancelled.
+
+No reviewer active. Personal module not yet loaded; one existing-extension reload/bridge connection is necessary before live readonly query. Fresh own-window inventory found no old AppleBuy desktop window, not a claim about all process cleanup. Source/publication in C245 receipt; main C053 unchanged. Goal tool paused, no invented completion. No shutdown/reboot.
+
+# C244 respects user-close between polls; C245 final review running
+
+C243 actual model-verified Opus5.5/max DISAGREE249.95s18turn6EOF/exact3commands60focused108protected90Python1961Node, source/cleanup verified. M1 and poisoned-worker fixed; remaining M2 now actual composed red->green: user close between polls used to create2/focus2; automatic observation now remains at1/1 and stops watch, later explicit query creates the second tab. Own intentional cleanup does not mark user close. Strict boolean mode is readonly only, no purchase authority.
+
+C244348 SHA001e5888d0cd32635004712a132ffb1a095e16452baea8633905a2f0c14db2fa passes108protected90Python1963Node, exact map before/after. Same original-session Opus5.5/max C245 actually running, handle4356; source freeze/no second caller. No acceptance or personal deployment yet. Source local prior checkpoint f1c97bd (older C242) not pushed; main C053/accepted software C237 unchanged. Same original C235 order cancelled, no new real actions. No shutdown/reboot.
+
 # C242 full integration green; C243 actual final review running
 
 Exact348 SHA7580ccd072886f97b48eed890fedc2cf498f6c39d948c9f273a11ba983c78fc2 passes41focused/108protected/90Python/1961Node on unchanged bytes. Initial C185 permission-only fixture failed because its API lacks tabs; production optional listener access fixed, no test assertion weakened. M1 known removed tabs and contained poisoned-worker recovery are red->green. Actual same-session Opus5.5/max C243 running, handle30184; no parallel code edits or second caller. No accepted verdict or personal deployment yet. All old order/final/history preserved; C235 order is cancelled, no new purchase/payment/slot. Main historical C053; accepted baseline remains C237343. No shutdown/reboot.

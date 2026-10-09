@@ -40,8 +40,8 @@ export class CheckoutRpcPeer{
   const keys=allowed=>{if(Object.keys(p).some(k=>!allowed.includes(k)))throw Error('NativePayloadNotAllowed');};
   if(op==='executorVersion'){keys([]);return CHECKOUT_EXECUTOR_VERSION;}
   if(op==='auditOrders'){
-   keys(['plan','expectedRefHash']);if(!planAllowed(p.plan))throw Error('NativeOrderPlanNotAllowed');
-   this.orderAudit??=new OrderAudit(this);return this.orderAudit.run(guarded,p.plan,p.expectedRefHash??null);
+   keys(['plan','expectedRefHash','automatic']);if(!planAllowed(p.plan)||p.automatic!==undefined&&typeof p.automatic!=='boolean')throw Error('NativeOrderPlanNotAllowed');
+   this.orderAudit??=new OrderAudit(this);return this.orderAudit.run(guarded,p.plan,p.expectedRefHash??null,{automatic:p.automatic===true});
   }
   if(op==='createExpiryProbe'){
    keys(['url']);let u;try{u=new URL(p.url);}catch{throw Error('NativeAddressNotAllowed');}
@@ -53,7 +53,7 @@ export class CheckoutRpcPeer{
    return await guarded.permissions.contains({origins:p.origins});
   }
   if(op==='closeSession'){
-   keys([]);for(const id of this.tabs.keys()){try{await guarded.tabs.remove(id);}catch(error){if(this.tabs.has(id)&&!missingOwnedTab(error,id))throw error;}this.orderAudit?.removed(id);this.tabs.delete(id);}this.dispose();return {closed:true};
+   keys([]);for(const id of this.tabs.keys()){this.orderAudit?.beginClose(id);try{await guarded.tabs.remove(id);}catch(error){if(this.tabs.has(id)&&!missingOwnedTab(error,id))throw error;}this.orderAudit?.removed(id);this.tabs.delete(id);}this.dispose();return {closed:true};
   }
   if(op==='createTab'){
    keys(['url','active']);if(![BAG,ENTRY].includes(p.url)||p.active!==undefined&&typeof p.active!=='boolean'||this.tabs.size>=4||p.url===ENTRY&&!this.purchaseAllowed)throw Error('NativeCreateNotAllowed');

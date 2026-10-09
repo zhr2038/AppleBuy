@@ -1,0 +1,140 @@
+{
+  "task": "C-243-RECOVERY-CLOSEOUT-REVIEW",
+  "sourceFiles": 348,
+  "sourceSha256": "7580ccd072886f97b48eed890fedc2cf498f6c39d948c9f273a11ba983c78fc2",
+  "sourceUnchanged": true,
+  "status": "returned_for_review",
+  "durationSeconds": 249.95,
+  "turns": 18,
+  "models": [
+    "claude-opus-5-5"
+  ],
+  "primaryModels": [
+    "claude-opus-5-5"
+  ],
+  "provider": "firstParty",
+  "canonicalModel": "claude-opus-5-5",
+  "effort": "max",
+  "modelVerified": true,
+  "isError": false,
+  "subtype": "success",
+  "timedOut": false,
+  "cleanupConfirmed": true,
+  "permissionDenials": 0,
+  "privateReads": 0,
+  "edits": 0,
+  "toolCounts": {
+    "Read": 11,
+    "Glob": 1,
+    "Bash": 3,
+    "Grep": 2
+  },
+  "requiredEOF": 6,
+  "completeEOF": 6,
+  "gaps": [],
+  "commandsMatched": true,
+  "unexpectedCommands": 0,
+  "overlappingCommands": false,
+  "toolErrors": [],
+  "orderedChecks": [
+    {
+      "scope": "bounded-review-checks",
+      "order": 1,
+      "exitCode": 0,
+      "timedOut": false,
+      "ownedTreeCleanupConfirmed": true,
+      "manifest": {
+        "ok": true,
+        "files": 348,
+        "sha256": "7580ccd072886f97b48eed890fedc2cf498f6c39d948c9f273a11ba983c78fc2",
+        "mismatches": []
+      },
+      "passed": true
+    },
+    {
+      "scope": "bounded-review-checks",
+      "order": 2,
+      "exitCode": 0,
+      "timedOut": false,
+      "ownedTreeCleanupConfirmed": true,
+      "counts": {
+        "tests": 108,
+        "pass": 108,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0
+      },
+      "passed": true
+    },
+    {
+      "scope": "bounded-review-checks",
+      "order": 3,
+      "exitCode": 0,
+      "timedOut": false,
+      "ownedTreeCleanupConfirmed": true,
+      "tests": 90,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "passed": true
+    },
+    {
+      "scope": "bounded-review-checks",
+      "order": 4,
+      "exitCode": 0,
+      "timedOut": false,
+      "ownedTreeCleanupConfirmed": true,
+      "counts": {
+        "tests": 1961,
+        "pass": 1961,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0
+      },
+      "passed": true
+    },
+    {
+      "scope": "bounded-review-checks",
+      "order": 5,
+      "exitCode": 0,
+      "timedOut": false,
+      "ownedTreeCleanupConfirmed": true,
+      "manifest": {
+        "ok": true,
+        "files": 348,
+        "sha256": "7580ccd072886f97b48eed890fedc2cf498f6c39d948c9f273a11ba983c78fc2",
+        "mismatches": []
+      },
+      "passed": true
+    },
+    {
+      "scope": "bounded-review-checks",
+      "complete": true,
+      "orderedChecks": 5,
+      "passed": true
+    }
+  ],
+  "commandResults": [
+    {
+      "index": 1,
+      "error": false,
+      "tail": "{\"ok\": true, \"files\": 348, \"sha256\": \"7580ccd072886f97b48eed890fedc2cf498f6c39d948c9f273a11ba983c78fc2\", \"mismatches\": []}"
+    },
+    {
+      "index": 2,
+      "error": false,
+      "tail": "t (0.7462ms)\n✔ C240 submit auth lookup automatically resumes with no second final (3.8116ms)\n✔ C240 reconcile auth lookup automatically resumes with no second final (1.6062ms)\n✔ C240 failed post-login read emits an actionable stop instead of silently waiting forever (0.5404ms)\n✔ C240 an unconfirmed account preflight does not arm the late-checkout loop (0.5795ms)\n✔ C242 irrecoverably poisoned transport ends the worker so the GUI can reopen only after owned cleanup (0.5335ms)\n✔ C242 closed or unknown login query stops the watcher without reopening or advancing automatically (0.5652ms)\n✔ C242 poisoned transport during automatic login observation ends the worker without a second final (0.5336ms)\nℹ tests 60\nℹ suites 0\nℹ pass 60\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 4603.6724"
+    },
+    {
+      "index": 3,
+      "error": false,
+      "tail": "ed\": 0, \"skipped\": 0}, \"passed\": true}\r\n{\"scope\": \"bounded-review-checks\", \"order\": 3, \"exitCode\": 0, \"timedOut\": false, \"ownedTreeCleanupConfirmed\": true, \"tests\": 90, \"failures\": 0, \"errors\": 0, \"skipped\": 0, \"passed\": true}\r\n{\"scope\": \"bounded-review-checks\", \"order\": 4, \"exitCode\": 0, \"timedOut\": false, \"ownedTreeCleanupConfirmed\": true, \"counts\": {\"tests\": 1961, \"pass\": 1961, \"fail\": 0, \"cancelled\": 0, \"skipped\": 0}, \"passed\": true}\r\n{\"scope\": \"bounded-review-checks\", \"order\": 5, \"exitCode\": 0, \"timedOut\": false, \"ownedTreeCleanupConfirmed\": true, \"manifest\": {\"ok\": true, \"files\": 348, \"sha256\": \"7580ccd072886f97b48eed890fedc2cf498f6c39d948c9f273a11ba983c78fc2\", \"mismatches\": []}, \"passed\": true}\r\n{\"scope\": \"bounded-review-checks\", \"complete\": true, \"orderedChecks\": 5, \"passed\": true}"
+    }
+  ],
+  "compactions": 0,
+  "usageScope": "resumed history aggregate, not this invocation spend",
+  "accepted": false,
+  "realOrderVerified": false,
+  "verdict": "DISAGREE",
+  "materialFinding": "M2 removal between polls recreates/refocuses login tab"
+}
