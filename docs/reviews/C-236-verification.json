@@ -1,0 +1,125 @@
+{
+  "recordedAt": "2026-10-09T12:48:08.510848+00:00",
+  "task": "C236",
+  "sourceFiles": 343,
+  "sourceSha256": "849387f3ee64348784737adf2407f31139e94f36ffe8343541de251faa23f63b",
+  "accepted": false,
+  "reviewTask": "C-237-PRODUCTIZATION-REVIEW",
+  "reviewRunning": true,
+  "author": "Codex",
+  "focused": {
+    "newRendererAndComposedCases": 17,
+    "newPythonCases": 10,
+    "newAndLegacyReceiptFocused": 27,
+    "pass": 27
+  },
+  "finalChecks": [
+    {
+      "scope": "bounded-review-checks",
+      "order": 1,
+      "exitCode": 0,
+      "timedOut": false,
+      "ownedTreeCleanupConfirmed": true,
+      "manifest": {
+        "ok": true,
+        "files": 343,
+        "sha256": "849387f3ee64348784737adf2407f31139e94f36ffe8343541de251faa23f63b",
+        "mismatches": []
+      },
+      "passed": true
+    },
+    {
+      "scope": "bounded-review-checks",
+      "order": 2,
+      "exitCode": 0,
+      "timedOut": false,
+      "ownedTreeCleanupConfirmed": true,
+      "counts": {
+        "tests": 108,
+        "pass": 108,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0
+      },
+      "passed": true
+    },
+    {
+      "scope": "bounded-review-checks",
+      "order": 3,
+      "exitCode": 0,
+      "timedOut": false,
+      "ownedTreeCleanupConfirmed": true,
+      "tests": 82,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "passed": true
+    },
+    {
+      "scope": "bounded-review-checks",
+      "order": 4,
+      "exitCode": 0,
+      "timedOut": false,
+      "ownedTreeCleanupConfirmed": true,
+      "counts": {
+        "tests": 1920,
+        "pass": 1920,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0
+      },
+      "passed": true
+    },
+    {
+      "scope": "bounded-review-checks",
+      "order": 5,
+      "exitCode": 0,
+      "timedOut": false,
+      "ownedTreeCleanupConfirmed": true,
+      "manifest": {
+        "ok": true,
+        "files": 343,
+        "sha256": "849387f3ee64348784737adf2407f31139e94f36ffe8343541de251faa23f63b",
+        "mismatches": []
+      },
+      "passed": true
+    },
+    {
+      "scope": "bounded-review-checks",
+      "complete": true,
+      "orderedChecks": 5,
+      "passed": true
+    }
+  ],
+  "guiPreview": {
+    "actualTkWindow": true,
+    "backendRunnersEntirelyFake": true,
+    "noBrowserOrLedger": true,
+    "physicalMainClickToReview": true,
+    "physicalFakeAcceptToReceipt": true,
+    "physicalAdvancedTab": true,
+    "normalCloseConfirmed": true,
+    "fakeAdvanceCount": 1,
+    "fakeSubmitCount": 1,
+    "realOrderCount": 0,
+    "screenshotsInlineOnly": true
+  },
+  "initialFailures": [
+    "Four composed receipt startup tests failed UnsupportedMerchantPage; production observation-only URL guard fixed; no assertions weakened.",
+    "First preview launch exited because its script path was not quoted; corrected launch succeeded.",
+    "Initial regression began before a line-ending-only normalization and saw different start/end hashes; final regression repeated on unchanged exact bytes."
+  ],
+  "preserved": {
+    "priorTestAndReviewAssertionsUnchanged": true,
+    "realFinalAndAllHistoryUntouched": true,
+    "additionalMerchantMutation": false
+  },
+  "limits": [
+    "No new real order or deployment",
+    "Native receipt status is partial, independent native detail verification remains",
+    "Existing account unpaid-order query not yet automated",
+    "Ordinary login not programme autofill",
+    "Missing pickup fields remain session-only",
+    "Initial/update/disconnected bridge connection needs human action"
+  ]
+}

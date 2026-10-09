@@ -210,6 +210,7 @@ export class PurchaseJob {
     return {mode:'observe',state:'OBSERVED',phase:o?.phase??'UNKNOWN',nextChoice:o?.nextChoice??null,needsSelection:o?.needsSelection??null,configuration:o?.configuration??null,extrasConflict:o?.extrasConflict??null,variantVerified:o?.variantVerified===true,quotedCny:o?.quotedCny??null};
   }
   async run(plan,{tabId,planDigest,grant=null,taskId=null,mode='purchase',rebind=false}={}){
+    this.receiptAwaitingPayment=false;
     if(!validIntent(plan)||!Number.isSafeInteger(tabId)||!planDigest||!['purchase','observe','public-config','reconcile'].includes(mode)||(mode==='reconcile'&&rebind))throw new Error('InvalidPurchaseConfiguration');
     if(mode==='observe')return this.observeOnly(plan);
     const P=normalizeIntent(plan),validating=mode==='public-config',readOnly=mode==='reconcile';
@@ -334,6 +335,14 @@ export class PurchaseJob {
         if(pending.dispatched===false){s.pending=null;if(pending.action==='addBag')s.bagAddStarted=false;if(pending.action==='submitOrder'&&s.finalIntent)s.finalIntent.sent=false;await this.save(s);continue;}
         if(pending.action==='submitOrder'){
           if(readOnly||s.reconcileOnly===true)return this.gate(s,'final-result-unconfirmed; no resubmission','NEEDS_VERIFICATION');
+          // A native receipt is evidence of creation/awaiting payment, not of all detail facts.
+          // Bind its hash only to this originating sent final. Keep pending/final and never resubmit.
+          if(s.finalIntent?.sent===true&&o.phase==='ORDER_RECEIPT'&&o.path==='/shop/checkout/interstitial'&&o.verifiedStep===true&&o.receiptAwaitingPayment===true&&o.receiptVerified===false&&
+            /^[a-f0-9]{64}$/.test(o.orderRefHash??'')&&o.purchase?.itemVerified===true&&o.purchase.verified===false&&o.purchase.quantity===null&&o.purchase.totalCny===null&&o.purchase.store===null&&o.purchase.fulfillment===null&&o.extras===null&&o.slotSummary===null&&['model','capacity','color'].every(k=>o.purchase[k]===P.product[k])){
+            if(s.orderRefHash&&s.orderRefHash!==o.orderRefHash)return this.gate(s,'receipt-reference-differs; no resubmission','NEEDS_VERIFICATION');
+            s.orderRefHash=o.orderRefHash;this.receiptAwaitingPayment=this.now()<=pending.deadline;
+            return this.gate(s,this.receiptAwaitingPayment?'order-created-awaiting-payment; details-unverified; no resubmission':'order-receipt-found; details-unverified; no resubmission','NEEDS_VERIFICATION');
+          }
           // C040-R1 (Claude): while merchant processing, or the final click's own unchanged review document, is still shown, wait read-only
           // within the ORIGINAL pending deadline and existing bounds. Never resubmit or extend authority; an expired one goes to lookup.
           if((o.phase==='PROCESSING'||o.phase===pending.beforePhase&&o.documentId===pending.documentId&&o.verifiedStep===true&&(purchaseMatches(P,o.purchase)||pending.reviewOnly===true&&itemMatches(P,o.purchase)&&o.extras===false))&&this.now()<pending.deadline&&await poll(this.maxWaitMs))continue;

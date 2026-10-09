@@ -90,7 +90,7 @@ export class BrowserJobExecutor{
     }
     if(!settled)break;this.live(r);result=await r.job.run(CHECKOUT_PLAN,e.run);
    }
-   return {state:result.state,phase:result.lastPhase,reason:result.reason,pendingAction:result.pending?.action??null,realOrderVerified:result.state==='CONFIRMED_UNPAID',boundOrderIndependentlyObserved:false,quoteCny:port.last?.raw.quotedCny??null,skuPath:port.last?.raw.productForm?.ready===true?port.last.raw.path:null};
+   return {state:result.state,phase:result.lastPhase,reason:result.reason,pendingAction:result.pending?.action??null,realOrderVerified:result.state==='CONFIRMED_UNPAID',receiptAwaitingPayment:r.job.receiptAwaitingPayment===true,boundOrderIndependentlyObserved:false,quoteCny:port.last?.raw.quotedCny??null,skuPath:port.last?.raw.productForm?.ready===true?port.last.raw.path:null};
   });
   if(!outcome.owned)throw Error('R2OriginOwnerUnavailable');r.result=outcome.result;
  }

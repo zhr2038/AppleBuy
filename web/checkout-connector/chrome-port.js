@@ -1,7 +1,7 @@
 import {merchantDocument} from './page-program.js';
 import {canonicalJson,itemMatches} from './job.js';
 export function allowedMerchantUrl(raw){try{const u=new URL(raw);return u.protocol==='https:'&&(u.hostname==='www.apple.com.cn'||/^secure(?:\d+)?\.www\.apple\.com\.cn$/.test(u.hostname))&&/^\/shop\/(?:buy-iphone\/(?:iphone-18-pro|iphone-duo)(?:\/[^/]+\/a)?|bag|checkout|order(?:\/[^?#]*)?|signIn(?:\/orders)?)(?:\/)?$/.test(u.pathname);}catch{return false;}}
-export function allowedMerchantObservationUrl(raw){try{const u=new URL(raw);return allowedMerchantUrl(raw)||u.protocol==='https:'&&!u.username&&!u.password&&!u.port&&(u.hostname==='www.apple.com.cn'||/^secure(?:\d+)?\.www\.apple\.com\.cn$/.test(u.hostname))&&u.pathname==='/shop/sorry/session_expired';}catch{return false;}}
+export function allowedMerchantObservationUrl(raw){try{const u=new URL(raw);return allowedMerchantUrl(raw)||u.protocol==='https:'&&!u.username&&!u.password&&!u.port&&(u.hostname==='www.apple.com.cn'||/^secure(?:\d+)?\.www\.apple\.com\.cn$/.test(u.hostname))&&['/shop/sorry/session_expired','/shop/checkout/interstitial'].includes(u.pathname);}catch{return false;}}
 // C035 (Claude): the observed public purchase entries (C-031 Duo evidence, October 1 Pro probe). Configuration then uses normal controls.
 const PRODUCT_ENTRY={'iPhone Duo':'https://www.apple.com.cn/shop/buy-iphone/iphone-duo','iPhone 18 Pro':'https://www.apple.com.cn/shop/buy-iphone/iphone-18-pro'};
 // C035-R1 (Claude): the ordinary public bag page (C-035 official cart evidence), read before the one Add to Bag.

@@ -71,6 +71,6 @@ async function executeSession({api,tabId,store,mode='public-config',authority=nu
     const result=await job.run(PRO_PLAN,{tabId,planDigest:mode==='reconcile'?old.planDigest:proDigest,taskId:old?.state==='RETIRED'?randomUUID():old?.taskId??randomUUID(),mode:mode==='reconcile'?'purchase':mode,rebind:mode==='reconcile',grant});
     let boundOrderLookup=null;
     if(mode==='reconcile'&&old.finalIntent?.sent===true&&typeof old.orderRefHash==='string'&&/^[a-f0-9]{64}$/.test(old.orderRefHash))boundOrderLookup=await port.lookupOrder(PRO_PLAN,old.orderRefHash);
-    return {state:result.state,phase:result.lastPhase,reason:result.reason,pendingAction:result.pending?.action??null,realOrderVerified:mode==='purchase'&&result.state==='CONFIRMED_UNPAID',boundOrderIndependentlyObserved:boundOrderLookup?.independent===true&&boundOrderLookup?.state==='unpaid',quoteCny:port.last?.raw.quotedCny??null,skuPath:port.last?.raw.productForm?.ready===true?port.last.raw.path:null};
+    return {state:result.state,phase:result.lastPhase,reason:result.reason,pendingAction:result.pending?.action??null,realOrderVerified:mode==='purchase'&&result.state==='CONFIRMED_UNPAID',receiptAwaitingPayment:mode==='purchase'&&job.receiptAwaitingPayment===true,boundOrderIndependentlyObserved:boundOrderLookup?.independent===true&&boundOrderLookup?.state==='unpaid',quoteCny:port.last?.raw.quotedCny??null,skuPath:port.last?.raw.productForm?.ready===true?port.last.raw.path:null};
   }finally{signal?.removeEventListener('abort',cancel);}
 }

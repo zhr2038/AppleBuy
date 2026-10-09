@@ -16,7 +16,7 @@
 // C035 (Claude): the observed complete normal empty bag is EMPTY_BAG; there only openProduct is accepted, as a write-free re-verification.
 // C037 (Claude): selectStore can choose the observed numbered native Dalian radio when it is not preselected, by the same exact proof.
 // C051 (Claude): the observed contact-only details step is a recognized step (contactStep), never purchase proof; see below.
-export const CHECKOUT_EXECUTOR_VERSION='C231-native-review-v1';
+export const CHECKOUT_EXECUTOR_VERSION='C236-receipt-status-v1';
 export async function merchantDocument(plan,command=null,internal=null){
   // `internal` is set only by this program's own re-entry; ChromePort passes plan and command only.
   // A structured command always receives a structured report. Nothing was written unless this id was already delivered.
@@ -24,6 +24,31 @@ export async function merchantDocument(plan,command=null,internal=null){
     if(command.structured!==true)throw new Error(prior?'OperationAlreadyDelivered':reason);
     return {delivered:false,touched:prior,reason:prior?'OperationAlreadyDelivered':reason};};
   const u=new URL(location.href);
+  // C235 observed native post-submit receipt. Observation only: no payment/link click here.
+  // The guest-order href includes customer data, so it is checked locally and never returned.
+  if(u.protocol==='https:'&&!u.username&&!u.password&&!u.port&&/^secure\d*\.www\.apple\.com\.cn$/.test(u.hostname)&&u.pathname==='/shop/checkout/interstitial'){
+    if(command)return report('ReceiptReadOnly');
+    const unknown=reason=>({schema:'applebuy-merchant-read/v1',phase:'UNKNOWN',verifiedStep:false,path:u.pathname,reason});
+    const norm=s=>String(s??'').normalize('NFKC').replace(/\s+/g,' ').trim();
+    const visible=e=>{if(!e?.isConnected)return false;for(let p=e;p;p=p.parentElement){const s=getComputedStyle(p);if(p.hidden||p.hasAttribute('inert')||p.getAttribute('aria-hidden')==='true'||s.display==='none'||['hidden','collapse'].includes(s.visibility))return false;}return true;};
+    const mains=[...document.querySelectorAll('main,[role="main"]')],main=mains.length===1?mains[0]:null;
+    if(!main||!visible(main))return unknown('receipt-scope-unconfirmed');
+    if([...document.querySelectorAll('[role="dialog"],[role="alertdialog"],[aria-modal="true"],dialog,[role="alert"]')].some(visible)||
+      main.querySelector('input[type="password"],input[autocomplete="one-time-code"]')||/订单已取消|取货已取消|付款成功|支付成功/.test(norm(main.textContent)))return unknown('receipt-status-conflict');
+    const heads=[...main.querySelectorAll('h1')].filter(visible),titles=[...main.querySelectorAll('h2')].filter(e=>/iphone/i.test(e.textContent)),links=[...main.querySelectorAll('a[data-autom="order-number"]')];
+    const full=norm(`${plan.product.model} ${plan.product.capacity} ${plan.product.color}`),link=links.length===1?links[0]:null,ref=/^订单\s*#(W\d{6,30})$/.exec(norm(link?.textContent))?.[1];
+    let href;try{href=new URL(link?.href);}catch{}
+    const parts=href?.pathname.split('/');
+    if(heads.length!==1||norm(heads[0].textContent)!=='你的订单正在等待付款。'||titles.length!==1||!visible(titles[0])||norm(titles[0].textContent)!==full||
+      (norm(main.textContent).match(/iphone/gi)??[]).length!==1||!link||!visible(link)||!ref||href?.protocol!=='https:'||href.username||href.password||href.port||href.search||href.hash||
+      href.hostname!=='www.apple.com.cn'||parts?.length!==6||parts.slice(1,4).join('/')!=='xc/cn/vieworder'||parts[4]!==ref||!parts[5])return unknown('receipt-evidence-unconfirmed');
+    let hash=internal?.hashes?.get(ref);
+    if(internal?.hashes&&!hash)return unknown('receipt-reference-changed');
+    if(!hash){const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(ref));hash=[...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('');return merchantDocument(plan,null,{hashes:new Map([[ref,hash]])});}
+    return {schema:'applebuy-merchant-read/v1',phase:'ORDER_RECEIPT',verifiedStep:true,path:u.pathname,
+      purchase:{...plan.product,quantity:null,totalCny:null,store:null,fulfillment:null,itemVerified:true,verified:false},
+      orderRefHash:hash,receiptVerified:false,receiptAwaitingPayment:true,extras:null,slotSummary:null,termsLinks:[],reason:'native-awaiting-payment-receipt'};
+  }
   // The merchant's observed _s query selects checkout steps within this document.
   // It is not a new task/document. Other query keys, fragments, paths or origins still differ.
   const sameControlledLocation=href=>{try{const previous=new URL(href);const step=x=>x.pathname==='/shop/checkout'&&!x.username&&!x.password&&!x.port&&!x.hash&&[...x.searchParams.keys()].every(k=>k==='_s')&&[...x.searchParams.keys()].length<=1;return href===u.href||step(previous)&&step(u)&&previous.origin===u.origin;}catch{return false;}};

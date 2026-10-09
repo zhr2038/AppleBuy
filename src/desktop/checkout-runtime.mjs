@@ -1,7 +1,7 @@
 // The desktop entry uses the production controller; a carried unknown record never enables a second buyer.
 import {runDesktopSession,PRO_PLAN,proDigest} from './browser-session.mjs';
 import {TASK_KEY,validStored,purchaseMatches,sameAcceptedSlot} from '../../web/checkout-connector/job.js';
-import {ChromePort,allowedMerchantUrl} from '../../web/checkout-connector/chrome-port.js';
+import {ChromePort,allowedMerchantUrl,allowedMerchantObservationUrl} from '../../web/checkout-connector/chrome-port.js';
 import {transferExistingCart,transferExpiredContactOnce,validateDesktopCartTransfer} from './cart-transfer.mjs';
 import {guardOwnedApi} from './owner-lease.mjs';
 import {restartFromCurrentEmpty,validateEmptyRestart} from './empty-restart.mjs';
@@ -21,7 +21,7 @@ function currentTerms(o){
  return links.includes(TERMS)?TERMS:null;
 }
 const PHASES=new Set(['ENTRY','VARIANT','EMPTY_BAG','BAG','AUTH','FULFILLMENT','SLOTS','DETAILS','PAYMENT','REVIEW','ORDER_RECEIPT','ORDER_DETAIL','PROCESSING','UNKNOWN']);
-const safeState=s=>({state:typeof s.state==='string'?s.state:'NEEDS_VERIFICATION',phase:PHASES.has(s.phase)?s.phase:'UNKNOWN',pendingAction:['addBag','checkout','chooseSlot','fillDetails','selectPayment','continuePayment','submitOrder'].includes(s.pendingAction)?s.pendingAction:null,...(s.phase==='REVIEW'&&reviewCheckCodes(s.reason).length?{reviewDiagnostic:reviewCheckCodes(s.reason)}:{})});
+const safeState=s=>({state:typeof s.state==='string'?s.state:'NEEDS_VERIFICATION',phase:PHASES.has(s.phase)?s.phase:'UNKNOWN',...(s.receiptAwaitingPayment===true?{receiptAwaitingPayment:true}:{}),pendingAction:['addBag','checkout','chooseSlot','fillDetails','selectPayment','continuePayment','submitOrder'].includes(s.pendingAction)?s.pendingAction:null,...(s.phase==='REVIEW'&&reviewCheckCodes(s.reason).length?{reviewDiagnostic:reviewCheckCodes(s.reason)}:{})});
 export class DesktopCheckoutRuntime {
  constructor({store,launch,onState=()=>{},executor='desktop'}){if(!['desktop','browser'].includes(executor))throw Error('DesktopExecutorNotAllowed');this.executor=executor;this.store=store;this.launch=launch;this.onState=onState;this.opened=false;this.busy=false;this.closing=false;this.closed=false;this.paused=false;this.cleanupConfirmed=false;this.finalDescriptor=null;this.active=null;this.operations=new Set();this.ownerLost=false;}
  track(operation){const running=Promise.resolve().then(operation);this.operations.add(running);running.then(()=>this.operations.delete(running),()=>this.operations.delete(running));return running;}
@@ -54,7 +54,7 @@ export class DesktopCheckoutRuntime {
    try{
     const tab=await this.api.tabs.get(this.tabId);
     if(tab&&!['loading','unloaded'].includes(tab.status)){
-     if(!allowedMerchantUrl(tab.url))throw Error('UnsupportedMerchantPage');
+     if(!allowedMerchantObservationUrl(tab.url))throw Error('UnsupportedMerchantPage');
      return await this.observe();
     }
    }catch(error){
@@ -118,7 +118,7 @@ export class DesktopCheckoutRuntime {
   const nativeReview=currentReviewProgress(PRO_PLAN,old,o,{contextOwned:port.controlledReview===true});
   const moneyBases=[old?.bagTotalCny,old?.quotedCny].filter(v=>v!=null);
   if(this.paused||this.closing||this.ownerLost||old?.expiresAt<=Date.now()||old?.desktopContext!==this.api.sessionId||old.lastPhase!=='REVIEW'||old.pending||old.finalIntent&&!knownUnreleasedFinal(old)||old.reconcileOnly===true||o.phase!=='REVIEW'||o.documentId!==old.lastDocumentId||!termsUrl||(!purchaseMatches(PRO_PLAN,o.purchase)&&!nativeReview)||o.extras!==false||o.paymentMethod!=='支付宝'||(!sameAcceptedSlot(old,o.slotSummary)&&!nativeReview)||moneyBases.length===0||moneyBases.some(v=>v!==o.purchase.totalCny))throw Error('DesktopFinalConsentNotCurrent');
-  this.finalDescriptor={taskId:old.taskId,documentId:old.lastDocumentId,termsUrl,...(nativeReview?{reviewProgressId:nativeReview.id,sourceChoice:{store:nativeReview.store,date:nativeReview.date,start:nativeReview.start,end:nativeReview.end},pickupNotice:nativeReview.pickupNotice}: {})};
+  this.finalDescriptor={taskId:old.taskId,documentId:old.lastDocumentId,termsUrl,totalCny:o.purchase.totalCny,...(nativeReview?{reviewProgressId:nativeReview.id,sourceChoice:{store:nativeReview.store,date:nativeReview.date,start:nativeReview.start,end:nativeReview.end},pickupNotice:nativeReview.pickupNotice}: {})};
   return {phase:'REVIEW',termsUrl,product:PRO_PLAN.product,totalCny:o.purchase.totalCny,totalCapCny:9999,quantity:1,store:PRO_PLAN.stores[0],paymentMethod:'支付宝',...(nativeReview?{factsOrigin:nativeReview.factsOrigin,pickupNotice:nativeReview.pickupNotice,heldSlotVerified:false,sourceDate:nativeReview.date,sourceStart:nativeReview.start,sourceEnd:nativeReview.end}: {})};
  }
  transferContact(options={}){return this.track(()=>this.transferContactOnce(options));}

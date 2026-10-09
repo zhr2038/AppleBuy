@@ -4,7 +4,7 @@ import {canonicalJson} from './job.js';
 import {BrowserJobExecutor} from './r2-executor.js';
 import {R2_OPERATIONS} from './r2-protocol.js';
 import {CHECKOUT_RPC,BAG,ENTRY,checkoutUrl,checkoutObservedUrl,checkoutRequest,checkoutCommand,planAllowed,boundedCheckoutJson} from './checkout-rpc-contract.js';
-const PAGE_KEYS=new Set(['schema','phase','purchase','verifiedStep','path','feedback','acceptedSlot','slotSummary','continueAvailable','variantVerified','quotedCny','listComplete','dates','times','selectedDate','paymentMethod','extras','existingOrdersChecked','orderRefHash','orderDetailLink','configuration','contactStep','paymentStep','reviewProgress','extrasConflict','fulfillmentChoice','merchantError','needsSelection','nextChoice','orderSummary','prelaunchConfigurable','productForm','productFormLoading','quantitySource','receiptVerified','selectedProductChoices','summaryReadable','termsLinks','primaryTermsUrl','reason']);
+const PAGE_KEYS=new Set(['schema','phase','purchase','verifiedStep','path','feedback','acceptedSlot','slotSummary','continueAvailable','variantVerified','quotedCny','listComplete','dates','times','selectedDate','paymentMethod','extras','existingOrdersChecked','orderRefHash','orderDetailLink','configuration','contactStep','paymentStep','reviewProgress','extrasConflict','fulfillmentChoice','merchantError','needsSelection','nextChoice','orderSummary','prelaunchConfigurable','productForm','productFormLoading','quantitySource','receiptVerified','receiptAwaitingPayment','selectedProductChoices','summaryReadable','termsLinks','primaryTermsUrl','reason']);
 function safeOutput(value,depth=0){
  if(depth>16)throw Error('NativeResultNotAllowed');
  if(!value||typeof value!=='object')return;

@@ -1,0 +1,29 @@
+{
+  "recordedAt": "2026-10-09T11:39:27.717394+00:00",
+  "sourceFiles": 340,
+  "sourceSha256": "87689ada94421279836e709abd0b4f58e0139e244afdaf6ae4de249f24c2891f",
+  "programmeFinalRecorded": true,
+  "finalSent": true,
+  "receiptPath": "/shop/checkout/interstitial",
+  "receiptHeading": "你的订单正在等待付款。",
+  "rootIndependentVerification": {
+    "sameReceiptAndAccountDetailReference": true,
+    "newAccountOrderCount": 5,
+    "previousAccountOrderCount": 4,
+    "nativeItemRows": 1,
+    "sku": "iPhone 18 Pro 256GB 黑色",
+    "totalCny": 9999,
+    "pickupStore": "Apple 大连恒隆广场",
+    "nativeItemStatus": "请在 22 分钟内完成付款。",
+    "alipayContinueControlPresent": true,
+    "quantityOneVerifiedAtFreshProgrammeSubmission": true,
+    "separateQuantityLabelOnDetailObserved": false
+  },
+  "paymentAttemptedByAgent": false,
+  "finalSubmittedByProgramme": true,
+  "programmeReceiptRecognized": false,
+  "programmeCurrentState": "NEEDS_VERIFICATION",
+  "programmeReason": "final-result-unconfirmed; no resubmission",
+  "programmeOrderReferencePresent": false,
+  "limitation": "Root independently verified the same current unpaid order; application receipt/detail recognition is still incomplete. No second submit or purchase may occur."
+}
