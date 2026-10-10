@@ -1,0 +1,24 @@
+{
+  "task": "C-259-FABLE51-LOGIN-DIAGNOSIS",
+  "modelRequested": "claude-fable-5-1",
+  "modelActual": [
+    "claude-fable-5-1"
+  ],
+  "canonicalModel": "claude-fable-5-1",
+  "provider": "firstParty",
+  "effortArgvVerified": "max",
+  "durationSeconds": 597.2,
+  "turns": 10,
+  "isError": false,
+  "timedOut": false,
+  "permissionDenialCount": 0,
+  "toolCounts": {
+    "Read": 9
+  },
+  "allEightRequiredFilesComplete": true,
+  "sourceManifestSha256": "346363ae75ec9af972b93bca2abf45bb3894ef0b5d3b60f3f11653233be8da7c",
+  "sourceUnchanged": true,
+  "ownedCleanupConfirmed": true,
+  "scope": "read-only diagnosis; no application acceptance, login success or new order",
+  "rootDisagreesWithAbsoluteExonerationOfClientCode": true
+}
