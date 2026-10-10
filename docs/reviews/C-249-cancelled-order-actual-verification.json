@@ -1,0 +1,121 @@
+{
+  "task": "C-249-CANCELLED-ORDER-CROSS-REVIEW",
+  "sourceFiles": 351,
+  "sourceSha256": "6beee32c31a1232b84edbfc72f5b3c3cb943ac74da4fce80653f144bcddbc370",
+  "sourceUnchanged": true,
+  "status": "returned_for_review",
+  "durationSeconds": 1083.03,
+  "turns": 33,
+  "models": [
+    "claude-opus-5-5"
+  ],
+  "primaryModels": [
+    "claude-opus-5-5"
+  ],
+  "provider": "firstParty",
+  "canonicalModel": "claude-opus-5-5",
+  "effort": "max",
+  "modelVerified": true,
+  "isError": false,
+  "subtype": "success",
+  "timedOut": false,
+  "cleanupConfirmed": true,
+  "permissionDenials": 0,
+  "privateReads": 0,
+  "edits": 0,
+  "toolCounts": {
+    "Read": 23,
+    "Glob": 1,
+    "Bash": 3,
+    "Grep": 4
+  },
+  "requiredEOF": 17,
+  "completeEOF": 17,
+  "gaps": [],
+  "commandsMatched": true,
+  "unexpectedCommands": 0,
+  "overlappingCommands": false,
+  "toolErrors": [],
+  "orderedChecks": [
+    {
+      "scope": "bounded-review-checks",
+      "order": 1,
+      "exitCode": 0,
+      "timedOut": false,
+      "ownedTreeCleanupConfirmed": true,
+      "manifest": {
+        "ok": true,
+        "files": 351,
+        "sha256": "6beee32c31a1232b84edbfc72f5b3c3cb943ac74da4fce80653f144bcddbc370",
+        "mismatches": []
+      },
+      "passed": true
+    },
+    {
+      "scope": "bounded-review-checks",
+      "order": 2,
+      "exitCode": 0,
+      "timedOut": false,
+      "ownedTreeCleanupConfirmed": true,
+      "counts": {
+        "tests": 108,
+        "pass": 108,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0
+      },
+      "passed": true
+    },
+    {
+      "scope": "bounded-review-checks",
+      "order": 3,
+      "exitCode": 0,
+      "timedOut": false,
+      "ownedTreeCleanupConfirmed": true,
+      "tests": 94,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "passed": true
+    },
+    {
+      "scope": "bounded-review-checks",
+      "order": 4,
+      "exitCode": 0,
+      "timedOut": false,
+      "ownedTreeCleanupConfirmed": true,
+      "counts": {
+        "tests": 1998,
+        "pass": 1998,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0
+      },
+      "passed": true
+    },
+    {
+      "scope": "bounded-review-checks",
+      "order": 5,
+      "exitCode": 0,
+      "timedOut": false,
+      "ownedTreeCleanupConfirmed": true,
+      "manifest": {
+        "ok": true,
+        "files": 351,
+        "sha256": "6beee32c31a1232b84edbfc72f5b3c3cb943ac74da4fce80653f144bcddbc370",
+        "mismatches": []
+      },
+      "passed": true
+    },
+    {
+      "scope": "bounded-review-checks",
+      "complete": true,
+      "orderedChecks": 5,
+      "passed": true
+    }
+  ],
+  "compactions": 1,
+  "usageScope": "resumed history aggregate, not this invocation spend",
+  "accepted": true,
+  "realOrderVerified": false
+}
