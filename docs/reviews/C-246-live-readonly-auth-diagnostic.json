@@ -1,0 +1,68 @@
+{
+  "recordedDate": "2026-10-10",
+  "scope": "accepted-programme-readonly-installed-version-and-auth-diagnostic",
+  "sourceFiles": 348,
+  "sourceSha256": "001e5888d0cd32635004712a132ffb1a095e16452baea8633905a2f0c14db2fa",
+  "installedExecutorVersion": "C244-order-automation-v1",
+  "installedVersionVerified": true,
+  "programmeCheck": {
+    "terminal": true,
+    "exitCode": 0,
+    "initialState": "auth",
+    "resultState": "unknown",
+    "originalJournalUnchanged": true,
+    "merchantMutations": 0,
+    "newOrders": 0,
+    "ownedCleanupConfirmed": true,
+    "sameOrderLiveVerificationSucceeded": false
+  },
+  "normalChromeAuthentication": {
+    "routineFormSubmissionAttempted": true,
+    "currentVisibleExpectedAccountConfirmed": true,
+    "earlierInputPropertyMismatchInferenceRetracted": true,
+    "authenticatedOrderListObserved": false,
+    "visibleLoadingIndicator": true,
+    "consoleSyntaxError": true,
+    "consoleInvalidJson": true,
+    "unexpectedHtmlToken": true,
+    "laterTypeError": true,
+    "currentHttpStatus": 541,
+    "rootCause": "merchant login handoff returns HTML with HTTP 541; underlying cause unconfirmed",
+    "old541IsNotCurrentEvidence": true,
+    "manualComparison": "human reports still spinning after refresh and manual login",
+    "furtherLoginSubmissionStopped": true,
+    "remainingDiagnostic": "current response metadata obtained; manual Network question resolved",
+    "current541IndependentlyObserved": true,
+    "boundedTracedLoginAttempts": 1,
+    "accountCompletionResponse": {
+      "host": "idmsa.apple.com.cn",
+      "path": "/appleauth/auth/signin/complete",
+      "status": 200,
+      "mime": "application/json"
+    },
+    "merchantHandoffResponse": {
+      "host": "secure11.www.apple.com.cn",
+      "path": "/shop/signIn/idms/authx",
+      "status": 541,
+      "mime": "text/html"
+    },
+    "unrelatedSearchSuggestions403Excluded": true,
+    "networkDiagnosticTransport": "documented capability of the already supported Chrome tab; no external attachment",
+    "networkObservationStopped": true,
+    "requestPayloadsRead": false,
+    "responseBodiesRead": false,
+    "rawNetworkLogSaved": false
+  },
+  "sourceChanged": false,
+  "newCodeReviewRequired": false,
+  "existingReloadHandoffResolved": true,
+  "priorOrderCancelled": true,
+  "newPurchaseAuthorizedByThisCheck": false,
+  "privateDataPublished": false,
+  "limitations": [
+    "Installed version and readonly connection are verified; authenticated same-order lookup is not.",
+    "Current merchant authx HTTP541/text-html is independently observed. Its underlying session, service or filtering cause is unconfirmed; account complete HTTP200 alone does not prove a usable merchant session.",
+    "Manual login also spins; this does not prove the browser environment or merchant service is otherwise healthy.",
+    "Preserve all original final, unknown and historical records. No further purchase, payment, shutdown or reboot."
+  ]
+}
