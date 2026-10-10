@@ -1,0 +1,19 @@
+{
+  "task": "C253",
+  "sourceCommit": "fe03d642fac58667972ec288fafbc2e0f3395b1a",
+  "branch": "codex/c030-quota-checkpoint-20261004",
+  "remote": "https://github.com/zhr2038/AppleBuy",
+  "forcePush": false,
+  "sourceFiles": 358,
+  "sourceSha256": "875b9895810d392f77ccea71d6309a1293b52aee92eed6ba31ed3299ba2db579",
+  "remoteHeadMatchedSourceCommit": true,
+  "allHeadBlobHashesMatchManifest": true,
+  "localInstalledDirectoryUpdated": true,
+  "newDesktopWindowOpened": true,
+  "personalChromeModuleVerified": false,
+  "remainingDeploymentStep": "Human reload of the existing AppleBuy extension and reconnection of its purchase bridge; no new permissions requested.",
+  "review": "Direct author-verified deployment authorized by the human; Claude review waived for this revision, not claimed completed.",
+  "mainPromoted": false,
+  "newLiveOrderClaimed": false,
+  "privateFilesPublished": false
+}
