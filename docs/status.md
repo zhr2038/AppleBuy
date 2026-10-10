@@ -1,3 +1,9 @@
+# C247 login recovered; programme account preflight works, old reference absent
+
+After the human reported login recovery, normal Chrome rendered the authenticated order list without login submission. The first programme attempt could not connect and reported cleanup=false; subsequent exact owned-process inventory was empty and the kernel owner was independently available. After the human reconnected the existing bridge (no reload/new permissions), the actual programme verified installed C244, ran the prior-reference audit and returned not-found, with original journal unchanged and cleanup/exit0 confirmed.
+
+A separate sequential programme current-account preflight verified the installed version and returned clear/authenticated=true/matchingModelCount=2, original journal unchanged, zero merchant mutations/new orders/payment and cleanup/exit0. Root saw four current list rows; earlier same-order evidence had five. The account label is masked, so no full identity is inferred from it. Prior reference absence is not a fresh cancelled/failed-order proof, and its current detail remains unverified. No repeat purchase follows. C246's541 remains historical; recovery is observed, its cause/permanence unproved. Source348 SHA001e5888d0cd32635004712a132ffb1a095e16452baea8633905a2f0c14db2fa is unchanged; no new review. No active checker/reviewer/buyer or pending reconnect request. No shutdown/reboot.
+
 # C246 installed version verified; current merchant login handoff returns HTTP541
 
 The accepted C244 module is now actually loaded: the programme readonly named-channel check verified C244-order-automation-v1, reached AUTH and ended unknown/exit0, with original journal unchanged, zero merchant mutations/new orders and owned cleanup confirmed. The old extension reload/connection handoff is resolved. This does not verify the current same-order detail or complete the goal; no buyer or reviewer remains active.

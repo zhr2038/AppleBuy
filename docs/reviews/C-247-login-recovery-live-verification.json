@@ -1,0 +1,56 @@
+{
+  "recordedDate": "2026-10-10",
+  "scope": "installed-programme-readonly-order-audit-after-human-reported-login-recovery",
+  "sourceFiles": 348,
+  "sourceSha256": "001e5888d0cd32635004712a132ffb1a095e16452baea8633905a2f0c14db2fa",
+  "sourceChanged": false,
+  "initialAttemptBeforeReconnect": {
+    "result": "connection-or-observation-unconfirmed",
+    "exitCode": 1,
+    "cleanupReportedByWrapper": false,
+    "historicalFailurePreserved": true,
+    "subsequentOwnedProcessInventoryEmpty": true,
+    "subsequentKernelOwnerAvailable": true,
+    "remoteCloseAcknowledgementVerified": false
+  },
+  "humanAction": "Reconnected the existing fixed-Pro native checkout bridge; no reload or permission expansion requested.",
+  "normalChromeObservation": {
+    "authenticatedOrderListRendered": true,
+    "loadingIndicator": false,
+    "visibleOrderRows": 4,
+    "accountDisplayMasked": true,
+    "fullAccountIdentityNotInferredFromMaskedLabel": true,
+    "rootSubmittedLoginThisTurn": false
+  },
+  "programmeSameReferenceAudit": {
+    "installedVersionVerified": true,
+    "version": "C244-order-automation-v1",
+    "result": "not-found",
+    "sameOrderDetailVerified": false,
+    "originalJournalUnchanged": true,
+    "ownedCleanupConfirmed": true,
+    "exitCode": 0
+  },
+  "programmeCurrentAccountPreflight": {
+    "installedVersionVerified": true,
+    "state": "clear",
+    "authenticated": true,
+    "matchingModelCount": 2,
+    "scope": "recognized current rendered account list; no matching unpaid or unknown status detected",
+    "originalJournalUnchanged": true,
+    "ownedCleanupConfirmed": true,
+    "exitCode": 0
+  },
+  "merchantMutations": 0,
+  "newOrders": 0,
+  "payments": 0,
+  "rawAccountOrOrderIdentifiersPublished": false,
+  "newReviewInvoked": false,
+  "limitations": [
+    "Current authenticated list and programme preflight work; prior same-reference detail is not verified by this run.",
+    "Earlier live evidence observed five rows and the original order cancelled. Today only four rows are visible; why the original reference is absent is not established.",
+    "A clear current list is not authority for a new purchase or proof that an unknown historical outcome failed.",
+    "The earlier HTTP541 remains a real historical incident. This run observes recovered login but does not prove its underlying cause or a permanent fix.",
+    "No source patch, full regression rerun, new order, payment, shutdown or reboot occurred."
+  ]
+}
