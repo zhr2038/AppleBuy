@@ -15,6 +15,8 @@ export class NativeCheckoutApi{
  }
  create(url){return this.tabs.create({url,active:true});}
  executorVersion(){return this.request('executorVersion',{});}
+ configureLogin(credentials){return this.request('configureLogin',{credentials});}
+ loginStatus(){return this.request('loginStatus',{});}
  auditOrders(plan,expectedRefHash=null,{automatic=false}={}){if(typeof automatic!=='boolean')throw Error('NativeOrderModeInvalid');return this.request('auditOrders',{plan,expectedRefHash,automatic});}
  auditCancelledOrder(plan,expectedRefHash){return this.request('auditCancelledOrder',{plan,expectedRefHash});}
  r2Exchange(operation,payload){if(!/^r2(?:Version|Begin|Chunk|Run|Poll|Ack|Pause|Finish)$/.test(operation))throw Error('R2OperationInvalid');return this.request(operation,payload);}

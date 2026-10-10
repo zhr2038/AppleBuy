@@ -1,5 +1,6 @@
 // Own Chrome tabs only; fixed reviewed merchant program only. Prepared and unreachable from the installed readonly link.
 import {merchantDocument,CHECKOUT_EXECUTOR_VERSION} from './page-program.js';
+import {AppleLogin} from './apple-login.js';
 import {canonicalJson} from './job.js';
 import {BrowserJobExecutor} from './r2-executor.js';
 import {OrderAudit,missingOwnedTab,auditCancelledOrder} from './order-audit.js';
@@ -14,9 +15,9 @@ function safeOutput(value,depth=0){
 }
 export class CheckoutRpcPeer{
  constructor({api,contextId,purchaseAllowed=false}){if(typeof contextId!=='string'||!/^[a-zA-Z0-9-]{16,80}$/.test(contextId)||typeof purchaseAllowed!=='boolean')throw Error('NativeContextNotAllowed');this.api=api;this.contextId=contextId;this.purchaseAllowed=purchaseAllowed;this.tabs=new Map();this.requests=new Set();this.actions=new Set();this.taskId=null;this.actionTabId=null;this.busy=false;this.closed=false;
-  this.onRemoved=id=>{if(this.tabs.has(id)){this.orderAudit?.removed(id);this.tabs.delete(id);}};api.tabs?.onRemoved?.addListener(this.onRemoved);
+  this.login=new AppleLogin();this.onRemoved=id=>{if(this.tabs.has(id)){this.orderAudit?.removed(id);this.tabs.delete(id);}};api.tabs?.onRemoved?.addListener(this.onRemoved);
  }
- dispose(){this.closed=true;this.api.tabs?.onRemoved?.removeListener(this.onRemoved);}
+ dispose(){this.closed=true;this.login.clear();this.api.tabs?.onRemoved?.removeListener(this.onRemoved);}
  async tab(id){if(!Number.isSafeInteger(id)||!this.tabs.has(id))throw Error('NativeTabNotOwned');const t=await this.api.tabs.get(id);if(!checkoutObservedUrl(t.url))throw Error('NativeAddressNotAllowed');return t;}
  async receive(value){
   let q;try{q=checkoutRequest(value,this.contextId);}catch{return {schema:CHECKOUT_RPC,kind:'reply',contextId:this.contextId,id:typeof value?.id==='string'?value.id.slice(0,80):'',ok:false,error:'NativeRequestNotAllowed'};}
@@ -39,13 +40,17 @@ export class CheckoutRpcPeer{
   }});
   const keys=allowed=>{if(Object.keys(p).some(k=>!allowed.includes(k)))throw Error('NativePayloadNotAllowed');};
   if(op==='executorVersion'){keys([]);return CHECKOUT_EXECUTOR_VERSION;}
+  if(op==='configureLogin'){keys(['credentials']);return this.login.configure(p.credentials);}
+  if(op==='loginStatus'){keys([]);return {...this.login.last};}
   if(op==='auditCancelledOrder'){
    keys(['plan','expectedRefHash']);if(!planAllowed(p.plan))throw Error('NativeOrderPlanNotAllowed');
    return auditCancelledOrder(guarded,p.plan,p.expectedRefHash);
   }
   if(op==='auditOrders'){
    keys(['plan','expectedRefHash','automatic']);if(!planAllowed(p.plan)||p.automatic!==undefined&&typeof p.automatic!=='boolean')throw Error('NativeOrderPlanNotAllowed');
-   this.orderAudit??=new OrderAudit(this);return this.orderAudit.run(guarded,p.plan,p.expectedRefHash??null,{automatic:p.automatic===true});
+   this.orderAudit??=new OrderAudit(this);const result=await this.orderAudit.run(guarded,p.plan,p.expectedRefHash??null,{automatic:p.automatic===true});
+   if(result.state==='auth'&&this.orderAudit.tabId!==null)await this.login.attempt(guarded,this.orderAudit.tabId,live);
+   return result;
   }
   if(op==='createExpiryProbe'){
    keys(['url']);let u;try{u=new URL(p.url);}catch{throw Error('NativeAddressNotAllowed');}
@@ -91,6 +96,7 @@ export class CheckoutRpcPeer{
   const result=boundedCheckoutJson(rows[0].result);
   if(!result||typeof result!=='object'||Array.isArray(result))throw Error('NativeScriptUnconfirmed');
   safeOutput(result);
+  if(!command&&result.phase==='AUTH')await this.login.attempt(guarded,p.tabId,live);
   if(!command){
    if(result.schema!=='applebuy-merchant-read/v1'||Object.keys(result).some(k=>!PAGE_KEYS.has(k)))throw Error('NativePageNotAllowed');state.last={documentId:rows[0].documentId,page:result};state.navigation=null;
   }else{

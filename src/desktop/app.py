@@ -145,7 +145,7 @@ class App:
         self.checkout_complete=False;self.checkout_receipt=False;self.current_consent=None
         self.auto_connect=False;self.reconnect_attempts=0;self.order_check=None
         self.profile=profile
-        root.title(TITLE);root.geometry('800x640');root.minsize(720,570)
+        root.title(TITLE);root.geometry('800x760');root.minsize(720,700)
         pane=ttk.Frame(root,padding=18);pane.pack(fill='both',expand=True)
         ttk.Label(pane,text='AppleBuy 自提助手',font=('Microsoft YaHei UI',17)).pack(anchor='w')
         ttk.Label(pane,text='本次方案：Pro 256GB 黑色 · 1 台 · 大连恒隆 · 上限 ¥9,999 · 支付宝',wraplength=730).pack(anchor='w',pady=(8,12))
@@ -165,6 +165,14 @@ class App:
         self.profile_status=tk.StringVar(value='未保存取货资料。')
         ttk.Label(fields,textvariable=self.profile_status,wraplength=690).grid(row=4,column=0,columnspan=3,sticky='w')
         self.pickup_frame=fields
+        login=ttk.LabelFrame(main,text='Apple 登录',padding=8);login.pack(fill='x',pady=(8,0))
+        self.login_account=tk.StringVar();self.login_password=tk.StringVar();self.auto_login=tk.BooleanVar(value=True)
+        ttk.Checkbutton(login,text='需要登录时自动填写并继续',variable=self.auto_login).grid(row=0,column=0,columnspan=4,sticky='w')
+        ttk.Label(login,text='账号').grid(row=1,column=0,sticky='w')
+        ttk.Entry(login,textvariable=self.login_account,width=28).grid(row=1,column=1,padx=5)
+        ttk.Label(login,text='密码').grid(row=1,column=2)
+        ttk.Entry(login,textvariable=self.login_password,show='●',width=24).grid(row=1,column=3,padx=5)
+        ttk.Label(login,text='密码可留空以使用 Chrome 已填入的密码；手填密码仅本次运行使用。验证码需本人处理。',wraplength=660).grid(row=2,column=0,columnspan=4,sticky='w',pady=(4,0))
         self.new_purchase_frame=ttk.LabelFrame(advanced,text='旧订单已取消，另买一台',padding=7)
         self.previous_order_number=tk.StringVar()
         line=ttk.Frame(self.new_purchase_frame);line.pack(fill='x')
@@ -181,6 +189,8 @@ class App:
         ttk.Label(state_box,textvariable=self.summary_status,font=('Microsoft YaHei UI',13)).pack(anchor='w',pady=(0,8))
         ttk.Label(state_box,textvariable=self.result,wraplength=680).pack(anchor='w')
         self.consent_text=tk.StringVar(value='');ttk.Label(state_box,textvariable=self.consent_text,wraplength=680).pack(anchor='w',pady=(8,0))
+        self.one_click_start=True;self.start_scope_requested=False
+        ttk.Label(main,text='点击“开始一键下单”即接受本次 Apple Store 条款，按顶部固定条件创建一张未付款订单，不支付。条件或条款变化会停下。\nhttps://www.apple.com.cn/shop/browse/open/salespolicies',wraplength=690).pack(anchor='w',pady=(2,6))
         action_row=ttk.Frame(main);action_row.pack(fill='x',pady=(5,6))
         self.primary_button=ttk.Button(action_row,text='开始 / 继续',command=self.primary_action);self.primary_button.pack(side='left',fill='x',expand=True)
         self.main_pause_button=ttk.Button(action_row,text='暂停',command=self.pause_shortcut,state='disabled');self.main_pause_button.pack(side='left',padx=(10,0))
@@ -235,6 +245,7 @@ class App:
             saved=self.profile.load()
             if saved is not None:
                 for key,value in saved.items():self.pickup_values[key].set(value)
+                if hasattr(self,'login_account'):self.login_account.set(saved.get('email',''))
                 self.remember_pickup.set(True);self.profile_status.set('已读取本机加密资料；取消勾选即可删除保存副本。')
         except Exception:self.profile_status.set('已存资料无法解密，未使用；可重新填写并选择保存。')
 
@@ -247,6 +258,22 @@ class App:
     def save_pickup_if_selected(self):
         if getattr(self,'remember_pickup',None) is not None and self.remember_pickup.get():
             self.profile.save({k:v.get() for k,v in self.pickup_values.items()});self.profile_status.set('取货资料已在本机加密保存。')
+
+    def send_checkout(self,value):
+        """Passwords travel only on the existing private stdin/native pipe, never in task/profile data."""
+        if hasattr(self,'auto_login') and value.get('action') not in ('pause','stop','submit'):
+            password=self.login_password.get()
+            account=self.login_account.get().strip() or (self.pickup_values['email'].get().strip() if 'email' in self.pickup_values else '')
+            credentials=None
+            if self.auto_login.get() and account:
+                if not re.fullmatch(r'[^\s@]+@[^\s@]+\.[^\s@]+',account) or len(password)>1024:raise ValueError('Invalid login fields')
+                credentials={'account':account,'password':password}
+            if self.browser_choice.get() in ('正常 Chrome 结账通道','正常 Chrome 浏览器内执行 R2'):
+                value={**value,'privateLogin':credentials}
+        if getattr(self,'start_scope_requested',False) and value.get('action') in ('advance','resume'):
+            value={**value,'startTermsUrl':'https://www.apple.com.cn/shop/browse/open/salespolicies'}
+            self.start_scope_requested=False
+        self.checkout.send(value)
 
     def _enabled(self,name):
         control=getattr(self,name,None)
@@ -262,6 +289,7 @@ class App:
             can_advance=self._enabled('advance_button'),can_reconcile=self._enabled('reconcile_button'),can_submit=self._enabled('submit_button') and self._enabled('final_checkbox'),
             consent_current=current_consent(getattr(self,'current_consent',None)),phase=getattr(self,'checkout_phase',None))
         self.primary_button.config(text=label,state='normal' if action else 'disabled');self.primary_mode=action
+        if getattr(self,'one_click_start',False) and action in ('open','advance') and not getattr(self,'checkout_submission_pending',False) and not getattr(self,'checkout_readonly',False):self.primary_button.config(text='开始一键下单（接受本次条款）')
         self.main_pause_button.config(state='normal' if busy or self.runner.busy else 'disabled')
         phase=getattr(self,'checkout_phase',None)
         title='等待开始' if not busy else {'AUTH':'等待官网登录 / 验证','BAG':'核对购物袋','FULFILLMENT':'选择到店自提','SLOTS':'选择门店与末档','DETAILS':'填写取货资料','PAYMENT':'选择支付宝','REVIEW':'核对订单','ORDER_RECEIPT':'核对下单回执','ORDER_DETAIL':'核对订单详情'}.get(phase,'读取当前进度')
@@ -284,6 +312,7 @@ class App:
             except Exception:self.profile_status.set('资料格式或保存失败，未开始；修正资料或取消保存。');return
         self.refresh_primary();action=getattr(self,'primary_mode',None)
         if action is None:return
+        self.start_scope_requested=bool(getattr(self,'one_click_start',False) and action in ('open','advance') and not getattr(self,'checkout_submission_pending',False) and not getattr(self,'checkout_readonly',False))
         if action=='submit':
             # The button explicitly says it accepts THIS displayed agreement; no auto acceptance.
             if not current_consent(getattr(self,'current_consent',None)):return
@@ -309,9 +338,10 @@ class App:
         self.root.title(TITLE+' · '+label+' [Ctrl+Alt+P 开始；Ctrl+Alt+S 暂停；Ctrl+Alt+C 只读Chrome]')
 
     def checkout_shortcut(self):
-        self.open_checkout();return 'break'
+        self.primary_action();return 'break'
 
     def pause_shortcut(self):
+        self.start_scope_requested=False
         self.auto_connect=False
         if self.checkout.busy:self.stop_checkout()
         else:self.stop()
@@ -399,7 +429,7 @@ class App:
         self.new_purchase_confirm.set(False);self.final_confirm.set(False);self.current_consent=None
         self.checkout_working=True
         try:
-            self.checkout.send({'action':'new-purchase','approved':True,'originalOrderAssociated':True,**({'orderNumber':ref} if ref else {}),'privatePickupData':data})
+            self.send_checkout({'action':'new-purchase','approved':True,'originalOrderAssociated':True,**({'orderNumber':ref} if ref else {}),'privatePickupData':data})
             self.result.set('正在核实已取消的原订单及当前账户；确认前不会新买。')
         except Exception:
             self.checkout_working=False;self.result.set('新任务结果未确认；请核对现有记录，不重复开始。')
@@ -414,7 +444,7 @@ class App:
             action='resume' if getattr(self,'checkout_paused',False) else 'advance'
             self.checkout_paused=False
             self.checkout_working=True
-            self.checkout.send({'action':action,'checkoutApproved':True,'newContextConfirmed':True,'privatePickupData':data})
+            self.send_checkout({'action':action,'checkoutApproved':True,'newContextConfirmed':True,'privatePickupData':data})
         except Exception:self.checkout_working=False;self.status.set('推进未确认；保留原动作，不自动重复。')
 
     def reconcile_checkout(self):
@@ -422,7 +452,7 @@ class App:
             self.submit_button.config(state='disabled');self.final_confirm.set(False)
             self.checkout_paused=False
             self.checkout_working=True
-            self.checkout.send({'action':'reconcile'})
+            self.send_checkout({'action':'reconcile'})
         except Exception:self.checkout_working=False;self.status.set('旧任务核对未确认；没有发出官网购买动作。')
 
     def transfer_checkout(self):
@@ -445,14 +475,14 @@ class App:
             if command['action']=='restart-payment':command.update(oldExecutorStopped=True,sameAccountOrdersClear=True,expiredCheckoutUrl=expiry_url,additionalRecoveryApproved=getattr(self,'checkout_can_additional_review',False),automaticRecoveryApproved=getattr(self,'checkout_can_policy_review',False))
             if command['action']=='renew-draft':command.update(merchantExpiryConfirmed=True,oldExecutorStopped=True,sameAccountOrdersClear=True)
             self.checkout_working=True
-            self.checkout.send(command)
+            self.send_checkout(command)
         except Exception:self.checkout_working=False;self.status.set('接替未确认，旧未知记录保持，不重复加购或下单。')
 
     def submit_checkout(self):
         if not self.final_confirm.get():self.status.set('需要核对当前订单并接受本次条款；未提交。');return
         self.submit_button.config(state='disabled');self.final_confirm.set(False)
         self.checkout_working=True
-        try:self.checkout.send({'action':'submit','termsAccepted':True,'existingOrdersChecked':True,'noExtras':True})
+        try:self.send_checkout({'action':'submit','termsAccepted':True,'existingOrdersChecked':True,'noExtras':True})
         except Exception:self.checkout_working=False;self.status.set('最终动作未确认，保留记录，不重复提交。')
 
     def restart_empty_checkout(self):
@@ -461,7 +491,7 @@ class App:
         if data.get('identitySuffix') and (len(data['identitySuffix'])!=4 or not data['identitySuffix'].isdigit()):self.status.set('证件后四位格式不正确；未发动作。');return
         self.empty_restart_confirm.set(False);self.empty_restart_button.config(state='disabled');self.empty_restart_checkbox.config(state='disabled');self.final_confirm.set(False);self.final_checkbox.config(state='disabled');self.submit_button.config(state='disabled')
         self.checkout_working=True
-        try:self.checkout.send({'action':'restart-empty','approved':True,'accountConfirmedByUser':True,'oldCheckoutStoppedByUser':True,'existingOrdersCheckedByUser':True,'privatePickupData':data})
+        try:self.send_checkout({'action':'restart-empty','approved':True,'accountConfirmedByUser':True,'oldCheckoutStoppedByUser':True,'existingOrdersCheckedByUser':True,'privatePickupData':data})
         except Exception:self.checkout_working=False;self.status.set('空购物袋新尝试未确认；旧记录保留，不重复加购或下单。')
 
     def stop_checkout(self):
@@ -591,8 +621,8 @@ class App:
                     if v.get('state')=='RUNNING':self.checkout_working=True
                     if phase!='REVIEW' or v.get('pendingAction') is not None:
                         self.current_consent=None;self.final_confirm.set(False);self.submit_button.config(state='disabled');self.final_checkbox.config(state='disabled')
-                    if phase=='AUTH':self.result.set('请在 Chrome 完成登录或验证，程序会自动衔接。' if not getattr(self,'checkout_submission_pending',False) else '请在 Chrome 登录后核对已提交的订单，不会重新下单。')
-                    elif kind=='progress' and not getattr(self,'checkout_submission_pending',False) and self.result.get()=='请在 Chrome 完成登录或验证，程序会自动衔接。':
+                    if phase=='AUTH':self.result.set('程序将自动处理普通登录；验证码或页面异常时请查看 Chrome。' if not getattr(self,'checkout_submission_pending',False) else '请在 Chrome 登录后核对已提交的订单，不会重新下单。')
+                    elif kind=='progress' and not getattr(self,'checkout_submission_pending',False) and self.result.get()=='程序将自动处理普通登录；验证码或页面异常时请查看 Chrome。':
                         self.result.set('程序正在按本次条件继续，无需重复点击。')
                     name={'AUTH':'等待本人登录/验证','SLOTS':'选择末档','DETAILS':'取货资料','PAYMENT':'付款方式','REVIEW':'核对订单','ORDER_DETAIL':'核对未付款订单'}.get(phase,phase)
                     self.status.set('程序结账：'+name+'；'+v.get('state','NEEDS_VERIFICATION'))

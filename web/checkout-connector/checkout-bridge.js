@@ -1,4 +1,11 @@
 import {createCheckoutNativeLink} from './checkout-native-link.js';
+const authButton=document.getElementById('auth-scope'),authStatus=document.getElementById('auth-status');
+authButton.addEventListener('click',async event=>{
+ if(!event.isTrusted||location.href!==chrome.runtime.getURL('checkout-bridge.html')||authButton.disabled)return;
+ authButton.disabled=true;
+ try{const allowed=await chrome.permissions.request({origins:['https://idmsa.apple.com.cn/*']});authStatus.textContent=allowed?'Apple 登录框权限已允许；账号密码只用于普通官网登录。':'未允许自动登录；可在官网自行登录。';}
+ catch{authStatus.textContent='登录权限未确认；没有提交账号密码。';}finally{authButton.disabled=false;}
+});
 const scopeButton=document.getElementById('shop-scope'),scopeStatus=document.getElementById('scope-status');let scopeBusy=false;
 scopeButton.addEventListener('click',async event=>{
  if(!event.isTrusted||location.href!==chrome.runtime.getURL('checkout-bridge.html')||scopeBusy)return;scopeBusy=true;scopeButton.disabled=true;

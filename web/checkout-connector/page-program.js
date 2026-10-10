@@ -16,7 +16,7 @@
 // C035 (Claude): the observed complete normal empty bag is EMPTY_BAG; there only openProduct is accepted, as a write-free re-verification.
 // C037 (Claude): selectStore can choose the observed numbered native Dalian radio when it is not preselected, by the same exact proof.
 // C051 (Claude): the observed contact-only details step is a recognized step (contactStep), never purchase proof; see below.
-export const CHECKOUT_EXECUTOR_VERSION='C253-pickup-reselection-v1';
+export const CHECKOUT_EXECUTOR_VERSION='C258-linked-login-v1';
 export async function merchantDocument(plan,command=null,internal=null){
   // `internal` is set only by this program's own re-entry; ChromePort passes plan and command only.
   // A structured command always receives a structured report. Nothing was written unless this id was already delivered.

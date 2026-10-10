@@ -11,7 +11,7 @@ function harness(){
 }
 test('executor grants are optional, contain no persistent host/content/background/debugger/cookie/network access',()=>{
   const m=JSON.parse(readFileSync(new URL('../web/checkout-connector/manifest.json',import.meta.url),'utf8'));
-  assert.deepEqual(m.permissions,['scripting','storage','activeTab']);assert.deepEqual(m.optional_host_permissions,['https://www.apple.com.cn/*','https://*.www.apple.com.cn/*']);
+  assert.deepEqual(m.permissions,['scripting','storage','activeTab']);assert.deepEqual(m.optional_host_permissions,['https://www.apple.com.cn/*','https://*.www.apple.com.cn/*','https://idmsa.apple.com.cn/*']);
   for(const k of ['host_permissions','background','content_scripts','externally_connectable'])assert.equal(k in m,false);
   assert.match(m.content_security_policy.extension_pages,/connect-src 'none'/);
   const ui=readFileSync(new URL('../web/checkout-connector/control.js',import.meta.url),'utf8');assert.match(ui,/withPurchaseOwner\(navigator\.locks/);assert.match(ui,/storage\.session/);assert.doesNotMatch(ui,/storage\.local\.remove|\.clear\(/);

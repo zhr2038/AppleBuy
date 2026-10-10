@@ -1,4 +1,4 @@
-// Prepared native-only entry: production controller/private stdin. Never SDK attach, profile copy or auto-authentication.
+// Owned native entry. Optional ordinary Apple form login is memory-only; no SDK attach or profile copy.
 import {createInterface} from 'node:readline';
 import {createHash} from 'node:crypto';
 import {preSlotReopenShape,observedRefusalTrialShape,expiredPreparedTrialShape} from './cancelled-order-purchase.mjs';import {join} from 'node:path';
@@ -9,10 +9,11 @@ import {stoppedCheckoutDraftSource} from './cart-transfer.mjs';import {TASK_KEY}
 import {probeCheckoutHostScope} from './checkout-host-scope.mjs';
 import {expiredPaymentSourceShape} from './expired-payment-restart.mjs';
 import {expiredReviewSourceShape,additionalExpiredReviewSourceShape,policyExpiredReviewSourceShape} from './expired-review-restart.mjs';
+import {StartApproval} from './start-approval.mjs';
 if(process.argv.length>3||process.argv.length===3&&process.argv[2]!=='--browser-executor')throw Error('NativeWorkerArgumentsNotAllowed');
 const emit=value=>process.stdout.write(JSON.stringify({scope:'desktop-pro-checkout',...value})+'\n');
 const executor=process.argv[2]==='--browser-executor'?'browser':'desktop';
-let input,watch,orderWatch,closing=false;const store=new DesktopTaskStore(join(process.cwd(),'.local/desktop/task.json'));
+let input,watch,orderWatch,closing=false,loginConfigured=false,startApproval=null;const store=new DesktopTaskStore(join(process.cwd(),'.local/desktop/task.json'));
 const runtime=new DesktopCheckoutRuntime({store,executor,ordersEnabled:true,launch:async()=>launchNativeCheckout(),onState:s=>{
  if(s.ownerLost===true){closing=true;watch?.stop();orderWatch?.stop();emit({type:'owner-lost',message:'执行权已丢失，停止新动作；未知记录保留。'});input?.close();process.stdin.destroy();return;}
  emit({type:'progress',...s});
@@ -43,8 +44,10 @@ try{
   watch.start(async()=>{active=true;try{await advance({...c,action:'advance'});}catch{emit({type:'blocked',paused:runtime.paused,message:'原任务后续页面未确认；旧动作保持，不重复发送。'});stopBrokenConnection();}finally{active=false;}},{phases:next??['FULFILLMENT','SLOTS','DETAILS','PAYMENT','REVIEW'],deadline:row.expiresAt});
  }
  async function advance(c){
+  if(c.startTermsUrl&&c.checkoutApproved===true&&c.newContextConfirmed===true){startApproval??=new StartApproval();startApproval.bind(await store.get(TASK_KEY),c.startTermsUrl);}
   const options={checkoutApproved:c.checkoutApproved===true,newContextConfirmed:c.newContextConfirmed===true,privatePickupData:c.privatePickupData??{}};
-  const result=c.action==='resume'?await runtime.resume(options):await runtime.advance(options);
+  let result=c.action==='resume'?await runtime.resume(options):await runtime.advance(options);
+  if(!runtime.paused&&!closing&&startApproval?.consume(await store.get(TASK_KEY),runtime.finalDescriptor))result=await runtime.submit({termsAccepted:true,existingOrdersChecked:true,noExtras:true});
   emit({type:'result',state:result.state,phase:result.phase,pendingAction:result.pendingAction??null,...(result.orderCheck?{orderCheck:result.orderCheck,readOnly:result.readOnly===true}:{}),paused:runtime.paused,realOrderVerified:result.realOrderVerified===true,...(result.receiptAwaitingPayment===true?{receiptAwaitingPayment:true}:{}),reviewReady:!!runtime.finalDescriptor,consentSummary:consentSummary()});
   await continueWhenReady(result,c);
   return result;
@@ -56,12 +59,14 @@ try{
  }
  input.on('line',async line=>{
   if(line.length>12000||closing)return;let c;try{c=JSON.parse(line);}catch{return;}
-  if(c?.action==='stop'){closing=true;watch.stop();orderWatch?.stop();input.close();try{await runtime.close();}catch{process.exitCode=2;emit({type:'blocked',message:'结账通道清理未确认，未知记录保持。'});}finally{emit({type:'closed',cleanupConfirmed:runtime.cleanupConfirmed});process.stdin.destroy();}return;}
-  if(c?.action==='pause'){watch.stop();orderWatch?.stop();if(pausing)return;pausing=true;try{emit({type:'paused',...await runtime.pause()});}catch{emit({type:'blocked',paused:runtime.paused,message:'暂停未确认；已发送动作可能继续，未知记录保持。'});}finally{pausing=false;}return;}
+  if(c?.action==='stop'){closing=true;startApproval=null;watch.stop();orderWatch?.stop();input.close();try{await runtime.close();}catch{process.exitCode=2;emit({type:'blocked',message:'结账通道清理未确认，未知记录保持。'});}finally{emit({type:'closed',cleanupConfirmed:runtime.cleanupConfirmed});process.stdin.destroy();}return;}
+  if(c?.action==='pause'){startApproval=null;watch.stop();orderWatch?.stop();if(pausing)return;pausing=true;try{const result=await runtime.pause();if(loginConfigured){await runtime.api.configureLogin(null);loginConfigured=false;}emit({type:'paused',...result});}catch{emit({type:'blocked',paused:runtime.paused,message:'暂停未确认；已发送动作可能继续，未知记录保持。'});}finally{pausing=false;}return;}
   if(active||watch.reading||orderWatch.reading||pausing){emit({type:'blocked',paused:runtime.paused,message:'当前执行尚未结束，未再次发动作。'});return;}
   if(!['observe','reconcile','transfer','transfer-contact','renew-draft','restart-payment','restart-empty','new-purchase','reopen-initial','restart-observed-refusal','advance','resume','submit'].includes(c?.action))return;
   watch.stop();orderWatch?.stop();active=true;
   try{
+   // Strip credentials before any continuation closes over the command. No journal or event gets them.
+   if(Object.hasOwn(c,'privateLogin')){const credentials=c.privateLogin;delete c.privateLogin;loginConfigured=credentials!==null;await runtime.track(()=>runtime.api.configureLogin(credentials));if(closing||pausing)throw Error('AppleLoginStopped');}
    if(c.action==='advance'||c.action==='resume')await advance(c);
    else if(c.action==='new-purchase'){
     let expectedRefHash=c.expectedRefHash;

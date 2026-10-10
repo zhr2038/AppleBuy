@@ -43,7 +43,7 @@ export async function acquireDesktopOwner(file,{spawnProcess=spawn}={}){
 export function guardOwnedApi(api,lease){
  const check=()=>{if(lease?.owned!==true)throw Error('DesktopOwnerLeaseLost');};
  return new Proxy(api,{get(target,name){
-  if(['create','createExpiryProbe','executorVersion','r2Exchange','auditOrders','auditCancelledOrder'].includes(name))return async(...args)=>{check();return target[name](...args);};
+  if(['create','createExpiryProbe','executorVersion','configureLogin','loginStatus','r2Exchange','auditOrders','auditCancelledOrder'].includes(name))return async(...args)=>{check();return target[name](...args);};
   if(['tabs','permissions','scripting'].includes(name)){const group=target[name];return new Proxy(group,{get(g,k){const fn=g[k];return typeof fn==='function'?async(...args)=>{check();return fn.apply(g,args);}:fn;}});}
   return Reflect.get(target,name,target);
  }});
