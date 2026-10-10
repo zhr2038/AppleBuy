@@ -1,0 +1,30 @@
+{
+  "scope": "Current C258 programme login test, 2026-10-10 Asia/Shanghai",
+  "sourceFiles": 368,
+  "sourceSha256": "346363ae75ec9af972b93bca2abf45bb3894ef0b5d3b60f3f11653233be8da7c",
+  "sourceCommit": "4eb28ce0ce8d09f660137229e56b46dcff23a5d4",
+  "publishedCandidateRemoteMatched": true,
+  "allSourceHeadBlobsMatched": true,
+  "selfChecks": {"protectedPass": 108, "pythonPass": 107, "nodePass": 2109, "manifestBeforeAndAfter": true, "ownedCleanup": true},
+  "claudeReview": "Not performed for this direct-deployment revision, per human instruction",
+  "deployment": {"humanReportedReloadAndConnect": true, "humanAllowedAuthHost": true, "actualNativeExecutorVersionCurrent": true},
+  "firstLiveFinding": "C257 omitted aria-labelledby on the actual account input. An isolated renderer reproduction failed before the label fix and passed after it.",
+  "currentLiveProgramme": {
+    "ordinaryPasswordFormAction": "submitted",
+    "programmeReportedStep": "submit-password",
+    "authenticatedStoreObserved": false,
+    "finalObservedPhase": "AUTH",
+    "boundedWaitEnded": true,
+    "originalJournalUnchanged": true,
+    "buyingCommands": 0,
+    "newOrderVerified": false,
+    "payments": 0,
+    "ownedChannelAndTreeCleanupConfirmed": true
+  },
+  "currentBrowserNetworkObservation": [
+    {"host": "idmsa.apple.com.cn", "path": "/appleauth/auth/signin/complete", "status": 200},
+    {"host": "secure11.www.apple.com.cn", "path": "/shop/signIn/idms/authx", "status": 541}
+  ],
+  "diagnosticPrivacy": "Only status/host/path were reported. No request bodies, response bodies, headers, cookies, tokens, account values or full authentication URLs were retained in this report. Network observation was disabled afterward.",
+  "conclusion": "Programme form submission was actually exercised. Store sign-in and the requested unpaid-order flow remain uncompleted because the current store login handoff returned 541. The exact server-side cause is not established. No old unknown final was replayed."
+}
