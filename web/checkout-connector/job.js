@@ -38,7 +38,20 @@ export function validStored(s){return s&&s.schema==='applebuy-purchase-job/v1'&&
   // The consecutive count is part of the cumulative count; a streak above a recorded total is not a trustworthy record.
   (s.untouchedStreak===undefined||(Number.isSafeInteger(s.untouchedStreak)&&s.untouchedStreak>=0&&(s.untouchedFailures===undefined||s.untouchedStreak<=s.untouchedFailures)))&&(s.quotedCny===undefined||s.quotedCny===null||Number.isFinite(s.quotedCny))&&(s.bagTotalCny===undefined||s.bagTotalCny===null||Number.isFinite(s.bagTotalCny))&&
   (s.revokedGrantIds===undefined||(Array.isArray(s.revokedGrantIds)&&s.revokedGrantIds.every(x=>typeof x==='string')))&&(s.retiredHistory===undefined||(Array.isArray(s.retiredHistory)&&s.retiredHistory.every(r=>r?.schema==='applebuy-purchase-job/v1'&&r.state==='RETIRED')))&&(s.history===undefined||Array.isArray(s.history))&&
-  (s.retiredCart===undefined||(s.retiredCart!==null&&typeof s.retiredCart==='object'&&!Array.isArray(s.retiredCart)));}
+  (s.retiredCart===undefined||(s.retiredCart!==null&&typeof s.retiredCart==='object'&&!Array.isArray(s.retiredCart)))&&validFinalRejections(s);}
+// Sent finals are retained verbatim when a SAME-DOCUMENT, SAME-COMMAND merchant refusal
+// is observed. This is not an unknown-result reset or a new task/checkout namespace.
+function validFinalRejections(s){
+  const a=s.finalRejections;if(a===undefined)return true;
+  return Array.isArray(a)&&a.length<=3&&new Set(a.map(x=>x?.finalIntent?.id)).size===a.length&&a.every(x=>
+    x?.kind==='native-pickup-final-refusal/v1'&&x.finalIntent?.sent===true&&typeof x.finalIntent.id==='string'&&
+    x.pending?.action==='submitOrder'&&x.pending.dispatched!==false&&x.pending.intentId===x.finalIntent.id&&
+    x.proof?.kind==='pickup-final-refused'&&x.proof.verified===true&&x.proof.commandId===x.pending.id&&x.proof.intentId===x.finalIntent.id&&
+    x.proof.taskId===s.taskId&&x.proof.planDigest===s.planDigest&&x.proof.traceId===x.pending.finalGrant?.reviewProgressId&&
+    x.documentId===x.pending.documentId&&Number.isFinite(x.at)&&s.initialDates?.includes(x.proof.date)&&
+    SLOT.test(x.proof.start)&&SLOT.test(x.proof.end)&&x.proof.start<x.proof.end&&s.plan.stores.includes(x.proof.store)&&
+    Number.isFinite(x.proof.totalCny)&&x.proof.totalCny>0&&x.proof.totalCny<=s.plan.maxTotalCny);
+}
 export function validIntent(p){
   return p?.schema==='applebuy-intent/v1'&&p.quantity===1&&p.fulfillment==='pickup'&&p.city==='大连'&&
     ['iPhone Duo','iPhone 18 Pro'].includes(p.product?.model)&&p.product?.capacity==='256GB'&&
@@ -337,6 +350,22 @@ export class PurchaseJob {
         if(pending.dispatched===false){s.pending=null;if(pending.action==='addBag')s.bagAddStarted=false;if(pending.action==='submitOrder'&&s.finalIntent)s.finalIntent.sent=false;await this.save(s);continue;}
         if(pending.action==='submitOrder'){
           if(readOnly||s.reconcileOnly===true)return this.gate(s,'final-result-unconfirmed; no resubmission','NEEDS_VERIFICATION');
+          const f=o.feedback,a=s.acceptedSlot;
+          const refused=this.port.controlledReview===true&&o.verifiedStep===true&&['FULFILLMENT','SLOTS'].includes(o.phase)&&o.path==='/shop/checkout'&&
+            o.documentId===pending.documentId&&pending.reviewOnly===true&&s.finalIntent?.sent===true&&pending.intentId===s.finalIntent.id&&
+            !s.orderRefHash&&!o.orderRefHash&&o.extras!==true&&f?.kind==='pickup-final-refused'&&f.verified===true&&
+            f.taskId===s.taskId&&f.planDigest===s.planDigest&&f.commandId===pending.id&&f.intentId===s.finalIntent.id&&
+            typeof f.traceId==='string'&&f.traceId===pending.finalGrant?.reviewProgressId&&a?.verified===true&&
+            f.date===a.date&&f.start===a.start&&f.end===a.end&&s.initialDates?.[s.dateCursor]===a.date&&P.stores.includes(f.store)&&
+            f.totalCny===(s.bagTotalCny??s.quotedCny)&&f.totalCny>0&&f.totalCny<=P.maxTotalCny;
+          if(refused&&s.expiresAt>this.now()&&(s.finalRejections?.length??0)<3){
+            // Commit complete failure evidence BEFORE any new selection; never reuse its final grant.
+            s.finalRejections=[...(s.finalRejections??[]),{kind:'native-pickup-final-refusal/v1',finalIntent:clone(s.finalIntent),pending:clone(pending),acceptedSlot:clone(a),proof:clone(f),documentId:o.documentId,at:this.now()}];
+            s.rejected.push({date:a.date,start:a.start,end:a.end,generation:o.generation});s.refusals++;s.dateCursor++;
+            s.pending=null;s.finalIntent=null;s.acceptedSlot=null;s.inheritedIdentity=null;s.reviewProgress=null;s.untouchedStreak=0;
+            await this.save(s);this.port.detachStoredChoice?.();this.port.reviewGrant=null;grant=null;
+            continue;
+          }
           // A native receipt is evidence of creation/awaiting payment, not of all detail facts.
           // Bind its hash only to this originating sent final. Keep pending/final and never resubmit.
           if(s.finalIntent?.sent===true&&o.phase==='ORDER_RECEIPT'&&o.path==='/shop/checkout/interstitial'&&o.verifiedStep===true&&o.receiptAwaitingPayment===true&&o.receiptVerified===false&&
@@ -489,7 +518,7 @@ export class PurchaseJob {
           const oldFloor=s.floors[date];if(!oldFloor||t.start>oldFloor)s.floors[date]=t.start;await this.save(s);
           if(t.start<s.floors[date]||!t.enabled){s.dateCursor++;await this.save(s);continue;}
           if(s.rejected.some(r=>r.date===date&&r.start===t.start&&r.end===t.end&&r.generation>=o.generation))return this.gate(s,'no-fresh-refusal-list','NEEDS_VERIFICATION');
-          command={action:'chooseSlot',date,start:t.start,end:t.end,ref:t.ref,generation:o.generation};
+          command={action:'chooseSlot',date,start:t.start,end:t.end,ref:t.ref,generation:o.generation,...(s.finalRejections?.length?{retryRejectedFinal:s.finalRejections.at(-1).finalIntent.id}:{})};
         }
       }else if(o.phase==='DETAILS'){
         // C051: a contact-only step needs this task's verified accepted slot and the same current bounds; fresh full evidence keeps priority.

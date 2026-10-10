@@ -1,12 +1,15 @@
 // Shared browser/desktop framing. This transfers the same journal, never a new purchase namespace.
 import {canonicalJson,validStored} from './job.js';
-export const R2_VERSION='applebuy-browser-job/C250-v1';
+export const R2_VERSION='applebuy-browser-job/C253-v1';
 export const R2_MAX_BYTES=16_000_000,R2_CHUNK_BYTES=30000;
 export const R2_OPERATIONS=new Set(['r2Version','r2Begin','r2Chunk','r2Run','r2Poll','r2Ack','r2Pause','r2Finish']);
-const MUTABLE=new Set(['state','lastPhase','lastDocumentId','entryDocumentId','reason','pending','finalIntent','orderRefHash','orderDetailLink','initialDates','dateCursor','floors','rejected','refusals','lastRead','bagAddStarted','resourceWritten','untouchedFailures','untouchedStreak','bagTotalCny','quotedCny','acceptedSlot','inheritedIdentity','history','observationCurrent','permissionOrigin','reviewProgress']);
+const MUTABLE=new Set(['state','lastPhase','lastDocumentId','entryDocumentId','reason','pending','finalIntent','orderRefHash','orderDetailLink','initialDates','dateCursor','floors','rejected','refusals','lastRead','bagAddStarted','resourceWritten','untouchedFailures','untouchedStreak','bagTotalCny','quotedCny','acceptedSlot','inheritedIdentity','history','observationCurrent','permissionOrigin','reviewProgress','finalRejections']);
 export async function digest(value){const bytes=typeof value==='string'?new TextEncoder().encode(value):value;return [...new Uint8Array(await crypto.subtle.digest('SHA-256',bytes))].map(x=>x.toString(16).padStart(2,'0')).join('');}
 export function rowPatch(before,after){
  if(!validStored(before)||!validStored(after))throw Error('R2JournalInvalid');
+ const old=before.finalRejections??[],next=after.finalRejections??[];
+ if(next.length<old.length||next.length>old.length+1||canonicalJson(next.slice(0,old.length))!==canonicalJson(old))throw Error('R2RejectionHistoryChanged');
+ if(next.length>old.length){const r=next.at(-1);if(canonicalJson(r.finalIntent)!==canonicalJson(before.finalIntent)||canonicalJson(r.pending)!==canonicalJson(before.pending)||after.finalIntent!==null||after.pending!==null||after.acceptedSlot!==null||after.dateCursor!==before.dateCursor+1||after.refusals!==before.refusals+1)throw Error('R2RejectionTransitionInvalid');}
  const set={},remove=[];
  for(const key of new Set([...Object.keys(before),...Object.keys(after)])){
   if(canonicalJson(before[key]??null)===canonicalJson(after[key]??null)&&Object.hasOwn(before,key)===Object.hasOwn(after,key))continue;

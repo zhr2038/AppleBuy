@@ -49,6 +49,11 @@ try{
   await continueWhenReady(result,c);
   return result;
  }
+ async function reopenInitial(c){
+  const result=await runtime.reopenInitial({approved:c.approved===true,expiredCheckoutUrl:c.expiredCheckoutUrl,privatePickupData:c.privatePickupData??{}});
+  emit({type:'result',...result,paused:runtime.paused,readOnly:false,reviewReady:!!runtime.finalDescriptor,consentSummary:consentSummary()});
+  await continueWhenReady(result,{checkoutApproved:true,newContextConfirmed:true,privatePickupData:c.privatePickupData??{}});
+ }
  input.on('line',async line=>{
   if(line.length>12000||closing)return;let c;try{c=JSON.parse(line);}catch{return;}
   if(c?.action==='stop'){closing=true;watch.stop();orderWatch?.stop();input.close();try{await runtime.close();}catch{process.exitCode=2;emit({type:'blocked',message:'结账通道清理未确认，未知记录保持。'});}finally{emit({type:'closed',cleanupConfirmed:runtime.cleanupConfirmed});process.stdin.destroy();}return;}
@@ -66,9 +71,7 @@ try{
     await continueWhenReady(result,{checkoutApproved:true,newContextConfirmed:true,privatePickupData:c.privatePickupData??{}});
    }
    else if(c.action==='reopen-initial'){
-    const result=await runtime.reopenInitial({approved:c.approved===true,expiredCheckoutUrl:c.expiredCheckoutUrl,privatePickupData:c.privatePickupData??{}});
-    emit({type:'result',...result,paused:runtime.paused,readOnly:false,reviewReady:!!runtime.finalDescriptor,consentSummary:consentSummary()});
-    await continueWhenReady(result,{checkoutApproved:true,newContextConfirmed:true,privatePickupData:c.privatePickupData??{}});
+    await reopenInitial(c);
    }
    else if(c.action==='restart-payment'){
     const result=await runtime.restartPayment({approved:c.approved===true,newContextConfirmed:c.newContextConfirmed===true,oldExecutorStopped:c.oldExecutorStopped===true,sameAccountOrdersClear:c.sameAccountOrdersClear===true,additionalRecoveryApproved:c.additionalRecoveryApproved===true,automaticRecoveryApproved:c.automaticRecoveryApproved===true,expiredCheckoutUrl:c.expiredCheckoutUrl,privatePickupData:c.privatePickupData??{}});
@@ -95,7 +98,14 @@ try{
     emit({type:'result',state:result.state,phase:result.phase,pendingAction:result.pendingAction??null,...(result.orderCheck?{orderCheck:result.orderCheck,readOnly:result.readOnly===true}:{}),paused:runtime.paused,readOnly:c.action==='reconcile'||result.readOnly===true,realOrderVerified:result.realOrderVerified===true,...(result.receiptAwaitingPayment===true?{receiptAwaitingPayment:true}:{}),reviewReady:!!runtime.finalDescriptor,bagCheck:result.bagCheck??null});
     if(result.orderCheck)await continueWhenReady(result,{action:'advance',checkoutApproved:true,newContextConfirmed:true});
    }
-  }catch(error){emit({type:'blocked',paused:runtime.paused,diagnosticCode:safeCheckoutDiagnostic(error),message:({InitialCheckoutAccountUnconfirmed:'当前账户预检需要登录或核对；尚未恢复结账。',InitialCheckoutExpiryUnconfirmed:'尚未由程序确认官网旧结账已超时；未恢复。',InitialCheckoutBagUnconfirmed:'当前购物袋未明确为同款一台；未加购或恢复。',InitialCheckoutSourceUnconfirmed:'该任务不符合选时段之前的单次恢复条件；原记录保持。'})[error.message]??'本次结账结果未确认；须重新核对实际已保存记录，未重复下单。'});stopBrokenConnection();}finally{active=false;}
+  }catch(error){
+   if(c.action==='reopen-initial'&&error.message==='InitialCheckoutAccountUnconfirmed'&&!runtime.paused&&!closing){
+    // No transition has been created. Reuse this exact approval/data only after the ordinary
+    // account query becomes ready; the full source/account/expiry/cart checks still run again.
+    emit({type:'progress',phase:'AUTH',state:'NEEDS_USER',readOnly:true,paused:false});
+    orderWatch.start(async()=>{active=true;try{await reopenInitial(c);}catch{emit({type:'blocked',paused:runtime.paused,message:'登录已结束，但当前购物袋或旧结账尚未核实；未重复购买。'});}finally{active=false;}},{phases:['READY'],deadline:Date.now()+300000});
+   }else{emit({type:'blocked',paused:runtime.paused,diagnosticCode:safeCheckoutDiagnostic(error),message:({InitialCheckoutAccountUnconfirmed:'当前账户预检需要登录或核对；尚未恢复结账。',InitialCheckoutExpiryUnconfirmed:'尚未由程序确认官网旧结账已超时；未恢复。',InitialCheckoutBagUnconfirmed:'当前购物袋未明确为同款一台；未加购或恢复。',InitialCheckoutSourceUnconfirmed:'该任务不符合选时段之前的单次恢复条件；原记录保持。'})[error.message]??'本次结账结果未确认；须重新核对实际已保存记录，未重复下单。'});stopBrokenConnection();}
+  }finally{active=false;}
  });
  await new Promise(resolve=>input.once('close',resolve));watch.stop();orderWatch?.stop();
 }catch{process.exitCode=1;emit({type:'blocked',message:'正常 Chrome 结账通道未连接或原任务无法继续；未启用新购买。'});}

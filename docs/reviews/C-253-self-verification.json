@@ -1,0 +1,39 @@
+{
+  "task": "C253",
+  "sourceFiles": 358,
+  "sourceSha256": "875b9895810d392f77ccea71d6309a1293b52aee92eed6ba31ed3299ba2db579",
+  "verificationKind": "Codex author self-verification",
+  "claudeReview": "Not performed. Human explicitly waived waiting for Claude and authorized direct deployment for this revision.",
+  "initialControllerReproduction": {"tests": 15, "pass": 12, "fail": 3},
+  "newFocusedChecks": {"tests": 26, "pass": 26, "fail": 0},
+  "initialWholeCandidate": {
+    "sha256": "fc74285fef831defc078573470e223a6d6cef8b3c875438a5d8bcc574dd53c5c",
+    "node": {"tests": 2048, "pass": 2048},
+    "python": {"tests": 96, "failures": 1},
+    "failure": "A progress-label update replaced an unrelated retained diagnostic. Production update narrowed to the exact stale login message; old assertion unchanged."
+  },
+  "finalWholeCandidate": {
+    "command": "python -B tools/delegation/run_review_checks.py docs/reviews/C-253-candidate-manifest.json",
+    "orderedChecks": 5,
+    "manifestBeforeAndAfter": true,
+    "protected": {"tests": 108, "pass": 108, "fail": 0},
+    "python": {"tests": 96, "failures": 0, "errors": 0, "skipped": 0},
+    "node": {"tests": 2048, "pass": 2048, "fail": 0, "cancelled": 0, "skipped": 0},
+    "ownedTreeCleanupConfirmed": true,
+    "exitCode": 0,
+    "passed": true
+  },
+  "nativeTestScope": "Production parser/ChromePort/PurchaseJob in an isolated real Chrome renderer; FAKE merchant, account, identity, submission and receipt. R2 rowPatch/applyRowPatch exercised on every committed transition; no claim of an entire installed R2 live run.",
+  "unchangedOldAssertions": true,
+  "newPermissions": false,
+  "realUnpaidOrderVerifiedForThisRevision": false,
+  "oldSubmittedTaskModifiedByDevelopment": false,
+  "limitations": [
+    "Current legacy submitted intent lacks the new final-command refusal witness and cannot be retroactively made retryable.",
+    "Unknown final, human intervention, stale/replaced document, arbitrary error and expiry still stop without repeat.",
+    "Password autofill/storage is not implemented by this patch. Existing delegated Root ordinary login and programme post-login continuation are separate.",
+    "Tool-operated current agreement acceptance still requires action-time confirmation.",
+    "Personal extension must reload before executing C253; source publication is not deployment verification.",
+    "Previously disclosed plain-RETIRED F1 is outside this change."
+  ]
+}

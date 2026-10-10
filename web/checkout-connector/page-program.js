@@ -1,5 +1,5 @@
 // Serializable ISOLATED-world program. Merchant semantics, not undocumented HTTP interfaces.
-// Unsupported/ambiguous evidence stops. Refusal text catalog is deliberately EMPTY for real Apple.
+// Unsupported/ambiguous evidence stops. Only the observed, action-bound pickup refusal is recognized.
 // C-012-R1 (Claude): exact store proof, separate line counting, observed no-trade-in/no-AppleCare dependency,
 // merchant-only extras evidence and structured untouched failure reports.
 // Codex quota takeover: reject conflicting quantity/store evidence and revalidate after a native slot change.
@@ -16,7 +16,7 @@
 // C035 (Claude): the observed complete normal empty bag is EMPTY_BAG; there only openProduct is accepted, as a write-free re-verification.
 // C037 (Claude): selectStore can choose the observed numbered native Dalian radio when it is not preselected, by the same exact proof.
 // C051 (Claude): the observed contact-only details step is a recognized step (contactStep), never purchase proof; see below.
-export const CHECKOUT_EXECUTOR_VERSION='C250-checkout-session-v1';
+export const CHECKOUT_EXECUTOR_VERSION='C253-pickup-reselection-v1';
 export async function merchantDocument(plan,command=null,internal=null){
   // `internal` is set only by this program's own re-entry; ChromePort passes plan and command only.
   // A structured command always receives a structured report. Nothing was written unless this id was already delivered.
@@ -530,6 +530,24 @@ export async function merchantDocument(plan,command=null,internal=null){
   // Same-document, originating programme trace. It is separate from current merchant purchase/store/slot evidence.
   const progress=globalThis.__applebuyControlledCheckout;
   const progressCurrent=!!progress&&progress.main===main&&sameControlledLocation(progress.href)&&progress.intervened===false;
+  // Observed October10: final submission returned this native alert and the fulfillment page.
+  // The text by itself is NEVER a failed-order proof. Bind it to this document's programme final,
+  // whose absence of an old alert and exact command/intent were recorded immediately before click.
+  const pickupRefusalText='你所选择的“送货与取货”选项已不再为本订单提供。请在下方选择一个新选项。';
+  const nativeAlerts=[...main.querySelectorAll('[role="alert"]')].filter(visible);
+  const refusalAlert=nativeAlerts.length===1&&norm(nativeAlerts[0].textContent)===pickupRefusalText&&
+    nativeAlerts[0].querySelectorAll('.rt-messages > .form-alert.is-error > .rt-messages-text').length===1;
+  const rejectionPage=checkoutScope&&main.id==='checkout-container'&&['FULFILLMENT','SLOTS'].includes(phase)&&
+    [...main.querySelectorAll('h1')].filter(visible).length===1&&norm(main.querySelector('h1').textContent)==='你希望如何收到订单商品?'&&
+    orderLabels.length===0&&!out.orderRefHash&&dialogs?.length===0&&bars.length===1&&barTotal===progress?.totalCny&&out.extras!==true&&
+    (nativeAlerts.length===0||refusalAlert);
+  const sent=progress?.finalAction;
+  if(progressCurrent&&progress.finalSent===true&&progress.stage==='final-sent'&&!progress.finalRejection&&rejectionPage&&refusalAlert&&
+    sent?.dispatched===true&&sent.oldAlertAbsent===true&&typeof sent.commandId==='string'&&typeof sent.intentId==='string'&&Number.isFinite(sent.at)&&Date.now()>=sent.at&&Date.now()-sent.at<=60000){
+    progress.finalRejection={kind:'pickup-final-refused',verified:true,taskId:progress.taskId,planDigest:progress.planDigest,
+      commandId:sent.commandId,intentId:sent.intentId,traceId:progress.id,date:progress.date,start:progress.start,end:progress.end,store:progress.store,totalCny:progress.totalCny};
+  }
+  if(progressCurrent&&progress.finalSent===true&&progress.finalRejection&&rejectionPage)out.feedback={...progress.finalRejection};
   // Native radio.click() emits trusted input/change events too. Mark only this synchronous, task-bound programme write.
   const controlledWrite=fn=>{const t=globalThis.__applebuyControlledCheckout,own=!!t&&t.main===main&&sameControlledLocation(t.href)&&t.taskId===command?.taskId&&t.planDigest===command?.planDigest;if(own)t.writing=(t.writing??0)+1;try{return fn();}finally{if(own)t.writing--;}};
   if(progressCurrent&&progress.stage==='slot-sent'&&out.contactStep?.verified===true&&out.contactStep.totalCny===progress.totalCny)progress.stage='contact-accepted';
@@ -555,7 +573,7 @@ export async function merchantDocument(plan,command=null,internal=null){
     out.reason='review-check:'+checks.filter(([,ok])=>!ok).map(([code])=>code).join(',')+'; no automatic repeat';
   }
   out.receiptVerified=phase==='ORDER_RECEIPT'&&!!out.orderRefHash&&purchase.verified;
-  // Official refusal anchors are not yet observed: real alerts remain unknown rather than invented rejection.
+  // Unrecognized alerts, legacy finals without their original command witness, and human intervention stay unknown.
   if(referenceChanged)return command?report('OperationEvidenceChanged'):{schema:'applebuy-merchant-read/v1',phase:'UNKNOWN',reason:'order-reference-changed'};
   if(!command)return out;
   // Private DOM fingerprint for slot continuation. It never reads input values or leaves document memory.
@@ -702,13 +720,15 @@ export async function merchantDocument(plan,command=null,internal=null){
       const names=x=>[norm(x.getAttribute('aria-label')),...[...x.labels??[]].map(l=>norm(l.textContent))];
       const sole=e=>!nativeStore(e)||norm(e.getAttribute('type')).toLowerCase()==='radio'&&
         [...main.querySelectorAll('input[name="store-locator-result"]')].every(x=>x===e||x.value!==e.value&&!names(x).some(t=>t.includes(want)));
-      if(choices.length!==1||!choices[0].isConnected||!sole(choices[0]))throw new Error('CurrentChoiceUnrecognized');touched=true;choices[0].click();
+      if(choices.length!==1||!choices[0].isConnected||!sole(choices[0]))throw new Error('CurrentChoiceUnrecognized');touched=true;controlledWrite(()=>choices[0].click());
     }
     else if(command.action==='selectDate'&&phase==='SLOTS'){
       const index=Number(command.ref?.split(':')[1]),d=out.dates[index];if(!d||d.label!==command.date||!d.enabled)throw new Error('DateEvidenceChanged');
-      touched=true;if(dateChoices.length)dateChoices[index].click();else{const s=dateSelects[0];s.selectedIndex=index;s.dispatchEvent(new Event('change',{bubbles:true}));}
+      touched=true;controlledWrite(()=>{if(dateChoices.length)dateChoices[index].click();else{const s=dateSelects[0];s.selectedIndex=index;s.dispatchEvent(new Event('change',{bubbles:true}));}});
     }else if(command.action==='chooseSlot'&&phase==='SLOTS'&&purchase.verified&&out.listComplete){
-      if(progress?.taskId===command.taskId&&(['contact-accepted','payment-sent'].includes(progress.stage)||progress.finalSent===true))throw new Error('ControlledSlotAlreadyProgressed');
+      const retry=progressCurrent&&progress.finalRejection&&progress.finalRejection.intentId===command.retryRejectedFinal&&
+        progress.taskId===command.taskId&&progress.planDigest===command.planDigest&&out.feedback?.kind==='pickup-final-refused';
+      if(progress?.taskId===command.taskId&&(['contact-accepted','payment-sent'].includes(progress.stage)||progress.finalSent===true)&&!retry)throw new Error('ControlledSlotAlreadyProgressed');
       const t=out.times.find(t=>t.ref===command.ref);if(!t||!t.enabled||t.start!==command.start||t.end!==command.end||out.selectedDate!==command.date)throw new Error('SlotEvidenceChanged');
       const next=exact('继续填写取货详情');if(next.length!==1||!next[0].isConnected)throw new Error('CurrentControlUnrecognized');
       const s=timeSelects[0];touched=true;s.selectedIndex=Number(command.ref.split(':')[1]);s.dispatchEvent(new Event('change',{bubbles:true}));
@@ -749,7 +769,11 @@ export async function merchantDocument(plan,command=null,internal=null){
     }
     else if(command.action==='submitOrder'&&phase==='REVIEW'&&(purchase.verified||command.reviewOnly===true&&nativeControlledReview)&&out.paymentMethod==='支付宝'){
       const g=command.finalGrant,sourceReview=command.reviewOnly===true&&nativeControlledReview&&g?.reviewProgressId===progress.id&&progress.taskId===command.taskId&&progress.planDigest===command.planDigest;
-      if(!g||g.termsAccepted!==true||g.taskId!==command.taskId||g.planDigest!==command.planDigest||g.expiry<=Date.now()||g.existingOrdersChecked!==true||g.noExtras!==true||!out.termsLinks.includes(g.termsUrl)||Object.hasOwn(out,'primaryTermsUrl')&&out.primaryTermsUrl!==g.termsUrl||(!out.slotSummary&&!sourceReview))throw new Error('CurrentFinalGrantMissing');if(sourceReview)progress.finalSent=true;click('立即下单');
+      if(!g||g.termsAccepted!==true||g.taskId!==command.taskId||g.planDigest!==command.planDigest||g.expiry<=Date.now()||g.existingOrdersChecked!==true||g.noExtras!==true||!out.termsLinks.includes(g.termsUrl)||Object.hasOwn(out,'primaryTermsUrl')&&out.primaryTermsUrl!==g.termsUrl||(!out.slotSummary&&!sourceReview))throw new Error('CurrentFinalGrantMissing');
+      if(nativeAlerts.some(e=>norm(e.textContent)))throw new Error('CurrentFinalAlertPresent');
+      if(sourceReview){if(typeof command.intentId!=='string'||!command.intentId)throw new Error('CurrentFinalIdentityMissing');progress.finalSent=true;progress.stage='final-sent';progress.finalAction={commandId:command.id,intentId:command.intentId,oldAlertAbsent:true,dispatched:false,at:Date.now()};}
+      click('立即下单');
+      if(sourceReview)progress.finalAction.dispatched=true;
     }
     // C035 (Claude): openProduct is only re-verified here: this exact document still decodes as the expected verified empty bag. No
     // control is touched; ChromePort then navigates the tab to the plan's public entry. Later additions use fresh product reads.

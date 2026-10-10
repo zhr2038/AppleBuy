@@ -582,6 +582,8 @@ class App:
                     if phase!='REVIEW' or v.get('pendingAction') is not None:
                         self.current_consent=None;self.final_confirm.set(False);self.submit_button.config(state='disabled');self.final_checkbox.config(state='disabled')
                     if phase=='AUTH':self.result.set('请在 Chrome 完成登录或验证，程序会自动衔接。' if not getattr(self,'checkout_submission_pending',False) else '请在 Chrome 登录后核对已提交的订单，不会重新下单。')
+                    elif kind=='progress' and not getattr(self,'checkout_submission_pending',False) and self.result.get()=='请在 Chrome 完成登录或验证，程序会自动衔接。':
+                        self.result.set('程序正在按本次条件继续，无需重复点击。')
                     name={'AUTH':'等待本人登录/验证','SLOTS':'选择末档','DETAILS':'取货资料','PAYMENT':'付款方式','REVIEW':'核对订单','ORDER_DETAIL':'核对未付款订单'}.get(phase,phase)
                     self.status.set('程序结账：'+name+'；'+v.get('state','NEEDS_VERIFICATION'))
                     review_labels={'trace-missing':'本次流程记录缺失','document-changed':'页面已更换','interaction-detected':'检测到流程外操作','payment-step-unconfirmed':'付款方式衔接未确认','final-already-sent':'已记录提交','review-root':'复核页面结构','item':'商品规格','quantity':'数量','unexpected-store-or-fulfillment':'配送信息结构','amount':'金额','unexpected-slot':'时段信息结构','extras':'附加项目','payment-method':'支付宝识别','terms':'当前条款识别','pickup-notice':'取货提示','store-edit':'门店入口','dialog':'弹窗','task-proof':'任务与当前页面绑定'}
