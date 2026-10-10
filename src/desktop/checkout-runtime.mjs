@@ -13,7 +13,7 @@ import {currentReviewProgress,knownUnreleasedFinal} from '../../web/checkout-con
 import {R2_VERSION} from '../../web/checkout-connector/r2-protocol.js';
 import {CHECKOUT_EXECUTOR_VERSION} from '../../web/checkout-connector/page-program.js';
 import {reviewCheckCodes} from '../../web/checkout-connector/review-diagnostic.js';
-import {startAfterCancelledOrder,validateCancelledOrderPurchase} from './cancelled-order-purchase.mjs';
+import {startAfterCancelledOrder,validateCancelledOrderPurchase,reopenBeforeSlots} from './cancelled-order-purchase.mjs';
 const BAG='https://www.apple.com.cn/shop/bag',TERMS='https://www.apple.com.cn/shop/open/salespolicies';
 const REVIEW_TERMS=[TERMS,'https://www.apple.com.cn/shop/browse/open/salespolicies'];
 function currentTerms(o){
@@ -90,7 +90,11 @@ export class DesktopCheckoutRuntime {
    if(this.ordersEnabled){
     const prior=await this.store.get(TASK_KEY),sent=prior?.finalIntent?.sent===true||prior?.pending?.action==='submitOrder'&&prior.pending.dispatched!==false;
     if(sent&&(prior.orderRefHash||prior.desktopContext!==this.api.sessionId||prior.reconcileOnly===true||prior.state==='RETIRED'||options.mode==='reconcile'))return await this.checkNativeOrders(prior);
-    if(!sent&&options.mode!=='reconcile'){const preflight=await this.checkNativeOrders(null);if(preflight.orderCheck.state!=='clear')return preflight;}
+    if(!sent&&options.mode!=='reconcile'&&!this.hasPreflight(prior)){
+     const preflight=await this.checkNativeOrders(null);if(preflight.orderCheck.state!=='clear')return preflight;
+     const current=await this.store.get(TASK_KEY);if(current?.taskId!==prior?.taskId||current?.planDigest!==prior?.planDigest)throw Error('DesktopPreflightSourceChanged');
+     this.rememberPreflight(current);
+    }
     if(this.paused||this.closing||this.ownerLost)throw Error('DesktopSessionCancelled');
    }
    this.active=runDesktopSession({api:this.api,tabId:this.tabId,store:leased,mode:'purchase',signal:this.abort.signal,onState:s=>this.onState({...safeState(s),readOnly:options.mode==='reconcile',paused:this.paused}),...options,executor:this.executor});
@@ -101,6 +105,8 @@ export class DesktopCheckoutRuntime {
    this.onState({...safeState({...result,pendingAction:record?.pending?.action??null}),paused:this.paused});return {...result,pendingAction:record?.pending?.action??null};
   }finally{this.active=null;this.busy=false;}
  }
+ hasPreflight(row){return !!this.orderPreflight&&typeof row?.taskId==='string'&&row.taskId.length>0&&row.planDigest===proDigest&&typeof this.api?.sessionId==='string'&&this.lease?.owned===true&&this.orderPreflight.taskId===row.taskId&&this.orderPreflight.planDigest===row.planDigest&&this.orderPreflight.contextId===this.api.sessionId;}
+ rememberPreflight(row){if(this.ownerLost||this.closing||this.lease?.owned!==true||!row||typeof row.taskId!=='string'||!row.taskId||row.planDigest!==proDigest||typeof this.api?.sessionId!=='string'||row.desktopContext!==this.api.sessionId)throw Error('DesktopPreflightSourceChanged');this.orderPreflight={taskId:row.taskId,planDigest:row.planDigest,contextId:this.api.sessionId};}
  async checkNativeOrders(finalRecord=null,{automatic=false}={}){
   if(!this.ordersEnabled||typeof this.api.auditOrders!=='function')throw Error('NativeOrderAuditUnavailable');
   if(this.ownerLost||this.paused||this.closing||this.lease?.owned!==true)throw Error('DesktopSessionCancelled');
@@ -118,11 +124,22 @@ export class DesktopCheckoutRuntime {
  orderAudit(){return this.track(async()=>{if(this.busy||this.closed||this.closing)throw Error('DesktopSessionAlreadyRunning');this.busy=true;try{const row=await this.store.get(TASK_KEY);return await this.checkNativeOrders(row?.finalIntent?.sent===true?row:null,{automatic:true});}finally{this.busy=false;}});}
  advance(options={}){return this.track(()=>this.advanceOnce(options));}
  newPurchase(options={}){return this.track(()=>this.newPurchaseOnce(options));}
+ reopenInitial(options={}){return this.track(()=>this.reopenInitialOnce(options));}
+ async reopenInitialOnce({approved=false,expiredCheckoutUrl,privatePickupData={}}={}){
+  if(this.busy||this.paused||this.closing||this.closed||this.ownerLost||!this.opened)throw Error('DesktopSessionAlreadyRunning');
+  this.busy=true;this.finalDescriptor=null;let created;
+  try{created=await reopenBeforeSlots({store:this.store,api:this.api,tabId:this.tabId,approved,expiredCheckoutUrl,live:()=>!this.paused&&!this.closing&&!this.closed&&!this.ownerLost&&this.lease?.owned===true});}finally{this.busy=false;}
+  if(created.created!==true)throw Error('InitialCheckoutUnconfirmed');
+  this.rememberPreflight(await this.store.get(TASK_KEY));
+  this.onState({state:'RUNNING',phase:'BAG',pendingAction:null,newPurchaseStarted:true});
+  return {...await this.advance({checkoutApproved:true,newContextConfirmed:true,privatePickupData}),localTransitionCreated:true};
+ }
  async newPurchaseOnce({approved=false,originalOrderAssociated=false,expectedRefHash,privatePickupData={}}={}){
   if(this.busy||this.paused||this.closing||this.closed||this.ownerLost||!this.opened)throw Error('DesktopSessionAlreadyRunning');
   this.busy=true;this.finalDescriptor=null;let created;
   try{expectedRefHash??=(await this.store.get(TASK_KEY))?.orderRefHash;created=await startAfterCancelledOrder({store:this.store,api:this.api,tabId:this.tabId,approved,originalOrderAssociated,expectedRefHash,live:()=>!this.paused&&!this.closing&&!this.closed&&!this.ownerLost&&this.lease?.owned===true});}finally{this.busy=false;}
   if(created.created!==true)throw Error('NewPurchaseUnconfirmed');
+  this.rememberPreflight(await this.store.get(TASK_KEY));
   this.onState({state:'RUNNING',phase:created.startPhase,pendingAction:null,newPurchaseStarted:true});
   return {...await this.advance({checkoutApproved:true,newContextConfirmed:true,privatePickupData}),localTransitionCreated:true,newPurchase:true};
  }
@@ -213,7 +230,7 @@ export class DesktopCheckoutRuntime {
   if(this.closePromise)return this.closePromise;this.closePromise=this.closeOnce();return this.closePromise;
  }
  async closeOnce(){
-  if(this.closed)return;this.closing=true;this.finalDescriptor=null;this.abort?.abort();
+  if(this.closed)return;this.closing=true;this.finalDescriptor=null;this.orderPreflight=null;this.abort?.abort();
   await Promise.allSettled([...this.operations,...(this.starting?[this.starting]:[])]);
   try{if(this.closeBrowser)await this.closeBrowser();await this.lease?.release();this.unwatchLease?.();this.cleanupConfirmed=true;this.closed=true;}
   catch{this.cleanupConfirmed=false;throw Error('DesktopBrowserCleanupUnconfirmed');}

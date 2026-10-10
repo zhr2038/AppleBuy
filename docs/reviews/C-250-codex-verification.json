@@ -1,0 +1,26 @@
+{
+  "sourceFiles": 355,
+  "sourceSha256": "f2b571b504f619150dc5127713a83d5dfa2199f337bf76a13415f6c42bcd8db1",
+  "accepted": false,
+  "newNodeTests": 24,
+  "newPythonTests": 2,
+  "fullNode": {"tests":2022,"pass":2022},
+  "fullPython": {"tests":96,"failures":0,"errors":0,"skipped":0},
+  "protected": {"tests":108,"pass":108},
+  "manifestBeforeAfterMatched": true,
+  "ownedChecksCleanupConfirmed": true,
+  "exactAcceptedBaselineReproduction": {"sourceFiles":351,"sourceSha256":"6beee32c31a1232b84edbfc72f5b3c3cb943ac74da4fce80653f144bcddbc370","phase":"UNKNOWN","accountLookups":3,"checkouts":1,"finals":0,"exitCode":1},
+  "currentSameReproduction": {"phase":"REVIEW","accountLookups":1,"checkouts":1,"finals":0,"exitCode":0},
+  "reproductionScope": "Actual Runtime/Job with FAKE account/merchant APIs modeling an order authentication that can disrupt an active checkout; not proof of Apple's cookie cause.",
+  "initialFailures": [
+    "New recovery initially omitted explicit acceptedSlot=null; corrected to make non-inheritance explicit. Its new fixture also needed an empty history array for the slot-history negative test.",
+    "Initial full map34e9095c had2022/2012/10. A missing cache and missing fixture IDs accidentally compared equal through optional chaining; existing pause/owner test detected this. Cache now requires a real remembered entry, nonempty task/context and exact plan digest.",
+    "Two existing worker VM harnesses strip module imports; they needed injection of the newly imported preSlotReopenShape dependency. Only those import/dependency bindings changed, no old assertion or test body was weakened."
+  ],
+  "oldFixtureOnlyChanges": ["test/desktop-c192-host-scope.test.ts","test/desktop-c240-worker-auth.test.ts"],
+  "oldAssertionsUnchanged": true,
+  "actualCartObservedAfterFailure": {"model":"iPhone 18 Pro","capacity":"256GB","color":"黑色","explicitQuantity":1,"totalCny":9999},
+  "privateJournalUnmodifiedDuringDevelopment": true,
+  "newLiveFinal": false,
+  "review": "Pending actual C251 original-session Opus5.5/max review."
+}

@@ -12,10 +12,41 @@ async function sourceValid(row,store,at){
 }
 export async function validateCancelledOrderPurchase(row,api,store,{readonly=false}={}){
  const t=row?.desktopCancelledOrderPurchase;
- if(!validStored(row)||!t||t.schema!==SCHEMA||t.generation!==1||t.taskId!==row.taskId||t.contextId!==row.desktopContext||row.desktopContext!==api?.sessionId||row.reconcileOnly===true&&!readonly||t.planDigest!==proDigest||t.newPurchaseApproved!==true||t.originalOrderAssociated!==true||t.cancellationVerified!==true||t.accountPreflightClear!==true||!HASH.test(t.referenceHash??'')||!HASH.test(t.sourceArchive??'')||!Number.isFinite(t.createdAt)||canonicalJson(normalizeIntent(row.plan))!==canonicalJson(PRO_PLAN)||canonicalJson(row.retainedSourceArchives)!==canonicalJson([{schema:SCHEMA,sourceArchive:t.sourceArchive}])||row.desktopReviewRestart||row.desktopPaymentRestart||row.desktopEndedDraft||row.desktopTransfer||row.desktopEmptyRestart||row.desktopHandoff)return null;
+ if(!validStored(row)||!t||t.schema!==SCHEMA||![1,2].includes(t.generation)||t.taskId!==row.taskId||t.contextId!==row.desktopContext||row.desktopContext!==api?.sessionId||row.reconcileOnly===true&&!readonly||t.planDigest!==proDigest||t.newPurchaseApproved!==true||t.originalOrderAssociated!==true||t.cancellationVerified!==true||t.accountPreflightClear!==true||!HASH.test(t.referenceHash??'')||!HASH.test(t.sourceArchive??'')||!Number.isFinite(t.createdAt)||canonicalJson(normalizeIntent(row.plan))!==canonicalJson(PRO_PLAN)||canonicalJson(row.retainedSourceArchives)!==canonicalJson([{schema:SCHEMA,sourceArchive:t.sourceArchive}])||row.desktopReviewRestart||row.desktopPaymentRestart||row.desktopEndedDraft||row.desktopTransfer||row.desktopEmptyRestart||row.desktopHandoff)return null;
  let old;try{const backup=unpackArchivedSource(t.sourceBackup,t.sourceArchive);old=await store.readArchive(t.sourceArchive);if(canonicalJson(old)!==canonicalJson(backup))return null;}catch{return null;}
- if(!await sourceValid(old,store,t.createdAt)||old.taskId===row.taskId||old.desktopContext===row.desktopContext||old.orderRefHash!=null&&old.orderRefHash!==t.referenceHash)return null;
+ if(old.taskId===row.taskId||old.desktopContext===row.desktopContext)return null;
+ if(t.generation===1){if(!await sourceValid(old,store,t.createdAt)||old.orderRefHash!=null&&old.orderRefHash!==t.referenceHash||t.preSlotResume!==undefined)return null;}
+ else if(!preSlotReopenShape(old,t.createdAt)||!await validateCancelledOrderPurchase(old,{sessionId:old.desktopContext},store,{readonly:true})||t.referenceHash!==old.desktopCancelledOrderPurchase.referenceHash||t.rootPurchaseTaskId!==old.taskId||t.preSlotResume!==true||t.merchantExpiryVerified!==true||t.existingCartOnly!==true)return null;
  return {schema:SCHEMA,taskId:row.taskId,contextId:api.sessionId,sourceArchive:t.sourceArchive};
+}
+
+// Only the current early checkout is superseded. Earlier cancelled final and all unknowns remain in its full archive.
+export function preSlotReopenShape(row,at=Date.now()){
+ const p=row?.pending;
+ return validStored(row)&&row.desktopCancelledOrderPurchase?.generation===1&&row.finalIntent===null&&row.orderRefHash==null&&row.orderDetailLink==null&&row.acceptedSlot==null&&row.inheritedIdentity==null&&row.initialDates===null&&row.dateCursor===0&&row.refusals===0&&Object.keys(row.floors??{}).length===0&&row.rejected?.length===0&&row.bagAddStarted===true&&row.resourceWritten===true&&
+  ['UNKNOWN','AUTH','BAG','FULFILLMENT'].includes(row.lastPhase)&&p?.dispatched!==false&&Number.isFinite(p?.deadline)&&p.deadline<=at&&((p.action==='checkout'&&p.beforePhase==='BAG')||(p.action==='selectPickup'&&p.beforePhase==='FULFILLMENT'))&&
+  !row.history?.some(h=>/slot|final/i.test(h.event??'')||['chooseSlot','submitOrder'].includes(h.action));
+}
+export async function reopenBeforeSlots({store,api,tabId,approved=false,expiredCheckoutUrl,live=()=>true}){
+ if(approved!==true||typeof live!=='function'||!live())throw Error('InitialCheckoutApprovalRequired');
+ const old=await store.get(TASK_KEY);
+ if(!preSlotReopenShape(old)||old.desktopContext===api?.sessionId||!await validateCancelledOrderPurchase(old,{sessionId:old.desktopContext},store,{readonly:true}))throw Error('InitialCheckoutSourceUnconfirmed');
+ if(await api.executorVersion()!==CHECKOUT_EXECUTOR_VERSION||!await api.permissions.contains({origins:[SHOP_HOST_SCOPE]}))throw Error('InitialCheckoutExecutorUnavailable');
+ const account=await api.auditOrders(PRO_PLAN,null,{automatic:false});
+ if(!live()||account?.state!=='clear'||account.authenticated!==true||!HASH.test(account.accountHash??'')||!Number.isSafeInteger(account.matchingCount)||account.matchingCount<0)throw Error('InitialCheckoutAccountUnconfirmed');
+ let probe,expired=false;
+ try{probe=await api.createExpiryProbe(expiredCheckoutUrl);const port=new ChromePort(api,probe.id,{mode:'observe'}),until=Date.now()+15000;
+  for(let i=0;i<150&&live();i++){try{const meta=await api.tabs.get(probe.id);if(meta?.status==='complete'){const o=await port.observe(PRO_PLAN);expired=o.merchantError==='session-expired'&&o.path==='/shop/sorry/session_expired';break;}}catch(e){if(!['NativeCheckoutResultUnconfirmed','ScriptTransportRejected'].includes(e.message))throw e;}if(Date.now()>=until)break;await new Promise(r=>setTimeout(r,100));}
+ }finally{if(probe)await api.tabs.remove(probe.id);}
+ if(!expired||!live())throw Error('InitialCheckoutExpiryUnconfirmed');
+ const port=new ChromePort(api,tabId,{mode:'observe'});let first;
+ for(let i=0;i<2;i++){const o=await port.observe(PRO_PLAN);if(!live()||o.phase!=='BAG'||o.verifiedStep!==true||o.path!=='/shop/bag'||!itemMatches(PRO_PLAN,o.purchase)||o.extras!==false)throw Error('InitialCheckoutBagUnconfirmed');if(first&&(first.documentId!==o.documentId||canonicalJson(first.purchase)!==canonicalJson(o.purchase)))throw Error('InitialCheckoutBagChanged');first=o;}
+ if(!live()||canonicalJson(await store.get(TASK_KEY))!==canonicalJson(old))throw Error('InitialCheckoutSourceChanged');
+ const sourceArchive=await store.archiveSnapshot(old);if(sourceArchive!==archivedSourceHash(old)||!live()||canonicalJson(await store.get(TASK_KEY))!==canonicalJson(old))throw Error('InitialCheckoutArchiveUnconfirmed');
+ const at=Date.now(),taskId=randomUUID(),row={...createPurchaseRecord(PRO_PLAN,{taskId,planDigest:proDigest,tabId,now:at,id:randomUUID}),desktopContext:api.sessionId,bagAddStarted:true,resourceWritten:true,acceptedSlot:null,inheritedIdentity:null,
+  desktopCancelledOrderPurchase:{schema:SCHEMA,generation:2,taskId,contextId:api.sessionId,planDigest:proDigest,sourceArchive,sourceBackup:packArchivedSource(old),referenceHash:old.desktopCancelledOrderPurchase.referenceHash,newPurchaseApproved:true,originalOrderAssociated:true,cancellationVerified:true,accountPreflightClear:true,preSlotResume:true,merchantExpiryVerified:true,existingCartOnly:true,rootPurchaseTaskId:old.taskId,identityBasis:'same authorized purchase; cancellation inherited from its verified immutable source; prior pickup outcome remains unknown',createdAt:at},retainedSourceArchives:[{schema:SCHEMA,sourceArchive}]};
+ if(!await validateCancelledOrderPurchase(row,api,store)||!live()||canonicalJson(await store.get(TASK_KEY))!==canonicalJson(old))throw Error('InitialCheckoutProspectiveUnconfirmed');
+ await store.put(TASK_KEY,row);return {created:true,existingCartOnly:true,realOrderVerified:false};
 }
 export async function startAfterCancelledOrder({store,api,tabId,approved=false,originalOrderAssociated=false,expectedRefHash,live=()=>true}){
  if(approved!==true||originalOrderAssociated!==true||!HASH.test(expectedRefHash??'')||typeof api?.sessionId!=='string'||typeof live!=='function'||!live())throw Error('NewPurchaseExplicitApprovalRequired');

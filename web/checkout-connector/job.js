@@ -404,6 +404,7 @@ export class PurchaseJob {
       const preparePrelaunch=o.phase==='PRELAUNCH'&&o.prelaunchConfigurable===true&&o.nextChoice!=null;
       if(o.phase==='PRELAUNCH'&&!preparePrelaunch)return this.gate(s,'official-entry-not-released','NOT_RELEASED');
       if(validating&&!['ENTRY','VARIANT'].includes(o.phase)&&!preparePrelaunch)return this.gate(s,'validation-endpoint-is-public-configuration; no checkout action','VALIDATION_STOPPED');
+      if(s.desktopCancelledOrderPurchase?.preSlotResume===true&&['ENTRY','VARIANT','EMPTY_BAG'].includes(o.phase))return this.gate(s,'same-cart-recovery-cannot-add; current bag required','NEEDS_USER');
       let command=afterAddCommand;
       if(command){} // Already selected write-free bag navigation after current positive evidence; common write-ahead/pause guards still apply.
       else if(o.phase==='ENTRY'||o.phase==='VARIANT'||preparePrelaunch){

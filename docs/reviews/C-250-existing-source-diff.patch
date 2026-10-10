@@ -1,0 +1,295 @@
+--- before/src/desktop/app.py
++++ after/src/desktop/app.py
+@@ -429,14 +429,16 @@
+         if not self.transfer_confirm.get():self.status.set('需确认接替当前同一账户购物袋这一台；未发购买动作。');return
+         data={k:v.get() for k,v in self.pickup_values.items() if v.get()}
+         if data.get('identitySuffix') and (len(data['identitySuffix'])!=4 or not data['identitySuffix'].isdigit()):
+             self.status.set('证件后四位格式不正确；未发动作。');return
+-        restart_payment=getattr(self,'checkout_can_restart_payment',False)
++        reopen_initial=getattr(self,'checkout_can_reopen_initial',False)
++        restart_payment=getattr(self,'checkout_can_restart_payment',False) or reopen_initial
+         expiry_url=self.expired_checkout_url.get().strip() if restart_payment else None
+         if restart_payment and not re.fullmatch(r'https://(?:www|secure\d+\.www)\.apple\.com\.cn/shop/checkout',expiry_url):self.status.set('请提供原官网结账入口，不带查询参数；未发动作。');return
+         self.transfer_confirm.set(False);self.transfer_button.config(state='disabled');self.final_confirm.set(False);self.final_checkbox.config(state='disabled');self.reconcile_button.config(state='disabled');self.advance_button.config(state='disabled')
+         try:
+-            command={'action':'restart-payment' if restart_payment else 'renew-draft' if getattr(self,'checkout_can_renew_ended',False) else 'transfer','approved':True,'newContextConfirmed':True,'privatePickupData':data}
++            command={'action':'reopen-initial' if reopen_initial else 'restart-payment' if restart_payment else 'renew-draft' if getattr(self,'checkout_can_renew_ended',False) else 'transfer','approved':True,'newContextConfirmed':True,'privatePickupData':data}
++            if command['action']=='reopen-initial':command['expiredCheckoutUrl']=expiry_url
+             if command['action']=='restart-payment':command.update(oldExecutorStopped=True,sameAccountOrdersClear=True,expiredCheckoutUrl=expiry_url,additionalRecoveryApproved=getattr(self,'checkout_can_additional_review',False),automaticRecoveryApproved=getattr(self,'checkout_can_policy_review',False))
+             if command['action']=='renew-draft':command.update(merchantExpiryConfirmed=True,oldExecutorStopped=True,sameAccountOrdersClear=True)
+             self.checkout_working=True
+             self.checkout.send(command)
+@@ -542,9 +544,12 @@
+                     self.checkout_can_renew_ended=v.get('canRenewEndedDraft') is True
+                     self.checkout_can_restart_payment=v.get('canRestartExpiredPayment') is True
+                     self.checkout_can_additional_review=v.get('canAdditionalReviewRecovery') is True
+                     self.checkout_can_policy_review=v.get('canPolicyReviewRecovery') is True
+-                    if self.checkout_can_policy_review:
++                    self.checkout_can_reopen_initial=v.get('canReopenInitialCheckout') is True
++                    if self.checkout_can_reopen_initial:
++                        self.transfer_checkbox.config(text='继续本次尚未选择时段的购买：程序核实旧结账超时并复用这一台，保留全部记录，不再加购')
++                    elif self.checkout_can_policy_review:
+                         self.transfer_checkbox.config(text='按已确认条件恢复未下单的超时结账：旧执行已停、同账户无同款待付款订单；复用这一台，保留原记录和日期，未知下单结果不重提')
+                     elif self.checkout_can_additional_review:
+                         self.transfer_checkbox.config(text='本人确认本次只追加一次恢复：旧执行已停止、同账户无同款待付款订单；保留原记录和日期限制，仅复用这一台')
+                     elif self.checkout_can_restart_payment:
+--- before/src/desktop/cancelled-order-purchase.mjs
++++ after/src/desktop/cancelled-order-purchase.mjs
+@@ -11,12 +11,43 @@
+  return validStored(row)&&!row.desktopCancelledOrderPurchase&&row.reconcileOnly!==true&&row.expiresAt<=at&&row.finalIntent?.sent===true&&row.pending?.action==='submitOrder'&&row.pending.dispatched!==false&&canonicalJson(normalizeIntent(row.plan))===canonicalJson(PRO_PLAN)&&!!await validateExpiredReviewRestart(row,{sessionId:row.desktopContext},store,{readonly:true});
+ }
+ export async function validateCancelledOrderPurchase(row,api,store,{readonly=false}={}){
+  const t=row?.desktopCancelledOrderPurchase;
+- if(!validStored(row)||!t||t.schema!==SCHEMA||t.generation!==1||t.taskId!==row.taskId||t.contextId!==row.desktopContext||row.desktopContext!==api?.sessionId||row.reconcileOnly===true&&!readonly||t.planDigest!==proDigest||t.newPurchaseApproved!==true||t.originalOrderAssociated!==true||t.cancellationVerified!==true||t.accountPreflightClear!==true||!HASH.test(t.referenceHash??'')||!HASH.test(t.sourceArchive??'')||!Number.isFinite(t.createdAt)||canonicalJson(normalizeIntent(row.plan))!==canonicalJson(PRO_PLAN)||canonicalJson(row.retainedSourceArchives)!==canonicalJson([{schema:SCHEMA,sourceArchive:t.sourceArchive}])||row.desktopReviewRestart||row.desktopPaymentRestart||row.desktopEndedDraft||row.desktopTransfer||row.desktopEmptyRestart||row.desktopHandoff)return null;
++ if(!validStored(row)||!t||t.schema!==SCHEMA||![1,2].includes(t.generation)||t.taskId!==row.taskId||t.contextId!==row.desktopContext||row.desktopContext!==api?.sessionId||row.reconcileOnly===true&&!readonly||t.planDigest!==proDigest||t.newPurchaseApproved!==true||t.originalOrderAssociated!==true||t.cancellationVerified!==true||t.accountPreflightClear!==true||!HASH.test(t.referenceHash??'')||!HASH.test(t.sourceArchive??'')||!Number.isFinite(t.createdAt)||canonicalJson(normalizeIntent(row.plan))!==canonicalJson(PRO_PLAN)||canonicalJson(row.retainedSourceArchives)!==canonicalJson([{schema:SCHEMA,sourceArchive:t.sourceArchive}])||row.desktopReviewRestart||row.desktopPaymentRestart||row.desktopEndedDraft||row.desktopTransfer||row.desktopEmptyRestart||row.desktopHandoff)return null;
+  let old;try{const backup=unpackArchivedSource(t.sourceBackup,t.sourceArchive);old=await store.readArchive(t.sourceArchive);if(canonicalJson(old)!==canonicalJson(backup))return null;}catch{return null;}
+- if(!await sourceValid(old,store,t.createdAt)||old.taskId===row.taskId||old.desktopContext===row.desktopContext||old.orderRefHash!=null&&old.orderRefHash!==t.referenceHash)return null;
++ if(old.taskId===row.taskId||old.desktopContext===row.desktopContext)return null;
++ if(t.generation===1){if(!await sourceValid(old,store,t.createdAt)||old.orderRefHash!=null&&old.orderRefHash!==t.referenceHash||t.preSlotResume!==undefined)return null;}
++ else if(!preSlotReopenShape(old,t.createdAt)||!await validateCancelledOrderPurchase(old,{sessionId:old.desktopContext},store,{readonly:true})||t.referenceHash!==old.desktopCancelledOrderPurchase.referenceHash||t.rootPurchaseTaskId!==old.taskId||t.preSlotResume!==true||t.merchantExpiryVerified!==true||t.existingCartOnly!==true)return null;
+  return {schema:SCHEMA,taskId:row.taskId,contextId:api.sessionId,sourceArchive:t.sourceArchive};
++}
++
++// Only the current early checkout is superseded. Earlier cancelled final and all unknowns remain in its full archive.
++export function preSlotReopenShape(row,at=Date.now()){
++ const p=row?.pending;
++ return validStored(row)&&row.desktopCancelledOrderPurchase?.generation===1&&row.finalIntent===null&&row.orderRefHash==null&&row.orderDetailLink==null&&row.acceptedSlot==null&&row.inheritedIdentity==null&&row.initialDates===null&&row.dateCursor===0&&row.refusals===0&&Object.keys(row.floors??{}).length===0&&row.rejected?.length===0&&row.bagAddStarted===true&&row.resourceWritten===true&&
++  ['UNKNOWN','AUTH','BAG','FULFILLMENT'].includes(row.lastPhase)&&p?.dispatched!==false&&Number.isFinite(p?.deadline)&&p.deadline<=at&&((p.action==='checkout'&&p.beforePhase==='BAG')||(p.action==='selectPickup'&&p.beforePhase==='FULFILLMENT'))&&
++  !row.history?.some(h=>/slot|final/i.test(h.event??'')||['chooseSlot','submitOrder'].includes(h.action));
++}
++export async function reopenBeforeSlots({store,api,tabId,approved=false,expiredCheckoutUrl,live=()=>true}){
++ if(approved!==true||typeof live!=='function'||!live())throw Error('InitialCheckoutApprovalRequired');
++ const old=await store.get(TASK_KEY);
++ if(!preSlotReopenShape(old)||old.desktopContext===api?.sessionId||!await validateCancelledOrderPurchase(old,{sessionId:old.desktopContext},store,{readonly:true}))throw Error('InitialCheckoutSourceUnconfirmed');
++ if(await api.executorVersion()!==CHECKOUT_EXECUTOR_VERSION||!await api.permissions.contains({origins:[SHOP_HOST_SCOPE]}))throw Error('InitialCheckoutExecutorUnavailable');
++ const account=await api.auditOrders(PRO_PLAN,null,{automatic:false});
++ if(!live()||account?.state!=='clear'||account.authenticated!==true||!HASH.test(account.accountHash??'')||!Number.isSafeInteger(account.matchingCount)||account.matchingCount<0)throw Error('InitialCheckoutAccountUnconfirmed');
++ let probe,expired=false;
++ try{probe=await api.createExpiryProbe(expiredCheckoutUrl);const port=new ChromePort(api,probe.id,{mode:'observe'}),until=Date.now()+15000;
++  for(let i=0;i<150&&live();i++){try{const meta=await api.tabs.get(probe.id);if(meta?.status==='complete'){const o=await port.observe(PRO_PLAN);expired=o.merchantError==='session-expired'&&o.path==='/shop/sorry/session_expired';break;}}catch(e){if(!['NativeCheckoutResultUnconfirmed','ScriptTransportRejected'].includes(e.message))throw e;}if(Date.now()>=until)break;await new Promise(r=>setTimeout(r,100));}
++ }finally{if(probe)await api.tabs.remove(probe.id);}
++ if(!expired||!live())throw Error('InitialCheckoutExpiryUnconfirmed');
++ const port=new ChromePort(api,tabId,{mode:'observe'});let first;
++ for(let i=0;i<2;i++){const o=await port.observe(PRO_PLAN);if(!live()||o.phase!=='BAG'||o.verifiedStep!==true||o.path!=='/shop/bag'||!itemMatches(PRO_PLAN,o.purchase)||o.extras!==false)throw Error('InitialCheckoutBagUnconfirmed');if(first&&(first.documentId!==o.documentId||canonicalJson(first.purchase)!==canonicalJson(o.purchase)))throw Error('InitialCheckoutBagChanged');first=o;}
++ if(!live()||canonicalJson(await store.get(TASK_KEY))!==canonicalJson(old))throw Error('InitialCheckoutSourceChanged');
++ const sourceArchive=await store.archiveSnapshot(old);if(sourceArchive!==archivedSourceHash(old)||!live()||canonicalJson(await store.get(TASK_KEY))!==canonicalJson(old))throw Error('InitialCheckoutArchiveUnconfirmed');
++ const at=Date.now(),taskId=randomUUID(),row={...createPurchaseRecord(PRO_PLAN,{taskId,planDigest:proDigest,tabId,now:at,id:randomUUID}),desktopContext:api.sessionId,bagAddStarted:true,resourceWritten:true,acceptedSlot:null,inheritedIdentity:null,
++  desktopCancelledOrderPurchase:{schema:SCHEMA,generation:2,taskId,contextId:api.sessionId,planDigest:proDigest,sourceArchive,sourceBackup:packArchivedSource(old),referenceHash:old.desktopCancelledOrderPurchase.referenceHash,newPurchaseApproved:true,originalOrderAssociated:true,cancellationVerified:true,accountPreflightClear:true,preSlotResume:true,merchantExpiryVerified:true,existingCartOnly:true,rootPurchaseTaskId:old.taskId,identityBasis:'same authorized purchase; cancellation inherited from its verified immutable source; prior pickup outcome remains unknown',createdAt:at},retainedSourceArchives:[{schema:SCHEMA,sourceArchive}]};
++ if(!await validateCancelledOrderPurchase(row,api,store)||!live()||canonicalJson(await store.get(TASK_KEY))!==canonicalJson(old))throw Error('InitialCheckoutProspectiveUnconfirmed');
++ await store.put(TASK_KEY,row);return {created:true,existingCartOnly:true,realOrderVerified:false};
+ }
+ export async function startAfterCancelledOrder({store,api,tabId,approved=false,originalOrderAssociated=false,expectedRefHash,live=()=>true}){
+  if(approved!==true||originalOrderAssociated!==true||!HASH.test(expectedRefHash??'')||typeof api?.sessionId!=='string'||typeof live!=='function'||!live())throw Error('NewPurchaseExplicitApprovalRequired');
+  const old=await store.get(TASK_KEY),fingerprint=old?archivedSourceHash(old):null;
+--- before/src/desktop/checkout-runtime.mjs
++++ after/src/desktop/checkout-runtime.mjs
+@@ -12,9 +12,9 @@
+ import {currentReviewProgress,knownUnreleasedFinal} from '../../web/checkout-connector/review-progress.js';
+ import {R2_VERSION} from '../../web/checkout-connector/r2-protocol.js';
+ import {CHECKOUT_EXECUTOR_VERSION} from '../../web/checkout-connector/page-program.js';
+ import {reviewCheckCodes} from '../../web/checkout-connector/review-diagnostic.js';
+-import {startAfterCancelledOrder,validateCancelledOrderPurchase} from './cancelled-order-purchase.mjs';
++import {startAfterCancelledOrder,validateCancelledOrderPurchase,reopenBeforeSlots} from './cancelled-order-purchase.mjs';
+ const BAG='https://www.apple.com.cn/shop/bag',TERMS='https://www.apple.com.cn/shop/open/salespolicies';
+ const REVIEW_TERMS=[TERMS,'https://www.apple.com.cn/shop/browse/open/salespolicies'];
+ function currentTerms(o){
+  const links=Array.isArray(o?.termsLinks)?o.termsLinks.filter(u=>REVIEW_TERMS.includes(u)):[];
+@@ -89,9 +89,13 @@
+   try{
+    if(this.ordersEnabled){
+     const prior=await this.store.get(TASK_KEY),sent=prior?.finalIntent?.sent===true||prior?.pending?.action==='submitOrder'&&prior.pending.dispatched!==false;
+     if(sent&&(prior.orderRefHash||prior.desktopContext!==this.api.sessionId||prior.reconcileOnly===true||prior.state==='RETIRED'||options.mode==='reconcile'))return await this.checkNativeOrders(prior);
+-    if(!sent&&options.mode!=='reconcile'){const preflight=await this.checkNativeOrders(null);if(preflight.orderCheck.state!=='clear')return preflight;}
++    if(!sent&&options.mode!=='reconcile'&&!this.hasPreflight(prior)){
++     const preflight=await this.checkNativeOrders(null);if(preflight.orderCheck.state!=='clear')return preflight;
++     const current=await this.store.get(TASK_KEY);if(current?.taskId!==prior?.taskId||current?.planDigest!==prior?.planDigest)throw Error('DesktopPreflightSourceChanged');
++     this.rememberPreflight(current);
++    }
+     if(this.paused||this.closing||this.ownerLost)throw Error('DesktopSessionCancelled');
+    }
+    this.active=runDesktopSession({api:this.api,tabId:this.tabId,store:leased,mode:'purchase',signal:this.abort.signal,onState:s=>this.onState({...safeState(s),readOnly:options.mode==='reconcile',paused:this.paused}),...options,executor:this.executor});
+    const result=await this.active,record=await this.store.get(TASK_KEY);
+@@ -100,8 +104,10 @@
+    if(this.ordersEnabled&&record?.finalIntent?.sent===true&&record?.orderRefHash){return {...result,...await this.checkNativeOrders(record)};}
+    this.onState({...safeState({...result,pendingAction:record?.pending?.action??null}),paused:this.paused});return {...result,pendingAction:record?.pending?.action??null};
+   }finally{this.active=null;this.busy=false;}
+  }
++ hasPreflight(row){return !!this.orderPreflight&&typeof row?.taskId==='string'&&row.taskId.length>0&&row.planDigest===proDigest&&typeof this.api?.sessionId==='string'&&this.lease?.owned===true&&this.orderPreflight.taskId===row.taskId&&this.orderPreflight.planDigest===row.planDigest&&this.orderPreflight.contextId===this.api.sessionId;}
++ rememberPreflight(row){if(this.ownerLost||this.closing||this.lease?.owned!==true||!row||typeof row.taskId!=='string'||!row.taskId||row.planDigest!==proDigest||typeof this.api?.sessionId!=='string'||row.desktopContext!==this.api.sessionId)throw Error('DesktopPreflightSourceChanged');this.orderPreflight={taskId:row.taskId,planDigest:row.planDigest,contextId:this.api.sessionId};}
+  async checkNativeOrders(finalRecord=null,{automatic=false}={}){
+   if(!this.ordersEnabled||typeof this.api.auditOrders!=='function')throw Error('NativeOrderAuditUnavailable');
+   if(this.ownerLost||this.paused||this.closing||this.lease?.owned!==true)throw Error('DesktopSessionCancelled');
+   let check;
+@@ -117,13 +123,24 @@
+  }
+  orderAudit(){return this.track(async()=>{if(this.busy||this.closed||this.closing)throw Error('DesktopSessionAlreadyRunning');this.busy=true;try{const row=await this.store.get(TASK_KEY);return await this.checkNativeOrders(row?.finalIntent?.sent===true?row:null,{automatic:true});}finally{this.busy=false;}});}
+  advance(options={}){return this.track(()=>this.advanceOnce(options));}
+  newPurchase(options={}){return this.track(()=>this.newPurchaseOnce(options));}
++ reopenInitial(options={}){return this.track(()=>this.reopenInitialOnce(options));}
++ async reopenInitialOnce({approved=false,expiredCheckoutUrl,privatePickupData={}}={}){
++  if(this.busy||this.paused||this.closing||this.closed||this.ownerLost||!this.opened)throw Error('DesktopSessionAlreadyRunning');
++  this.busy=true;this.finalDescriptor=null;let created;
++  try{created=await reopenBeforeSlots({store:this.store,api:this.api,tabId:this.tabId,approved,expiredCheckoutUrl,live:()=>!this.paused&&!this.closing&&!this.closed&&!this.ownerLost&&this.lease?.owned===true});}finally{this.busy=false;}
++  if(created.created!==true)throw Error('InitialCheckoutUnconfirmed');
++  this.rememberPreflight(await this.store.get(TASK_KEY));
++  this.onState({state:'RUNNING',phase:'BAG',pendingAction:null,newPurchaseStarted:true});
++  return {...await this.advance({checkoutApproved:true,newContextConfirmed:true,privatePickupData}),localTransitionCreated:true};
++ }
+  async newPurchaseOnce({approved=false,originalOrderAssociated=false,expectedRefHash,privatePickupData={}}={}){
+   if(this.busy||this.paused||this.closing||this.closed||this.ownerLost||!this.opened)throw Error('DesktopSessionAlreadyRunning');
+   this.busy=true;this.finalDescriptor=null;let created;
+   try{expectedRefHash??=(await this.store.get(TASK_KEY))?.orderRefHash;created=await startAfterCancelledOrder({store:this.store,api:this.api,tabId:this.tabId,approved,originalOrderAssociated,expectedRefHash,live:()=>!this.paused&&!this.closing&&!this.closed&&!this.ownerLost&&this.lease?.owned===true});}finally{this.busy=false;}
+   if(created.created!==true)throw Error('NewPurchaseUnconfirmed');
++  this.rememberPreflight(await this.store.get(TASK_KEY));
+   this.onState({state:'RUNNING',phase:created.startPhase,pendingAction:null,newPurchaseStarted:true});
+   return {...await this.advance({checkoutApproved:true,newContextConfirmed:true,privatePickupData}),localTransitionCreated:true,newPurchase:true};
+  }
+  async advanceOnce({checkoutApproved=false,newContextConfirmed=false,privatePickupData={}}={}){
+@@ -212,9 +229,9 @@
+  async close(){
+   if(this.closePromise)return this.closePromise;this.closePromise=this.closeOnce();return this.closePromise;
+  }
+  async closeOnce(){
+-  if(this.closed)return;this.closing=true;this.finalDescriptor=null;this.abort?.abort();
++  if(this.closed)return;this.closing=true;this.finalDescriptor=null;this.orderPreflight=null;this.abort?.abort();
+   await Promise.allSettled([...this.operations,...(this.starting?[this.starting]:[])]);
+   try{if(this.closeBrowser)await this.closeBrowser();await this.lease?.release();this.unwatchLease?.();this.cleanupConfirmed=true;this.closed=true;}
+   catch{this.cleanupConfirmed=false;throw Error('DesktopBrowserCleanupUnconfirmed');}
+  }
+--- before/src/desktop/native-purchase-worker.mjs
++++ after/src/desktop/native-purchase-worker.mjs
+@@ -1,7 +1,8 @@
+ // Prepared native-only entry: production controller/private stdin. Never SDK attach, profile copy or auto-authentication.
+ import {createInterface} from 'node:readline';
+-import {createHash} from 'node:crypto';import {join} from 'node:path';
++import {createHash} from 'node:crypto';
++import {preSlotReopenShape} from './cancelled-order-purchase.mjs';import {join} from 'node:path';
+ import {DesktopCheckoutRuntime} from './checkout-runtime.mjs';import {DesktopTaskStore} from './task-store.mjs';
+ import {AuthContinuation} from './auth-continuation.mjs';import {launchNativeCheckout} from './native-checkout-channel.mjs';
+ import {safeCheckoutDiagnostic} from './checkout-diagnostic.mjs';
+ import {stoppedCheckoutDraftSource} from './cart-transfer.mjs';import {TASK_KEY} from '../../web/checkout-connector/job.js';
+@@ -22,9 +23,9 @@
+ }
+ try{
+  const initial=await runtime.open();if(closing)throw Error('NativeOwnerLost');
+  const hostScope=await probeCheckoutHostScope(runtime.api),source=await store.get(TASK_KEY),canRenewEndedDraft=!!stoppedCheckoutDraftSource(source),canAdditionalReviewRecovery=source?.desktopReviewRestart?.generation===1&&!!additionalExpiredReviewSourceShape(source),canPolicyReviewRecovery=source?.desktopReviewRestart?.generation>=2&&!!policyExpiredReviewSourceShape(source),canRestartExpiredPayment=!!(expiredPaymentSourceShape(source)||expiredReviewSourceShape(source)||canAdditionalReviewRecovery||canPolicyReviewRecovery);if(closing||runtime.ownerLost)throw Error('NativeOwnerLost');
+- emit({type:'ready',readOnly:initial.legacyReadOnly===true,canRenewEndedDraft,canRestartExpiredPayment,canAdditionalReviewRecovery,canPolicyReviewRecovery,...hostScope,automaticOrders:true,message:'程序已连接正常 Chrome 的独立结账通道；旧只读和未知记录不增加购买权限。'});
++ emit({type:'ready',canReopenInitialCheckout:preSlotReopenShape(source),readOnly:initial.legacyReadOnly===true,canRenewEndedDraft,canRestartExpiredPayment,canAdditionalReviewRecovery,canPolicyReviewRecovery,...hostScope,automaticOrders:true,message:'程序已连接正常 Chrome 的独立结账通道；旧只读和未知记录不增加购买权限。'});
+  input=createInterface({input:process.stdin});let active=false,pausing=false;
+  watch=new AuthContinuation({observe:()=>runtime.observe(),isBusy:()=>closing||active||pausing||runtime.paused,onStopped:()=>{emit({type:'blocked',paused:runtime.paused,message:'官网验证或页面仍未确认，自动衔接已停止；旧动作不重复。'});stopBrokenConnection();}});
+  orderWatch=new AuthContinuation({observe:async()=>{const r=await runtime.orderAudit();const state=r.orderCheck?.state;return ['auth','waiting'].includes(state)?{phase:'AUTH'}:['clear','detail','unpaid-exists','unconfirmed','not-found'].includes(state)?{phase:'READY'}:{phase:'UNKNOWN',feedback:'order-query-unconfirmed'};},isBusy:()=>closing||active||pausing||runtime.paused,onStopped:()=>{emit({type:'blocked',message:'订单查询仍需登录或核对；未重复购买。'});stopBrokenConnection();}});
+  function consentSummary(){const d=runtime.finalDescriptor;return d?{termsUrl:d.termsUrl,totalCny:d.totalCny,sourceChoice:d.sourceChoice??null,pickupNotice:d.pickupNotice??null}:null;}
+@@ -52,16 +53,21 @@
+   if(line.length>12000||closing)return;let c;try{c=JSON.parse(line);}catch{return;}
+   if(c?.action==='stop'){closing=true;watch.stop();orderWatch?.stop();input.close();try{await runtime.close();}catch{process.exitCode=2;emit({type:'blocked',message:'结账通道清理未确认，未知记录保持。'});}finally{emit({type:'closed',cleanupConfirmed:runtime.cleanupConfirmed});process.stdin.destroy();}return;}
+   if(c?.action==='pause'){watch.stop();orderWatch?.stop();if(pausing)return;pausing=true;try{emit({type:'paused',...await runtime.pause()});}catch{emit({type:'blocked',paused:runtime.paused,message:'暂停未确认；已发送动作可能继续，未知记录保持。'});}finally{pausing=false;}return;}
+   if(active||watch.reading||orderWatch.reading||pausing){emit({type:'blocked',paused:runtime.paused,message:'当前执行尚未结束，未再次发动作。'});return;}
+-  if(!['observe','reconcile','transfer','transfer-contact','renew-draft','restart-payment','restart-empty','new-purchase','advance','resume','submit'].includes(c?.action))return;
++  if(!['observe','reconcile','transfer','transfer-contact','renew-draft','restart-payment','restart-empty','new-purchase','reopen-initial','advance','resume','submit'].includes(c?.action))return;
+   watch.stop();orderWatch?.stop();active=true;
+   try{
+    if(c.action==='advance'||c.action==='resume')await advance(c);
+    else if(c.action==='new-purchase'){
+     let expectedRefHash=c.expectedRefHash;
+     if(c.orderNumber){if(!/^W\d{6,30}$/.test(c.orderNumber)||expectedRefHash!==undefined)throw Error('NewPurchaseReferenceInvalid');expectedRefHash=createHash('sha256').update(c.orderNumber).digest('hex');}
+     const result=await runtime.newPurchase({approved:c.approved===true,originalOrderAssociated:c.originalOrderAssociated===true,expectedRefHash,privatePickupData:c.privatePickupData??{}});
++    emit({type:'result',...result,paused:runtime.paused,readOnly:false,reviewReady:!!runtime.finalDescriptor,consentSummary:consentSummary()});
++    await continueWhenReady(result,{checkoutApproved:true,newContextConfirmed:true,privatePickupData:c.privatePickupData??{}});
++   }
++   else if(c.action==='reopen-initial'){
++    const result=await runtime.reopenInitial({approved:c.approved===true,expiredCheckoutUrl:c.expiredCheckoutUrl,privatePickupData:c.privatePickupData??{}});
+     emit({type:'result',...result,paused:runtime.paused,readOnly:false,reviewReady:!!runtime.finalDescriptor,consentSummary:consentSummary()});
+     await continueWhenReady(result,{checkoutApproved:true,newContextConfirmed:true,privatePickupData:c.privatePickupData??{}});
+    }
+    else if(c.action==='restart-payment'){
+@@ -88,9 +94,9 @@
+     const result=c.action==='observe'?await runtime.observe():c.action==='reconcile'?runtime.paused?await runtime.resume({mode:'reconcile'}):await runtime.reconcile():await runtime.submit({termsAccepted:c.termsAccepted===true,existingOrdersChecked:c.existingOrdersChecked===true,noExtras:c.noExtras===true});
+     emit({type:'result',state:result.state,phase:result.phase,pendingAction:result.pendingAction??null,...(result.orderCheck?{orderCheck:result.orderCheck,readOnly:result.readOnly===true}:{}),paused:runtime.paused,readOnly:c.action==='reconcile'||result.readOnly===true,realOrderVerified:result.realOrderVerified===true,...(result.receiptAwaitingPayment===true?{receiptAwaitingPayment:true}:{}),reviewReady:!!runtime.finalDescriptor,bagCheck:result.bagCheck??null});
+     if(result.orderCheck)await continueWhenReady(result,{action:'advance',checkoutApproved:true,newContextConfirmed:true});
+    }
+-  }catch(error){emit({type:'blocked',paused:runtime.paused,diagnosticCode:safeCheckoutDiagnostic(error),message:'本次结账结果未确认；须重新核对实际已保存记录，未重复下单。'});stopBrokenConnection();}finally{active=false;}
++  }catch(error){emit({type:'blocked',paused:runtime.paused,diagnosticCode:safeCheckoutDiagnostic(error),message:({InitialCheckoutAccountUnconfirmed:'当前账户预检需要登录或核对；尚未恢复结账。',InitialCheckoutExpiryUnconfirmed:'尚未由程序确认官网旧结账已超时；未恢复。',InitialCheckoutBagUnconfirmed:'当前购物袋未明确为同款一台；未加购或恢复。',InitialCheckoutSourceUnconfirmed:'该任务不符合选时段之前的单次恢复条件；原记录保持。'})[error.message]??'本次结账结果未确认；须重新核对实际已保存记录，未重复下单。'});stopBrokenConnection();}finally{active=false;}
+  });
+  await new Promise(resolve=>input.once('close',resolve));watch.stop();orderWatch?.stop();
+ }catch{process.exitCode=1;emit({type:'blocked',message:'正常 Chrome 结账通道未连接或原任务无法继续；未启用新购买。'});}
+ finally{try{await runtime.close();}catch{process.exitCode=2;emit({type:'blocked',message:'通道清理未确认；保留结果，不重新开始。'});}}
+--- before/test/desktop-c192-host-scope.test.ts
++++ after/test/desktop-c192-host-scope.test.ts
+@@ -4,8 +4,9 @@
+ import {readFile} from 'node:fs/promises';
+ import vm from 'node:vm';
+ import {expiredPaymentSourceShape} from '../src/desktop/expired-payment-restart.mjs';
+ import {expiredReviewSourceShape} from '../src/desktop/expired-review-restart.mjs';
++import {preSlotReopenShape} from '../src/desktop/cancelled-order-purchase.mjs';
+ 
+ for(const granted of [true,false])test(`C192 existing host grant ${granted} is read once without permission request or browser action`,async()=>{
+  const requests=[];
+  const api=new Proxy({permissions:{contains:async request=>{requests.push(request);return granted;}}},{get(target,key){assert.equal(key,'permissions');return target[key];}});
+@@ -43,9 +44,9 @@
+  const process={cwd:()=>'/FAKE',argv:['FAKE','FAKE'],stdin:{destroy(){}},stdout:{write(line){rows.push(JSON.parse(line));}}};
+  await vm.runInNewContext(`(async()=>{${source.slice(source.indexOf('const emit='))}})()`,{
+   process,DesktopCheckoutRuntime:Runtime,DesktopTaskStore:Store,AuthContinuation:Watch,
+   createInterface:()=>input,join:(...parts)=>parts.join('/'),launchNativeCheckout:()=>{throw Error('No real transport');},
+-  stoppedCheckoutDraftSource:()=>true,expiredPaymentSourceShape,expiredReviewSourceShape,TASK_KEY:'FAKE',probeCheckoutHostScope,safeCheckoutDiagnostic:()=> 'FAKE',
++  stoppedCheckoutDraftSource:()=>true,expiredPaymentSourceShape,expiredReviewSourceShape,preSlotReopenShape,TASK_KEY:'FAKE',probeCheckoutHostScope,safeCheckoutDiagnostic:()=> 'FAKE',
+  });
+  return {rows,calls,currentRuntime};
+ }
+ 
+--- before/test/desktop-c240-worker-auth.test.ts
++++ after/test/desktop-c240-worker-auth.test.ts
+@@ -5,16 +5,17 @@
+ import {NativeCheckoutApi} from '../src/desktop/native-checkout-api.mjs';
+ import {OrderAudit,ORDER_LIST} from '../web/checkout-connector/order-audit.js';
+ import {CHECKOUT_PLAN} from '../web/checkout-connector/checkout-rpc-contract.js';
+ import {AuthContinuation} from '../src/desktop/auth-continuation.mjs';
++import {preSlotReopenShape} from '../src/desktop/cancelled-order-purchase.mjs';
+ const source=(await readFile(new URL('../src/desktop/native-purchase-worker.mjs',import.meta.url),'utf8')).replace(/import\s+[\s\S]*?\s+from\s+['"][^'"]+['"];?/g,'');
+ async function world({failAfterLogin=false,preflightUnknown=false,transportLost=false,orderReadUnknown=false,poisonInAudit=false,orderReadHook=null}={}){
+  const events=[],watches=[];let input,advanceCount=0,submitCount=0,closed=false;
+  const row=preflightUnknown?{pending:{action:'checkout',beforePhase:'BAG'},expiresAt:Date.now()+60000}:{finalIntent:{sent:true},pending:{action:'submitOrder'},expiresAt:Date.now()+60000};
+  class Runtime{constructor(){this.api={};this.paused=false;this.finalDescriptor=null;this.cleanupConfirmed=true;}async open(){return{};}async close(){}async orderAudit(){if(orderReadHook)return {orderCheck:await orderReadHook()};if(poisonInAudit){this.api.poisoned=true;throw Error('NativeCheckoutDeliveryUnknown');}return {orderCheck:{state:orderReadUnknown?'unknown':'clear'}};}async advance(){advanceCount++;if(transportLost){this.api.poisoned=true;throw Error('NativeCheckoutDeliveryUnknown');}if(failAfterLogin)throw Error('FAKE read failed');return preflightUnknown?{phase:'UNKNOWN',orderCheck:{state:'unknown'}}:{phase:'ORDER_DETAIL',pendingAction:'submitOrder',readOnly:true,orderCheck:{state:'detail',status:'cancelled'}};}async submit(){submitCount++;return{phase:'AUTH',pendingAction:'submitOrder',orderCheck:{state:'auth'},readOnly:true};}async reconcile(){return{phase:'AUTH',pendingAction:'submitOrder',orderCheck:{state:'auth'},readOnly:true};}}
+  class Watch extends AuthContinuation{constructor(opts){super({...opts,setTimer:()=>1,clearTimer:()=>{}});watches.push(this);}}
+  const stdin=new EventEmitter();stdin.destroy=()=>{};
+- const deps={createInterface:()=>{input=new EventEmitter();input.close=()=>{closed=true;input.emit('close');};return input;},join:(...x)=>x.join('/'),DesktopCheckoutRuntime:Runtime,DesktopTaskStore:class{async get(){return row;}},AuthContinuation:Watch,launchNativeCheckout:()=>assert.fail('No Chrome'),safeCheckoutDiagnostic:()=>null,stoppedCheckoutDraftSource:()=>false,TASK_KEY:'FAKE',probeCheckoutHostScope:async()=>({}),expiredPaymentSourceShape:()=>false,expiredReviewSourceShape:()=>false,additionalExpiredReviewSourceShape:()=>false,policyExpiredReviewSourceShape:()=>false,process:{argv:['node','FAKE-worker'],cwd:()=>'/FAKE',stdout:{write:text=>events.push(JSON.parse(text))},stdin}};
++ const deps={preSlotReopenShape,createInterface:()=>{input=new EventEmitter();input.close=()=>{closed=true;input.emit('close');};return input;},join:(...x)=>x.join('/'),DesktopCheckoutRuntime:Runtime,DesktopTaskStore:class{async get(){return row;}},AuthContinuation:Watch,launchNativeCheckout:()=>assert.fail('No Chrome'),safeCheckoutDiagnostic:()=>null,stoppedCheckoutDraftSource:()=>false,TASK_KEY:'FAKE',probeCheckoutHostScope:async()=>({}),expiredPaymentSourceShape:()=>false,expiredReviewSourceShape:()=>false,additionalExpiredReviewSourceShape:()=>false,policyExpiredReviewSourceShape:()=>false,process:{argv:['node','FAKE-worker'],cwd:()=>'/FAKE',stdout:{write:text=>events.push(JSON.parse(text))},stdin}};
+  const AsyncFunction=Object.getPrototypeOf(async function(){}).constructor;
+  const done=new AsyncFunction(...Object.keys(deps),source)(...Object.values(deps));await new Promise(r=>setImmediate(r));
+  return {events,watches,isClosed:()=>closed,send:value=>input.listeners('line')[0](JSON.stringify(value)),counts:()=>({advanceCount,submitCount}),close:async()=>{input.close();await done;}};
+ }
+--- before/web/checkout-connector/job.js
++++ after/web/checkout-connector/job.js
+@@ -403,8 +403,9 @@
+       if(o.phase==='PROCESSING'){if(await poll(this.maxWaitMs))continue;return this.gate(s,'merchant-processing-time-bound-reached','NEEDS_VERIFICATION');}
+       const preparePrelaunch=o.phase==='PRELAUNCH'&&o.prelaunchConfigurable===true&&o.nextChoice!=null;
+       if(o.phase==='PRELAUNCH'&&!preparePrelaunch)return this.gate(s,'official-entry-not-released','NOT_RELEASED');
+       if(validating&&!['ENTRY','VARIANT'].includes(o.phase)&&!preparePrelaunch)return this.gate(s,'validation-endpoint-is-public-configuration; no checkout action','VALIDATION_STOPPED');
++      if(s.desktopCancelledOrderPurchase?.preSlotResume===true&&['ENTRY','VARIANT','EMPTY_BAG'].includes(o.phase))return this.gate(s,'same-cart-recovery-cannot-add; current bag required','NEEDS_USER');
+       let command=afterAddCommand;
+       if(command){} // Already selected write-free bag navigation after current positive evidence; common write-ahead/pause guards still apply.
+       else if(o.phase==='ENTRY'||o.phase==='VARIANT'||preparePrelaunch){
+         // A started bag addition is durable: any return to product configuration cannot add again.
+--- before/web/checkout-connector/page-program.js
++++ after/web/checkout-connector/page-program.js
+@@ -15,9 +15,9 @@
+ // C-020 (Claude): an anchored cart is BAG (recognized, proved checkout) or UNKNOWN; no other stage label there is step authority.
+ // C035 (Claude): the observed complete normal empty bag is EMPTY_BAG; there only openProduct is accepted, as a write-free re-verification.
+ // C037 (Claude): selectStore can choose the observed numbered native Dalian radio when it is not preselected, by the same exact proof.
+ // C051 (Claude): the observed contact-only details step is a recognized step (contactStep), never purchase proof; see below.
+-export const CHECKOUT_EXECUTOR_VERSION='C248-new-purchase-v1';
++export const CHECKOUT_EXECUTOR_VERSION='C250-checkout-session-v1';
+ export async function merchantDocument(plan,command=null,internal=null){
+   // `internal` is set only by this program's own re-entry; ChromePort passes plan and command only.
+   // A structured command always receives a structured report. Nothing was written unless this id was already delivered.
+   const report=reason=>{const memo=globalThis.__applebuyExecuted,prior=typeof memo?.has==='function'&&memo.has(command.id)===true;
+--- before/web/checkout-connector/r2-protocol.js
++++ after/web/checkout-connector/r2-protocol.js
+@@ -1,7 +1,7 @@
+ // Shared browser/desktop framing. This transfers the same journal, never a new purchase namespace.
+ import {canonicalJson,validStored} from './job.js';
+-export const R2_VERSION='applebuy-browser-job/C248-v1';
++export const R2_VERSION='applebuy-browser-job/C250-v1';
+ export const R2_MAX_BYTES=16_000_000,R2_CHUNK_BYTES=30000;
+ export const R2_OPERATIONS=new Set(['r2Version','r2Begin','r2Chunk','r2Run','r2Poll','r2Ack','r2Pause','r2Finish']);
+ const MUTABLE=new Set(['state','lastPhase','lastDocumentId','entryDocumentId','reason','pending','finalIntent','orderRefHash','orderDetailLink','initialDates','dateCursor','floors','rejected','refusals','lastRead','bagAddStarted','resourceWritten','untouchedFailures','untouchedStreak','bagTotalCny','quotedCny','acceptedSlot','inheritedIdentity','history','observationCurrent','permissionOrigin','reviewProgress']);
+ export async function digest(value){const bytes=typeof value==='string'?new TextEncoder().encode(value):value;return [...new Uint8Array(await crypto.subtle.digest('SHA-256',bytes))].map(x=>x.toString(16).padStart(2,'0')).join('');}
