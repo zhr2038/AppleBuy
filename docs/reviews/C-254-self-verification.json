@@ -1,0 +1,47 @@
+{
+  "task": "C254",
+  "files": 360,
+  "sha256": "1af63815704574e88ac8241bd691011040b6ce91eb3d701f78e71c1eeaaa3ce7",
+  "verification": "Codex author self-verification; current direct-deployment instruction waives waiting for Claude. No Claude review claimed.",
+  "newNodeChecks": 17,
+  "newPythonChecks": 2,
+  "finalChecks": {
+    "manifestBeforeAndAfter": true,
+    "protected": {"tests": 108, "pass": 108, "fail": 0},
+    "python": {"tests": 98, "failures": 0, "errors": 0, "skipped": 0},
+    "node": {"tests": 2065, "pass": 2065, "fail": 0, "cancelled": 0, "skipped": 0},
+    "ownedTreeCleanupConfirmed": true,
+    "exitCode": 0
+  },
+  "oldAssertionsChanged": false,
+  "extensionSourceChangedFromC253": false,
+  "testsUseFakeMerchantAndAccount": true,
+  "liveTrial": {
+    "operatorAssistedLegacyEntry": true,
+    "legacySourcePreservedVerbatimByProgramme": true,
+    "generationCreated": 3,
+    "bagReusedWithoutAdd": true,
+    "programmeCheckout": true,
+    "routineLoginByRootThroughSupportedChrome": true,
+    "postLoginContinuedWithoutAdditionalResumeClick": true,
+    "store": "R609",
+    "initialDates": ["october10", "october11", "october12"],
+    "dateCursor": 1,
+    "slot": {"date": "october11", "start": "21:15", "end": "21:30"},
+    "programmeContactAndAlipay": true,
+    "phase": "REVIEW",
+    "quantity": 1,
+    "totalCny": 9999,
+    "extras": false,
+    "finalSubmitted": false,
+    "paymentActions": 0,
+    "currentTermsConfirmation": "Requested; waiting at report time",
+    "unpaidOrderVerified": false
+  },
+  "limits": [
+    "Operator-observed rejection and fresh account checks are an assisted determination, not a reconstructed C253 automatic witness.",
+    "No automatic fourth generation or generic unknown-final retry.",
+    "Checkout slot selection does not prove a held slot; official review still says pickup date is determined after payment.",
+    "The receipt, final outcome and actual order require separate verification."
+  ]
+}
