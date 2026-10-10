@@ -13,6 +13,7 @@ import {currentReviewProgress,knownUnreleasedFinal} from '../../web/checkout-con
 import {R2_VERSION} from '../../web/checkout-connector/r2-protocol.js';
 import {CHECKOUT_EXECUTOR_VERSION} from '../../web/checkout-connector/page-program.js';
 import {reviewCheckCodes} from '../../web/checkout-connector/review-diagnostic.js';
+import {startAfterCancelledOrder,validateCancelledOrderPurchase} from './cancelled-order-purchase.mjs';
 const BAG='https://www.apple.com.cn/shop/bag',TERMS='https://www.apple.com.cn/shop/open/salespolicies';
 const REVIEW_TERMS=[TERMS,'https://www.apple.com.cn/shop/browse/open/salespolicies'];
 function currentTerms(o){
@@ -74,7 +75,7 @@ export class DesktopCheckoutRuntime {
   if(!this.opened||this.closed||this.closing)throw Error('DesktopSessionNotOpen');
   if(this.active)throw Error('DesktopSessionAlreadyRunning');
   const port=new ChromePort(this.api,this.tabId,{mode:'observe'}),o=await port.observe(PRO_PLAN),old=await this.store.get(TASK_KEY);
-  const recover=old?.desktopContext!==this.api.sessionId&&old?.desktopContext&&(validateDesktopCartTransfer(old,{sessionId:old.desktopContext})||validateEmptyRestart(old,{sessionId:old.desktopContext})||await validateEndedDraft(old,{sessionId:old.desktopContext},this.store,{readonly:true})||await validateExpiredPaymentRestart(old,{sessionId:old.desktopContext},this.store,{readonly:true})||await validateExpiredReviewRestart(old,{sessionId:old.desktopContext},this.store,{readonly:true}));
+  const recover=old?.desktopContext!==this.api.sessionId&&old?.desktopContext&&(validateDesktopCartTransfer(old,{sessionId:old.desktopContext})||validateEmptyRestart(old,{sessionId:old.desktopContext})||await validateEndedDraft(old,{sessionId:old.desktopContext},this.store,{readonly:true})||await validateExpiredPaymentRestart(old,{sessionId:old.desktopContext},this.store,{readonly:true})||await validateExpiredReviewRestart(old,{sessionId:old.desktopContext},this.store,{readonly:true})||await validateCancelledOrderPurchase(old,{sessionId:old.desktopContext},this.store,{readonly:true}));
   const result={state:'OBSERVED',phase:o.phase,pendingAction:old?.pending?.action??null,legacyReadOnly:old?.reconcileOnly===true||!!recover,realOrderVerified:false,bagCheck:bagPlanCheck(o,PRO_PLAN),...(o.merchantError?{merchantError:true}:{}),...(o.feedback?{feedback:true}:{})};
   if(!this.paused&&!this.closing&&!this.ownerLost)this.onState(safeState(result));return result;
  }
@@ -116,6 +117,15 @@ export class DesktopCheckoutRuntime {
  }
  orderAudit(){return this.track(async()=>{if(this.busy||this.closed||this.closing)throw Error('DesktopSessionAlreadyRunning');this.busy=true;try{const row=await this.store.get(TASK_KEY);return await this.checkNativeOrders(row?.finalIntent?.sent===true?row:null,{automatic:true});}finally{this.busy=false;}});}
  advance(options={}){return this.track(()=>this.advanceOnce(options));}
+ newPurchase(options={}){return this.track(()=>this.newPurchaseOnce(options));}
+ async newPurchaseOnce({approved=false,originalOrderAssociated=false,expectedRefHash,privatePickupData={}}={}){
+  if(this.busy||this.paused||this.closing||this.closed||this.ownerLost||!this.opened)throw Error('DesktopSessionAlreadyRunning');
+  this.busy=true;this.finalDescriptor=null;let created;
+  try{expectedRefHash??=(await this.store.get(TASK_KEY))?.orderRefHash;created=await startAfterCancelledOrder({store:this.store,api:this.api,tabId:this.tabId,approved,originalOrderAssociated,expectedRefHash,live:()=>!this.paused&&!this.closing&&!this.closed&&!this.ownerLost&&this.lease?.owned===true});}finally{this.busy=false;}
+  if(created.created!==true)throw Error('NewPurchaseUnconfirmed');
+  this.onState({state:'RUNNING',phase:created.startPhase,pendingAction:null,newPurchaseStarted:true});
+  return {...await this.advance({checkoutApproved:true,newContextConfirmed:true,privatePickupData}),localTransitionCreated:true,newPurchase:true};
+ }
  async advanceOnce({checkoutApproved=false,newContextConfirmed=false,privatePickupData={}}={}){
   if(this.ownerLost)throw Error('DesktopOwnerLeaseLost');
   if(this.paused)throw Error('DesktopSessionPaused');
@@ -191,7 +201,7 @@ export class DesktopCheckoutRuntime {
   await Promise.allSettled([...this.operations,...(this.starting?[this.starting]:[])]);
   if(this.ownerLost)throw Error('DesktopOwnerLeaseLost');
   const old=await this.store.get(TASK_KEY);
-  const recovered=old?.desktopContext!==this.api.sessionId&&old?.desktopContext&&(validateDesktopCartTransfer(old,{sessionId:old.desktopContext})||validateEmptyRestart(old,{sessionId:old.desktopContext})||await validateEndedDraft(old,{sessionId:old.desktopContext},this.store,{readonly:true})||await validateExpiredPaymentRestart(old,{sessionId:old.desktopContext},this.store,{readonly:true})||await validateExpiredReviewRestart(old,{sessionId:old.desktopContext},this.store,{readonly:true}));
+  const recovered=old?.desktopContext!==this.api.sessionId&&old?.desktopContext&&(validateDesktopCartTransfer(old,{sessionId:old.desktopContext})||validateEmptyRestart(old,{sessionId:old.desktopContext})||await validateEndedDraft(old,{sessionId:old.desktopContext},this.store,{readonly:true})||await validateExpiredPaymentRestart(old,{sessionId:old.desktopContext},this.store,{readonly:true})||await validateExpiredReviewRestart(old,{sessionId:old.desktopContext},this.store,{readonly:true})||await validateCancelledOrderPurchase(old,{sessionId:old.desktopContext},this.store,{readonly:true}));
   return {...safeState({state:'PAUSED',phase:old?.lastPhase,pendingAction:old?.pending?.action}),paused:true,readOnly:old?.reconcileOnly===true||!!recovered,canContinue:old?.desktopContext===this.api.sessionId&&old?.reconcileOnly!==true&&old?.state!=='CONFIRMED_UNPAID'&&old?.expiresAt>Date.now()};
  }
  async resume({mode='purchase',...options}={}){

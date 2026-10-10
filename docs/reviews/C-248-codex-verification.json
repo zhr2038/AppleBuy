@@ -1,0 +1,30 @@
+{
+  "sourceFiles": 351,
+  "sourceSha256": "6beee32c31a1232b84edbfc72f5b3c3cb943ac74da4fce80653f144bcddbc370",
+  "author": "Codex",
+  "accepted": false,
+  "newNode": {"tests": 35, "pass": 35},
+  "newPython": {"tests": 4, "pass": 4},
+  "fullNode": {"tests": 1998, "pass": 1998},
+  "fullPython": {"tests": 94, "failures": 0, "errors": 0, "skipped": 0},
+  "protected": {"tests": 108, "pass": 108},
+  "manifestBeforeAndAfterMatched": true,
+  "ownedCheckCleanupConfirmed": true,
+  "oldTestsModified": false,
+  "initialFailures": [
+    "Initial32/30/2: missing bounded proof integration in production PurchaseJob; repaired and production Runtime reaches review and one fake final.",
+    "The new fresh-cohort test expected an empty array but createPurchaseRecord correctly initializes null; corrected only this new test.",
+    "Physical owner-contention fixture expected owned=false; actual owner API correctly throws DesktopOwnerHeldOrUnconfirmed. New test now requires that exact rejection."
+  ],
+  "evidenceScope": [
+    "FAKE merchant/account/authority through production Runtime/Job/Port and one fake submit; zero Add and no resubmission.",
+    "Actual isolated Windows kernel owner contention, atomic task writer and immutable source archive; fictional task data only.",
+    "Actual NativeAPI/Peer with FAKE Chrome metadata and DOM results; no personal source used by tests.",
+    "Python GUI handler state and existing widget tests; no real order claimed."
+  ],
+  "realProgrammeNewOrder": false,
+  "realPriorCancellationReferenceMatchedByNewReader": false,
+  "personalExtensionUpdated": false,
+  "sourceJournalModifiedDuringDevelopment": false,
+  "review": "Pending actual same-session Opus5.5/max C249; no acceptance claimed."
+}

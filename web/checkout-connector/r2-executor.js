@@ -5,7 +5,7 @@ import {withPurchaseOwner} from './owner.js';
 import {merchantDocument} from './page-program.js';
 import {CHECKOUT_PLAN,planAllowed} from './checkout-rpc-contract.js';
 import {R2_VERSION,R2_MAX_BYTES,R2_CHUNK_BYTES,digest,rowPatch} from './r2-protocol.js';
-const PROOFS=['desktopTransferProof','desktopEmptyRestartProof','desktopEndedDraftProof','desktopPaymentRestartProof','desktopReviewRestartProof'];
+const PROOFS=['desktopTransferProof','desktopEmptyRestartProof','desktopEndedDraftProof','desktopPaymentRestartProof','desktopReviewRestartProof','desktopCancelledOrderPurchaseProof'];
 export class BrowserJobExecutor{
  constructor({peer,locks=globalThis.navigator?.locks,now=()=>Date.now(),operationMs=15000}){if(!Number.isFinite(operationMs)||operationMs<=0||operationMs>15000)throw Error('R2OperationBoundInvalid');this.operationMs=operationMs;this.peer=peer;this.locks=locks;this.now=now;this.seen=new Set();this.current=null;}
  get active(){return this.current!==null;}

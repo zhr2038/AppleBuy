@@ -10,6 +10,7 @@ import {validateExpiredReviewRestart} from './expired-review-restart.mjs';
 import {guardOwnedApi} from './owner-lease.mjs';
 import {runInBrowser} from './r2-browser-run.mjs';
 import {knownUnreleasedFinal} from '../../web/checkout-connector/review-progress.js';
+import {validateCancelledOrderPurchase} from './cancelled-order-purchase.mjs';
 export const PRO_PLAN={schema:'applebuy-intent/v1',product:{model:'iPhone 18 Pro',capacity:'256GB',color:'黑色'},quantity:1,maxTotalCny:9999,city:'大连',fulfillment:'pickup',stores:['Apple 大连恒隆广场'],dateRule:'initial-first-three-terminal',paymentMethod:'支付宝',extras:{...NO_EXTRAS}};
 export const proDigest=createHash('sha256').update(JSON.stringify(PRO_PLAN)).digest('hex');
 const activeStores=new WeakSet();
@@ -33,14 +34,14 @@ async function executeSession({api,tabId,store,mode='public-config',authority=nu
   let old=null,grant=null;
   if(mode==='reconcile'){
     old=await store.get(TASK_KEY);
-    const recover=typeof api.sessionId==='string'&&old?.desktopContext!==api.sessionId&&old?.desktopContext&&(validateDesktopCartTransfer(old,{sessionId:old.desktopContext})||validateEmptyRestart(old,{sessionId:old.desktopContext})||await validateEndedDraft(old,{sessionId:old.desktopContext},store,{readonly:true})||await validateExpiredPaymentRestart(old,{sessionId:old.desktopContext},store,{readonly:true})||await validateExpiredReviewRestart(old,{sessionId:old.desktopContext},store,{readonly:true}));
+    const recover=typeof api.sessionId==='string'&&old?.desktopContext!==api.sessionId&&old?.desktopContext&&(validateDesktopCartTransfer(old,{sessionId:old.desktopContext})||validateEmptyRestart(old,{sessionId:old.desktopContext})||await validateEndedDraft(old,{sessionId:old.desktopContext},store,{readonly:true})||await validateExpiredPaymentRestart(old,{sessionId:old.desktopContext},store,{readonly:true})||await validateExpiredReviewRestart(old,{sessionId:old.desktopContext},store,{readonly:true})||await validateCancelledOrderPurchase(old,{sessionId:old.desktopContext},store,{readonly:true}));
     if(!old||!validStored(old)||old.state==='RETIRED'||old.reconcileOnly!==true&&!recover||canonicalJson(normalizeIntent(old.plan))!==canonicalJson(PRO_PLAN))throw Error('DesktopReadonlyHandoffRequired');
   }
   if(mode==='purchase'){
     old=await store.get(TASK_KEY);
     if(!old||!validStored(old))throw Error('DesktopLegacyHandoffRequired');
     if(old.reconcileOnly===true)throw Error('DesktopLegacyResultStillUnconfirmed; DesktopHandoffPermanentlyRevokedSource');
-    if((old.desktopEndedDraft||old.desktopPaymentRestart||old.desktopReviewRestart||old.retainedSourceArchives)&&!await validateEndedDraft(old,api,store)&&!await validateExpiredPaymentRestart(old,api,store)&&!await validateExpiredReviewRestart(old,api,store))throw Error('DesktopEndedDraftProofUnconfirmed');
+    if((old.desktopEndedDraft||old.desktopPaymentRestart||old.desktopReviewRestart||old.desktopCancelledOrderPurchase||old.retainedSourceArchives)&&!await validateEndedDraft(old,api,store)&&!await validateExpiredPaymentRestart(old,api,store)&&!await validateExpiredReviewRestart(old,api,store)&&!await validateCancelledOrderPurchase(old,api,store))throw Error('DesktopEndedDraftProofUnconfirmed');
     const own=typeof api.sessionId==='string'&&old.desktopContext===api.sessionId;
     if(!own&&!legacyFinalProofClear(old))throw Error('DesktopLegacyFinalHistoryUnconfirmed');
     if(!own&&(old.pending||old.finalIntent||old.acceptedSlot||old.reconcileOnly===true))throw Error('DesktopLegacyResultStillUnconfirmed');
@@ -60,9 +61,10 @@ async function executeSession({api,tabId,store,mode='public-config',authority=nu
   port.desktopEndedDraftProof=mode==='purchase'?await validateEndedDraft(old,api,store):null;
   port.desktopPaymentRestartProof=mode==='purchase'?await validateExpiredPaymentRestart(old,api,store):null;
   port.desktopReviewRestartProof=mode==='purchase'?await validateExpiredReviewRestart(old,api,store):null;
+  port.desktopCancelledOrderPurchaseProof=mode==='purchase'?await validateCancelledOrderPurchase(old,api,store):null;
   const boundStore={get:k=>store.get(k),put:(k,v)=>store.put(k,k===TASK_KEY&&mode!=='reconcile'?{...v,desktopContext:api.sessionId}:v)};
   if(executor==='browser'&&mode==='purchase'){
-    const proofs=Object.fromEntries(['desktopTransferProof','desktopEmptyRestartProof','desktopEndedDraftProof','desktopPaymentRestartProof','desktopReviewRestartProof'].map(k=>[k,port[k]]));
+    const proofs=Object.fromEntries(['desktopTransferProof','desktopEmptyRestartProof','desktopEndedDraftProof','desktopPaymentRestartProof','desktopReviewRestartProof','desktopCancelledOrderPurchaseProof'].map(k=>[k,port[k]]));
     return runInBrowser({api,store:boundStore,record:old,run:{tabId,planDigest:proDigest,taskId:old.taskId,mode:'purchase',grant},port:{authorized:true,mode:'purchase',orderSummary:true,privatePickupData,pending:old.pending,acceptedSlot:old.acceptedSlot,initialSequence:old.lastRead??0,reviewGrant:grant},proofs,signal,onState});
   }
   const job=new PurchaseJob({store:boundStore,port,maxSteps:100,maxWaitMs:60000,transitionMs:60000,pollIntervalMs:500});job.onState=s=>onState({state:s.state,phase:s.phase,reason:s.reason,pendingAction:s.pendingAction});

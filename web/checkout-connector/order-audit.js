@@ -4,6 +4,29 @@ export const ORDER_LIST='https://www.apple.com.cn/shop/order/list';
 export function missingOwnedTab(error,id){return Number.isSafeInteger(id)&&error instanceof Error&&new RegExp('^No tab with id: '+id+'\\.?$').test(error.message);}
 export function orderUrl(raw){try{const u=new URL(raw);return u.protocol==='https:'&&!u.username&&!u.password&&!u.port&&(u.hostname==='www.apple.com.cn'||/^secure\d+\.www\.apple\.com\.cn$/.test(u.hostname))&&/^\/shop\/(?:order\/(?:list|detail\/[^/]+\/W\d{6,30})|signIn(?:\/orders)?)\/?$/.test(u.pathname);}catch{return false;}}
 
+// Explicitly selected existing official detail tab: fixed readonly parser, never adopts/closes/navigates the tab.
+export async function auditCancelledOrder(api,plan,expectedRefHash){
+ const unknown={state:'unknown'};
+ if(!/^[a-f0-9]{64}$/.test(expectedRefHash??''))throw Error('CancelledOrderSelectionInvalid');
+ const candidates=await api.tabs.query({url:['https://www.apple.com.cn/shop/order/detail/*','https://*.www.apple.com.cn/shop/order/detail/*']});
+ if(!Array.isArray(candidates)||candidates.length>20)return unknown;
+ const selected=[];for(const t of candidates){
+  if(!Number.isSafeInteger(t.id)||!orderUrl(t.url))continue;
+  const ref=/^\/shop\/order\/detail\/[^/]+\/(W\d{6,30})$/.exec(new URL(t.url).pathname)?.[1];if(!ref)continue;
+  const digest=[...new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(ref)))].map(v=>v.toString(16).padStart(2,'0')).join('');
+  if(digest===expectedRefHash)selected.push(t.id);
+ }
+ if(selected.length!==1)return unknown;const tabId=selected[0];
+ const before=await api.tabs.get(tabId);
+ if(before?.status!=='complete'||!orderUrl(before.url)||!/^\/shop\/order\/detail\//.test(new URL(before.url).pathname)||!await api.permissions.contains({origins:[new URL(before.url).origin+'/*']}))return unknown;
+ const rows=await api.scripting.executeScript({target:{tabId,frameIds:[0]},world:'ISOLATED',func:orderDocument,args:['detail']});
+ const after=await api.tabs.get(tabId);
+ if(after?.url!==before.url||after.status!=='complete'||rows?.length!==1||rows[0].frameId!==0||!rows[0].documentId||rows[0].error)return unknown;
+ const r=rows[0].result;
+ if(r?.state!=='detail'||r.referenceHash!==expectedRefHash||r.status!=='cancelled'||r.productTitle!==`${plan.product.model} ${plan.product.capacity} ${plan.product.color}`||r.totalCny!==9999||r.itemRows!==1)return unknown;
+ return {state:'cancelled',sameReference:true,productMatches:true,totalCny:r.totalCny};
+}
+
 export async function orderDocument(kind){
  const norm=s=>String(s??'').normalize('NFKC').replace(/\s+/g,' ').trim();
  const visible=e=>!!e?.isConnected&&!e.closest('[hidden],[aria-hidden="true"],[inert]')&&getComputedStyle(e).display!=='none'&&getComputedStyle(e).visibility!=='hidden';

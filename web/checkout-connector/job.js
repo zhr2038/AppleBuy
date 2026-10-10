@@ -226,7 +226,9 @@ export class PurchaseJob {
     const desktopPaymentOwner=recovered?.schema==='applebuy-expired-payment-restart/v1'&&recovered.existingCartOnly===true&&r?.existingCartOnly===true&&recovered.taskId===old?.taskId&&recovered.contextId===old?.desktopContext&&recovered.contextId===this.port?.api?.sessionId&&recovered.sourceArchive===r?.sourceArchive;
     const review=this.port?.desktopReviewRestartProof,rv=old?.desktopReviewRestart;
     const desktopReviewOwner=review?.schema==='applebuy-expired-review-restart/v1'&&review.existingCartOnly===true&&rv?.existingCartOnly===true&&review.taskId===old?.taskId&&review.contextId===old?.desktopContext&&review.contextId===this.port?.api?.sessionId&&review.sourceArchive===rv?.sourceArchive;
-    if(old&&!readOnly&&!rebind&&hasDesktopHandoff(old)&&!desktopCartOwner&&!desktopEmptyOwner&&!desktopEndedOwner&&!desktopPaymentOwner&&!desktopReviewOwner)throw new Error('DesktopHandoffPermanentlyRevokedSource');
+    const newPurchase=this.port?.desktopCancelledOrderPurchaseProof,np=old?.desktopCancelledOrderPurchase;
+    const desktopNewPurchaseOwner=newPurchase?.schema==='applebuy-cancelled-order-new-purchase/v1'&&np?.newPurchaseApproved===true&&np?.cancellationVerified===true&&newPurchase.taskId===old?.taskId&&newPurchase.contextId===old?.desktopContext&&newPurchase.contextId===this.port?.api?.sessionId&&newPurchase.sourceArchive===np?.sourceArchive;
+    if(old&&!readOnly&&!rebind&&hasDesktopHandoff(old)&&!desktopCartOwner&&!desktopEmptyOwner&&!desktopEndedOwner&&!desktopPaymentOwner&&!desktopReviewOwner&&!desktopNewPurchaseOwner)throw new Error('DesktopHandoffPermanentlyRevokedSource');
     if(old&&!validStored(old))throw new Error('StoredPurchaseTaskCorrupt');
     if(readOnly&&(!old||old.state==='RETIRED'))throw new Error('NoPreservedTaskToReconcile');
     // Validation is bounded, never authorized and stored separately; it cannot use a purchase grant.

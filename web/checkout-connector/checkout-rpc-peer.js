@@ -2,7 +2,7 @@
 import {merchantDocument,CHECKOUT_EXECUTOR_VERSION} from './page-program.js';
 import {canonicalJson} from './job.js';
 import {BrowserJobExecutor} from './r2-executor.js';
-import {OrderAudit,missingOwnedTab} from './order-audit.js';
+import {OrderAudit,missingOwnedTab,auditCancelledOrder} from './order-audit.js';
 import {R2_OPERATIONS} from './r2-protocol.js';
 import {CHECKOUT_RPC,BAG,ENTRY,checkoutUrl,checkoutObservedUrl,checkoutRequest,checkoutCommand,planAllowed,boundedCheckoutJson} from './checkout-rpc-contract.js';
 const PAGE_KEYS=new Set(['schema','phase','purchase','verifiedStep','path','feedback','acceptedSlot','slotSummary','continueAvailable','variantVerified','quotedCny','listComplete','dates','times','selectedDate','paymentMethod','extras','existingOrdersChecked','orderRefHash','orderDetailLink','configuration','contactStep','paymentStep','reviewProgress','extrasConflict','fulfillmentChoice','merchantError','needsSelection','nextChoice','orderSummary','prelaunchConfigurable','productForm','productFormLoading','quantitySource','receiptVerified','receiptAwaitingPayment','selectedProductChoices','summaryReadable','termsLinks','primaryTermsUrl','reason']);
@@ -39,6 +39,10 @@ export class CheckoutRpcPeer{
   }});
   const keys=allowed=>{if(Object.keys(p).some(k=>!allowed.includes(k)))throw Error('NativePayloadNotAllowed');};
   if(op==='executorVersion'){keys([]);return CHECKOUT_EXECUTOR_VERSION;}
+  if(op==='auditCancelledOrder'){
+   keys(['plan','expectedRefHash']);if(!planAllowed(p.plan))throw Error('NativeOrderPlanNotAllowed');
+   return auditCancelledOrder(guarded,p.plan,p.expectedRefHash);
+  }
   if(op==='auditOrders'){
    keys(['plan','expectedRefHash','automatic']);if(!planAllowed(p.plan)||p.automatic!==undefined&&typeof p.automatic!=='boolean')throw Error('NativeOrderPlanNotAllowed');
    this.orderAudit??=new OrderAudit(this);return this.orderAudit.run(guarded,p.plan,p.expectedRefHash??null,{automatic:p.automatic===true});

@@ -1,5 +1,6 @@
 // Prepared native-only entry: production controller/private stdin. Never SDK attach, profile copy or auto-authentication.
-import {createInterface} from 'node:readline';import {join} from 'node:path';
+import {createInterface} from 'node:readline';
+import {createHash} from 'node:crypto';import {join} from 'node:path';
 import {DesktopCheckoutRuntime} from './checkout-runtime.mjs';import {DesktopTaskStore} from './task-store.mjs';
 import {AuthContinuation} from './auth-continuation.mjs';import {launchNativeCheckout} from './native-checkout-channel.mjs';
 import {safeCheckoutDiagnostic} from './checkout-diagnostic.mjs';
@@ -52,10 +53,17 @@ try{
   if(c?.action==='stop'){closing=true;watch.stop();orderWatch?.stop();input.close();try{await runtime.close();}catch{process.exitCode=2;emit({type:'blocked',message:'结账通道清理未确认，未知记录保持。'});}finally{emit({type:'closed',cleanupConfirmed:runtime.cleanupConfirmed});process.stdin.destroy();}return;}
   if(c?.action==='pause'){watch.stop();orderWatch?.stop();if(pausing)return;pausing=true;try{emit({type:'paused',...await runtime.pause()});}catch{emit({type:'blocked',paused:runtime.paused,message:'暂停未确认；已发送动作可能继续，未知记录保持。'});}finally{pausing=false;}return;}
   if(active||watch.reading||orderWatch.reading||pausing){emit({type:'blocked',paused:runtime.paused,message:'当前执行尚未结束，未再次发动作。'});return;}
-  if(!['observe','reconcile','transfer','transfer-contact','renew-draft','restart-payment','restart-empty','advance','resume','submit'].includes(c?.action))return;
+  if(!['observe','reconcile','transfer','transfer-contact','renew-draft','restart-payment','restart-empty','new-purchase','advance','resume','submit'].includes(c?.action))return;
   watch.stop();orderWatch?.stop();active=true;
   try{
    if(c.action==='advance'||c.action==='resume')await advance(c);
+   else if(c.action==='new-purchase'){
+    let expectedRefHash=c.expectedRefHash;
+    if(c.orderNumber){if(!/^W\d{6,30}$/.test(c.orderNumber)||expectedRefHash!==undefined)throw Error('NewPurchaseReferenceInvalid');expectedRefHash=createHash('sha256').update(c.orderNumber).digest('hex');}
+    const result=await runtime.newPurchase({approved:c.approved===true,originalOrderAssociated:c.originalOrderAssociated===true,expectedRefHash,privatePickupData:c.privatePickupData??{}});
+    emit({type:'result',...result,paused:runtime.paused,readOnly:false,reviewReady:!!runtime.finalDescriptor,consentSummary:consentSummary()});
+    await continueWhenReady(result,{checkoutApproved:true,newContextConfirmed:true,privatePickupData:c.privatePickupData??{}});
+   }
    else if(c.action==='restart-payment'){
     const result=await runtime.restartPayment({approved:c.approved===true,newContextConfirmed:c.newContextConfirmed===true,oldExecutorStopped:c.oldExecutorStopped===true,sameAccountOrdersClear:c.sameAccountOrdersClear===true,additionalRecoveryApproved:c.additionalRecoveryApproved===true,automaticRecoveryApproved:c.automaticRecoveryApproved===true,expiredCheckoutUrl:c.expiredCheckoutUrl,privatePickupData:c.privatePickupData??{}});
     emit({type:'result',state:result.state,phase:result.phase,pendingAction:result.pendingAction??null,...(result.orderCheck?{orderCheck:result.orderCheck,readOnly:result.readOnly===true}:{}),paused:runtime.paused,localTransitionCreated:result.localTransitionCreated===true,realOrderVerified:result.realOrderVerified===true,...(result.receiptAwaitingPayment===true?{receiptAwaitingPayment:true}:{}),reviewReady:!!runtime.finalDescriptor,consentSummary:consentSummary()});

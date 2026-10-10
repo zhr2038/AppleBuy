@@ -164,6 +164,16 @@ class App:
         ttk.Checkbutton(fields,text='在本机加密保存取货资料（仅当前 Windows 用户可解密）',variable=self.remember_pickup,command=self.profile_preference,state='normal' if profile is not None else 'disabled').grid(row=3,column=0,columnspan=3,sticky='w')
         self.profile_status=tk.StringVar(value='未保存取货资料。')
         ttk.Label(fields,textvariable=self.profile_status,wraplength=690).grid(row=4,column=0,columnspan=3,sticky='w')
+        self.pickup_frame=fields
+        self.new_purchase_frame=ttk.LabelFrame(advanced,text='旧订单已取消，另买一台',padding=7)
+        self.previous_order_number=tk.StringVar()
+        line=ttk.Frame(self.new_purchase_frame);line.pack(fill='x')
+        ttk.Label(line,text='旧订单号（旧版未保存时填写）：').pack(side='left')
+        ttk.Entry(line,textvariable=self.previous_order_number,width=22).pack(side='left')
+        self.new_purchase_confirm=tk.BooleanVar(value=False)
+        ttk.Checkbutton(self.new_purchase_frame,text='确认此已取消订单属于上次任务；本次另购一台，保留全部旧记录',variable=self.new_purchase_confirm).pack(anchor='w')
+        ttk.Button(self.new_purchase_frame,text='核实取消后开始本次新购买',command=self.new_purchase).pack(anchor='w')
+        ttk.Label(self.new_purchase_frame,text='保持官网已取消订单详情页打开。程序核对订单身份和当前账户后才继续。',wraplength=660).pack(anchor='w')
         state_box=ttk.LabelFrame(main,text='程序进度',padding=12);state_box.pack(fill='both',expand=True,pady=(12,8))
         self.status=tk.StringVar(value='准备就绪。开始后先读取已有任务，避免重复购买。')
         self.result=tk.StringVar(value='结账、门店、末档和支付宝由程序选择；遇到登录或验证时会提示。')
@@ -177,7 +187,7 @@ class App:
         ttk.Label(main,text='默认使用正常 Chrome（R1）。购买通道连接后保持打开；最终提交需要接受本次条款。',wraplength=710).pack(anchor='w')
         # Existing guarded controls remain available, but do not crowd the ordinary purchase page.
         ttk.Label(advanced,text='连接、演练和旧任务处理。正常流程无需反复进入这里。',wraplength=710).pack(anchor='w',pady=(0,7))
-        browser_controls=ttk.Frame(advanced);browser_controls.pack(anchor='w')
+        browser_controls=ttk.Frame(advanced);browser_controls.pack(anchor='w');self.new_purchase_anchor=browser_controls
         ttk.Label(browser_controls,text='执行路线：').pack(side='left')
         self.browser_choice=tk.StringVar(value=routes[browser_channel])
         self.browser_picker=ttk.Combobox(browser_controls,textvariable=self.browser_choice,values=tuple(routes.values()),state='readonly',width=28);self.browser_picker.pack(side='left')
@@ -375,6 +385,26 @@ class App:
                 self.result.set('本次尚未核对真实未付款订单；历史演练结果不代表本次官网结果。')
         except Exception:self.checkout_working=False;self.status.set('结账入口未确认，旧记录保持；没有开始新购买。')
 
+    def new_purchase(self):
+        if not self.checkout.busy or self.checkout_working or self.checkout_paused or self.browser_choice.get() not in ('正常 Chrome 结账通道','正常 Chrome 浏览器内执行 R2'):
+            self.result.set('请先连接正常 Chrome 并完成当前核对；尚未开始新购买。');return
+        if not self.new_purchase_confirm.get():
+            self.result.set('需明确确认旧订单归属与本次新购买；旧记录保持。');return
+        ref=self.previous_order_number.get().strip()
+        if ref and not re.fullmatch(r'W\d{6,30}',ref):
+            self.result.set('旧订单号格式不正确；未发动作。');return
+        data={k:v.get() for k,v in self.pickup_values.items() if v.get()}
+        if data.get('identitySuffix') and (len(data['identitySuffix'])!=4 or not data['identitySuffix'].isdigit()):
+            self.result.set('证件后四位格式不正确；未发动作。');return
+        self.new_purchase_confirm.set(False);self.final_confirm.set(False);self.current_consent=None
+        self.checkout_working=True
+        try:
+            self.checkout.send({'action':'new-purchase','approved':True,'originalOrderAssociated':True,**({'orderNumber':ref} if ref else {}),'privatePickupData':data})
+            self.result.set('正在核实已取消的原订单及当前账户；确认前不会新买。')
+        except Exception:
+            self.checkout_working=False;self.result.set('新任务结果未确认；请核对现有记录，不重复开始。')
+        self.refresh_primary()
+
     def advance_checkout(self):
         try:
             data={k:v.get() for k,v in self.pickup_values.items() if v.get()}
@@ -533,6 +563,9 @@ class App:
                         else:self.advance_checkout()
                 elif kind=='blocked':self.order_check=None;self.result.set(v['message']);self.status.set(v['message']);self.advance_button.config(state='normal' if self.checkout.busy and not getattr(self,'checkout_readonly',False) else 'disabled');self.submit_button.config(state='disabled')
                 elif kind in ('progress','result'):
+                    if v.get('newPurchaseStarted') is True:
+                        self.checkout_submission_pending=False;self.checkout_receipt=False;self.checkout_complete=False;self.checkout_readonly=False;self.order_check=None
+                        if getattr(self,'new_purchase_frame',None):self.new_purchase_frame.pack_forget()
                     if v.get('paused') is False:self.checkout_paused=False;self.checkout_stop_button.config(state='normal' if self.checkout.busy else 'disabled')
                     if isinstance(v.get('readOnly'),bool):self.checkout_readonly=v['readOnly']
                     phase=v.get('phase','UNKNOWN')
@@ -595,6 +628,10 @@ class App:
             pass
         self.refresh_primary()
         check=getattr(self,'order_check',None)
+        if getattr(self,'new_purchase_frame',None):
+            if isinstance(check,dict) and (check.get('state') in ('reference-missing','not-found') or check.get('state')=='detail' and check.get('status')=='cancelled'):
+                self.new_purchase_frame.pack(before=self.new_purchase_anchor,fill='x',pady=(8,0))
+            else:self.new_purchase_frame.pack_forget()
         if isinstance(check,dict):
             state=check.get('state')
             labels={'waiting':'正在等待原订单查询页面，不重复登录或下单。','auth':'订单查询需要登录，登录后自动继续。','unpaid-exists':'已有同款待付款订单，已停止新购买。','unconfirmed':'同款订单状态未确认，未开始新购买。','permission':'订单查询缺少官网权限，未开始新购买。','unknown':'订单查询未确认，保留原记录。','not-found':'当前列表未找到原订单，不重复下单。','reference-missing':'原提交未保存订单身份，需要只读核对；不重复下单。'}
