@@ -1,0 +1,48 @@
+{
+  "scope": "R1 programme-triggered final submit action",
+  "humanAcceptanceChange": "The human explicitly accepts successful programme activation of the Place Order control as this test's endpoint and asks not to continue investigating the order outcome.",
+  "testAcceptedUnderThatCriterion": true,
+  "sourceFiles": 362,
+  "sourceSha256": "3d78f9bab3c492fb8dc3be9d19bfea8f21fda1e1658664011d1b7cb8d00a6705",
+  "sourceCommit": "6019d40",
+  "selfVerification": {
+    "protected": {"tests": 108, "pass": 108},
+    "python": {"tests": 100, "failures": 0, "errors": 0},
+    "node": {"tests": 2083, "pass": 2083, "fail": 0},
+    "manifestBeforeAndAfter": true,
+    "ownedTestCleanupConfirmed": true,
+    "claudeReview": "Not performed for this directly deployed revision, as explicitly authorized by the human."
+  },
+  "liveProgramme": {
+    "route": "R1 normal Chrome through the existing desktop application and fixed native channel",
+    "generation": 4,
+    "sameAuthorizedPurchaseAfterPreFinalExpiry": true,
+    "priorSourceAndAncestorsArchived": true,
+    "noRepeatedAdd": true,
+    "checkoutAndPickupStepsByProgramme": true,
+    "routineAuthenticationByDelegatedRootBrowserOperation": true,
+    "contactAndAlipayByProgramme": true,
+    "product": "iPhone 18 Pro 256GB black",
+    "quantity": 1,
+    "totalCny": 9999,
+    "store": "R609",
+    "sourceSelectedSlot": {"date": "october11", "start": "21:15", "end": "21:30"},
+    "currentReviewMatchedConfirmedConditionsAndTerms": true,
+    "programmePlaceOrderControlActivated": true,
+    "finalSubmitCountInThisGeneration": 1,
+    "paymentActions": 0
+  },
+  "outcomeBoundary": {
+    "unpaidOrderCreationVerified": false,
+    "observedMerchantResponse": "The selected delivery/pickup option was no longer available; the page returned to fulfillment.",
+    "causeEstablished": false,
+    "retainedPendingAction": "submitOrder",
+    "retainedFinalSent": true,
+    "orderReferenceRecorded": false,
+    "resultInvestigationStoppedAtHumanRequest": true,
+    "noUnknownResultReplay": true,
+    "programmePauseRequested": true,
+    "programmeUiShowsPausedRecordsPreserved": true
+  },
+  "notClaimed": ["A newly verified unpaid order", "Payment", "Apple-only fault", "Verified slot hold", "Duo readiness", "Password autofill", "Entire project completion"]
+}
