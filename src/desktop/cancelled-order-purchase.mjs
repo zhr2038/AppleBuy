@@ -12,12 +12,46 @@ async function sourceValid(row,store,at){
 }
 export async function validateCancelledOrderPurchase(row,api,store,{readonly=false}={}){
  const t=row?.desktopCancelledOrderPurchase;
- if(!validStored(row)||!t||t.schema!==SCHEMA||![1,2].includes(t.generation)||t.taskId!==row.taskId||t.contextId!==row.desktopContext||row.desktopContext!==api?.sessionId||row.reconcileOnly===true&&!readonly||t.planDigest!==proDigest||t.newPurchaseApproved!==true||t.originalOrderAssociated!==true||t.cancellationVerified!==true||t.accountPreflightClear!==true||!HASH.test(t.referenceHash??'')||!HASH.test(t.sourceArchive??'')||!Number.isFinite(t.createdAt)||canonicalJson(normalizeIntent(row.plan))!==canonicalJson(PRO_PLAN)||canonicalJson(row.retainedSourceArchives)!==canonicalJson([{schema:SCHEMA,sourceArchive:t.sourceArchive}])||row.desktopReviewRestart||row.desktopPaymentRestart||row.desktopEndedDraft||row.desktopTransfer||row.desktopEmptyRestart||row.desktopHandoff)return null;
+ if(!validStored(row)||!t||t.schema!==SCHEMA||![1,2,3].includes(t.generation)||t.taskId!==row.taskId||t.contextId!==row.desktopContext||row.desktopContext!==api?.sessionId||row.reconcileOnly===true&&!readonly||t.planDigest!==proDigest||t.newPurchaseApproved!==true||t.originalOrderAssociated!==true||t.cancellationVerified!==true||t.accountPreflightClear!==true||!HASH.test(t.referenceHash??'')||!HASH.test(t.sourceArchive??'')||!Number.isFinite(t.createdAt)||canonicalJson(normalizeIntent(row.plan))!==canonicalJson(PRO_PLAN)||canonicalJson(row.retainedSourceArchives)!==canonicalJson([{schema:SCHEMA,sourceArchive:t.sourceArchive}])||row.desktopReviewRestart||row.desktopPaymentRestart||row.desktopEndedDraft||row.desktopTransfer||row.desktopEmptyRestart||row.desktopHandoff)return null;
  let old;try{const backup=unpackArchivedSource(t.sourceBackup,t.sourceArchive);old=await store.readArchive(t.sourceArchive);if(canonicalJson(old)!==canonicalJson(backup))return null;}catch{return null;}
  if(old.taskId===row.taskId||old.desktopContext===row.desktopContext)return null;
  if(t.generation===1){if(!await sourceValid(old,store,t.createdAt)||old.orderRefHash!=null&&old.orderRefHash!==t.referenceHash||t.preSlotResume!==undefined)return null;}
- else if(!preSlotReopenShape(old,t.createdAt)||!await validateCancelledOrderPurchase(old,{sessionId:old.desktopContext},store,{readonly:true})||t.referenceHash!==old.desktopCancelledOrderPurchase.referenceHash||t.rootPurchaseTaskId!==old.taskId||t.preSlotResume!==true||t.merchantExpiryVerified!==true||t.existingCartOnly!==true)return null;
+ else if(t.generation===2){if(!preSlotReopenShape(old,t.createdAt)||!await validateCancelledOrderPurchase(old,{sessionId:old.desktopContext},store,{readonly:true})||t.referenceHash!==old.desktopCancelledOrderPurchase.referenceHash||t.rootPurchaseTaskId!==old.taskId||t.preSlotResume!==true||t.merchantExpiryVerified!==true||t.existingCartOnly!==true)return null;}
+ else if(!observedRefusalTrialShape(old,t.createdAt)||!await validateCancelledOrderPurchase(old,{sessionId:old.desktopContext},store,{readonly:true})||
+   t.operatorObservedRefusal!==true||t.sameAccountConfirmed!==true||t.explicitNewTest!==true||t.existingCartOnly!==true||t.preSlotResume!==true||
+   t.referenceHash!==old.desktopCancelledOrderPurchase.referenceHash||t.rootPurchaseTaskId!==old.desktopCancelledOrderPurchase.rootPurchaseTaskId||
+   canonicalJson(row.initialDates)!==canonicalJson(old.initialDates)||row.dateCursor<old.dateCursor+1||row.refusals<old.refusals+1||
+   Object.entries(old.floors).some(([d,v])=>!row.floors[d]||row.floors[d]<v))return null;
  return {schema:SCHEMA,taskId:row.taskId,contextId:api.sessionId,sourceArchive:t.sourceArchive};
+}
+
+// Explicit operator-assisted legacy migration, never invoked by automatic advance. The operator
+// must have observed the original merchant refusal and confirmed the SAME account. Preserve the
+// unknown old final verbatim; do not manufacture C253's absent automatic command witness.
+export function observedRefusalTrialShape(row,at=Date.now()){
+ const p=row?.pending,a=row?.acceptedSlot;
+ return validStored(row)&&row.desktopCancelledOrderPurchase?.generation===2&&row.reconcileOnly!==true&&row.expiresAt<=at&&
+  row.finalIntent?.sent===true&&p?.action==='submitOrder'&&p.dispatched!==false&&p.beforePhase==='REVIEW'&&p.intentId===row.finalIntent.id&&
+  !row.orderRefHash&&!row.orderDetailLink&&!row.finalRejections?.length&&['SLOTS','FULFILLMENT','UNKNOWN'].includes(row.lastPhase)&&
+  a?.verified===true&&row.initialDates?.[row.dateCursor]===a.date&&row.dateCursor+1<row.initialDates.length&&row.bagAddStarted===true&&row.resourceWritten===true;
+}
+export async function restartAfterObservedRefusal({store,api,tabId,approved=false,operatorObservedRefusal=false,sameAccountConfirmed=false,live=()=>true}){
+ if(approved!==true||operatorObservedRefusal!==true||sameAccountConfirmed!==true||!live())throw Error('ObservedRefusalExplicitApprovalRequired');
+ const old=await store.get(TASK_KEY);
+ if(!observedRefusalTrialShape(old)||old.desktopContext===api.sessionId||!await validateCancelledOrderPurchase(old,{sessionId:old.desktopContext},store,{readonly:true}))throw Error('ObservedRefusalSourceUnconfirmed');
+ if(await api.executorVersion()!==CHECKOUT_EXECUTOR_VERSION||!await api.permissions.contains({origins:[SHOP_HOST_SCOPE]}))throw Error('ObservedRefusalExecutorUnavailable');
+ const account=await api.auditOrders(PRO_PLAN,null,{automatic:false});
+ if(!live()||account?.state!=='clear'||account.authenticated!==true||!HASH.test(account.accountHash??'')||!Number.isSafeInteger(account.matchingCount)||account.matchingCount<0)throw Error('ObservedRefusalAccountUnconfirmed');
+ const port=new ChromePort(api,tabId,{mode:'observe'});let first;
+ for(let i=0;i<2;i++){const o=await port.observe(PRO_PLAN);if(!live()||o.phase!=='BAG'||o.verifiedStep!==true||o.path!=='/shop/bag'||!itemMatches(PRO_PLAN,o.purchase)||o.extras!==false)throw Error('ObservedRefusalBagUnconfirmed');if(first&&(first.documentId!==o.documentId||canonicalJson(first.purchase)!==canonicalJson(o.purchase)))throw Error('ObservedRefusalBagChanged');first=o;}
+ if(!live()||canonicalJson(await store.get(TASK_KEY))!==canonicalJson(old))throw Error('ObservedRefusalSourceChanged');
+ const sourceArchive=await store.archiveSnapshot(old);
+ if(sourceArchive!==archivedSourceHash(old)||!live()||canonicalJson(await store.get(TASK_KEY))!==canonicalJson(old))throw Error('ObservedRefusalArchiveUnconfirmed');
+ const at=Date.now(),taskId=randomUUID(),row={...createPurchaseRecord(PRO_PLAN,{taskId,planDigest:proDigest,tabId,now:at,id:randomUUID}),desktopContext:api.sessionId,bagAddStarted:true,resourceWritten:true,bagTotalCny:first.purchase.totalCny,acceptedSlot:null,inheritedIdentity:null,
+  initialDates:structuredClone(old.initialDates),dateCursor:old.dateCursor+1,floors:structuredClone(old.floors),rejected:structuredClone(old.rejected),refusals:old.refusals+1,
+  desktopCancelledOrderPurchase:{schema:SCHEMA,generation:3,taskId,contextId:api.sessionId,planDigest:proDigest,sourceArchive,sourceBackup:packArchivedSource(old),referenceHash:old.desktopCancelledOrderPurchase.referenceHash,newPurchaseApproved:true,originalOrderAssociated:true,cancellationVerified:true,accountPreflightClear:true,preSlotResume:true,existingCartOnly:true,rootPurchaseTaskId:old.desktopCancelledOrderPurchase.rootPurchaseTaskId,operatorObservedRefusal:true,sameAccountConfirmed:true,explicitNewTest:true,identityBasis:'explicit operator-observed merchant pickup refusal; original unknown final unchanged in complete archive; fresh account and same-cart checks',createdAt:at},retainedSourceArchives:[{schema:SCHEMA,sourceArchive}]};
+ if(!await validateCancelledOrderPurchase(row,api,store)||!live()||canonicalJson(await store.get(TASK_KEY))!==canonicalJson(old))throw Error('ObservedRefusalProspectiveUnconfirmed');
+ await store.put(TASK_KEY,row);return {created:true,existingCartOnly:true,operatorAssisted:true,realOrderVerified:false};
 }
 
 // Only the current early checkout is superseded. Earlier cancelled final and all unknowns remain in its full archive.

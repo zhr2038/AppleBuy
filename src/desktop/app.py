@@ -431,12 +431,14 @@ class App:
         if data.get('identitySuffix') and (len(data['identitySuffix'])!=4 or not data['identitySuffix'].isdigit()):
             self.status.set('证件后四位格式不正确；未发动作。');return
         reopen_initial=getattr(self,'checkout_can_reopen_initial',False)
-        restart_payment=getattr(self,'checkout_can_restart_payment',False) or reopen_initial
+        observed_refusal=getattr(self,'checkout_can_observed_refusal',False)
+        restart_payment=(getattr(self,'checkout_can_restart_payment',False) or reopen_initial) and not observed_refusal
         expiry_url=self.expired_checkout_url.get().strip() if restart_payment else None
         if restart_payment and not re.fullmatch(r'https://(?:www|secure\d+\.www)\.apple\.com\.cn/shop/checkout',expiry_url):self.status.set('请提供原官网结账入口，不带查询参数；未发动作。');return
         self.transfer_confirm.set(False);self.transfer_button.config(state='disabled');self.final_confirm.set(False);self.final_checkbox.config(state='disabled');self.reconcile_button.config(state='disabled');self.advance_button.config(state='disabled')
         try:
-            command={'action':'reopen-initial' if reopen_initial else 'restart-payment' if restart_payment else 'renew-draft' if getattr(self,'checkout_can_renew_ended',False) else 'transfer','approved':True,'newContextConfirmed':True,'privatePickupData':data}
+            command={'action':'restart-observed-refusal' if observed_refusal else 'reopen-initial' if reopen_initial else 'restart-payment' if restart_payment else 'renew-draft' if getattr(self,'checkout_can_renew_ended',False) else 'transfer','approved':True,'newContextConfirmed':True,'privatePickupData':data}
+            if command['action']=='restart-observed-refusal':command.update(operatorObservedRefusal=True,sameAccountConfirmed=True)
             if command['action']=='reopen-initial':command['expiredCheckoutUrl']=expiry_url
             if command['action']=='restart-payment':command.update(oldExecutorStopped=True,sameAccountOrdersClear=True,expiredCheckoutUrl=expiry_url,additionalRecoveryApproved=getattr(self,'checkout_can_additional_review',False),automaticRecoveryApproved=getattr(self,'checkout_can_policy_review',False))
             if command['action']=='renew-draft':command.update(merchantExpiryConfirmed=True,oldExecutorStopped=True,sameAccountOrdersClear=True)
@@ -546,7 +548,10 @@ class App:
                     self.checkout_can_additional_review=v.get('canAdditionalReviewRecovery') is True
                     self.checkout_can_policy_review=v.get('canPolicyReviewRecovery') is True
                     self.checkout_can_reopen_initial=v.get('canReopenInitialCheckout') is True
-                    if self.checkout_can_reopen_initial:
+                    self.checkout_can_observed_refusal=v.get('canRestartObservedRefusal') is True
+                    if self.checkout_can_observed_refusal:
+                        self.transfer_checkbox.config(text='本人已核实旧提交明确退回自提选项，当前为同一账户；授权本次单台测试。保留完整旧记录，先核订单和购物袋，从原日期范围下一天末档继续，不再加购')
+                    elif self.checkout_can_reopen_initial:
                         self.transfer_checkbox.config(text='继续本次尚未选择时段的购买：程序核实旧结账超时并复用这一台，保留全部记录，不再加购')
                     elif self.checkout_can_policy_review:
                         self.transfer_checkbox.config(text='按已确认条件恢复未下单的超时结账：旧执行已停、同账户无同款待付款订单；复用这一台，保留原记录和日期，未知下单结果不重提')

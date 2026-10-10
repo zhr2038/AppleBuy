@@ -1,7 +1,7 @@
 // Prepared native-only entry: production controller/private stdin. Never SDK attach, profile copy or auto-authentication.
 import {createInterface} from 'node:readline';
 import {createHash} from 'node:crypto';
-import {preSlotReopenShape} from './cancelled-order-purchase.mjs';import {join} from 'node:path';
+import {preSlotReopenShape,observedRefusalTrialShape} from './cancelled-order-purchase.mjs';import {join} from 'node:path';
 import {DesktopCheckoutRuntime} from './checkout-runtime.mjs';import {DesktopTaskStore} from './task-store.mjs';
 import {AuthContinuation} from './auth-continuation.mjs';import {launchNativeCheckout} from './native-checkout-channel.mjs';
 import {safeCheckoutDiagnostic} from './checkout-diagnostic.mjs';
@@ -24,7 +24,7 @@ function stopBrokenConnection(){
 try{
  const initial=await runtime.open();if(closing)throw Error('NativeOwnerLost');
  const hostScope=await probeCheckoutHostScope(runtime.api),source=await store.get(TASK_KEY),canRenewEndedDraft=!!stoppedCheckoutDraftSource(source),canAdditionalReviewRecovery=source?.desktopReviewRestart?.generation===1&&!!additionalExpiredReviewSourceShape(source),canPolicyReviewRecovery=source?.desktopReviewRestart?.generation>=2&&!!policyExpiredReviewSourceShape(source),canRestartExpiredPayment=!!(expiredPaymentSourceShape(source)||expiredReviewSourceShape(source)||canAdditionalReviewRecovery||canPolicyReviewRecovery);if(closing||runtime.ownerLost)throw Error('NativeOwnerLost');
- emit({type:'ready',canReopenInitialCheckout:preSlotReopenShape(source),readOnly:initial.legacyReadOnly===true,canRenewEndedDraft,canRestartExpiredPayment,canAdditionalReviewRecovery,canPolicyReviewRecovery,...hostScope,automaticOrders:true,message:'程序已连接正常 Chrome 的独立结账通道；旧只读和未知记录不增加购买权限。'});
+ emit({type:'ready',canRestartObservedRefusal:typeof observedRefusalTrialShape==='function'&&observedRefusalTrialShape(source),canReopenInitialCheckout:preSlotReopenShape(source),readOnly:initial.legacyReadOnly===true,canRenewEndedDraft,canRestartExpiredPayment,canAdditionalReviewRecovery,canPolicyReviewRecovery,...hostScope,automaticOrders:true,message:'程序已连接正常 Chrome 的独立结账通道；旧只读和未知记录不增加购买权限。'});
  input=createInterface({input:process.stdin});let active=false,pausing=false;
  watch=new AuthContinuation({observe:()=>runtime.observe(),isBusy:()=>closing||active||pausing||runtime.paused,onStopped:()=>{emit({type:'blocked',paused:runtime.paused,message:'官网验证或页面仍未确认，自动衔接已停止；旧动作不重复。'});stopBrokenConnection();}});
  orderWatch=new AuthContinuation({observe:async()=>{const r=await runtime.orderAudit();const state=r.orderCheck?.state;return ['auth','waiting'].includes(state)?{phase:'AUTH'}:['clear','detail','unpaid-exists','unconfirmed','not-found'].includes(state)?{phase:'READY'}:{phase:'UNKNOWN',feedback:'order-query-unconfirmed'};},isBusy:()=>closing||active||pausing||runtime.paused,onStopped:()=>{emit({type:'blocked',message:'订单查询仍需登录或核对；未重复购买。'});stopBrokenConnection();}});
@@ -50,7 +50,7 @@ try{
   return result;
  }
  async function reopenInitial(c){
-  const result=await runtime.reopenInitial({approved:c.approved===true,expiredCheckoutUrl:c.expiredCheckoutUrl,privatePickupData:c.privatePickupData??{}});
+  const result=c.action==='restart-observed-refusal'?await runtime.restartObservedRefusal({approved:c.approved===true,operatorObservedRefusal:c.operatorObservedRefusal===true,sameAccountConfirmed:c.sameAccountConfirmed===true,privatePickupData:c.privatePickupData??{}}):await runtime.reopenInitial({approved:c.approved===true,expiredCheckoutUrl:c.expiredCheckoutUrl,privatePickupData:c.privatePickupData??{}});
   emit({type:'result',...result,paused:runtime.paused,readOnly:false,reviewReady:!!runtime.finalDescriptor,consentSummary:consentSummary()});
   await continueWhenReady(result,{checkoutApproved:true,newContextConfirmed:true,privatePickupData:c.privatePickupData??{}});
  }
@@ -59,7 +59,7 @@ try{
   if(c?.action==='stop'){closing=true;watch.stop();orderWatch?.stop();input.close();try{await runtime.close();}catch{process.exitCode=2;emit({type:'blocked',message:'结账通道清理未确认，未知记录保持。'});}finally{emit({type:'closed',cleanupConfirmed:runtime.cleanupConfirmed});process.stdin.destroy();}return;}
   if(c?.action==='pause'){watch.stop();orderWatch?.stop();if(pausing)return;pausing=true;try{emit({type:'paused',...await runtime.pause()});}catch{emit({type:'blocked',paused:runtime.paused,message:'暂停未确认；已发送动作可能继续，未知记录保持。'});}finally{pausing=false;}return;}
   if(active||watch.reading||orderWatch.reading||pausing){emit({type:'blocked',paused:runtime.paused,message:'当前执行尚未结束，未再次发动作。'});return;}
-  if(!['observe','reconcile','transfer','transfer-contact','renew-draft','restart-payment','restart-empty','new-purchase','reopen-initial','advance','resume','submit'].includes(c?.action))return;
+  if(!['observe','reconcile','transfer','transfer-contact','renew-draft','restart-payment','restart-empty','new-purchase','reopen-initial','restart-observed-refusal','advance','resume','submit'].includes(c?.action))return;
   watch.stop();orderWatch?.stop();active=true;
   try{
    if(c.action==='advance'||c.action==='resume')await advance(c);
@@ -70,7 +70,7 @@ try{
     emit({type:'result',...result,paused:runtime.paused,readOnly:false,reviewReady:!!runtime.finalDescriptor,consentSummary:consentSummary()});
     await continueWhenReady(result,{checkoutApproved:true,newContextConfirmed:true,privatePickupData:c.privatePickupData??{}});
    }
-   else if(c.action==='reopen-initial'){
+   else if(c.action==='reopen-initial'||c.action==='restart-observed-refusal'){
     await reopenInitial(c);
    }
    else if(c.action==='restart-payment'){
@@ -99,7 +99,7 @@ try{
     if(result.orderCheck)await continueWhenReady(result,{action:'advance',checkoutApproved:true,newContextConfirmed:true});
    }
   }catch(error){
-   if(c.action==='reopen-initial'&&error.message==='InitialCheckoutAccountUnconfirmed'&&!runtime.paused&&!closing){
+   if((c.action==='reopen-initial'&&error.message==='InitialCheckoutAccountUnconfirmed'||c.action==='restart-observed-refusal'&&error.message==='ObservedRefusalAccountUnconfirmed')&&!runtime.paused&&!closing){
     // No transition has been created. Reuse this exact approval/data only after the ordinary
     // account query becomes ready; the full source/account/expiry/cart checks still run again.
     emit({type:'progress',phase:'AUTH',state:'NEEDS_USER',readOnly:true,paused:false});

@@ -13,7 +13,7 @@ import {currentReviewProgress,knownUnreleasedFinal} from '../../web/checkout-con
 import {R2_VERSION} from '../../web/checkout-connector/r2-protocol.js';
 import {CHECKOUT_EXECUTOR_VERSION} from '../../web/checkout-connector/page-program.js';
 import {reviewCheckCodes} from '../../web/checkout-connector/review-diagnostic.js';
-import {startAfterCancelledOrder,validateCancelledOrderPurchase,reopenBeforeSlots} from './cancelled-order-purchase.mjs';
+import {startAfterCancelledOrder,validateCancelledOrderPurchase,reopenBeforeSlots,restartAfterObservedRefusal} from './cancelled-order-purchase.mjs';
 const BAG='https://www.apple.com.cn/shop/bag',TERMS='https://www.apple.com.cn/shop/open/salespolicies';
 const REVIEW_TERMS=[TERMS,'https://www.apple.com.cn/shop/browse/open/salespolicies'];
 function currentTerms(o){
@@ -125,6 +125,14 @@ export class DesktopCheckoutRuntime {
  advance(options={}){return this.track(()=>this.advanceOnce(options));}
  newPurchase(options={}){return this.track(()=>this.newPurchaseOnce(options));}
  reopenInitial(options={}){return this.track(()=>this.reopenInitialOnce(options));}
+ restartObservedRefusal(options={}){return this.track(async()=>{
+  if(this.busy||this.paused||this.closing||this.closed||this.ownerLost||!this.opened)throw Error('DesktopSessionAlreadyRunning');
+  this.busy=true;this.finalDescriptor=null;let created;
+  try{created=await restartAfterObservedRefusal({store:this.store,api:this.api,tabId:this.tabId,approved:options.approved,operatorObservedRefusal:options.operatorObservedRefusal,sameAccountConfirmed:options.sameAccountConfirmed,live:()=>!this.paused&&!this.closing&&!this.closed&&!this.ownerLost&&this.lease?.owned===true});}finally{this.busy=false;}
+  if(created.created!==true)throw Error('ObservedRefusalUnconfirmed');this.rememberPreflight(await this.store.get(TASK_KEY));
+  this.onState({state:'RUNNING',phase:'BAG',pendingAction:null,newPurchaseStarted:true});
+  return {...await this.advance({checkoutApproved:true,newContextConfirmed:true,privatePickupData:options.privatePickupData??{}}),newPurchaseStarted:true,operatorAssisted:true};
+ });}
  async reopenInitialOnce({approved=false,expiredCheckoutUrl,privatePickupData={}}={}){
   if(this.busy||this.paused||this.closing||this.closed||this.ownerLost||!this.opened)throw Error('DesktopSessionAlreadyRunning');
   this.busy=true;this.finalDescriptor=null;let created;
